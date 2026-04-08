@@ -43,20 +43,23 @@ jobs:
       - name: Publish Blazor WASM app
         run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
 
-      - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
-
-      - name: Run e2e tests
-        run: npx playwright test --reporter=list
-        env:
-          CI: true
-
       - name: Upload deployment artifact
         uses: actions/upload-artifact@v4
         with:
           name: deployment-files
           path: bin/e2e-publish/wwwroot/
           retention-days: 1
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Remove Cloudflare Pages config for e2e
+        run: rm -f bin/e2e-publish/wwwroot/_redirects bin/e2e-publish/wwwroot/_headers
+
+      - name: Run e2e tests
+        run: npx playwright test --reporter=list
+        env:
+          CI: true
 
   deploy:
     name: Deploy to Cloudflare Pages (Preview)
