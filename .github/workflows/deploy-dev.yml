@@ -42,8 +42,10 @@ jobs:
 
       - name: Deploy to Cloudflare Pages
         id: deploy
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/pages-action@1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy publish/wwwroot --project-name=pomodoro --branch=develop
+          projectName: pomodoro
+          branch: develop
+          directory: publish/wwwroot
