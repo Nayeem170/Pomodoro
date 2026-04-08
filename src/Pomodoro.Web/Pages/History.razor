@@ -1,0 +1,30 @@
+@page "/history"
+@inherits HistoryBase
+@using Pomodoro.Web.Components.History
+
+<div class="history-page">
+    <div class="history-header">
+        <h1>@Constants.Routing.HistoryPageTitle</h1>
+    </div>
+    
+    <HistoryTabs ActiveTab="ActiveTab" OnTabChanged="HandleTabChanged" />
+    
+    @if (ActiveTab == HistoryTab.Daily)
+    {
+        <DailyView SelectedDate="SelectedDate"
+                  CurrentStats="CurrentStats"
+                  Activities="CurrentActivities"
+                  HasMoreActivities="HasMoreActivities"
+                  IsLoadingMore="IsLoadingMore"
+                  OnDateChanged="HandleDateChanged"
+                  OnLoadMore="LoadMoreActivitiesAsync" />
+    }
+    else if (ActiveTab == HistoryTab.Weekly)
+    {
+        <WeeklyView SelectedWeekStart="SelectedWeekStart"
+                   WeeklyStats="WeeklyStats"
+                   WeeklyFocusMinutes="WeeklyFocusMinutes"
+                   WeeklyBreakMinutes="WeeklyBreakMinutes"
+                   OnWeekChanged="HandleWeekChanged" />
+    }
+</div>

@@ -1,0 +1,28 @@
+@inherits TaskItemBase
+@using Pomodoro.Web.Models
+
+<div class="task-item @GetTaskClass()" @onclick="HandleSelect" role="button" tabindex="0" @onkeydown="HandleKeyDown">
+    <div class="task-header">
+        <span class="task-status">@GetStatusIcon()</span>
+        <span class="task-name @(Item.IsCompleted ? "completed" : "")">@Item.Name</span>
+        <div class="task-actions">
+            @if (Item.IsCompleted)
+            {
+                <button class="btn-icon" @onclick="HandleUncomplete" @onclick:stopPropagation="true" title="Undo">↩</button>
+            }
+            else
+            {
+                <button class="btn-icon" @onclick="HandleComplete" @onclick:stopPropagation="true" title="Complete">✓</button>
+            }
+            <button class="btn-icon delete" @onclick="HandleDelete" @onclick:stopPropagation="true" title="Delete">🗑</button>
+        </div>
+    </div>
+    <div class="task-stats">
+        <span class="stat">⏱️ @FormatTime(Item.TotalFocusMinutes)</span>
+        <span class="stat">🍅 @Item.PomodoroCount</span>
+        @if (IsSelected)
+        {
+            <span class="stat selected-badge">Selected ●</span>
+        }
+    </div>
+</div>

@@ -1,0 +1,8 @@
+@inherits ActivityItemBase
+
+<div class="activity-item">
+    <span class="activity-icon">@Activity.Icon</span>
+    <span class="activity-time">@Activity.CompletedAt.ToLocalTime().ToString("h:mm tt")</span>
+    <span class="activity-name">@Activity.DisplayText</span>
+    <span class="activity-duration">@Activity.DurationMinutes min</span>
+</div>

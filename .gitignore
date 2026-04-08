@@ -1,0 +1,91 @@
+# Build outputs
+src/Pomodoro.Web/bin/
+src/Pomodoro.Web/obj/
+**/bin/
+**/obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# IDE and editor files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+*.tmp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Node.js
+node_modules/
+
+# Project-specific
+plans/
+
+# Client-side libraries (managed by LibMan - see libman.json)
+src/Pomodoro.Web/wwwroot/lib/
+
+# Auto-generated service worker (produced during publish)
+src/Pomodoro.Web/wwwroot/service-worker.published.js
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+
+# Test results and coverage
+TestResults/
+tests/Pomodoro.Web.Tests/TestResults/
+tests/Pomodoro.Web.Tests.Components/TestResults/
+tests/Pomodoro.Web.Tests/coverage/
+tests/Pomodoro.Web.Tests/CoverageReport/
+tests/CoverageResults/
+CoverageReport/
+CoverageResults/
+CoverageEvaluation/
+
+# Playwright artifacts
+test-results/
+test-results-*/
+playwright-report/
+blob-report/
+test-output.json
+nul
+
+# Build/test output files
+build_out.txt
+build_output.txt
+test_out.txt
+test_output.txt
+test_output.log
+test_results.txt
+test_results_new.txt
+test_results_final.txt
+
+# AI-generated reports
+COVERAGE_GUIDE.md
+COVERAGE_REPORT_COMPLETION_GUIDE.md
+COVERAGE_REPORT_FIX_SUMMARY.md
+E2E_TEST_FAILURE_RESOLUTION_SUMMARY.md
+E2E_TEST_FAILURE_ROOT_CAUSE_ANALYSIS.md
+E2E_TEST_RESOLUTION_GUIDE.md
+FINAL_TASK_COMPLETION_REPORT.md
+IMMEDIATE_TEST_PERFORMANCE_ACTIONS.md
+PLAYWRIGHT_FINAL_STATUS.md
+PLAYWRIGHT_IMPLEMENTATION.md
+PLAYWRIGHT_IMPLEMENTATION_STATUS.md
+TASK_COMPLETION_SUMMARY.md
+TEST_OPTIMIZATION_SUMMARY.md
+TEST_PERFORMANCE_OPTIMIZATION_GUIDE.md
+TEST_PERFORMANCE_VERIFICATION.md

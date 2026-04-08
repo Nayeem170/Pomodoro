@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura,opencover</Format>
+          <Include>[Pomodoro.Web]*</Include>
+          <Exclude>[*.Tests]*</Exclude>
+          <!-- Performance optimizations -->
+          <UseSourceLink>false</UseSourceLink>
+          <DeterministicReport>false</DeterministicReport>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+  <!-- Run configuration for better performance -->
+  <RunConfiguration>
+    <MaxCpuCount>0</MaxCpuCount>
+    <DesignTimeRun>false</DesignTimeRun>
+  </RunConfiguration>
+</RunSettings>

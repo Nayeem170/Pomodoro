@@ -1,0 +1,39 @@
+@inherits TimerControlsBase
+@using Pomodoro.Web.Models
+
+<div class="timer-controls">
+    @if (IsRunning)
+    {
+        <div class="btn-row">
+            <button class="btn-icon-large btn-pause" @onclick="OnPause" title="Pause" aria-label="Pause timer">
+                @Constants.UI.PauseIcon
+            </button>
+            <button class="btn-icon-large btn-reset" @onclick="OnReset" title="Reset" aria-label="Reset timer">
+                @Constants.UI.ResetIcon
+            </button>
+        </div>
+    }
+    else if (IsStarted)
+    {
+        <div class="btn-row">
+            <button class="btn-icon-large btn-resume @GetSessionClass()" @onclick="OnResume" title="Resume" aria-label="Resume timer">
+                @Constants.UI.PlayIcon
+            </button>
+            <button class="btn-icon-large btn-reset" @onclick="OnReset" title="Reset" aria-label="Reset timer">
+                @Constants.UI.ResetIcon
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="btn-row">
+            <button class="btn-icon-large btn-start @GetSessionClass()" @onclick="OnStart" disabled="@IsStartDisabled" title="@(IsStartDisabled ? "Select a task first" : "Start")" aria-label="@(IsStartDisabled ? "Select a task first" : "Start timer")">
+                @Constants.UI.PlayIcon
+            </button>
+        </div>
+        @if (IsStartDisabled)
+        {
+            <p class="task-hint">Select a task to start</p>
+        }
+    }
+</div>

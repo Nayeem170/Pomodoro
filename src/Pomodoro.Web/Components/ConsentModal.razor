@@ -1,0 +1,31 @@
+@inherits ConsentModalBase
+@using Pomodoro.Web.Models
+@using Pomodoro.Web.Services
+
+@if (IsVisible)
+{
+    <div class="consent-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="consent-title">
+        <div class="consent-modal">
+            <div class="consent-header">
+                <span class="consent-icon">@GetIcon()</span>
+                <h2 id="consent-title">@GetTitle()</h2>
+            </div>
+            
+            <p class="consent-message">@GetMessage()</p>
+            
+            <div class="consent-options">
+                @if (Options?.Count > 0)
+                {
+                    @RenderOptions
+                }
+            </div>
+            
+            <div class="countdown-section">
+                <p class="countdown-text">⏱️ Auto-continuing in @CountdownSeconds seconds...</p>
+                <div class="countdown-bar">
+                    <div class="countdown-progress" style="width: @GetProgressPercentage()%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

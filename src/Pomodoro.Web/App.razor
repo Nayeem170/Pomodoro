@@ -1,0 +1,41 @@
+﻿@using Pomodoro.Web.Components
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <ErrorBoundary @ref="_errorBoundary">
+            <ChildContent>
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            </ChildContent>
+            <ErrorContent Context="exception">
+                <ErrorDisplay Exception="exception" OnRetry="RecoverError" />
+            </ErrorContent>
+        </ErrorBoundary>
+    </Found>
+    <NotFound>
+        <CustomPageTitle Value="@GetNotFoundPageTitle()" />
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p role="alert">@Constants.Routing.NotFoundMessage</p>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+@code {
+    private ErrorBoundary? _errorBoundary;
+
+    /// <summary>
+    /// Gets the page title for the NotFound page
+    /// </summary>
+    public string GetNotFoundPageTitle()
+    {
+        return Constants.Routing.NotFoundPageTitle;
+    }
+
+    /// <summary>
+    /// Recovers from an error by resetting the ErrorBoundary
+    /// </summary>
+    public void RecoverError()
+    {
+        _errorBoundary?.Recover();
+    }
+}

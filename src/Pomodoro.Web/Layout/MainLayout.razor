@@ -1,0 +1,55 @@
+﻿@inherits LayoutComponentBase
+@using Pomodoro.Web.Components
+@inject LayoutPresenterService LayoutPresenter
+
+<div class="app-wrapper">
+    <header class="app-header">
+        <div class="header-content-wrapper">
+            <div class="header-left">
+                <div class="header-title">
+                    <span class="header-icon">@Constants.Layout.AppIcon</span>
+                    <span class="header-text">@Constants.Layout.AppTitle</span>
+                </div>
+                <p class="header-tagline">@Constants.Layout.Tagline</p>
+            </div>
+            <div class="header-nav">
+                @foreach (var navLink in LayoutPresenter.GetNavigationLinks())
+                {
+                    <NavLink href="@navLink.Href" Match="@navLink.Match" title="@navLink.Title">
+                        <span>@navLink.Icon</span>
+                    </NavLink>
+                }
+            </div>
+        </div>
+    </header>
+    
+    <main class="app-content">
+        <ErrorBoundary @ref="_errorBoundary">
+            <ChildContent>
+                @Body
+            </ChildContent>
+            <ErrorContent Context="exception">
+                <ErrorDisplay Exception="exception" OnRetry="RecoverError" />
+            </ErrorContent>
+        </ErrorBoundary>
+    </main>
+
+    <footer class="app-footer">
+        <div class="footer-content">
+            <p class="footer-made">@Constants.Layout.FooterMadeWithText</p>
+            <p class="footer-copy">&copy; @LayoutPresenter.GetCurrentYear() @Constants.Layout.FooterCopyrightOwner</p>
+        </div>
+    </footer>
+</div>
+
+@code {
+    private ErrorBoundary? _errorBoundary;
+
+    /// <summary>
+    /// Recovers from a page-level error by resetting the ErrorBoundary
+    /// </summary>
+    public void RecoverError()
+    {
+        _errorBoundary?.Recover();
+    }
+}

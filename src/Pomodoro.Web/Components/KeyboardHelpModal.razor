@@ -1,0 +1,71 @@
+@using Pomodoro.Web.Models
+
+<div class="keyboard-help-modal @(IsVisible ? "visible" : "")">
+    <div class="modal-backdrop" @onclick="Close"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>@Constants.KeyboardHelp.Title</h3>
+            <button class="modal-close" @onclick="Close" aria-label="@Constants.KeyboardHelp.CloseTooltip">@Constants.KeyboardHelp.CloseTooltip</button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="shortcut-section">
+                <h4>@Constants.KeyboardHelp.TimerSection</h4>
+                <div class="shortcut-item">
+                    <kbd>@Constants.KeyboardShortcuts.PlayPauseKey</kbd>
+                    <span>@Constants.KeyboardShortcuts.PlayPauseDescription</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>@Constants.KeyboardShortcuts.ResetKey</kbd>
+                    <span>@Constants.KeyboardShortcuts.ResetDescription</span>
+                </div>
+            </div>
+            
+            <div class="shortcut-section">
+                <h4>@Constants.KeyboardHelp.SessionSection</h4>
+                <div class="shortcut-item">
+                    <kbd>@Constants.KeyboardShortcuts.PomodoroKey</kbd>
+                    <span>@Constants.KeyboardShortcuts.PomodoroDescription</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>@Constants.KeyboardShortcuts.ShortBreakKey</kbd>
+                    <span>@Constants.KeyboardShortcuts.ShortBreakDescription</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>@Constants.KeyboardShortcuts.LongBreakKey</kbd>
+                    <span>@Constants.KeyboardShortcuts.LongBreakDescription</span>
+                </div>
+            </div>
+            
+            <div class="shortcut-section">
+                <h4>@Constants.KeyboardHelp.OtherSection</h4>
+                <div class="shortcut-item">
+                    <kbd>@Constants.KeyboardShortcuts.HelpKey</kbd>
+                    <span>@Constants.KeyboardShortcuts.HelpDescription</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Controls the visibility of the keyboard help modal
+    /// </summary>
+    [Parameter]
+    public bool IsVisible { get; set; }
+    
+    /// <summary>
+    /// Event callback when the modal is closed
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+    
+    /// <summary>
+    /// Closes the modal by invoking the OnClose callback
+    /// </summary>
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

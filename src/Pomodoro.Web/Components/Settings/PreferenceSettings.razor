@@ -1,0 +1,41 @@
+<div class="settings-section">
+    <h2>Preferences</h2>
+    
+    <div class="setting-item setting-toggle">
+        <div class="setting-label">
+            <span class="setting-icon">🔊</span>
+            <span class="setting-name">Sound</span>
+        </div>
+        <div class="toggle-control">
+            <input type="checkbox" id="soundToggle" @bind="Settings.SoundEnabled" @bind:after="NotifyChanged" class="toggle-input" />
+            <label for="soundToggle" class="toggle-label">
+                <span class="toggle-inner"></span>
+                <span class="toggle-switch"></span>
+            </label>
+        </div>
+    </div>
+    
+    <div class="setting-item setting-toggle">
+        <div class="setting-label">
+            <span class="setting-icon">🔔</span>
+            <span class="setting-name">Notifications</span>
+        </div>
+        <div class="toggle-control">
+            <input type="checkbox" id="notifToggle" @bind="Settings.NotificationsEnabled" @bind:after="NotifyChanged" class="toggle-input" />
+            <label for="notifToggle" class="toggle-label">
+                <span class="toggle-inner"></span>
+                <span class="toggle-switch"></span>
+            </label>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public TimerSettings Settings { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

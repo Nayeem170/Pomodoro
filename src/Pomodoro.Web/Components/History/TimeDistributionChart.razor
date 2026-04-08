@@ -1,0 +1,20 @@
+<div class="time-distribution-chart">
+    <h4 class="chart-title">Time Distribution</h4>
+
+    @if (HasData)
+    {
+        <div class="chart-container">
+            <canvas id="@CanvasId"></canvas>
+        </div>
+        <div class="chart-summary">
+            <span class="total-time">Total: @FormattedTotalMinutes</span>
+        </div>
+    }
+    else
+    {
+        <div class="empty-chart-state">
+            <span class="empty-icon">📭</span>
+            <p>No activities for this day</p>
+        </div>
+    }
+</div>

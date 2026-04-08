@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#374151" />
+    <!-- CSP: localhost wildcards are for Blazor WebAssembly hot reload during development. 
+         Consider removing 'http://localhost:* ws://localhost:*' for production deployment. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: wss: http://localhost:* ws://localhost:*; worker-src 'self' blob:;" />
+    <title>Pomodoro</title>
+    <base href="/" />
+    
+    <!-- Performance: Preload critical assets -->
+    <link rel="preload" href="_framework/blazor.webassembly.js" as="script">
+    <link rel="preload" href="css/app.css" as="style">
+    <link rel="preload" href="js/jsConstants.js" as="script">
+    
+    <!-- Performance: Prefetch assets needed for later pages -->
+    <link rel="prefetch" href="lib/chart.js/dist/chart.umd.min.js" as="script">
+    <link rel="prefetch" href="css/history.css" as="style">
+    
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/history.css" />
+    <link rel="stylesheet" href="css/settings.css" />
+    <!-- Favicon - Tomato emoji with transparent background -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='80' x='50%' text-anchor='middle'>🍅</text></svg>" />
+    <link href="Pomodoro.Web.styles.css" rel="stylesheet" />
+    <link href="manifest.webmanifest" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.svg" />
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.svg" />
+</head>
+
+<body>
+    <div id="app">
+        <div class="loading-container">
+            <div class="loading-spinner">🍅</div>
+            <div class="loading-text">Loading Pomodoro...</div>
+        </div>
+    </div>
+
+    <!-- Load Blazor with autostart=false to ensure custom JS loads first -->
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+    
+    <!-- Chart.js is now lazy-loaded by chartInterop.js when needed (saves ~200KB initial load) -->
+    
+    <!-- Custom JavaScript modules - must load before Blazor starts -->
+    <script src="js/jsConstants.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/timer.js"></script>
+    <script src="js/chartInterop.js"></script>
+    <script src="js/indexedDbInterop.js"></script>
+    <script src="js/pipTimer.js"></script>
+    <script src="js/keyboard-shortcuts.js"></script>
+    <script src="js/infiniteScroll.js"></script>
+    <script src="js/fileInterop.js"></script>
+    <!-- App initialization - service worker registration and URL helpers -->
+    <script src="js/app-init.js"></script>
+    
+    <!-- Start Blazor after all scripts are loaded -->
+    <script>
+        Blazor.start().catch(function(err) {
+            console.error('Failed to start Blazor:', err);
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#dc2626;color:white;padding:1rem;text-align:center;z-index:9999;box-shadow:0 4px 6px rgba(0,0,0,0.1);';
+            errorDiv.innerHTML = `
+                <h3 style="margin:0 0 0.5rem 0;">Application Failed to Start</h3>
+                <p style="margin:0 0 0.5rem 0;">${err.message || 'An unexpected error occurred'}</p>
+                <button onclick="location.reload()" style="background:white;color:#dc2626;border:none;padding:0.5rem 1rem;border-radius:4px;cursor:pointer;font-weight:bold;">Retry</button>
+            `;
+            document.body.appendChild(errorDiv);
+        });
+    </script>
+</body>
+
+</html>

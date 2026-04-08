@@ -1,0 +1,37 @@
+<div class="settings-section">
+    <h2>Timer Durations</h2>
+    
+    <div class="setting-item">
+        <div class="setting-label">
+            <span class="setting-icon">🍅</span>
+            <span class="setting-name">Pomodoro</span>
+        </div>
+        <input type="number" class="setting-input" @bind="Settings.PomodoroMinutes" @bind:after="NotifyChanged" min="1" max="60" />
+    </div>
+    
+    <div class="setting-item">
+        <div class="setting-label">
+            <span class="setting-icon">☕</span>
+            <span class="setting-name">Short Break</span>
+        </div>
+        <input type="number" class="setting-input" @bind="Settings.ShortBreakMinutes" @bind:after="NotifyChanged" min="1" max="30" />
+    </div>
+    
+    <div class="setting-item">
+        <div class="setting-label">
+            <span class="setting-icon">🏖️</span>
+            <span class="setting-name">Long Break</span>
+        </div>
+        <input type="number" class="setting-input" @bind="Settings.LongBreakMinutes" @bind:after="NotifyChanged" min="1" max="60" />
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public TimerSettings Settings { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnChanged { get; set; }
+
+    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+}

@@ -1,0 +1,15 @@
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="error-banner">
+        <p>@ErrorMessage</p>
+        <button @onclick="OnDismiss" aria-label="Dismiss error">×</button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public EventCallback OnDismiss { get; set; }
+}

@@ -1,0 +1,22 @@
+@inherits TodaySummaryBase
+
+<div class="today-summary">
+    <h3>📊 TODAY'S SUMMARY</h3>
+    <div class="summary-stats">
+        <div class="stat-item">
+            <span class="stat-icon">⏱️</span>
+            <span class="stat-value">@FormatTime(TotalFocusMinutes)</span>
+            <span class="stat-label">focused</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-icon">🍅</span>
+            <span class="stat-value">@PomodoroCount</span>
+            <span class="stat-label">pomodoros</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-icon">📋</span>
+            <span class="stat-value">@TasksWorkedOn</span>
+            <span class="stat-label">tasks</span>
+        </div>
+    </div>
+</div>

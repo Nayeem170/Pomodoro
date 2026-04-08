@@ -1,0 +1,63 @@
+<div class="settings-section">
+    <h2>Data Management</h2>
+    
+    <div class="setting-item">
+        <div class="setting-label">
+            <span class="setting-icon">📤</span>
+            <span class="setting-name">Export Backup</span>
+        </div>
+        <button class="btn-export btn-export-json" @onclick="OnExportJson" disabled="@IsExporting" title="Export all data as JSON backup">
+            @(IsExporting ? "Exporting..." : "Export JSON")
+        </button>
+    </div>
+    
+    <div class="setting-item">
+        <div class="setting-label">
+            <span class="setting-icon">📥</span>
+            <span class="setting-name">Import Backup</span>
+        </div>
+        <div class="import-container">
+            <label class="btn-import @(IsImporting ? "disabled" : "")">
+                @(IsImporting ? "Importing..." : "Import JSON")
+                <InputFile OnChange="OnImport" accept=".json" class="file-input" disabled="@IsImporting" />
+            </label>
+            @if (ImportResult != null)
+            {
+                <span class="import-result">@ImportResult</span>
+            }
+        </div>
+    </div>
+    
+    <div class="setting-item setting-danger">
+        <div class="setting-label">
+            <span class="setting-icon">🗑️</span>
+            <span class="setting-name">Clear All Data</span>
+        </div>
+        <button class="btn-clear" @onclick="OnConfirmClearData" disabled="@IsClearing" title="Delete all data">
+            @(IsClearing ? "Clearing..." : "Clear")
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsExporting { get; set; }
+
+    [Parameter]
+    public bool IsImporting { get; set; }
+
+    [Parameter]
+    public bool IsClearing { get; set; }
+
+    [Parameter]
+    public string? ImportResult { get; set; }
+
+    [Parameter]
+    public EventCallback OnExportJson { get; set; }
+
+    [Parameter]
+    public EventCallback<InputFileChangeEventArgs> OnImport { get; set; }
+
+    [Parameter]
+    public EventCallback OnConfirmClearData { get; set; }
+}

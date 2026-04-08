@@ -1,0 +1,64 @@
+@inherits TaskListBase
+@using Pomodoro.Web.Models
+
+<div class="task-list">
+    <div class="task-list-header">
+        <h3>📋 TASKS</h3>
+    </div>
+    
+    <div class="add-task-section">
+        @if (IsAddingTask)
+        {
+            <div class="add-task-form">
+                <input type="text" 
+                       @bind="NewTaskName" 
+                        @bind:event="oninput"
+                        @onkeydown="HandleKeyPress"
+                        placeholder="Enter task name..." 
+                        class="task-input" />
+                <button class="btn-icon-small btn-add" @onclick="HandleAddTask" disabled="@IsAddDisabled" title="Add">
+                    +
+                </button>
+                <button class="btn-icon-small btn-cancel" @onclick="CancelAddTask" title="Cancel">
+                    ✕
+                </button>
+            </div>
+        }
+        else
+        {
+            <button class="btn-add-task" @onclick="StartAddTask">
+                + Add Task
+            </button>
+        }
+    </div>
+    
+    <div class="task-items">
+        @foreach (var task in Tasks.Where(t => !t.IsCompleted).OrderByDescending(t => t.LastWorkedOn ?? t.CreatedAt))
+        {
+            <TaskItemComponent 
+                Item="task" 
+                IsSelected="task.Id == CurrentTaskId"
+                OnSelect="HandleTaskSelect"
+                OnComplete="HandleTaskComplete"
+                OnDelete="HandleTaskDelete"
+                OnUncomplete="HandleTaskUncomplete" />
+        }
+        
+        @if (Tasks.Any(t => t.IsCompleted))
+        {
+            <div class="completed-section">
+                <h4>Completed</h4>
+                @foreach (var task in Tasks.Where(t => t.IsCompleted).OrderByDescending(t => t.LastWorkedOn ?? t.CreatedAt))
+                {
+                    <TaskItemComponent 
+                        Item="task" 
+                        IsSelected="false"
+                        OnSelect="HandleTaskSelect"
+                        OnComplete="HandleTaskComplete"
+                        OnDelete="HandleTaskDelete"
+                        OnUncomplete="HandleTaskUncomplete" />
+                }
+            </div>
+        }
+    </div>
+</div>

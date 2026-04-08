@@ -1,0 +1,10 @@
+@inherits TimerDisplayBase
+
+<div class="timer-display @GetTimerClass()">
+    <div class="timer-time">
+        @FormatTime(CurrentRemainingTime)
+    </div>
+    <div class="timer-type">
+        @GetSessionTypeLabel()
+    </div>
+</div>

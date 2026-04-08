@@ -1,0 +1,29 @@
+@if (CurrentSessionType == SessionType.Pomodoro)
+{
+    <div class="current-task-indicator">
+        @if (CurrentTaskId.HasValue)
+        {
+            var currentTask = Tasks.FirstOrDefault(t => t.Id == CurrentTaskId.Value);
+            if (currentTask != null)
+            {
+                <span class="task-label">@Constants.TaskUI.CurrentTaskLabel</span>
+                <span class="task-name">@currentTask.Name</span>
+            }
+        }
+        else
+        {
+            <span class="task-label">@Constants.TaskUI.SelectTaskPrompt</span>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public SessionType CurrentSessionType { get; set; }
+
+    [Parameter]
+    public Guid? CurrentTaskId { get; set; }
+
+    [Parameter]
+    public List<TaskItem> Tasks { get; set; } = new();
+}

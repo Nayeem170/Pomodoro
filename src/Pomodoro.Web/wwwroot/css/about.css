@@ -1,0 +1,328 @@
+/* About Page Styles */
+
+.about-page {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px 15px;
+}
+
+.about-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.about-header h1 {
+    font-size: 2rem;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.about-header .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.about-content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* Info Sections */
+.info-section {
+    background-color: var(--surface-color);
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid var(--border-color);
+}
+
+.info-section h2 {
+    font-size: 1.3rem;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-section p {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+/* Steps Container */
+.steps-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.step-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px;
+    background-color: var(--surface-light);
+    border-radius: 10px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.step-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.step-card.highlight {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.15) 0%, var(--surface-light) 100%);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 50%;
+}
+
+.step-card.highlight .step-number {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #c0392b 100%);
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);
+}
+
+.step-content h3 {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+}
+
+.step-content p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Benefits Grid */
+.benefits-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+@media (min-width: 576px) {
+    .benefits-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .benefits-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.benefit-card {
+    padding: 20px;
+    background-color: var(--surface-light);
+    border-radius: 10px;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.benefit-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.benefit-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.benefit-card h3 {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.benefit-card p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Tips List */
+.tips-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tips-list li {
+    padding: 15px;
+    background-color: var(--surface-light);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-color);
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.tips-list li strong {
+    color: var(--text-primary);
+}
+
+/* Default Times Section */
+.default-times .times-grid {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.time-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 30px;
+    background-color: var(--surface-light);
+    border-radius: 12px;
+    min-width: 100px;
+    transition: transform 0.2s ease;
+}
+
+.time-card:hover {
+    transform: scale(1.05);
+}
+
+.time-card.pomodoro {
+    border: 2px solid var(--pomodoro-color);
+}
+
+.time-card.pomodoro .time-value {
+    color: var(--pomodoro-color);
+}
+
+.time-card.short-break {
+    border: 2px solid var(--short-break-color);
+}
+
+.time-card.short-break .time-value {
+    color: var(--short-break-color);
+}
+
+.time-card.long-break {
+    border: 2px solid var(--long-break-color);
+}
+
+.time-card.long-break .time-value {
+    color: var(--long-break-color);
+}
+
+.time-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.time-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 5px;
+    line-height: 1.3;
+}
+
+.times-note {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Call to Action Section */
+.cta-section {
+    text-align: center;
+    padding: 40px 25px;
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.15) 0%, var(--surface-color) 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.cta-section h2 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    border: none;
+    padding: 0;
+}
+
+.cta-section p {
+    color: var(--text-secondary);
+    margin-bottom: 25px;
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 15px 40px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: white;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 30px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .about-header h1 {
+        font-size: 1.6rem;
+    }
+    
+    .info-section {
+        padding: 20px 15px;
+    }
+    
+    .info-section h2 {
+        font-size: 1.1rem;
+    }
+    
+    .step-card {
+        padding: 12px;
+    }
+    
+    .time-card {
+        padding: 15px 20px;
+        min-width: 80px;
+    }
+    
+    .time-value {
+        font-size: 2rem;
+    }
+    
+    .cta-button {
+        padding: 12px 30px;
+        font-size: 1rem;
+    }
+}

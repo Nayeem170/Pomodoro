@@ -1,0 +1,10 @@
+@inherits DateNavigatorBase
+
+<div class="date-navigator">
+    <span class="current-date">@FormattedDate</span>
+    <div class="nav-buttons">
+        <button class="nav-btn" @onclick="GoToPrevious" title="Previous day">◀</button>
+        <button class="nav-btn today-btn" @onclick="GoToToday" disabled="@IsTodayAsyncValue">Today</button>
+        <button class="nav-btn" @onclick="GoToNext" title="Next day" disabled="@IsTodayAsyncValue">▶</button>
+    </div>
+</div>

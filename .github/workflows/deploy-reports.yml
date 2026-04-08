@@ -1,0 +1,98 @@
+name: Deploy Coverage Reports
+
+on:
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dotnet tools
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Run unit tests with coverage
+        run: dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+      - name: Generate coverage report
+        run: reportgenerator -reports:"./coverage/**/coverage.cobertura.xml" -targetdir ./site/coverage -reporttypes:Html
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium
+
+      - name: Publish Blazor app for e2e
+        run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
+
+      - name: Run e2e tests
+        run: npx playwright test --reporter=html --output ./e2e-results
+
+      - name: Copy Playwright report
+        run: cp -r playwright-report ./site/e2e
+
+      - name: Create index page
+        run: |
+          cat > ./site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Pomodoro - Reports</title>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 700px; margin: 60px auto; padding: 0 20px; background: #1a1a2e; color: #e0e0e0; }
+              h1 { color: #fff; }
+              a { color: #60a5fa; text-decoration: none; display: block; padding: 16px 20px; margin: 8px 0; border: 1px solid #333; border-radius: 8px; transition: background 0.2s; }
+              a:hover { background: #2a2a4e; }
+              .label { font-size: 0.85em; color: #888; margin-bottom: 4px; }
+              .title { font-size: 1.1em; font-weight: 600; }
+            </style>
+          </head>
+          <body>
+            <h1>Pomodoro Reports</h1>
+            <div>
+              <a href="/coverage/index.html">
+                <div class="label">Unit & Component Tests</div>
+                <div class="title">Coverage Report</div>
+              </a>
+              <a href="/e2e/index.html">
+                <div class="label">E2E Tests</div>
+                <div class="title">Playwright Report</div>
+              </a>
+            </div>
+          </body>
+          </html>
+          EOF
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

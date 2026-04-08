@@ -1,0 +1,89 @@
+@page "/"
+@inherits IndexBase
+
+<div class="main-container">
+    <ErrorBanner ErrorMessage="@ErrorMessage" OnDismiss="@(() => ErrorMessage = null)" />
+    
+    <!-- Today's Summary -->
+    <div class="summary-section">
+        <TodaySummary TotalFocusMinutes="TodayTotalFocusMinutes"
+                      PomodoroCount="TodayPomodoroCount"
+                      TasksWorkedOn="TodayTasksWorkedOn" />
+    </div>
+    
+    <!-- Timer Section -->
+    <div class="timer-section @GetTimerThemeClass()">
+        <div class="timer-section-header">
+            <div class="session-tabs" role="tablist">
+                <button class="@(CurrentSessionType == SessionType.Pomodoro ? "active" : "")"
+                        @onclick="() => HandleSessionSwitch(SessionType.Pomodoro)"
+                        title="@Constants.KeyboardShortcuts.PomodoroKey"
+                        role="tab"
+                        aria-selected="@(CurrentSessionType == SessionType.Pomodoro)">
+                    Pomodoro
+                </button>
+                <button class="@(CurrentSessionType == SessionType.ShortBreak ? "active" : "")"
+                        @onclick="() => HandleSessionSwitch(SessionType.ShortBreak)"
+                        title="@Constants.KeyboardShortcuts.ShortBreakKey"
+                        role="tab"
+                        aria-selected="@(CurrentSessionType == SessionType.ShortBreak)">
+                    Short Break
+                </button>
+                <button class="@(CurrentSessionType == SessionType.LongBreak ? "active" : "")"
+                        @onclick="() => HandleSessionSwitch(SessionType.LongBreak)"
+                        title="@Constants.KeyboardShortcuts.LongBreakKey"
+                        role="tab"
+                        aria-selected="@(CurrentSessionType == SessionType.LongBreak)">
+                    Long Break
+                </button>
+            </div>
+        </div>
+        
+        <TimerDisplay RemainingTime="RemainingTime"
+                      SessionType="CurrentSessionType"
+                      IsRunning="IsTimerRunning" />
+        
+        <TimerControls IsRunning="IsTimerRunning"
+                       IsPaused="IsTimerPaused"
+                       IsStarted="IsTimerStarted"
+                       CanStart="CurrentTaskId.HasValue || CurrentSessionType != SessionType.Pomodoro"
+                       SessionType="CurrentSessionType"
+                       OnStart="HandleTimerStart"
+                       OnPause="HandleTimerPause"
+                       OnResume="HandleTimerResume"
+                       OnReset="HandleTimerReset" />
+        
+        <CurrentTaskIndicator CurrentSessionType="@CurrentSessionType"
+                              CurrentTaskId="@CurrentTaskId"
+                              Tasks="@Tasks" />
+        
+        <!-- Header Actions (PiP and Help buttons) -->
+        <div class="header-actions">
+            <button class="btn-pip-header" @onclick="() => ShowKeyboardHelp = true" title="@Constants.KeyboardShortcuts.HelpKey">?</button>
+            <button class="btn-pip-header" @onclick="HandleTogglePip" title="@(IsPipOpen ? Constants.PipTimerUI.CloseFloatingTimerTitle : Constants.PipTimerUI.PopOutFloatingTimerTitle)">⧉</button>
+        </div>
+    </div>
+    
+    <!-- Tasks Section -->
+    <div class="tasks-section">
+        <TaskList Tasks="Tasks"
+                  CurrentTaskId="CurrentTaskId"
+                  OnTaskAdd="HandleTaskAdd"
+                  OnTaskSelect="HandleTaskSelect"
+                  OnTaskComplete="HandleTaskComplete"
+                  OnTaskDelete="HandleTaskDelete"
+                  OnTaskUncomplete="HandleTaskUncomplete" />
+    </div>
+    
+    <!-- Consent Modal -->
+    <ConsentModal IsVisible="IsConsentModalVisible"
+                  CompletedSessionType="ConsentService.CompletedSessionType"
+                  CountdownSeconds="ConsentCountdown"
+                  Options="ConsentOptions"
+                  OnOptionSelected="HandleConsentOptionSelect" />
+    
+    <!-- Keyboard Help Modal -->
+    <KeyboardHelpModal IsVisible="ShowKeyboardHelp"
+                       OnClose="() => ShowKeyboardHelp = false" />
+    
+</div>

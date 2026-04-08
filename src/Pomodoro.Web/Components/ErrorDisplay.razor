@@ -1,0 +1,47 @@
+@using Microsoft.JSInterop
+@using Microsoft.Extensions.Logging
+
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-icon">@Constants.ErrorDisplay.ErrorIcon</div>
+        <h3>@Constants.ErrorDisplay.ErrorTitle</h3>
+        <p class="error-message">@ErrorMessage</p>
+        <div class="error-actions">
+            <button class="btn btn-primary" @onclick="OnRetry">
+                @Constants.ErrorDisplay.RetryButtonText
+            </button>
+            <button class="btn btn-secondary" @onclick="OnReload">
+                @Constants.ErrorDisplay.ReloadButtonText
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Exception? Exception { get; set; }
+
+    [Parameter]
+    public EventCallback OnRetry { get; set; }
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
+
+    [Inject]
+    private ILogger<ErrorDisplay> Logger { get; set; } = default!;
+
+    private string ErrorMessage => Exception?.Message ?? Constants.ErrorDisplay.DefaultErrorMessage;
+
+    protected override void OnParametersSet()
+    {
+        if (Exception != null)
+        {
+            Logger.LogError(Exception, Constants.Messages.LogErrorCaughtByBoundary);
+        }
+    }
+
+    private async Task OnReload()
+    {
+        await JSRuntime.InvokeVoidAsync("location.reload");
+    }
+}

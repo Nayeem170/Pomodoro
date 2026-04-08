@@ -1,0 +1,37 @@
+@using Pomodoro.Web.Models
+@using Pomodoro.Web.Pages
+
+<div class="weekly-view">
+    <div class="date-navigator-container">
+        <WeekNavigator SelectedWeekStart="SelectedWeekStart" 
+                       OnWeekChanged="OnWeekChanged" />
+    </div>
+    
+    <WeeklySummarySection WeeklyStats="WeeklyStats" />
+    
+    <div class="weekly-chart-section">
+        <div class="section-header">
+            <h2>@Constants.Layout.WeeklyTrendTitle</h2>
+        </div>
+        <WeeklyMiniChart DailyFocusMinutes="WeeklyFocusMinutes"
+                         BreakDailyMinutes="WeeklyBreakMinutes"
+                         WeekStartDate="SelectedWeekStart" />
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public DateTime SelectedWeekStart { get; set; }
+    
+    [Parameter]
+    public WeeklyStats? WeeklyStats { get; set; }
+    
+    [Parameter]
+    public Dictionary<DateTime, int> WeeklyFocusMinutes { get; set; } = new();
+    
+    [Parameter]
+    public Dictionary<DateTime, int> WeeklyBreakMinutes { get; set; } = new();
+    
+    [Parameter]
+    public EventCallback<DateTime> OnWeekChanged { get; set; }
+}

@@ -1,0 +1,43 @@
+@using Pomodoro.Web.Models
+@using Pomodoro.Web.Pages
+
+<div class="weekly-summary-section">
+    <div class="section-header">
+        <h2>Daily Summary</h2>
+    </div>
+    <div class="weekly-stats">
+        <div class="stat">
+            <span class="stat-value">@FormatFocusTime(CurrentStats?.FocusMinutes ?? 0)</span>
+            <span class="stat-label">Minutes Focused</span>
+        </div>
+        <div class="stat">
+            <span class="stat-value">@(CurrentStats?.PomodoroCount ?? 0)</span>
+            <span class="stat-label">Pomodoros</span>
+        </div>
+        <div class="stat">
+            <span class="stat-value">@(CurrentStats?.TasksWorkedOn ?? 0)</span>
+            <span class="stat-label">Tasks Worked On</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public DailyStatsSummary? CurrentStats { get; set; }
+
+    [Inject]
+    protected HistoryPagePresenterService HistoryPagePresenterService { get; set; } = default!;
+
+    /// <summary>
+    /// Format focus time for display
+    /// </summary>
+    internal string FormatFocusTime(int minutes)
+    {
+        // DIAGNOSTIC: Check if HistoryPagePresenterService is null
+        if (HistoryPagePresenterService == null)
+        {
+            return minutes.ToString();
+        }
+        return HistoryPagePresenterService.FormatFocusTime(minutes);
+    }
+}

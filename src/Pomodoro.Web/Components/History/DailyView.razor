@@ -1,0 +1,45 @@
+@using Pomodoro.Web.Models
+@using Pomodoro.Web.Pages
+
+<div class="daily-view">
+    <div class="date-navigator-container">
+        <DateNavigator SelectedDate="SelectedDate" 
+                       OnDateChanged="OnDateChanged" />
+    </div>
+    
+    <DailySummarySection CurrentStats="CurrentStats" />
+    
+    <div class="history-content">
+        <div class="time-distribution-section">
+            <TimeDistributionChart SelectedDate="SelectedDate" />
+        </div>
+        
+        <TimelineSection Activities="Activities" 
+                        HasMoreActivities="HasMoreActivities"
+                        IsLoadingMore="IsLoadingMore"
+                        OnLoadMore="OnLoadMore" />
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public DateTime SelectedDate { get; set; }
+    
+    [Parameter]
+    public DailyStatsSummary? CurrentStats { get; set; }
+    
+    [Parameter]
+    public List<ActivityRecord> Activities { get; set; } = new();
+    
+    [Parameter]
+    public bool HasMoreActivities { get; set; }
+    
+    [Parameter]
+    public bool IsLoadingMore { get; set; }
+    
+    [Parameter]
+    public EventCallback<DateTime> OnDateChanged { get; set; }
+    
+    [Parameter]
+    public EventCallback OnLoadMore { get; set; }
+}

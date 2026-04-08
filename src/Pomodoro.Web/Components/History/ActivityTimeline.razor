@@ -1,0 +1,18 @@
+@inherits ActivityTimelineBase
+
+@if (Activities.Count == 0)
+{
+    <div class="empty-state">
+        <span class="empty-icon">📭</span>
+        <p>No activities for this day</p>
+    </div>
+}
+else
+{
+    <div class="activity-timeline">
+        @foreach (var activity in Activities)
+        {
+            <ActivityItem Activity="activity" />
+        }
+    </div>
+}

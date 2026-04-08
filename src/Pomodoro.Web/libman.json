@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/libman.json",
+  "version": "1.0",
+  "defaultProvider": "jsdelivr",
+  "libraries": [
+    {
+      "library": "chart.js@4.4.1",
+      "destination": "wwwroot/lib/chart.js",
+      "files": [
+        "dist/chart.umd.min.js",
+        "dist/chart.umd.js.map"
+      ]
+    },
+    {
+      "library": "bootstrap@5.3.3",
+      "destination": "wwwroot/lib/bootstrap",
+      "files": [
+        "dist/css/bootstrap.min.css",
+        "dist/css/bootstrap.min.css.map",
+        "dist/js/bootstrap.bundle.min.js",
+        "dist/js/bootstrap.bundle.min.js.map"
+      ]
+    }
+  ]
+}

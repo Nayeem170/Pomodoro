@@ -1,0 +1,64 @@
+@using Microsoft.AspNetCore.Components
+@using Pomodoro.Web.Models
+
+<div class="history-tabs" role="tablist">
+    <button class="history-tab @(ActiveTab == HistoryTab.Daily ? Constants.UI.HistoryTabActiveClass : "")"
+            @onclick="OnDailyTabClick"
+            @onkeydown="OnKeyDown"
+            aria-selected="@(ActiveTab == HistoryTab.Daily ? "true" : "false")"
+            role="tab"
+            tabindex="@(ActiveTab == HistoryTab.Daily ? "0" : "-1")"
+            id="daily-tab">
+        @Constants.History.DailyTabLabel
+    </button>
+    <button class="history-tab @(ActiveTab == HistoryTab.Weekly ? Constants.UI.HistoryTabActiveClass : "")"
+            @onclick="OnWeeklyTabClick"
+            @onkeydown="OnKeyDown"
+            aria-selected="@(ActiveTab == HistoryTab.Weekly ? "true" : "false")"
+            role="tab"
+            tabindex="@(ActiveTab == HistoryTab.Weekly ? "0" : "-1")"
+            id="weekly-tab">
+        @Constants.History.WeeklyTabLabel
+    </button>
+</div>
+
+@code {
+    [Parameter]
+    public HistoryTab ActiveTab { get; set; }
+
+    [Parameter]
+    public EventCallback<HistoryTab> OnTabChanged { get; set; }
+
+    protected void OnDailyTabClick()
+    {
+        if (ActiveTab != HistoryTab.Daily)
+        {
+            ActiveTab = HistoryTab.Daily;
+            OnTabChanged.InvokeAsync(HistoryTab.Daily);
+        }
+    }
+
+    protected void OnWeeklyTabClick()
+    {
+        if (ActiveTab != HistoryTab.Weekly)
+        {
+            ActiveTab = HistoryTab.Weekly;
+            OnTabChanged.InvokeAsync(HistoryTab.Weekly);
+        }
+    }
+
+    protected async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == Constants.Keys.ArrowLeft || e.Key == Constants.Keys.ArrowRight)
+        {
+            // Switch to the other tab
+            var newTab = ActiveTab == HistoryTab.Daily ? HistoryTab.Weekly : HistoryTab.Daily;
+            
+            if (ActiveTab != newTab)
+            {
+                ActiveTab = newTab;
+                await OnTabChanged.InvokeAsync(newTab);
+            }
+        }
+    }
+}
