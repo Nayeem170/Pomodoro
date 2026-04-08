@@ -200,14 +200,12 @@ public partial class ActivityServiceTests
         public async Task ComputeDailyStats_WithActivitiesInDifferentTimezones_HandlesLocalTimeCorrectly()
         {
             // Arrange
-            var date = new DateTime(2024, 6, 15);
+            var date = new DateTime(2024, 6, 15, 0, 0, 0, DateTimeKind.Utc);
             var activities = new List<ActivityRecord>
             {
-                // These are all on the same date in local time
-                new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date.AddHours(10), DurationMinutes = 25 },
-                new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date.AddHours(23).AddMinutes(59), DurationMinutes = 25 },
-                // This one is on the next day in local time
-                new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date.AddDays(1), DurationMinutes = 25 }
+                new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = new DateTime(2024, 6, 15, 10, 0, 0, DateTimeKind.Utc), DurationMinutes = 25 },
+                new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = new DateTime(2024, 6, 15, 23, 59, 0, DateTimeKind.Utc), DurationMinutes = 25 },
+                new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = new DateTime(2024, 6, 16, 0, 0, 0, DateTimeKind.Utc), DurationMinutes = 25 }
             };
             
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
@@ -230,10 +228,12 @@ public partial class ActivityServiceTests
             var focusMinutesProperty = result?.GetType().GetProperty("FocusMinutes");
             var breakMinutesProperty = result?.GetType().GetProperty("BreakMinutes");
             
-            // The actual implementation might be counting only 1 pomodoro, so adjust the test
+            // ToLocalTime() converts UTC to local; on CI (UTC) both 10:00 and 23:59 fall on June 15
             var actualPomodoroCount = pomodoroCountProperty?.GetValue(result);
-            Assert.Equal(1, actualPomodoroCount); // Adjusted to actual behavior
-            Assert.Equal(25, focusMinutesProperty?.GetValue(result)); // Only one 25-minute pomodoro
+            var localDate = date.ToLocalTime().Date;
+            var expectedCount = activities.Count(a => a.CompletedAt.ToLocalTime().Date == localDate);
+            Assert.Equal(expectedCount, actualPomodoroCount);
+            Assert.Equal(expectedCount * 25, focusMinutesProperty?.GetValue(result));
             Assert.Equal(0, breakMinutesProperty?.GetValue(result));
         }
 
