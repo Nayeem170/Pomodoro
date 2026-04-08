@@ -2,11 +2,6 @@ name: Deploy Coverage Reports
 
 on:
   workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch to run reports on'
-        required: false
-        default: 'main'
 
 permissions:
   contents: read
@@ -22,8 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.branch || 'main' }}
 
       - uses: actions/setup-dotnet@v4
         with:
