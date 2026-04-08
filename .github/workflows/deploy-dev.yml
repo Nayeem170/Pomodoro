@@ -38,7 +38,7 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Run unit tests
-        run: dotnet test tests/Pomodoro.Web.Tests tests/Pomodoro.Web.Tests.Components --configuration Release --no-build --verbosity normal
+        run: dotnet test Pomodoro.sln --configuration Release --no-build --verbosity normal
 
       - name: Publish Blazor WASM app
         run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
