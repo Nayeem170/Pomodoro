@@ -38,7 +38,7 @@ jobs:
         run: rm -f bin/e2e-publish/wwwroot/_redirects bin/e2e-publish/wwwroot/_headers
 
       - name: Run e2e tests
-        run: npx playwright test --reporter=list
+        run: npx playwright test --reporter=list,html
         env:
           CI: true
 
