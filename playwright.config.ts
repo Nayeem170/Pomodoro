@@ -4,9 +4,11 @@ export default defineConfig({
   testDir: './tests/e2e',
   // Run tests serially to avoid server issues with parallel execution
   fullyParallel: false,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 1 : 0,
   // Use single worker to avoid server connection issues
   workers: 1,
+  // Fail fast on first test failure in CI to avoid wasting time
+  timeout: process.env.CI ? 30000 : 0,
   reporter: [
     ['html'],
     ['json', { outputFile: 'test-results/playwright-results.json' }],
