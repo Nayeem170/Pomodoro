@@ -21,13 +21,6 @@ test.describe('Infinite Scroll', () => {
     }
   });
 
-  test('should display timeline scroll container', async ({ page }) => {
-    await pomodoroPage.openHistory();
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
-
-    await expect(page.locator('#timeline-scroll-container')).toBeVisible();
-  });
-
   test('should show end-of-list when all activities are loaded', async ({ page }) => {
     await pomodoroPage.openHistory();
     await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });

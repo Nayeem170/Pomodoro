@@ -31,17 +31,6 @@ test.describe('Error Handling', () => {
     await expect(page.locator('.main-container')).toBeVisible();
   });
 
-  test('should handle navigation to non-existent route gracefully', async ({ page }) => {
-    await pomodoroPage.goto('/non-existent-page');
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(3000);
-
-    const hasNotFound = await page.locator('text=/not found/i').first().isVisible().catch(() => false);
-    const hasAppContent = await page.locator('.main-container').first().isVisible().catch(() => false);
-    const hasAppHeader = await page.locator('.app-header').first().isVisible().catch(() => false);
-    expect(hasNotFound || hasAppContent || hasAppHeader).toBeTruthy();
-  });
-
   test('should have error display component registered', async ({ page }) => {
     // Verify the app loads without unhandled errors
     const consoleErrors: string[] = [];

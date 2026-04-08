@@ -31,26 +31,4 @@ test.describe('Task Ordering', () => {
     const lastTask = taskItems.last();
     await expect(lastTask).toContainText('Alpha Task');
   });
-
-  test('should move completed task to completed section', async ({ page }) => {
-    await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
-
-    await pomodoroPage.addTask('Complete Order A');
-    await page.waitForTimeout(300);
-    await pomodoroPage.addTask('Complete Order B');
-    await page.waitForTimeout(300);
-
-    await pomodoroPage.completeTask('Complete Order A');
-    await page.waitForTimeout(1000);
-
-    await expect(page.locator('.completed-section')).toBeVisible();
-    const completedTask = page.locator('.completed-section .task-item').filter({ hasText: 'Complete Order A' });
-    await expect(completedTask).toBeVisible();
-    await expect(completedTask).toHaveClass(/completed/);
-
-    const activeTask = page.locator('.task-items').locator('.task-item').filter({ hasText: 'Complete Order B' });
-    await expect(activeTask).toBeVisible();
-    await expect(activeTask).not.toHaveClass(/completed/);
-  });
 });

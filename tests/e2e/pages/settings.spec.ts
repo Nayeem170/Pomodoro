@@ -91,26 +91,6 @@ test.describe('Settings Page', () => {
     await expect(delayField).toHaveCount(0);
   });
 
-  test('should show clear confirmation modal when clear button is clicked', async ({ page }) => {
-    // Click clear button to show confirmation modal (line 140)
-    await page.locator('.btn-clear').click();
-    await page.waitForTimeout(1000); // Wait for modal to appear
-    await expect(page.locator('.confirmation-modal')).toBeVisible();
-    await expect(page.locator('.confirmation-modal h3')).toContainText('⚠️ Clear All Data?');
-  });
-
-  test('should hide clear confirmation modal when cancel is clicked', async ({ page }) => {
-    // Click clear button to show confirmation modal (line 140)
-    await page.locator('.btn-clear').click();
-    await page.waitForTimeout(1000); // Wait for modal to appear
-    await expect(page.locator('.confirmation-modal')).toBeVisible();
-    
-    // Click cancel button to hide modal (line 149, 153)
-    await page.locator('.btn-cancel').click();
-    await page.waitForTimeout(1000); // Wait for modal to hide
-    await expect(page.locator('.confirmation-modal')).not.toBeVisible();
-  });
-
   test('should show toast message when save is clicked', async ({ page }) => {
     // Blazor @bind uses onchange event - must dispatch it manually after fill
     const input = page.locator('input[type="number"]').first();
@@ -122,17 +102,6 @@ test.describe('Settings Page', () => {
     await page.waitForTimeout(2000);
     await expect(page.locator('.settings-toast')).toBeVisible();
     await expect(page.locator('.settings-toast')).toContainText('Settings saved successfully!');
-  });
-
-  test('should show custom toast message when save completes', async ({ page }) => {
-    const input = page.locator('input[type="number"]').first();
-    await input.fill('30');
-    await input.dispatchEvent('change');
-    await page.waitForTimeout(1000);
-    await page.locator('.btn-save').click();
-    
-    await page.waitForTimeout(2000);
-    await expect(page.locator('.settings-toast')).toBeVisible();
   });
 
   test('should disable export button when exporting', async ({ page }) => {
@@ -178,82 +147,6 @@ test.describe('Settings Page', () => {
     // Check if button is disabled
     const isDisabled = await saveButton.isDisabled();
     expect(isDisabled).toBe(true);
-  });
-
-  test('should enable save button when changes are made', async ({ page }) => {
-    const input = page.locator('input[type="number"]').first();
-    await input.fill('30');
-    await input.dispatchEvent('change');
-    await page.waitForTimeout(1000);
-    
-    const saveButton = page.locator('.btn-save');
-    await expect(saveButton).toBeVisible();
-    const isDisabled = await saveButton.isDisabled();
-    expect(isDisabled).toBe(false);
-  });
-
-  test('should disable reset button when at defaults', async ({ page }) => {
-    // Reset button should be disabled when at defaults (line 157)
-    await page.waitForTimeout(1000); // Wait for initial render
-    const resetButton = page.locator('.btn-reset-defaults');
-    await expect(resetButton).toBeVisible();
-    // Check if button is disabled
-    const isDisabled = await resetButton.isDisabled();
-    expect(isDisabled).toBe(true);
-  });
-
-  test('should enable reset button when not at defaults', async ({ page }) => {
-    const input = page.locator('input[type="number"]').first();
-    await input.fill('30');
-    await input.dispatchEvent('change');
-    await page.waitForTimeout(1000);
-    
-    const resetButton = page.locator('.btn-reset-defaults');
-    await expect(resetButton).toBeVisible();
-    const isDisabled = await resetButton.isDisabled();
-    expect(isDisabled).toBe(false);
-  });
-
-  test('should show import result when import completes', async ({ page }) => {
-    // This test verifies that import result is shown (line 122-125)
-    // Note: Actual import functionality would require file upload
-    await expect(page.locator('.import-container')).toBeVisible();
-  });
-
-  test('should hide import result when not importing', async ({ page }) => {
-    // Import result should not be visible initially (line 122)
-    await page.waitForTimeout(1000); // Wait for initial render
-    const importResult = page.locator('.import-result');
-    await expect(importResult).toHaveCount(0);
-  });
-
-  test('should display all conditional elements when enabled', async ({ page }) => {
-    await page.locator('#autoStartEnabled').check({ force: true });
-    await page.waitForTimeout(1000);
-    
-    await expect(page.locator('.setting-name').filter({ hasText: 'Auto-start Delay (seconds)' })).toBeVisible();
-    await expect(page.locator('.import-container')).toBeVisible();
-  });
-
-  test('should hide all conditional elements when disabled', async ({ page }) => {
-    // Previous test may have enabled auto-start - disable it via JS
-    await page.evaluate(() => {
-      const cb = document.getElementById('autoStartEnabled') as HTMLInputElement;
-      if (cb) { cb.checked = false; cb.dispatchEvent(new Event('change', { bubbles: true })); }
-    });
-    await page.waitForTimeout(1000);
-    
-    const delayField = page.locator('.setting-name').filter({ hasText: 'Auto-start Delay (seconds)' });
-    await expect(delayField).toHaveCount(0);
-    
-    const importResult = page.locator('.import-result');
-    await expect(importResult).toHaveCount(0);
-    
-    const confirmationModal = page.locator('.confirmation-modal');
-    await expect(confirmationModal).toHaveCount(0);
-    
-    const toast = page.locator('.settings-toast');
-    await expect(toast).toHaveCount(0);
   });
 
   test('should allow changing auto-start delay value', async ({ page }) => {

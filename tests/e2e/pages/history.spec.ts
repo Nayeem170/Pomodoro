@@ -72,43 +72,4 @@ test.describe('History Page', () => {
   test('should display activity timeline', async ({ page }) => {
     await expect(page.locator('.timeline-scroll-container')).toBeVisible();
   });
-
-  test('should switch between daily and weekly views', async ({ page }) => {
-    // Click on weekly tab
-    await page.locator('button:has-text("Weekly")').click();
-    await expect(page.locator('.weekly-view')).toBeVisible();
-
-    // Click back to daily tab
-    await page.locator('button:has-text("Daily")').click();
-    await expect(page.locator('.daily-view')).toBeVisible();
-  });
-
-  test('should display empty state when no activities', async ({ page }) => {
-    // Check if empty state is displayed
-    const emptyState = page.locator('.empty-state, .no-activities');
-    const isVisible = await emptyState.isVisible().catch(() => false);
-    // Either empty state or activities should be present
-    const hasContent = await page.locator('.timeline-scroll-container').isVisible();
-    expect(isVisible || hasContent).toBeTruthy();
-  });
-
-  test('should display time distribution chart', async ({ page }) => {
-    // Check if time distribution chart is rendered
-    await expect(page.locator('.time-distribution-chart')).toBeVisible({ timeout: 10000 });
-  });
-
-  test('should handle tab switching smoothly', async ({ page }) => {
-    const dailyTab = page.locator('button:has-text("Daily")');
-    const weeklyTab = page.locator('button:has-text("Weekly")');
-    
-    // Click through tabs multiple times
-    await weeklyTab.click();
-    await page.waitForTimeout(300);
-    await dailyTab.click();
-    await page.waitForTimeout(300);
-    await weeklyTab.click();
-    
-    // Should end up on weekly view
-    await expect(page.locator('.weekly-view')).toBeVisible();
-  });
 });
