@@ -41,7 +41,7 @@ jobs:
         run: dotnet test --configuration Release --no-build --verbosity normal
 
       - name: Publish Blazor WASM app
-        run: dotnet publish src/Pomodoro.Web -c Release -o ./publish
+        run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
 
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
@@ -55,7 +55,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: deployment-files
-          path: publish/wwwroot/
+          path: bin/e2e-publish/wwwroot/
           retention-days: 1
 
   deploy:
