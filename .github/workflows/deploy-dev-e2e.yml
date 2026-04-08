@@ -1,9 +1,12 @@
 name: Dev E2E Tests
 
 on:
-  push:
-    branches: [develop]
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to run e2e tests on'
+        required: false
+        default: 'develop'
 
 permissions:
   contents: read
@@ -18,6 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || 'develop' }}
 
       - uses: actions/setup-dotnet@v4
         with:
