@@ -1,0 +1,62 @@
+name: Dev E2E Tests
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-dev-e2e
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Build & E2E Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Restore NuGet packages
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run unit tests
+        run: dotnet test Pomodoro.sln --configuration Release --no-build --verbosity normal
+
+      - name: Publish Blazor WASM app
+        run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Remove Cloudflare Pages config for e2e
+        run: rm -f bin/e2e-publish/wwwroot/_redirects bin/e2e-publish/wwwroot/_headers
+
+      - name: Run e2e tests
+        run: npx playwright test --reporter=list
+        env:
+          CI: true
+
+      - name: Upload e2e report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: playwright-report/
+          retention-days: 7

@@ -1,4 +1,4 @@
-name: Dev Build, Test & Deploy
+name: Dev Deploy
 
 on:
   push:
@@ -14,22 +14,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
-    name: Build & Test
+  build-and-deploy:
+    name: Build, Test & Deploy
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    environment:
+      name: development
+      url: ${{ steps.deploy.outputs.deployment-url }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "9.0.x"
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-
-      - name: Install npm dependencies
-        run: npm ci
 
       - name: Restore NuGet packages
         run: dotnet restore
@@ -41,40 +38,7 @@ jobs:
         run: dotnet test Pomodoro.sln --configuration Release --no-build --verbosity normal
 
       - name: Publish Blazor WASM app
-        run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
-
-      - name: Upload deployment artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: deployment-files
-          path: bin/e2e-publish/wwwroot/
-          retention-days: 1
-
-      - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
-
-      - name: Remove Cloudflare Pages config for e2e
-        run: rm -f bin/e2e-publish/wwwroot/_redirects bin/e2e-publish/wwwroot/_headers
-
-      - name: Run e2e tests
-        run: npx playwright test --reporter=list
-        env:
-          CI: true
-
-  deploy:
-    name: Deploy to Cloudflare Pages (Preview)
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-    environment:
-      name: development
-      url: ${{ steps.deploy.outputs.deployment-url }}
-    steps:
-      - name: Download deployment artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: deployment-files
-          path: deployment/wwwroot/
+        run: dotnet publish src/Pomodoro.Web -c Release -o ./publish
 
       - name: Deploy to Cloudflare Pages
         id: deploy
@@ -82,4 +46,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy deployment/wwwroot --project-name=pomodoro --branch=develop
+          command: pages deploy publish/wwwroot --project-name=pomodoro --branch=develop
