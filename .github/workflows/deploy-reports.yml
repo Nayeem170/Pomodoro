@@ -2,7 +2,7 @@ name: Deploy Coverage Reports
 
 on:
   push:
-    branches: [develop, main]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
