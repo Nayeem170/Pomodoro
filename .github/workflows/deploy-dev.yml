@@ -46,10 +46,20 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
+      - name: Move Cloudflare Pages files for e2e testing
+        run: |
+          mv bin/e2e-publish/wwwroot/_redirects /tmp/_redirects.bak
+          mv bin/e2e-publish/wwwroot/_headers /tmp/_headers.bak
+
       - name: Run e2e tests
         run: npx playwright test --reporter=list
         env:
           CI: true
+
+      - name: Restore Cloudflare Pages files
+        run: |
+          mv /tmp/_redirects.bak bin/e2e-publish/wwwroot/_redirects
+          mv /tmp/_headers.bak bin/e2e-publish/wwwroot/_headers
 
       - name: Upload deployment artifact
         uses: actions/upload-artifact@v4
