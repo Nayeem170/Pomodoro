@@ -14,7 +14,7 @@ export default defineConfig({
   ],
   use: {
     baseURL: 'http://localhost:5000',
-    headless: false,
+    headless: process.env.CI !== 'true',
     serviceWorkers: 'block',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
