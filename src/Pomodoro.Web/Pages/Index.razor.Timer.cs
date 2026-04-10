@@ -133,6 +133,10 @@ public partial class IndexBase
             else
             {
                 var success = await PipTimerService.OpenAsync();
+                if (!success)
+                {
+                    ErrorMessage = Constants.Messages.PipPopupBlocked;
+                }
                 IsPipOpen = success;
             }
             StateHasChanged();

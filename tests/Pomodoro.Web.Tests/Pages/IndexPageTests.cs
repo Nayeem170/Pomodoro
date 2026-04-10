@@ -866,6 +866,47 @@ namespace Pomodoro.Web.Tests.Pages
         }
 
         [Fact]
+        public async Task IndexPage_TogglePipWhenBlocked_ShowsPopupBlockedError()
+        {
+            // Arrange
+            PipTimerServiceMock
+                .SetupGet(x => x.IsOpen)
+                .Returns(false);
+            PipTimerServiceMock
+                .Setup(x => x.OpenAsync())
+                .ReturnsAsync(false);
+
+            var cut = RenderComponent<Index>();
+
+            // Act
+            await cut.InvokeAsync(() => cut.Instance.HandleTogglePip());
+
+            // Assert
+            cut.Instance.ErrorMessage.Should().Be(Constants.Messages.PipPopupBlocked);
+        }
+
+        [Fact]
+        public async Task IndexPage_TogglePipWhenOpen_DoesNotShowError()
+        {
+            // Arrange
+            PipTimerServiceMock
+                .SetupGet(x => x.IsOpen)
+                .Returns(false);
+            PipTimerServiceMock
+                .Setup(x => x.OpenAsync())
+                .ReturnsAsync(true);
+
+            var cut = RenderComponent<Index>();
+
+            // Act
+            await cut.InvokeAsync(() => cut.Instance.HandleTogglePip());
+
+            // Assert
+            cut.Instance.ErrorMessage.Should().BeNull();
+            cut.Instance.IsPipOpen.Should().BeTrue();
+        }
+
+        [Fact]
         public void IndexPage_DismissErrorThenSetNewError_ShowsBannerAgain()
         {
             // Arrange
