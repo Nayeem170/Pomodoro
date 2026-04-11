@@ -1,4 +1,4 @@
-name: Deploy Coverage Reports
+name: Deploy Reports
 
 on:
   workflow_dispatch:
@@ -13,7 +13,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  coverage:
+    name: Unit Test Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Install dotnet tools
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Run unit tests with coverage
+        run: dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+      - name: Generate coverage report
+        run: reportgenerator "-reports:./coverage/**/coverage.cobertura.xml" "-targetdir:./coverage-report" "-reporttypes:Html"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./coverage-report
+          retention-days: 90
+
+  e2e:
+    name: E2E Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,15 +51,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "18"
-
-      - name: Install dotnet tools
-        run: dotnet tool install --global dotnet-reportgenerator-globaltool
-
-      - name: Run unit tests with coverage
-        run: dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage
-
-      - name: Generate coverage report
-        run: reportgenerator "-reports:./coverage/**/coverage.cobertura.xml" "-targetdir:./site/coverage" "-reporttypes:Html"
 
       - name: Install npm dependencies
         run: npm ci
@@ -47,8 +64,31 @@ jobs:
       - name: Run e2e tests
         run: npx playwright test --reporter=html --output ./e2e-results
 
-      - name: Copy Playwright report
-        run: cp -r playwright-report ./site/e2e
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: playwright-report
+          retention-days: 90
+
+  pages:
+    name: Deploy to GitHub Pages
+    needs: [coverage, e2e]
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: ./site/coverage
+
+      - name: Download e2e report
+        uses: actions/download-artifact@v4
+        with:
+          name: e2e-report
+          path: ./site/e2e
 
       - name: Create index page
         run: |
@@ -71,11 +111,11 @@ jobs:
           <body>
             <h1>Pomodoro Reports</h1>
             <div>
-              <a href="/coverage/index.html">
+              <a href="/Pomodoro/coverage/index.html">
                 <div class="label">Unit & Component Tests</div>
                 <div class="title">Coverage Report</div>
               </a>
-              <a href="/e2e/index.html">
+              <a href="/Pomodoro/e2e/index.html">
                 <div class="label">E2E Tests</div>
                 <div class="title">Playwright Report</div>
               </a>
@@ -84,30 +124,9 @@ jobs:
           </html>
           EOF
 
-      - name: Upload coverage report artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: ./site/coverage
-          retention-days: 90
-
-      - name: Upload e2e report artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-report
-          path: ./site/e2e
-          retention-days: 90
-
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./site
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - id: deployment
         uses: actions/deploy-pages@v4
