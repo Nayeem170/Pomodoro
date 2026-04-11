@@ -1,4 +1,4 @@
-﻿@inherits LayoutComponentBase
+﻿@inherits MainLayoutBase
 @using Pomodoro.Web.Components
 @inject LayoutPresenterService LayoutPresenter
 
@@ -45,9 +45,6 @@
 @code {
     private ErrorBoundary? _errorBoundary;
 
-    /// <summary>
-    /// Recovers from a page-level error by resetting the ErrorBoundary
-    /// </summary>
     public void RecoverError()
     {
         _errorBoundary?.Recover();

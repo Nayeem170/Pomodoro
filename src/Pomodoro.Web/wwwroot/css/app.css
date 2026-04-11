@@ -75,6 +75,8 @@ body {
     width: 100%;
     background: linear-gradient(135deg, var(--surface-color) 0%, var(--background-color) 100%);
     border-bottom: 1px solid var(--border-color);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
     padding: 0;
     position: sticky;
     top: 0;
@@ -116,7 +118,8 @@ body {
 .header-tagline {
     font-size: 0.85rem;
     color: var(--text-secondary);
-    margin: 2px 0 0 0;
+    margin: 0;
+    padding-left: 5px;
     letter-spacing: 1px;
 }
 
@@ -155,6 +158,17 @@ body {
     margin: 0 auto;
     width: 100%;
     padding: 15px;
+    transition: opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.app-content.slide-from-right {
+    opacity: 0;
+    transform: translateX(40px);
+}
+
+.app-content.slide-from-left {
+    opacity: 0;
+    transform: translateX(-40px);
 }
 
 /* App Container */
@@ -1382,6 +1396,37 @@ body {
         padding: 15px;
     }
     
+    .header-content-wrapper {
+        padding: 8px 12px;
+    }
+    
+    .header-icon {
+        font-size: 1.4rem;
+    }
+    
+    .header-text {
+        font-size: 1.2rem;
+    }
+    
+    .header-title {
+        gap: 6px;
+    }
+    
+    .header-nav {
+        gap: 2px;
+    }
+    
+    .header-nav a {
+        width: 38px;
+        height: 38px;
+        font-size: 1.4rem;
+        border-radius: 6px;
+    }
+    
+    .header-actions {
+        padding-right: 0;
+    }
+    
     .timer-time {
         font-size: 4rem;
     }
@@ -1405,37 +1450,7 @@ body {
     
     .btn-icon-small.btn-add, .btn-icon-small.btn-cancel {
         flex: 1;
-    }
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-    .app-container {
-        padding: 15px;
-    }
-    
-    .timer-time {
-        font-size: 4rem;
-    }
-    
-    .summary-stats {
-        flex-wrap: wrap;
-    }
-    
-    .stat-item {
-        flex: 1;
-        min-width: 80px;
-    }
-    
-    .add-task-form {
-        flex-wrap: wrap;
-    }
-    
-    .task-input {
-        width: 100%;
-    }
-    
-    .btn-icon-small.btn-add, .btn-icon-small.btn-cancel {
-        flex: 1;
+        min-width: 36px;
+        width: 36px;
     }
 }
