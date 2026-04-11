@@ -96,8 +96,8 @@ dotnet tool run reportgenerator -reports:"**/coverage.cobertura.xml" -targetdir:
 
 | Report | Local | GitHub Pages |
 |--------|-------|-------------|
-| Unit & Component Coverage | [CoverageReport/HtmlReport/index.html](CoverageReport/HtmlReport/index.html) | [GitHub Pages](https://<username>.github.io/<repo>/unit/index.html) |
-| E2E Test Results | [playwright-report/index.html](playwright-report/index.html) | [GitHub Pages](https://<username>.github.io/<repo>/e2e/index.html) |
+| Unit & Component Coverage | [CoverageReport/HtmlReport/index.html](CoverageReport/HtmlReport/index.html) | [GitHub Pages](https://nayeem170.github.io/Pomodoro/coverage/index.html) |
+| E2E Test Results | [playwright-report/index.html](playwright-report/index.html) | [GitHub Pages](https://nayeem170.github.io/Pomodoro/e2e/index.html) |
 
 ## Tech Stack
 
