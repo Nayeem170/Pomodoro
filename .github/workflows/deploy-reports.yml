@@ -84,6 +84,20 @@ jobs:
           </html>
           EOF
 
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./site/coverage
+          retention-days: 90
+
+      - name: Upload e2e report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: ./site/e2e
+          retention-days: 90
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./site
