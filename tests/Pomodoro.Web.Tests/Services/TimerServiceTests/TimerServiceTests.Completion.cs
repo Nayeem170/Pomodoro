@@ -509,6 +509,43 @@ public partial class TimerServiceTests
         }
 
         [Fact]
+        public async Task TimerCompletion_WhenSessionIsNull_DoesNotThrow()
+        {
+            // Arrange
+            var service = CreateService();
+            await service.InitializeAsync();
+
+            AppState.CurrentSession = null;
+
+            // Act - Trigger tick with no session
+            service.OnTimerTickJs();
+            await WaitForCompletionAsync();
+
+            // Assert - Should not throw, no stats updated
+            Assert.Equal(0, AppState.TodayPomodoroCount);
+        }
+
+        [Fact]
+        public async Task TimerCompletion_WhenDisposedDuringLock_DoesNotProcess()
+        {
+            // Arrange
+            var service = CreateService();
+            await service.InitializeAsync();
+
+            var taskId = Guid.NewGuid();
+            await service.StartPomodoroAsync(taskId);
+            AppState.CurrentSession!.RemainingSeconds = 1;
+
+            // Act - Dispose while timer is running
+            await service.DisposeAsync();
+            service.OnTimerTickJs();
+            await WaitForCompletionAsync();
+
+            // Assert - Should not update stats
+            Assert.Equal(0, AppState.TodayPomodoroCount);
+        }
+
+        [Fact]
         public async Task TimerCompletion_WhenMultipleSubscribers_AllAreNotified()
         {
             // Arrange

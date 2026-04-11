@@ -433,5 +433,21 @@ namespace Pomodoro.Web.Tests.Components.Layout
             Assert.Null(exception);
         }
 
+        [Fact]
+        public void Dispose_AfterRender_DisposesDotNetRef()
+        {
+            // Arrange
+            _mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(Array.Empty<NavLinkData>());
+            _mockLayoutPresenter.Setup(x => x.GetCurrentYear()).Returns(2023);
+
+            JSInterop.SetupVoid("swipeNavigation.init");
+
+            // Act - Render triggers OnAfterRenderAsync which sets _dotNetRef
+            var cut = RenderComponent<MainLayout>();
+
+            // Dispose should call _dotNetRef?.Dispose()
+            var exception = Record.Exception(() => cut.Instance.Dispose());
+            Assert.Null(exception);
+        }
     }
 }

@@ -541,4 +541,78 @@ public class TaskItemComponentTests : TestContext
 
         Assert.Equal(taskId, uncompletedId);
     }
+
+    [Fact]
+    public async Task TaskItemComponent_HandleKeyDown_Enter_InvokesOnSelectCallback()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem
+        {
+            Id = taskId,
+            Name = "Test Task",
+            TotalFocusMinutes = 25,
+            PomodoroCount = 2,
+            IsCompleted = false
+        };
+
+        Guid? selectedId = null;
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
+            parameters
+                .Add(p => p.Item, task)
+                .Add(p => p.OnSelect, EventCallback.Factory.Create<Guid>(this, id => selectedId = id)));
+
+        var taskHeader = cut.Find(".task-header");
+        taskHeader.KeyDown("Enter");
+
+        Assert.Equal(taskId, selectedId);
+    }
+
+    [Fact]
+    public async Task TaskItemComponent_HandleKeyDown_Space_InvokesOnSelectCallback()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem
+        {
+            Id = taskId,
+            Name = "Test Task",
+            TotalFocusMinutes = 25,
+            PomodoroCount = 2,
+            IsCompleted = false
+        };
+
+        Guid? selectedId = null;
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
+            parameters
+                .Add(p => p.Item, task)
+                .Add(p => p.OnSelect, EventCallback.Factory.Create<Guid>(this, id => selectedId = id)));
+
+        var taskHeader = cut.Find(".task-header");
+        taskHeader.KeyDown(" ");
+
+        Assert.Equal(taskId, selectedId);
+    }
+
+    [Fact]
+    public async Task TaskItemComponent_HandleKeyDown_OtherKey_DoesNotInvokeOnSelectCallback()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test Task",
+            TotalFocusMinutes = 25,
+            PomodoroCount = 2,
+            IsCompleted = false
+        };
+
+        var selected = false;
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
+            parameters
+                .Add(p => p.Item, task)
+                .Add(p => p.OnSelect, EventCallback.Factory.Create<Guid>(this, _ => selected = true)));
+
+        var taskHeader = cut.Find(".task-header");
+        taskHeader.KeyDown("Tab");
+
+        Assert.False(selected);
+    }
 }

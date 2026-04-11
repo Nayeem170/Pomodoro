@@ -337,6 +337,29 @@ public class TimeDistributionChartTests
             var finalCallCount = mockActivityService.Invocations.Count(x => x.Method.Name == nameof(IActivityService.GetTimeDistribution));
             Assert.Equal(initialCallCount, finalCallCount);
         }
+
+        [Fact]
+        public void OnActivityChanged_WhenNotRendered_DoesNotUpdateChart()
+        {
+            // Arrange - Create component without triggering render lifecycle
+            var mockActivityService = new Mock<IActivityService>();
+            var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
+            
+            mockActivityService
+                .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
+                .Returns(new Dictionary<string, int> { { "Focus", 100 } });
+            
+            JSInterop.Mode = JSRuntimeMode.Loose;
+            Services.AddSingleton(mockActivityService.Object);
+            Services.AddSingleton(new TimeFormatter());
+            Services.AddSingleton(mockLogger.Object);
+
+            // Act - Raise event before component is rendered (_isRendered is false)
+            mockActivityService.Raise(x => x.OnActivityChanged += null);
+
+            // Assert - No calls yet since component hasn't been rendered
+            mockActivityService.Verify(x => x.GetTimeDistribution(It.IsAny<DateTime>()), Times.Never);
+        }
     }
 
     public class UpdateChartAsyncTests : TestContext

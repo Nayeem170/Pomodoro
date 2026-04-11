@@ -402,5 +402,45 @@ public partial class ConsentServiceTests
             var exception = await Record.ExceptionAsync(() => service.HandleTimeoutAsync());
             Assert.Null(exception);
         }
+
+        [Fact]
+        public async Task ProcessCountdownTickAsync_WhenTimerIsNull_ReturnsTrue()
+        {
+            var timerServiceMock = new Mock<ITimerService>();
+            var taskServiceMock = new Mock<ITaskService>();
+            var notificationServiceMock = new Mock<INotificationService>();
+            var sessionOptionsServiceMock = new Mock<ISessionOptionsService>();
+            var loggerMock = new Mock<ILogger<ConsentService>>();
+            var appState = new AppState
+            {
+                Settings = new TimerSettings
+                {
+                    AutoStartEnabled = true,
+                    AutoStartDelaySeconds = 5
+                }
+            };
+
+            sessionOptionsServiceMock
+                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+                .Returns(new List<ConsentOption>());
+
+            sessionOptionsServiceMock
+                .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
+                .Returns(SessionType.Pomodoro);
+
+            var service = new ConsentService(
+                timerServiceMock.Object,
+                taskServiceMock.Object,
+                notificationServiceMock.Object,
+                appState,
+                sessionOptionsServiceMock.Object,
+                loggerMock.Object);
+
+            var method = typeof(ConsentService).GetMethod("ProcessCountdownTickAsync", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            Assert.NotNull(method);
+
+            var result = await (Task<bool>)method.Invoke(service, null)!;
+            Assert.True(result);
+        }
     }
 }
