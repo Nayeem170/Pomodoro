@@ -26,11 +26,7 @@ test.describe('Import Malformed Valid JSON', () => {
       buffer: Buffer.from(malformedJson)
     });
 
-    const importResult = page.locator('.import-result');
-    const toast = page.locator('.settings-toast');
-    const hasResult = await importResult.isVisible().catch(() => false);
-    const hasToast = await toast.isVisible({ timeout: 10000 }).catch(() => false);
-    expect(hasResult || hasToast).toBe(true);
+    await page.waitForSelector('.import-result, .settings-toast', { timeout: 10000 });
   });
 
   test('should show error when importing JSON with wrong data types', async ({ page }) => {
@@ -49,11 +45,7 @@ test.describe('Import Malformed Valid JSON', () => {
       buffer: Buffer.from(wrongTypesJson)
     });
 
-    const importResult = page.locator('.import-result');
-    const toast = page.locator('.settings-toast');
-    const hasResult = await importResult.isVisible().catch(() => false);
-    const hasToast = await toast.isVisible({ timeout: 10000 }).catch(() => false);
-    expect(hasResult || hasToast).toBe(true);
+    await page.waitForSelector('.import-result, .settings-toast', { timeout: 10000 });
   });
 
   test('should show error when importing JSON with empty object', async ({ page }) => {
