@@ -449,5 +449,39 @@ namespace Pomodoro.Web.Tests.Components.Layout
             var exception = Record.Exception(() => cut.Instance.Dispose());
             Assert.Null(exception);
         }
+
+        [Fact]
+        public void RecoverError_WhenErrorBoundarySetToNull_DoesNotThrow()
+        {
+            // Arrange
+            _mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(Array.Empty<NavLinkData>());
+            _mockLayoutPresenter.Setup(x => x.GetCurrentYear()).Returns(2023);
+
+            var cut = RenderComponent<MainLayout>();
+
+            var field = typeof(MainLayout).GetField("_errorBoundary", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            field!.SetValue(cut.Instance, null);
+
+            // Act & Assert
+            var exception = Record.Exception(() => cut.Instance.RecoverError());
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        public void Dispose_WhenDotNetRefIsNull_DoesNotThrow()
+        {
+            // Arrange
+            _mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(Array.Empty<NavLinkData>());
+            _mockLayoutPresenter.Setup(x => x.GetCurrentYear()).Returns(2023);
+
+            var cut = RenderComponent<MainLayout>();
+
+            var dotNetRefField = typeof(MainLayoutBase).GetField("_dotNetRef", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            dotNetRefField!.SetValue(cut.Instance, null);
+
+            // Act & Assert
+            var exception = Record.Exception(() => cut.Instance.Dispose());
+            Assert.Null(exception);
+        }
     }
 }
