@@ -33,7 +33,7 @@ jobs:
         run: dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage
 
       - name: Generate coverage report
-        run: reportgenerator -reports:"./coverage/**/coverage.cobertura.xml" -targetdir ./site/coverage -reporttypes:Html
+        run: reportgenerator "-reports:./coverage/**/coverage.cobertura.xml" "-targetdir:./site/coverage" "-reporttypes:Html"
 
       - name: Install Playwright browsers
         run: npx playwright install chromium
