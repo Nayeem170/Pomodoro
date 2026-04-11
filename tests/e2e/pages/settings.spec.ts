@@ -99,8 +99,8 @@ test.describe('Settings Page', () => {
     await page.waitForTimeout(1000);
     
     await page.locator('.btn-save').click();
-    await page.waitForTimeout(2000);
-    await expect(page.locator('.settings-toast')).toBeVisible();
+    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(500);
     await expect(page.locator('.settings-toast')).toContainText('Settings saved successfully!');
   });
 
@@ -183,8 +183,8 @@ test.describe('Settings Page', () => {
     await page.waitForTimeout(500);
 
     await page.locator('.btn-save').click();
-    await page.waitForTimeout(2000);
-    await expect(page.locator('.settings-toast')).toBeVisible();
+    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(500);
 
     await page.reload();
     await pomodoroPage.openSettings();

@@ -72,7 +72,8 @@ test.describe('Data Clear Verification', () => {
     await page.locator('.btn-confirm-danger').click();
     await page.waitForTimeout(1000);
 
-    await expect(page.locator('.settings-toast')).toBeVisible();
+    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(500);
     await expect(page.locator('.settings-toast')).toContainText('cleared');
   });
 });

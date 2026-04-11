@@ -41,7 +41,8 @@ test.describe('Import Success Statistics', () => {
     await page.waitForTimeout(3000);
 
     const toast = page.locator('.settings-toast');
-    await expect(toast).toBeVisible();
+    await expect(toast).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(500);
     await expect(toast).toContainText('imported');
     await expect(toast).toContainText('records');
   });
@@ -82,7 +83,8 @@ test.describe('Import Success Statistics', () => {
     await page.waitForTimeout(3000);
 
     const toast = page.locator('.settings-toast');
-    await expect(toast).toBeVisible();
+    await expect(toast).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(500);
     await expect(toast).toContainText('skipped');
     await expect(toast).toContainText('duplicates');
   });

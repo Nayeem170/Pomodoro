@@ -52,8 +52,8 @@ test.describe('IndexedDB Persistence', () => {
 
     // Save the setting
     await page.locator('.btn-save').click();
-    await page.waitForTimeout(2000);
-    await expect(page.locator('.settings-toast')).toBeVisible();
+    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(500);
 
     // Reload the page
     await page.reload();

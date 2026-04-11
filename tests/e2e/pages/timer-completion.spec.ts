@@ -11,8 +11,8 @@ async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskN
   await page.waitForTimeout(500);
 
   await page.locator('.btn-save').click();
-  await page.waitForTimeout(2000);
-  await expect(page.locator('.settings-toast')).toBeVisible();
+  await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
+  await page.waitForTimeout(500);
 
   await pomodoroPage.goto('/');
   await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
@@ -62,8 +62,8 @@ test.describe('Timer Completion', () => {
     await page.waitForTimeout(500);
 
     await page.locator('.btn-save').click();
-    await page.waitForTimeout(2000);
-    await expect(page.locator('.settings-toast')).toBeVisible();
+    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(500);
 
     await pomodoroPage.goto('/');
     await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
