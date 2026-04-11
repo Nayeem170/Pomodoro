@@ -114,6 +114,66 @@ public class TimeDistributionChartTests
         }
 
         [Fact]
+        public void FormattedTotalMinutes_WhenTimeFormatterIsNull_ReturnsRawValue()
+        {
+            // Arrange
+            var mockActivityService = new Mock<IActivityService>();
+            var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
+            
+            mockActivityService
+                .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
+                .Returns(new Dictionary<string, int> { { "Focus", 120 } });
+            
+            JSInterop.Mode = JSRuntimeMode.Loose;
+            Services.AddSingleton(mockActivityService.Object);
+            Services.AddSingleton(new TimeFormatter());
+            Services.AddSingleton(mockLogger.Object);
+            
+            var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
+                .Add(p => p.SelectedDate, DateTime.Now));
+
+            // Set TimeFormatter to null via reflection to cover null-conditional branch
+            var tfField = typeof(TimeDistributionChart).GetProperty("TimeFormatter", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            tfField!.SetValue(cut.Instance, null);
+
+            // Act
+            var result = cut.Instance.FormattedTotalMinutes;
+
+            // Assert - TimeFormatter is null, falls through to TotalMinutes.ToString()
+            Assert.Equal("120", result);
+        }
+
+        [Fact]
+        public void FormattedTotalMinutes_WhenFormatTimeThrowsAndLoggerIsNull_ReturnsRawValue()
+        {
+            // Arrange
+            var mockActivityService = new Mock<IActivityService>();
+            var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
+            
+            mockActivityService
+                .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
+                .Returns(new Dictionary<string, int> { { "Focus", 120 } });
+            
+            JSInterop.Mode = JSRuntimeMode.Loose;
+            Services.AddSingleton(mockActivityService.Object);
+            Services.AddSingleton<TimeFormatter>(new ThrowingTimeFormatter());
+            Services.AddSingleton(mockLogger.Object);
+            
+            var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
+                .Add(p => p.SelectedDate, DateTime.Now));
+
+            // Set Logger to null via reflection to cover null-conditional branch
+            var loggerField = typeof(TimeDistributionChart).GetProperty("Logger", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            loggerField!.SetValue(cut.Instance, null);
+
+            // Act
+            var result = cut.Instance.FormattedTotalMinutes;
+
+            // Assert - Catch block returns raw value, Logger?.LogError is null-safe
+            Assert.Equal("120", result);
+        }
+
+        [Fact]
         public void FormattedTotalMinutes_WhenFormatTimeThrows_ReturnsRawValue()
         {
             // Arrange
@@ -359,6 +419,39 @@ public class TimeDistributionChartTests
 
             // Assert - No calls yet since component hasn't been rendered
             mockActivityService.Verify(x => x.GetTimeDistribution(It.IsAny<DateTime>()), Times.Never);
+        }
+
+        [Fact]
+        public void OnActivityChanged_WhenIsRenderedForcedFalse_DoesNotUpdateChart()
+        {
+            // Arrange
+            var mockActivityService = new Mock<IActivityService>();
+            var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
+            
+            mockActivityService
+                .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
+                .Returns(new Dictionary<string, int> { { "Focus", 100 } });
+            
+            JSInterop.Mode = JSRuntimeMode.Loose;
+            Services.AddSingleton(mockActivityService.Object);
+            Services.AddSingleton(new TimeFormatter());
+            Services.AddSingleton(mockLogger.Object);
+            
+            var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
+                .Add(p => p.SelectedDate, DateTime.Now));
+
+            var initialCallCount = mockActivityService.Invocations.Count(x => x.Method.Name == nameof(IActivityService.GetTimeDistribution));
+
+            // Force _isRendered to false via reflection to cover short-circuit branch
+            var isRenderedField = typeof(TimeDistributionChart).GetField("_isRendered", BindingFlags.Instance | BindingFlags.NonPublic);
+            isRenderedField!.SetValue(cut.Instance, false);
+
+            // Act - Raise event while _isRendered is false
+            mockActivityService.Raise(x => x.OnActivityChanged += null);
+
+            // Assert - GetTimeDistribution should not be called
+            var finalCallCount = mockActivityService.Invocations.Count(x => x.Method.Name == nameof(IActivityService.GetTimeDistribution));
+            Assert.Equal(initialCallCount, finalCallCount);
         }
     }
 
