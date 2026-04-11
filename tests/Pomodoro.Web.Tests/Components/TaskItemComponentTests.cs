@@ -561,8 +561,8 @@ public class TaskItemComponentTests : TestContext
                 .Add(p => p.Item, task)
                 .Add(p => p.OnSelect, EventCallback.Factory.Create<Guid>(this, id => selectedId = id)));
 
-        var taskHeader = cut.Find(".task-header");
-        taskHeader.KeyDown("Enter");
+        var taskItem = cut.Find(".task-item");
+        taskItem.KeyDown("Enter");
 
         Assert.Equal(taskId, selectedId);
     }
@@ -586,8 +586,8 @@ public class TaskItemComponentTests : TestContext
                 .Add(p => p.Item, task)
                 .Add(p => p.OnSelect, EventCallback.Factory.Create<Guid>(this, id => selectedId = id)));
 
-        var taskHeader = cut.Find(".task-header");
-        taskHeader.KeyDown(" ");
+        var taskItem = cut.Find(".task-item");
+        taskItem.KeyDown(" ");
 
         Assert.Equal(taskId, selectedId);
     }
@@ -610,8 +610,32 @@ public class TaskItemComponentTests : TestContext
                 .Add(p => p.Item, task)
                 .Add(p => p.OnSelect, EventCallback.Factory.Create<Guid>(this, _ => selected = true)));
 
-        var taskHeader = cut.Find(".task-header");
-        taskHeader.KeyDown("Tab");
+        var taskItem = cut.Find(".task-item");
+        taskItem.KeyDown("Tab");
+
+        Assert.False(selected);
+    }
+
+    [Fact]
+    public async Task TaskItemComponent_HandleKeyDown_Enter_WhenCompleted_DoesNotInvokeOnSelectCallback()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test Task",
+            TotalFocusMinutes = 25,
+            PomodoroCount = 2,
+            IsCompleted = true
+        };
+
+        var selected = false;
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
+            parameters
+                .Add(p => p.Item, task)
+                .Add(p => p.OnSelect, EventCallback.Factory.Create<Guid>(this, _ => selected = true)));
+
+        var taskItem = cut.Find(".task-item");
+        taskItem.KeyDown("Enter");
 
         Assert.False(selected);
     }

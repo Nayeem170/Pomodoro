@@ -76,3 +76,50 @@ public class HistoryPagePresenterServiceTests
         Assert.Equal(minutes.ToString(), result);
     }
 }
+
+public class HistoryPagePaginationStateTests
+{
+    [Fact]
+    public void DefaultValues_AreCorrect()
+    {
+        var state = new HistoryPagePaginationState();
+
+        Assert.Equal(0, state.CurrentSkip);
+        Assert.False(state.HasMoreActivities);
+        Assert.False(state.ObserverInitialized);
+    }
+
+    [Fact]
+    public void Properties_CanBeSetAndGet()
+    {
+        var state = new HistoryPagePaginationState
+        {
+            CurrentSkip = 20,
+            HasMoreActivities = true,
+            ObserverInitialized = true
+        };
+
+        Assert.Equal(20, state.CurrentSkip);
+        Assert.True(state.HasMoreActivities);
+        Assert.True(state.ObserverInitialized);
+    }
+
+    [Fact]
+    public void Properties_CanBeUpdated()
+    {
+        var state = new HistoryPagePaginationState
+        {
+            CurrentSkip = 10,
+            HasMoreActivities = true,
+            ObserverInitialized = true
+        };
+
+        state.CurrentSkip = 30;
+        state.HasMoreActivities = false;
+        state.ObserverInitialized = false;
+
+        Assert.Equal(30, state.CurrentSkip);
+        Assert.False(state.HasMoreActivities);
+        Assert.False(state.ObserverInitialized);
+    }
+}

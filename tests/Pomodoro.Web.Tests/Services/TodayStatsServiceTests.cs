@@ -253,4 +253,92 @@ public class TodayStatsServiceTests
         Assert.Equal(2, tasksWorkedOn);
         _mockActivityService.Verify(x => x.GetTodayActivities(), Times.Exactly(3));
     }
+
+    [Fact]
+    public void GetTodayStats_ReturnsZeroes_WhenNoActivities()
+    {
+        _mockActivityService.Setup(x => x.GetTodayActivities())
+            .Returns(new List<ActivityRecord>());
+
+        var (totalFocusMinutes, pomodoroCount, tasksWorkedOn) = _service.GetTodayStats();
+
+        Assert.Equal(0, totalFocusMinutes);
+        Assert.Equal(0, pomodoroCount);
+        Assert.Equal(0, tasksWorkedOn);
+    }
+
+    [Fact]
+    public void GetTodayStats_ReturnsCorrectValues_WithMixedActivities()
+    {
+        var activities = new List<ActivityRecord>
+        {
+            new ActivityRecord { Type = SessionType.Pomodoro, TaskName = "Task A", DurationMinutes = 25 },
+            new ActivityRecord { Type = SessionType.Pomodoro, TaskName = "Task B", DurationMinutes = 25 },
+            new ActivityRecord { Type = SessionType.Pomodoro, TaskName = "", DurationMinutes = 25 },
+            new ActivityRecord { Type = SessionType.Pomodoro, TaskName = null, DurationMinutes = 25 },
+            new ActivityRecord { Type = SessionType.Pomodoro, TaskName = "Task A", DurationMinutes = 25 },
+            new ActivityRecord { Type = SessionType.ShortBreak, TaskName = "Task C", DurationMinutes = 5 },
+            new ActivityRecord { Type = SessionType.LongBreak, DurationMinutes = 15 }
+        };
+        _mockActivityService.Setup(x => x.GetTodayActivities())
+            .Returns(activities);
+
+        var (totalFocusMinutes, pomodoroCount, tasksWorkedOn) = _service.GetTodayStats();
+
+        Assert.Equal(125, totalFocusMinutes);
+        Assert.Equal(5, pomodoroCount);
+        Assert.Equal(2, tasksWorkedOn);
+    }
+
+    [Fact]
+    public void GetTodayStats_ExcludesBreakSessions()
+    {
+        var activities = new List<ActivityRecord>
+        {
+            new ActivityRecord { Type = SessionType.ShortBreak, DurationMinutes = 5 },
+            new ActivityRecord { Type = SessionType.LongBreak, DurationMinutes = 15 }
+        };
+        _mockActivityService.Setup(x => x.GetTodayActivities())
+            .Returns(activities);
+
+        var (totalFocusMinutes, pomodoroCount, tasksWorkedOn) = _service.GetTodayStats();
+
+        Assert.Equal(0, totalFocusMinutes);
+        Assert.Equal(0, pomodoroCount);
+        Assert.Equal(0, tasksWorkedOn);
+    }
+
+    [Fact]
+    public void GetTodayStats_WithDuplicateTaskNames_CountsDistinct()
+    {
+        var activities = new List<ActivityRecord>
+        {
+            new ActivityRecord { Type = SessionType.Pomodoro, TaskName = "Task A", DurationMinutes = 25 },
+            new ActivityRecord { Type = SessionType.Pomodoro, TaskName = "Task A", DurationMinutes = 25 },
+            new ActivityRecord { Type = SessionType.Pomodoro, TaskName = "Task A", DurationMinutes = 25 }
+        };
+        _mockActivityService.Setup(x => x.GetTodayActivities())
+            .Returns(activities);
+
+        var (_, _, tasksWorkedOn) = _service.GetTodayStats();
+
+        Assert.Equal(1, tasksWorkedOn);
+    }
+
+    [Fact]
+    public void GetTodayStats_WithWhitespaceTaskNames_ExcludesThem()
+    {
+        var activities = new List<ActivityRecord>
+        {
+            new ActivityRecord { Type = SessionType.Pomodoro, TaskName = "Task A", DurationMinutes = 25 },
+            new ActivityRecord { Type = SessionType.Pomodoro, TaskName = "   ", DurationMinutes = 25 },
+            new ActivityRecord { Type = SessionType.Pomodoro, TaskName = "\t", DurationMinutes = 25 }
+        };
+        _mockActivityService.Setup(x => x.GetTodayActivities())
+            .Returns(activities);
+
+        var (_, _, tasksWorkedOn) = _service.GetTodayStats();
+
+        Assert.Equal(1, tasksWorkedOn);
+    }
 }
