@@ -25,13 +25,9 @@ test.describe('Import Malformed Valid JSON', () => {
       mimeType: 'application/json',
       buffer: Buffer.from(malformedJson)
     });
-    await page.waitForTimeout(3000);
 
     const importResult = page.locator('.import-result');
-    const toast = page.locator('.settings-toast');
-    const hasResult = await importResult.isVisible().catch(() => false);
-    const hasToast = await toast.isVisible({ timeout: 10000 }).catch(() => false);
-    expect(hasResult || hasToast).toBe(true);
+    await expect(importResult).toBeVisible({ timeout: 10000 });
   });
 
   test('should show error when importing JSON with wrong data types', async ({ page }) => {
@@ -49,13 +45,9 @@ test.describe('Import Malformed Valid JSON', () => {
       mimeType: 'application/json',
       buffer: Buffer.from(wrongTypesJson)
     });
-    await page.waitForTimeout(3000);
 
     const importResult = page.locator('.import-result');
-    const toast = page.locator('.settings-toast');
-    const hasResult = await importResult.isVisible().catch(() => false);
-    const hasToast = await toast.isVisible({ timeout: 10000 }).catch(() => false);
-    expect(hasResult || hasToast).toBe(true);
+    await expect(importResult).toBeVisible({ timeout: 10000 });
   });
 
   test('should show error when importing JSON with empty object', async ({ page }) => {
@@ -67,12 +59,8 @@ test.describe('Import Malformed Valid JSON', () => {
       mimeType: 'application/json',
       buffer: Buffer.from(emptyJson)
     });
-    await page.waitForTimeout(3000);
 
     const importResult = page.locator('.import-result');
-    const toast = page.locator('.settings-toast');
-    const hasResult = await importResult.isVisible().catch(() => false);
-    const hasToast = await toast.isVisible({ timeout: 10000 }).catch(() => false);
-    expect(hasResult || hasToast).toBe(true);
+    await expect(importResult).toBeVisible({ timeout: 10000 });
   });
 });

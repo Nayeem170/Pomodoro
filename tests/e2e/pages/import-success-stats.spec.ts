@@ -38,13 +38,12 @@ test.describe('Import Success Statistics', () => {
       mimeType: 'application/json',
       buffer: Buffer.from(backupJson)
     });
-    await page.waitForTimeout(3000);
 
     const toast = page.locator('.settings-toast');
     await expect(toast).toBeVisible({ timeout: 10000 });
-    await page.waitForTimeout(500);
     await expect(toast).toContainText('imported');
     await expect(toast).toContainText('records');
+    await page.waitForTimeout(500);
   });
 
   test('should show skipped duplicates count on re-import', async ({ page }) => {
@@ -73,19 +72,21 @@ test.describe('Import Success Statistics', () => {
       mimeType: 'application/json',
       buffer: Buffer.from(backupJson)
     });
-    await page.waitForTimeout(3000);
+
+    const firstToast = page.locator('.settings-toast');
+    await expect(firstToast).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(2500);
 
     await fileInput.setInputFiles({
       name: 'dup-stats-backup.json',
       mimeType: 'application/json',
       buffer: Buffer.from(backupJson)
     });
-    await page.waitForTimeout(3000);
 
     const toast = page.locator('.settings-toast');
     await expect(toast).toBeVisible({ timeout: 10000 });
-    await page.waitForTimeout(500);
     await expect(toast).toContainText('skipped');
     await expect(toast).toContainText('duplicates');
+    await page.waitForTimeout(500);
   });
 });
