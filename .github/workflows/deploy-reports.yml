@@ -7,7 +7,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
-  actions: read
+  actions: write
 
 concurrency:
   group: pages
@@ -79,19 +79,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Cleanup old pages artifacts
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Cleaning github-pages artifacts from current run ${{ github.run_id }}"
-          gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" \
-            --jq '.artifacts[] | select(.name=="github-pages") | .id' \
-            | while read -r art_id; do
-              echo "Deleting artifact $art_id"
-              gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$art_id"
-            done
-          echo "Done cleaning"
-
       - name: Download coverage report
         uses: actions/download-artifact@v4
         with:
@@ -141,6 +128,17 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./site
+
+      - name: Cleanup stale pages artifacts
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" \
+            --jq '.artifacts[] | select(.name=="github-pages") | .id' \
+            | while read -r art_id; do
+              gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$art_id" || true
+            done
 
       - id: deployment
         uses: actions/deploy-pages@v4
