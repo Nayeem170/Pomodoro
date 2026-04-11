@@ -55,6 +55,10 @@ namespace Pomodoro.Web.Tests.Components
             // Register logger mocks
             Services.AddSingleton(new Mock<ILogger<App>>().Object);
             Services.AddSingleton(new Mock<ILogger<IndexPagePresenterService>>().Object);
+            
+            JSInterop.Mode = JSRuntimeMode.Loose;
+            JSInterop.SetupVoid("swipeNavigation.init", _ => true);
+            JSInterop.SetupVoid("swipeNavigation.dispose");
         }
          
         #region Basic Rendering Tests
