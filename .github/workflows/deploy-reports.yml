@@ -36,7 +36,10 @@ jobs:
         run: reportgenerator "-reports:./coverage/**/coverage.cobertura.xml" "-targetdir:./site/coverage" "-reporttypes:Html"
 
       - name: Install Playwright browsers
-        run: npx playwright install chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Install npm dependencies
+        run: npm install
 
       - name: Publish Blazor app for e2e
         run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
