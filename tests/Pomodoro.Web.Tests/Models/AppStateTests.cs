@@ -53,6 +53,25 @@ public class AppStateTests
     }
 
     [Fact]
+    public void Tasks_SetNonListCollection_CopiesToList()
+    {
+        // Arrange
+        var eventCalled = false;
+        _appState.OnStateChanged += () => eventCalled = true;
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Test Task" };
+        IReadOnlyList<TaskItem> collection = new[] { task };
+
+        // Act - Set Tasks to an IEnumerable that is NOT a List<TaskItem>
+        // This covers the `(value as List<TaskItem>) ?? value?.ToList()` branch
+        _appState.Tasks = collection;
+
+        // Assert
+        Assert.Single(_appState.Tasks);
+        Assert.Equal("Test Task", _appState.Tasks[0].Name);
+        Assert.True(eventCalled);
+    }
+
+    [Fact]
     public void Tasks_SetValidList_UpdatesAndNotifies()
     {
         // Arrange

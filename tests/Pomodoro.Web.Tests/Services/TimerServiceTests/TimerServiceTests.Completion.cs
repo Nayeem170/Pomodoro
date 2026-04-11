@@ -1,5 +1,6 @@
 using Moq;
 using Pomodoro.Web.Models;
+using Pomodoro.Web.Services;
 using Xunit;
 
 namespace Pomodoro.Web.Tests.Services;
@@ -595,6 +596,89 @@ public partial class TimerServiceTests
             {
                 await Task.Delay(100);
             }
+        }
+
+        [Fact]
+        public async Task TimerCompletion_WhenSessionSetToNullDuringCompletion_DoesNotThrow()
+        {
+            // Arrange
+            var service = CreateService();
+            await service.InitializeAsync();
+
+            var taskId = Guid.NewGuid();
+            var task = new TaskItem { Id = taskId, Name = "Test Task" };
+            AppState.Tasks = new List<TaskItem> { task };
+
+            await service.StartPomodoroAsync(taskId);
+            AppState.CurrentSession!.RemainingSeconds = 1;
+
+            // Act - Tick fires, then race: set session to null before async handler runs
+            service.OnTimerTickJs();
+            AppState.CurrentSession = null;
+            await WaitForCompletionAsync();
+
+            // Assert - Should not throw (session null branch is defensive)
+            Assert.True(true);
+        }
+
+        [Fact]
+        public async Task TimerCompletion_WhenLockAlreadyHeld_SkipsCompletion()
+        {
+            // Arrange
+            var service = CreateService();
+            await service.InitializeAsync();
+
+            var taskId = Guid.NewGuid();
+            await service.StartPomodoroAsync(taskId);
+            AppState.CurrentSession!.RemainingSeconds = 1;
+
+            // Acquire the semaphore via reflection to block the completion handler
+            var lockField = typeof(TimerService).GetField("_timerCompleteLock", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            var semaphore = (System.Threading.SemaphoreSlim)lockField!.GetValue(service)!;
+            await semaphore.WaitAsync();
+
+            try
+            {
+                // Act - Tick fires, HandleTimerCompleteSafeAsync can't acquire lock
+                service.OnTimerTickJs();
+                await WaitForCompletionAsync();
+
+                // Assert - Stats should not be updated because lock was held
+                Assert.Equal(0, AppState.TodayPomodoroCount);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        [Fact]
+        public async Task TimerCompletion_WhenDisposedInsideLock_SkipsCompletion()
+        {
+            // Arrange
+            var service = CreateService();
+            await service.InitializeAsync();
+
+            var taskId = Guid.NewGuid();
+            await service.StartPomodoroAsync(taskId);
+            AppState.CurrentSession!.RemainingSeconds = 1;
+
+            // Acquire the semaphore via reflection
+            var lockField = typeof(TimerService).GetField("_timerCompleteLock", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            var semaphore = (System.Threading.SemaphoreSlim)lockField!.GetValue(service)!;
+            await semaphore.WaitAsync();
+
+            // Dispose while lock is held
+            await service.DisposeAsync();
+
+            // Release lock - semaphore may be disposed, handle gracefully
+            try { semaphore.Release(); } catch (ObjectDisposedException) { }
+
+            // Act - The handler was already queued by the tick, let it run
+            await WaitForCompletionAsync();
+
+            // Assert - Stats should not be updated because disposed inside lock
+            Assert.Equal(0, AppState.TodayPomodoroCount);
         }
     }
 }

@@ -486,6 +486,25 @@ public class SettingsPresenterServiceTests
         // so we just verify show was called, which covers the start of the lambda.
     }
 
+    [Fact]
+    public async System.Threading.Tasks.Task CreateDelayedToastHideAction_CallsHideAfterDelay()
+    {
+        // Arrange
+        bool hideCalled = false;
+        System.Action<bool> showAction = (val) => { };
+        System.Action hideAction = () => hideCalled = true;
+
+        // Act
+        var delayedAction = _service.CreateDelayedToastHideAction(showAction, hideAction, "message");
+        delayedAction.Invoke();
+
+        // Wait for the toast duration plus buffer
+        await System.Threading.Tasks.Task.Delay(Constants.UI.ToastDurationMs + 500);
+
+        // Assert - hideToast() should have been called (line 260)
+        Assert.True(hideCalled);
+    }
+
     [Theory]
     [InlineData(true, true)]
     [InlineData(false, false)]
