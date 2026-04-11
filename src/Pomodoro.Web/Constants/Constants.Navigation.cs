@@ -36,6 +36,9 @@ public static partial class Constants
         /// <summary>History page title with icon</summary>
         public const string HistoryPageTitle = "📊 History";
         
+        /// <summary>History page subtitle</summary>
+        public const string HistoryPageSubtitle = "Track your productivity over time";
+        
         /// <summary>Settings page route</summary>
         public const string SettingsRoute = "/settings";
         

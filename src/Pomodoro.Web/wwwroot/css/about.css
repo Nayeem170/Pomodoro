@@ -14,13 +14,14 @@
 }
 
 .about-header h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
+    font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 10px;
+    margin-bottom: 0.25rem;
 }
 
 .about-header .subtitle {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
@@ -296,10 +297,6 @@
 
 /* Responsive adjustments */
 @media (max-width: 480px) {
-    .about-header h1 {
-        font-size: 1.6rem;
-    }
-    
     .info-section {
         padding: 20px 15px;
     }

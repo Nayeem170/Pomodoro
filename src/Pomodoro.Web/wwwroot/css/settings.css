@@ -9,7 +9,7 @@
 
 .settings-header {
     margin-bottom: 2rem;
-    text-align: left;
+    text-align: center;
     display: flex;
     flex-direction: column;
 }
@@ -17,15 +17,15 @@
 .settings-header h1 {
     font-size: 1.75rem;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--text-primary, #f3f4f6);
     margin-bottom: 0.5rem;
-    text-align: left;
+    text-align: center;
 }
 
 .settings-tagline {
-    color: #9ca3af;
+    color: var(--text-secondary, #9ca3af);
     font-size: 0.9rem;
-    text-align: left;
+    text-align: center;
 }
 
 .settings-section {
