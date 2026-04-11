@@ -51,6 +51,27 @@ test.describe('Picture-in-Picture Timer', () => {
     expect(timerBefore).toBe(timerAfter);
   });
 
+  test('should show error banner when PiP popup is blocked', async ({ page }) => {
+    // Remove Document PiP API to force fallback popup path
+    await page.evaluate(() => {
+      delete (window as any).documentPictureInPicture;
+    });
+
+    // Override window.open to return null (simulating popup blocked)
+    await page.evaluate(() => {
+      (window as any).open = () => null;
+    });
+
+    const pipButton = page.locator('button:has-text("⧉")');
+    await pipButton.click();
+    await page.waitForTimeout(1000);
+
+    // Error banner should be visible with popup blocked message
+    const errorBanner = page.locator('.error-banner');
+    await expect(errorBanner).toBeVisible({ timeout: 5000 });
+    await expect(errorBanner).toContainText(/pop-up blocked/i);
+  });
+
   test('should handle PiP close gracefully', async ({ page }) => {
     // Simulate PiP window close event
     await page.evaluate(() => {

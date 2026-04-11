@@ -80,8 +80,8 @@ test.describe('Today Summary Updates', () => {
     await expect(summarySection).toBeVisible();
 
     const tasksStat = summarySection.locator('.stat-item').filter({ hasText: /task/i }).locator('.stat-value');
+    await expect(tasksStat).toContainText(/\d+/);
     const statText = await tasksStat.textContent();
-    expect(statText).toBeTruthy();
     const numberMatch = statText?.match(/\d+/);
     expect(numberMatch).not.toBeNull();
     expect(parseInt(numberMatch![0])).toBeGreaterThan(0);
@@ -92,7 +92,10 @@ test.describe('Today Summary Updates', () => {
     await completePomodoroFast(page, pomodoroPage, 'Summary Persist Task');
 
     const summarySection = page.locator('.summary-section');
+    await expect(summarySection).toBeVisible();
+
     const pomodoroStat = summarySection.locator('.stat-item, .summary-stat').filter({ hasText: /pomodoro/i }).first();
+    await expect(pomodoroStat).toContainText(/\d+/);
     const statBefore = await pomodoroStat.textContent();
     const numberBefore = parseInt(statBefore?.match(/\d+/)![0]);
 
@@ -100,7 +103,9 @@ test.describe('Today Summary Updates', () => {
     await pomodoroPage.goto('/');
     await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
 
-    const statAfter = await pomodoroStat.textContent();
+    const pomodoroStatAfter = summarySection.locator('.stat-item, .summary-stat').filter({ hasText: /pomodoro/i }).first();
+    await expect(pomodoroStatAfter).toContainText(/\d+/);
+    const statAfter = await pomodoroStatAfter.textContent();
     const numberAfter = parseInt(statAfter?.match(/\d+/)![0]);
     expect(numberAfter).toBe(numberBefore);
     expect(numberAfter).toBeGreaterThan(0);

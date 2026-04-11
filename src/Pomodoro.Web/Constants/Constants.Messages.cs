@@ -101,6 +101,7 @@ public static partial class Constants
         public const string ErrorResettingTimer = "Error resetting timer";
         public const string ErrorSwitchingSession = "Error switching session";
         public const string ErrorTogglingFloatingTimer = "Error toggling floating timer";
+        public const string PipPopupBlocked = "Pop-up blocked. Please allow pop-ups and redirects for this site to use the floating timer.";
         public const string ErrorInitializing = "Error initializing";
         public const string ErrorSelectingConsentOption = "Error selecting consent option";
         public const string ErrorCheckingPendingNotificationAction = "Error checking pending notification action";

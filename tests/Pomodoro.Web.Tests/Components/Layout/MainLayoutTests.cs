@@ -324,13 +324,112 @@ namespace Pomodoro.Web.Tests.Components.Layout
 
             var cut = RenderComponent<MainLayout>();
 
-            var field = typeof(MainLayout).GetField("_errorBoundary", BindingFlags.Instance | BindingFlags.NonPublic);
-            field!.SetValue(cut.Instance, null);
-
-            // Act
+            // Act - RecoverError with null _errorBoundary should not throw
+            // (it's already null before any error occurs)
             var exception = Record.Exception(() => cut.Instance.RecoverError());
 
             // Assert
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        public void MainLayout_ImplementsIDisposable()
+        {
+            Assert.True(typeof(IDisposable).IsAssignableFrom(typeof(MainLayout)));
+        }
+
+        [Fact]
+        public void NavigateTo_InvokesNavigationManager()
+        {
+            // Arrange
+            _mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(Array.Empty<NavLinkData>());
+            _mockLayoutPresenter.Setup(x => x.GetCurrentYear()).Returns(2023);
+
+            var cut = RenderComponent<MainLayout>();
+
+            // Act & Assert - should not throw
+            var exception = Record.Exception(() => cut.Instance.NavigateTo("/history"));
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        public void MainLayout_RendersHeaderWithAppHeaderClass()
+        {
+            // Arrange
+            _mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(Array.Empty<NavLinkData>());
+            _mockLayoutPresenter.Setup(x => x.GetCurrentYear()).Returns(2023);
+
+            // Act
+            var cut = RenderComponent<MainLayout>();
+
+            // Assert
+            var header = cut.Find(".app-header");
+            Assert.NotNull(header);
+            Assert.Contains("app-header", header.ClassList);
+        }
+
+        [Fact]
+        public void MainLayout_RendersTaglineBelowHeaderTitle()
+        {
+            // Arrange
+            _mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(Array.Empty<NavLinkData>());
+            _mockLayoutPresenter.Setup(x => x.GetCurrentYear()).Returns(2023);
+
+            // Act
+            var cut = RenderComponent<MainLayout>();
+
+            // Assert - tagline is inside header-left, after header-title
+            var headerLeft = cut.Find(".header-left");
+            var markup = headerLeft.InnerHtml;
+            var titleIndex = markup.IndexOf("header-title");
+            var taglineIndex = markup.IndexOf("header-tagline");
+            Assert.True(titleIndex >= 0, "header-title should exist");
+            Assert.True(taglineIndex >= 0, "header-tagline should exist");
+            Assert.True(taglineIndex > titleIndex, "header-tagline should be after header-title");
+        }
+
+        [Fact]
+        public void MainLayout_HeaderContentWrapperContainsNavAndTitle()
+        {
+            // Arrange
+            var navLinks = new[]
+            {
+                new NavLinkData { Href = "/", Icon = "🍅", Title = "Timer", Match = NavLinkMatch.All },
+                new NavLinkData { Href = "/history", Icon = "📊", Title = "History", Match = NavLinkMatch.Prefix },
+                new NavLinkData { Href = "/settings", Icon = "⚙️", Title = "Settings", Match = NavLinkMatch.Prefix },
+                new NavLinkData { Href = "/about", Icon = "ℹ️", Title = "About", Match = NavLinkMatch.Prefix }
+            };
+            _mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(navLinks);
+            _mockLayoutPresenter.Setup(x => x.GetCurrentYear()).Returns(2023);
+
+            // Act
+            var cut = RenderComponent<MainLayout>();
+
+            // Assert - header-content-wrapper has both header-left and header-nav
+            var wrapper = cut.Find(".header-content-wrapper");
+            Assert.NotNull(wrapper);
+            Assert.NotNull(wrapper.QuerySelector(".header-left"));
+            Assert.NotNull(wrapper.QuerySelector(".header-nav"));
+
+            var navLinksCount = wrapper.QuerySelectorAll(".header-nav a").Length;
+            Assert.Equal(4, navLinksCount);
+        }
+
+        [Fact]
+        public void Dispose_CalledMultipleTimes_DoesNotThrow()
+        {
+            // Arrange
+            _mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(Array.Empty<NavLinkData>());
+            _mockLayoutPresenter.Setup(x => x.GetCurrentYear()).Returns(2023);
+
+            var cut = RenderComponent<MainLayout>();
+
+            // Act & Assert
+            var exception = Record.Exception(() =>
+            {
+                cut.Instance.Dispose();
+                cut.Instance.Dispose();
+            });
             Assert.Null(exception);
         }
 

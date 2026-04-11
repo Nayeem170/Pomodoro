@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#374151" />
     <!-- CSP: localhost wildcards are for Blazor WebAssembly hot reload during development. 
          Consider removing 'http://localhost:* ws://localhost:*' for production deployment. -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: wss: http://localhost:* ws://localhost:*; worker-src 'self' blob:;" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob: https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: wss: http://localhost:* ws://localhost:*; worker-src 'self' blob:;" />
     <title>Pomodoro</title>
     <base href="/" />
     
@@ -53,6 +53,7 @@
     <script src="js/pipTimer.js"></script>
     <script src="js/keyboard-shortcuts.js"></script>
     <script src="js/infiniteScroll.js"></script>
+    <script src="js/swipeNavigation.js"></script>
     <script src="js/fileInterop.js"></script>
     <!-- App initialization - service worker registration and URL helpers -->
     <script src="js/app-init.js"></script>

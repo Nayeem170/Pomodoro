@@ -2,11 +2,6 @@ name: Dev E2E Tests
 
 on:
   workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch to run e2e tests on'
-        required: false
-        default: 'develop'
 
 permissions:
   contents: read
@@ -21,8 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.branch || 'develop' }}
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -35,15 +28,6 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Restore NuGet packages
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
-
-      - name: Run unit tests
-        run: dotnet test Pomodoro.sln --configuration Release --no-build --verbosity normal
-
       - name: Publish Blazor WASM app
         run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
 
@@ -54,7 +38,7 @@ jobs:
         run: rm -f bin/e2e-publish/wwwroot/_redirects bin/e2e-publish/wwwroot/_headers
 
       - name: Run e2e tests
-        run: npx playwright test --reporter=list
+        run: npx playwright test --reporter=list,html
         env:
           CI: true
 

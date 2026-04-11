@@ -184,7 +184,11 @@ public class ApplicationStartupService : IApplicationStartupService
     {
         services.AddLogging(builder =>
         {
+#if DEBUG
             builder.SetMinimumLevel(LogLevel.Information);
+#else
+            builder.SetMinimumLevel(LogLevel.Warning);
+#endif
             builder.AddFilter(Constants.Logging.MicrosoftCategory, LogLevel.Warning);
             builder.AddFilter(Constants.Logging.SystemCategory, LogLevel.Warning);
         });

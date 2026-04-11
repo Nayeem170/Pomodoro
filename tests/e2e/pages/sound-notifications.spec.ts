@@ -189,9 +189,15 @@ test.describe('Sound on Timer Completion', () => {
     if (isSoundOn) {
       await page.locator('label[for="soundToggle"]').click();
       await page.waitForTimeout(500);
-      await page.locator('.btn-save').click();
-      await page.waitForTimeout(2000);
+    } else {
+      await page.locator('label[for="soundToggle"]').click();
+      await page.waitForTimeout(500);
+      await page.locator('label[for="soundToggle"]').click();
+      await page.waitForTimeout(500);
     }
+    await page.locator('.btn-save').click();
+    await page.waitForTimeout(2000);
+    await expect(page.locator('.settings-toast')).toBeVisible();
 
     const pomodoroInput = page.locator('input[type="number"]').first();
     await pomodoroInput.fill('1');
