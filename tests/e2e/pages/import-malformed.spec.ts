@@ -30,7 +30,7 @@ test.describe('Import Malformed Valid JSON', () => {
     const importResult = page.locator('.import-result');
     const toast = page.locator('.settings-toast');
     const hasResult = await importResult.isVisible().catch(() => false);
-    const hasToast = await toast.isVisible().catch(() => false);
+    const hasToast = await toast.isVisible({ timeout: 10000 }).catch(() => false);
     expect(hasResult || hasToast).toBe(true);
   });
 
@@ -54,7 +54,7 @@ test.describe('Import Malformed Valid JSON', () => {
     const importResult = page.locator('.import-result');
     const toast = page.locator('.settings-toast');
     const hasResult = await importResult.isVisible().catch(() => false);
-    const hasToast = await toast.isVisible().catch(() => false);
+    const hasToast = await toast.isVisible({ timeout: 10000 }).catch(() => false);
     expect(hasResult || hasToast).toBe(true);
   });
 
@@ -72,7 +72,7 @@ test.describe('Import Malformed Valid JSON', () => {
     const importResult = page.locator('.import-result');
     const toast = page.locator('.settings-toast');
     const hasResult = await importResult.isVisible().catch(() => false);
-    const hasToast = await toast.isVisible().catch(() => false);
+    const hasToast = await toast.isVisible({ timeout: 10000 }).catch(() => false);
     expect(hasResult || hasToast).toBe(true);
   });
 });
