@@ -100,10 +100,12 @@ test.describe('Today Summary Updates', () => {
     const numberBefore = parseInt(statBefore?.match(/\d+/)![0]);
 
     await page.reload();
-    await pomodoroPage.goto('/');
     await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
 
-    const pomodoroStatAfter = summarySection.locator('.stat-item, .summary-stat').filter({ hasText: /pomodoro/i }).first();
+    const summarySectionAfter = page.locator('.summary-section');
+    await expect(summarySectionAfter).toBeVisible({ timeout: 10000 });
+
+    const pomodoroStatAfter = summarySectionAfter.locator('.stat-item, .summary-stat').filter({ hasText: /pomodoro/i }).first();
     await expect(pomodoroStatAfter).toContainText(/\d+/);
     const statAfter = await pomodoroStatAfter.textContent();
     const numberAfter = parseInt(statAfter?.match(/\d+/)![0]);
