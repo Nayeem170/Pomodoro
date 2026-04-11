@@ -3,6 +3,7 @@ using Bunit;
 using Moq;
 using Xunit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Pomodoro.Web.Services;
 using Pomodoro.Web.Components;
 using Microsoft.AspNetCore.Components;
@@ -13,11 +14,14 @@ namespace Pomodoro.Web.Tests.Components;
 public class TimerDisplayCoverageTests : TestContext
 {
     private readonly Mock<ITimerService> _timerServiceMock;
+    private readonly Mock<ILogger<TimerDisplayBase>> _mockLogger;
 
     public TimerDisplayCoverageTests()
     {
         _timerServiceMock = new Mock<ITimerService>();
+        _mockLogger = new Mock<ILogger<TimerDisplayBase>>();
         Services.AddSingleton(_timerServiceMock.Object);
+        Services.AddSingleton(_mockLogger.Object);
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
@@ -104,5 +108,68 @@ public class TimerDisplayCoverageTests : TestContext
         _timerServiceMock.SetupGet(s => s.CurrentSessionType).Returns(sessionType);
         _timerServiceMock.SetupGet(s => s.IsRunning).Returns(isRunning);
         _timerServiceMock.SetupGet(s => s.Settings).Returns(new TimerSettings());
+    }
+
+    [Fact]
+    public async Task UpdateDisplay_CallsStateHasChanged()
+    {
+        SetupTimerService(TimeSpan.FromMinutes(25), SessionType.Pomodoro, false);
+        var cut = RenderComponent<TimerDisplay>();
+
+        var method = typeof(TimerDisplayBase).GetMethod("UpdateDisplay", BindingFlags.Instance | BindingFlags.NonPublic);
+        await cut.InvokeAsync(() => method!.Invoke(cut.Instance, null));
+    }
+
+    [Fact]
+    public void OnTimerTick_WithoutRenderer_LogsError()
+    {
+        var component = new TestableTimerDisplay(
+            _timerServiceMock.Object, _mockLogger.Object);
+
+        var onTimerTick = typeof(TimerDisplayBase).GetMethod("OnTimerTick",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(onTimerTick);
+
+        var errorEvent = new ManualResetEventSlim();
+        _mockLogger
+            .Setup(l => l.Log(LogLevel.Error, It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()))
+            .Callback(() => errorEvent.Set());
+
+        onTimerTick.Invoke(component, null);
+
+        Assert.True(errorEvent.Wait(3000), "Logger.LogError should have been called from catch block");
+    }
+
+    [Fact]
+    public void OnTimerStateChanged_WithoutRenderer_LogsError()
+    {
+        var component = new TestableTimerDisplay(
+            _timerServiceMock.Object, _mockLogger.Object);
+
+        var onTimerStateChanged = typeof(TimerDisplayBase).GetMethod("OnTimerStateChanged",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(onTimerStateChanged);
+
+        var errorEvent = new ManualResetEventSlim();
+        _mockLogger
+            .Setup(l => l.Log(LogLevel.Error, It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()))
+            .Callback(() => errorEvent.Set());
+
+        onTimerStateChanged.Invoke(component, null);
+
+        Assert.True(errorEvent.Wait(3000), "Logger.LogError should have been called from catch block");
+    }
+
+    private class TestableTimerDisplay : TimerDisplayBase
+    {
+        public TestableTimerDisplay(ITimerService timerService, ILogger<TimerDisplayBase> logger)
+        {
+            TimerService = timerService;
+            Logger = logger;
+        }
     }
 }
