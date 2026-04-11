@@ -833,4 +833,40 @@ public class AppStateTests
         Assert.Equal(10, _appState.TodayTaskIdsWorkedOn.Count);
         Assert.Equal(10, _appState.TodayTasksWorkedOn);
     }
+
+        [Fact]
+        public void Tasks_Setter_WithListDirectly_CopiesList()
+        {
+            var tasks = new List<TaskItem>
+            {
+                new() { Id = Guid.NewGuid(), Name = "Task1" }
+            };
+
+            _appState.Tasks = tasks;
+
+            Assert.Single(_appState.Tasks);
+            Assert.Equal(tasks[0].Id, _appState.Tasks[0].Id);
+        }
+
+        [Fact]
+        public void Tasks_Setter_WithIEnumerable_CopiesToList()
+        {
+            var tasks = new List<TaskItem>
+            {
+                new() { Id = Guid.NewGuid(), Name = "Task1" }
+            };
+
+            _appState.Tasks = tasks;
+
+            Assert.Single(_appState.Tasks);
+        }
+
+    [Fact]
+    public void Tasks_Setter_WithNull_SetsEmptyList()
+    {
+        _appState.Tasks = null!;
+
+        Assert.NotNull(_appState.Tasks);
+        Assert.Empty(_appState.Tasks);
+    }
 }

@@ -368,5 +368,19 @@ namespace Pomodoro.Web.Tests.Services
             public string Name { get; set; } = string.Empty;
         }
 
+        [Fact]
+        public async Task GetAllAsync_WhenJsonIsNull_ReturnsEmptyList()
+        {
+            await SetupInitialization();
+
+            var nullJsonElement = JsonDocument.Parse("null").RootElement;
+
+            _mockJsRuntime.Setup(x => x.InvokeAsync<JsonElement>(Constants.IndexedDbJsFunctions.GetAllItems, It.IsAny<object[]>()))
+                .ReturnsAsync(nullJsonElement);
+
+            var result = await _service.GetAllAsync<TestItem>("test-store");
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
     }
 }

@@ -158,5 +158,26 @@ public class SafeTaskRunnerTests
 
             Assert.Null(exception);
         }
+
+        [Fact]
+        public async Task RunAndForgetGeneric_WithNullOnSuccess_DoesNotThrow()
+        {
+            var mockLogger = new Mock<ILogger>();
+            var tcs = new TaskCompletionSource<bool>();
+            Func<Task<string>> task = () =>
+            {
+                tcs.SetResult(true);
+                return Task.FromResult("result");
+            };
+
+            SafeTaskRunner.RunAndForget<string>(
+                task,
+                mockLogger.Object,
+                "TestOperation",
+                null);
+
+            var completed = await Task.WhenAny(tcs.Task, Task.Delay(5000));
+            Assert.True(completed == tcs.Task);
+        }
     }
 }
