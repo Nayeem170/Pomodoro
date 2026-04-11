@@ -2,6 +2,8 @@
 
 A Pomodoro-style focus timer built as a Progressive Web App with Blazor WebAssembly (.NET 9).
 
+**Live Demo:** [pomodoro.bitops.bd](https://pomodoro.bitops.bd)
+
 ## Features
 
 - **Timer** — Pomodoro, short break, and long break sessions with configurable durations
@@ -110,6 +112,10 @@ dotnet tool run reportgenerator -reports:"**/coverage.cobertura.xml" -targetdir:
 | E2E Tests | Playwright (Chromium) |
 | Coverage | Coverlet, ReportGenerator |
 
+## Deployment
+
+Hosted on Cloudflare Pages with GitHub Actions CI/CD. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for pipeline details, infrastructure, and configuration.
+
 ## License
 
-Private repository.
+MIT
