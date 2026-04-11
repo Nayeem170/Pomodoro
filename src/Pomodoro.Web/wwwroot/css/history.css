@@ -46,18 +46,25 @@
 
 .history-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     margin-bottom: 1.5rem;
+    flex-direction: column;
 }
 
 .history-header h1 {
     font-size: 1.75rem;
     font-weight: 600;
     color: var(--text-primary, #f3f4f6);
-    margin: 0;
+    margin: 0 0 0.25rem 0;
     text-align: center;
     width: 100%;
+}
+
+.history-tagline {
+    color: var(--text-secondary, #9ca3af);
+    font-size: 0.9rem;
+    text-align: center;
 }
 
 /* Summary Cards */
