@@ -1,5 +1,23 @@
-import { test, expect, BrowserContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
+
+async function simulateSwipe(page: any, startX: number, endX: number, y: number) {
+  await page.evaluate(({ startX: sx, endX: ex, y: sy }) => {
+    const target = document.querySelector('.app-content') || document.body;
+    target.dispatchEvent(new TouchEvent('touchstart', {
+      bubbles: true,
+      cancelable: true,
+      touches: [new Touch({ identifier: 0, target, clientX: sx, clientY: sy })],
+      changedTouches: [new Touch({ identifier: 0, target, clientX: sx, clientY: sy })]
+    }));
+    target.dispatchEvent(new TouchEvent('touchend', {
+      bubbles: true,
+      cancelable: true,
+      touches: [],
+      changedTouches: [new Touch({ identifier: 0, target, clientX: ex, clientY: sy })]
+    }));
+  }, { startX, endX, y });
+}
 
 test.describe('Swipe Navigation', () => {
   let pomodoroPage: PomodoroPage;
@@ -12,69 +30,31 @@ test.describe('Swipe Navigation', () => {
     await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
   });
 
-  test('should navigate to history page on swipe left', async ({ browser }) => {
-    const context = await browser.newContext({ hasTouch: true });
-    const page = await context.newPage();
-    pomodoroPage = new PomodoroPage(page);
-    await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+  test('should navigate to history page on swipe left', async ({ page }) => {
+    await simulateSwipe(page, 300, 100, 200);
 
-    const appContent = page.locator('.app-content');
-    const startX = 300;
-    const startY = 200;
-
-    await page.touchscreen.tap(startX, startY);
-    await page.touchscreen.tap(startX - 100, startY);
-
-    await page.waitForTimeout(1000);
-    await expect(page).toHaveURL(/\/history/);
-
-    await context.close();
+    await expect(page).toHaveURL(/\/history/, { timeout: 5000 });
   });
 
-  test('should block swipe right on first page (home)', async ({ browser }) => {
-    const context = await browser.newContext({ hasTouch: true });
-    const page = await context.newPage();
-    pomodoroPage = new PomodoroPage(page);
-    await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
-
+  test('should block swipe right on first page (home)', async ({ page }) => {
     const initialUrl = page.url();
 
-    const startX = 100;
-    const startY = 200;
+    await simulateSwipe(page, 100, 300, 200);
 
-    await page.touchscreen.tap(startX, startY);
-    await page.touchscreen.tap(startX + 100, startY);
-
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(500);
     expect(page.url()).toBe(initialUrl);
-
-    await context.close();
   });
 
-  test('should block swipe left on last page (about)', async ({ browser }) => {
-    const context = await browser.newContext({ hasTouch: true });
-    const page = await context.newPage();
-    pomodoroPage = new PomodoroPage(page);
-    await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
-
+  test('should block swipe left on last page (about)', async ({ page }) => {
     await page.locator('.header-nav a[title="About Pomodoro"]').click();
     await expect(page.locator('.about-page')).toBeVisible({ timeout: 30000 });
 
     const urlBeforeSwipe = page.url();
 
-    const startX = 300;
-    const startY = 200;
+    await simulateSwipe(page, 300, 100, 200);
 
-    await page.touchscreen.tap(startX, startY);
-    await page.touchscreen.tap(startX - 100, startY);
-
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(500);
     expect(page.url()).toBe(urlBeforeSwipe);
-
-    await context.close();
   });
 
   test('should add slide transition class on navigation', async ({ page }) => {
