@@ -21,8 +21,8 @@ async function setupPomodoroTest(page: any, pomodoroPage: PomodoroPage, taskName
   await page.waitForTimeout(500);
 
   await page.locator('.btn-save').click();
-  await page.waitForTimeout(2000);
-  await expect(page.locator('.settings-toast')).toBeVisible();
+  await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
+  await page.waitForTimeout(500);
 
   await pomodoroPage.goto('/');
   await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
@@ -143,8 +143,8 @@ test.describe('Consent Modal', () => {
     await page.waitForTimeout(500);
 
     await page.locator('.btn-save').click();
-    await page.waitForTimeout(2000);
-    await expect(page.locator('.settings-toast')).toBeVisible();
+    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(500);
 
     await pomodoroPage.goto('/');
     await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
