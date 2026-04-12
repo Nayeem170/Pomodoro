@@ -82,44 +82,17 @@ jobs:
         with:
           name: e2e-publish
           path: bin/e2e-publish
-      - run: npx playwright test --shard=${{ matrix.shard }}/16 --reporter=blob --output ./e2e-results
+      - run: npx playwright test --shard=${{ matrix.shard }}/16 --reporter=html
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: e2e-report-shard-${{ matrix.shard }}
-          path: ./e2e-results/.playwright-blob
-          retention-days: 90
-
-  merge-e2e-reports:
-    name: Merge E2E Reports
-    needs: [e2e]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-      - run: npm ci
-      - uses: actions/download-artifact@v4
-        with:
-          path: all-shard-artifacts
-          pattern: e2e-report-shard-*
-      - name: Flatten blob reports
-        run: |
-          mkdir -p ./merged-blobs
-          find ./all-shard-artifacts -name "*.zip" -exec cp {} ./merged-blobs/ \;
-          echo "Blob files found:"
-          ls -la ./merged-blobs/ || echo "No blob files found"
-      - run: npx playwright merge-reports ./merged-blobs --reporter=html
-      - uses: actions/upload-artifact@v4
-        with:
-          name: e2e-report
           path: playwright-report
           retention-days: 90
 
   pages:
     name: Deploy to GitHub Pages
-    needs: [coverage, merge-e2e-reports]
+    needs: [coverage, e2e]
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -144,12 +117,12 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: e2e-report
           path: ./site/e2e
+          pattern: e2e-report-shard-*
 
       - name: Create index page
         run: |
-          cat > ./site/index.html << 'EOF'
+          cat > ./site/index.html << 'INDEXEOF'
           <!DOCTYPE html>
           <html lang="en">
           <head>
@@ -172,14 +145,23 @@ jobs:
                 <div class="label">Unit & Component Tests</div>
                 <div class="title">Coverage Report</div>
               </a>
-              <a href="/Pomodoro/e2e/index.html">
-                <div class="label">E2E Tests</div>
-                <div class="title">Playwright Report</div>
-              </a>
+          INDEXEOF
+
+          for dir in ./site/e2e/e2e-report-shard-*/; do
+            if [ -f "$dir/index.html" ]; then
+              shard_name=$(basename "$dir")
+              echo "              <a href=\"/Pomodoro/e2e/${shard_name}/index.html\">" >> ./site/index.html
+              echo "                <div class=\"label\">E2E Tests</div>" >> ./site/index.html
+              echo "                <div class=\"title\">${shard_name}</div>" >> ./site/index.html
+              echo "              </a>" >> ./site/index.html
+            fi
+          done
+
+          cat >> ./site/index.html << 'FOOTEREOF'
             </div>
           </body>
           </html>
-          EOF
+          FOOTEREOF
 
       - uses: actions/upload-pages-artifact@v3
         with:
