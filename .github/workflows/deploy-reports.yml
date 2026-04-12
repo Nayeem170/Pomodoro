@@ -39,41 +39,123 @@ jobs:
           path: ./coverage-report
           retention-days: 90
 
-  e2e:
-    name: E2E Tests
+  e2e-shard-1:
+    name: E2E Tests (1/4)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "9.0.x"
-
       - uses: actions/setup-node@v4
         with:
           node-version: "18"
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
+      - name: Run e2e tests shard 1
+        run: npx playwright test --shard=1/4 --reporter=html --output ./e2e-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-report-shard-1
+          path: playwright-report
+          retention-days: 90
 
-      - name: Install npm dependencies
-        run: npm ci
+  e2e-shard-2:
+    name: E2E Tests (2/4)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
+      - name: Run e2e tests shard 2
+        run: npx playwright test --shard=2/4 --reporter=html --output ./e2e-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-report-shard-2
+          path: playwright-report
+          retention-days: 90
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+  e2e-shard-3:
+    name: E2E Tests (3/4)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
+      - name: Run e2e tests shard 3
+        run: npx playwright test --shard=3/4 --reporter=html --output ./e2e-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-report-shard-3
+          path: playwright-report
+          retention-days: 90
 
-      - name: Publish Blazor app for e2e
-        run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
+  e2e-shard-4:
+    name: E2E Tests (4/4)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
+      - name: Run e2e tests shard 4
+        run: npx playwright test --shard=4/4 --reporter=html --output ./e2e-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-report-shard-4
+          path: playwright-report
+          retention-days: 90
 
-      - name: Run e2e tests
-        run: npx playwright test --reporter=html --output ./e2e-results
-
+  merge-e2e-reports:
+    name: Merge E2E Reports
+    needs: [e2e-shard-1, e2e-shard-2, e2e-shard-3, e2e-shard-4]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - name: Download all shard reports
+        uses: actions/download-artifact@v4
+        with:
+          path: shard-reports
+          pattern: e2e-report-shard-*
+      - name: Merge reports
+        run: npx playwright merge-reports ./shard-reports --reporter=html ./merged-e2e-report
       - uses: actions/upload-artifact@v4
         with:
           name: e2e-report
-          path: playwright-report
+          path: merged-e2e-report
           retention-days: 90
 
   pages:
     name: Deploy to GitHub Pages
-    needs: [coverage, e2e]
+    needs: [coverage, merge-e2e-reports]
     runs-on: ubuntu-latest
     environment:
       name: github-pages
