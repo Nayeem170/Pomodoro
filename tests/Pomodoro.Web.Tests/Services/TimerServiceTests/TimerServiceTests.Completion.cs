@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Moq;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
@@ -684,6 +685,31 @@ public partial class TimerServiceTests
             {
                 semaphore.Release();
             }
+        }
+
+        [Fact]
+        public async Task HandleTimerCompleteSafeAsync_WhenHandleTimerCompleteThrows_LogsError()
+        {
+            var service = CreateService();
+            await service.InitializeAsync();
+
+            var taskId = Guid.NewGuid();
+            var task = new TaskItem { Id = taskId, Name = "Test Task" };
+            AppState.Tasks = new List<TaskItem> { task };
+
+            await service.StartPomodoroAsync(taskId);
+            AppState.CurrentSession!.RemainingSeconds = 1;
+
+            MockIndexedDb.Setup(db => db.PutAsync(Constants.Storage.DailyStatsStore, It.IsAny<DailyStats>()))
+                .ThrowsAsync(new InvalidOperationException("Storage failed"));
+
+            var method = typeof(TimerService).GetMethod("HandleTimerCompleteSafeAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var task2 = (Task?)method!.Invoke(service, null);
+            if (task2 != null) await task2;
+
+            MockLogger.Verify(
+                x => x.Log(LogLevel.Error, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
         }
 
     }
