@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  e2e:
-    name: Build & E2E Test
+  build-e2e:
+    name: Build E2E App
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,27 +25,42 @@ jobs:
         with:
           node-version: "18"
 
-      - name: Install npm dependencies
-        run: npm ci
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
+      - run: rm -f bin/e2e-publish/wwwroot/_redirects bin/e2e-publish/wwwroot/_headers
 
-      - name: Publish Blazor WASM app
-        run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e2e-publish
+          path: bin/e2e-publish
+          retention-days: 1
 
-      - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
-
-      - name: Remove Cloudflare Pages config for e2e
-        run: rm -f bin/e2e-publish/wwwroot/_redirects bin/e2e-publish/wwwroot/_headers
-
-      - name: Run e2e tests
-        run: npx playwright test --reporter=list,html
+  e2e:
+    name: E2E (${{ matrix.shard }}/16)
+    needs: build-e2e
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - uses: actions/download-artifact@v4
+        with:
+          name: e2e-publish
+          path: bin/e2e-publish
+      - run: npx playwright test --shard=${{ matrix.shard }}/16 --reporter=list,html
         env:
           CI: true
-
-      - name: Upload e2e report
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: e2e-report
-          path: playwright-report/
+          name: e2e-report-shard-${{ matrix.shard }}
+          path: playwright-report
           retention-days: 7
