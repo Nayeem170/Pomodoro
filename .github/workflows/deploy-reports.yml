@@ -39,22 +39,45 @@ jobs:
           path: ./coverage-report
           retention-days: 90
 
-  e2e-shard-1:
-    name: E2E Tests (1/4)
+  build-e2e:
+    name: Build E2E App
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "9.0.x"
+
       - uses: actions/setup-node@v4
         with:
           node-version: "18"
+
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
-      - name: Run e2e tests shard 1
-        run: npx playwright test --shard=1/4 --reporter=html --output ./e2e-results
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e2e-publish
+          path: bin/e2e-publish
+          retention-days: 1
+
+  e2e-shard-1:
+    name: E2E (1/8)
+    needs: build-e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - run: npx playwright install --with-deps chromium
+      - uses: actions/download-artifact@v4
+        with:
+          name: e2e-publish
+          path: bin/e2e-publish
+      - run: npx playwright test --shard=1/8 --reporter=html --output ./e2e-results
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -63,21 +86,20 @@ jobs:
           retention-days: 90
 
   e2e-shard-2:
-    name: E2E Tests (2/4)
+    name: E2E (2/8)
+    needs: build-e2e
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "9.0.x"
       - uses: actions/setup-node@v4
         with:
           node-version: "18"
-      - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
-      - name: Run e2e tests shard 2
-        run: npx playwright test --shard=2/4 --reporter=html --output ./e2e-results
+      - uses: actions/download-artifact@v4
+        with:
+          name: e2e-publish
+          path: bin/e2e-publish
+      - run: npx playwright test --shard=2/8 --reporter=html --output ./e2e-results
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -86,21 +108,20 @@ jobs:
           retention-days: 90
 
   e2e-shard-3:
-    name: E2E Tests (3/4)
+    name: E2E (3/8)
+    needs: build-e2e
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "9.0.x"
       - uses: actions/setup-node@v4
         with:
           node-version: "18"
-      - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
-      - name: Run e2e tests shard 3
-        run: npx playwright test --shard=3/4 --reporter=html --output ./e2e-results
+      - uses: actions/download-artifact@v4
+        with:
+          name: e2e-publish
+          path: bin/e2e-publish
+      - run: npx playwright test --shard=3/8 --reporter=html --output ./e2e-results
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -109,21 +130,20 @@ jobs:
           retention-days: 90
 
   e2e-shard-4:
-    name: E2E Tests (4/4)
+    name: E2E (4/8)
+    needs: build-e2e
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "9.0.x"
       - uses: actions/setup-node@v4
         with:
           node-version: "18"
-      - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
-      - name: Run e2e tests shard 4
-        run: npx playwright test --shard=4/4 --reporter=html --output ./e2e-results
+      - uses: actions/download-artifact@v4
+        with:
+          name: e2e-publish
+          path: bin/e2e-publish
+      - run: npx playwright test --shard=4/8 --reporter=html --output ./e2e-results
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -131,22 +151,108 @@ jobs:
           path: playwright-report
           retention-days: 90
 
-  merge-e2e-reports:
-    name: Merge E2E Reports
-    needs: [e2e-shard-1, e2e-shard-2, e2e-shard-3, e2e-shard-4]
+  e2e-shard-5:
+    name: E2E (5/8)
+    needs: build-e2e
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "18"
-      - name: Download all shard reports
-        uses: actions/download-artifact@v4
+      - run: npx playwright install --with-deps chromium
+      - uses: actions/download-artifact@v4
+        with:
+          name: e2e-publish
+          path: bin/e2e-publish
+      - run: npx playwright test --shard=5/8 --reporter=html --output ./e2e-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-report-shard-5
+          path: playwright-report
+          retention-days: 90
+
+  e2e-shard-6:
+    name: E2E (6/8)
+    needs: build-e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - run: npx playwright install --with-deps chromium
+      - uses: actions/download-artifact@v4
+        with:
+          name: e2e-publish
+          path: bin/e2e-publish
+      - run: npx playwright test --shard=6/8 --reporter=html --output ./e2e-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-report-shard-6
+          path: playwright-report
+          retention-days: 90
+
+  e2e-shard-7:
+    name: E2E (7/8)
+    needs: build-e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - run: npx playwright install --with-deps chromium
+      - uses: actions/download-artifact@v4
+        with:
+          name: e2e-publish
+          path: bin/e2e-publish
+      - run: npx playwright test --shard=7/8 --reporter=html --output ./e2e-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-report-shard-7
+          path: playwright-report
+          retention-days: 90
+
+  e2e-shard-8:
+    name: E2E (8/8)
+    needs: build-e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - run: npx playwright install --with-deps chromium
+      - uses: actions/download-artifact@v4
+        with:
+          name: e2e-publish
+          path: bin/e2e-publish
+      - run: npx playwright test --shard=8/8 --reporter=html --output ./e2e-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-report-shard-8
+          path: playwright-report
+          retention-days: 90
+
+  merge-e2e-reports:
+    name: Merge E2E Reports
+    needs: [e2e-shard-1, e2e-shard-2, e2e-shard-3, e2e-shard-4, e2e-shard-5, e2e-shard-6, e2e-shard-7, e2e-shard-8]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - uses: actions/download-artifact@v4
         with:
           path: shard-reports
           pattern: e2e-report-shard-*
-      - name: Merge reports
-        run: npx playwright merge-reports ./shard-reports --reporter=html ./merged-e2e-report
+      - run: npx playwright merge-reports ./shard-reports --reporter=html ./merged-e2e-report
       - uses: actions/upload-artifact@v4
         with:
           name: e2e-report
