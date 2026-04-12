@@ -104,6 +104,7 @@ jobs:
         with:
           path: shard-reports
           pattern: e2e-report-shard-*
+          merge-multiple: true
       - run: npx playwright merge-reports ./shard-reports --reporter=html
       - uses: actions/upload-artifact@v4
         with:
