@@ -104,11 +104,11 @@ jobs:
         with:
           path: shard-reports
           pattern: e2e-report-shard-*
-      - run: npx playwright merge-reports ./shard-reports --reporter html=./merged-e2e-report
+      - run: npx playwright merge-reports ./shard-reports --reporter=html
       - uses: actions/upload-artifact@v4
         with:
           name: e2e-report
-          path: merged-e2e-report
+          path: playwright-report
           retention-days: 90
 
   pages:
