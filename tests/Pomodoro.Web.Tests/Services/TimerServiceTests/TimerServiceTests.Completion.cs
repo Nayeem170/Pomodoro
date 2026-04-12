@@ -622,6 +622,51 @@ public partial class TimerServiceTests
         }
 
         [Fact]
+        public async Task HandleTimerCompleteAsync_WhenSessionIsNull_ReturnsImmediately()
+        {
+            var service = CreateService();
+            await service.InitializeAsync();
+
+            AppState.CurrentSession = null;
+
+            var method = typeof(TimerService).GetMethod("HandleTimerCompleteAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var task = (Task?)method!.Invoke(service, null);
+            if (task != null) await task;
+
+            Assert.Equal(0, AppState.TodayPomodoroCount);
+        }
+
+        [Fact]
+        public async Task HandleTimerCompleteSafeAsync_WhenDisposedInsideLock_ReturnsImmediately()
+        {
+            var service = CreateService();
+            await service.InitializeAsync();
+
+            var taskId = Guid.NewGuid();
+            await service.StartPomodoroAsync(taskId);
+            AppState.CurrentSession!.RemainingSeconds = 1;
+
+            var lockField = typeof(TimerService).GetField("_timerCompleteLock", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            var semaphore = (System.Threading.SemaphoreSlim)lockField!.GetValue(service)!;
+            await semaphore.WaitAsync();
+
+            try
+            {
+                await service.DisposeAsync();
+
+                var method = typeof(TimerService).GetMethod("HandleTimerCompleteSafeAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                var task = (Task?)method!.Invoke(service, null);
+                if (task != null) await task;
+
+                Assert.Equal(0, AppState.TodayPomodoroCount);
+            }
+            finally
+            {
+                try { semaphore.Release(); } catch (ObjectDisposedException) { }
+            }
+        }
+
+        [Fact]
         public async Task TimerCompletion_WhenLockAlreadyHeld_SkipsCompletion()
         {
             // Arrange

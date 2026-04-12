@@ -382,5 +382,16 @@ namespace Pomodoro.Web.Tests.Services
             Assert.NotNull(result);
             Assert.Empty(result);
         }
+
+        [Fact]
+        public void DeserializeList_WhenDeserializeReturnsNull_ReturnsEmptyList()
+        {
+            var method = typeof(IndexedDbService).GetMethod("DeserializeList", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+            var genericMethod = method.MakeGenericMethod(typeof(TestItem));
+            var nullElement = JsonDocument.Parse("null").RootElement;
+            var result = (System.Collections.Generic.List<TestItem>?)genericMethod.Invoke(_service, new object[] { nullElement, "store", "key" });
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
     }
 }
