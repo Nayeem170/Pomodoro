@@ -107,13 +107,13 @@ window.notificationFunctions = {
             ];
         }
         
-        // Use service worker notification with actions via ready promise
-        if ('serviceWorker' in navigator) {
+        // Try service worker notification first (supports action buttons)
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
             navigator.serviceWorker.ready.then(registration => {
                 const options = {
                     body: body,
-                    icon: appIcon, // Large notification icon
-                    badge: appIcon, // Small icon beside site name
+                    icon: appIcon,
+                    badge: appIcon,
                     tag: pomodoroConstants.notifications.tag,
                     renotify: true,
                     requireInteraction: true,
@@ -124,7 +124,6 @@ window.notificationFunctions = {
                 
                 registration.showNotification(title, options).catch(err => {
                     console.error(pomodoroConstants.messages.notificationsServiceWorkerFailed, err);
-                    // Fallback to simple notification if service worker fails
                     showSimpleNotification(title, body, icon, sessionType);
                 });
             }).catch(err => {
