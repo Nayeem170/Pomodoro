@@ -102,10 +102,15 @@ jobs:
       - run: npm ci
       - uses: actions/download-artifact@v4
         with:
-          path: shard-reports
+          path: all-shard-artifacts
           pattern: e2e-report-shard-*
-          merge-multiple: true
-      - run: npx playwright merge-reports ./shard-reports --reporter=html
+      - name: Flatten blob reports
+        run: |
+          mkdir -p ./merged-blobs
+          find ./all-shard-artifacts -name "*.zip" -exec cp {} ./merged-blobs/ \;
+          echo "Blob files found:"
+          ls -la ./merged-blobs/ || echo "No blob files found"
+      - run: npx playwright merge-reports ./merged-blobs --reporter=html
       - uses: actions/upload-artifact@v4
         with:
           name: e2e-report
