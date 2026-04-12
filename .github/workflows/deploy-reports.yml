@@ -144,6 +144,7 @@ jobs:
         run: |
           LINE_COV=$(node -e "const d=require('./summaries/coverage-summary.json');console.log(d.line_coverage)")
           BRANCH_COV=$(node -e "const d=require('./summaries/coverage-summary.json');console.log(d.branch_coverage)")
+          BRANCH_CLASS=$(node -e "console.log(${BRANCH_COV} >= 80 ? 'good' : 'warn')")
 
           SHARD_LINKS=""
           for dir in ./site/e2e/e2e-report-shard-*/; do
@@ -194,7 +195,7 @@ jobs:
                 <div class="card-label">Line Coverage</div>
               </div>
               <div class="card">
-                <div class="card-value ${BRANCH_COV >= 80 ? 'good' : 'warn'}">${BRANCH_COV}%</div>
+                <div class="card-value ${BRANCH_CLASS}">${BRANCH_COV}%</div>
                 <div class="card-label">Branch Coverage</div>
               </div>
             </div>
