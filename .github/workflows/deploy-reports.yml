@@ -82,12 +82,12 @@ jobs:
         with:
           name: e2e-publish
           path: bin/e2e-publish
-      - run: npx playwright test --shard=${{ matrix.shard }}/16 --reporter=html --output ./e2e-results
+      - run: npx playwright test --shard=${{ matrix.shard }}/16 --reporter=blob --output ./e2e-results
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: e2e-report-shard-${{ matrix.shard }}
-          path: playwright-report
+          path: .playwright-blob
           retention-days: 90
 
   merge-e2e-reports:
