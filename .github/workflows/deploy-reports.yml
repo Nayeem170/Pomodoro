@@ -80,6 +80,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Cleanup stale pages artifacts
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -87,7 +88,7 @@ jobs:
             --jq '.artifacts[] | select(.name=="github-pages") | .id' \
             | while read -r art_id; do
               echo "Deleting stale artifact $art_id"
-              gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$art_id"
+              gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$art_id" || true
             done
 
       - name: Download coverage report
