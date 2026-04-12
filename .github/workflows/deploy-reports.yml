@@ -64,13 +64,13 @@ jobs:
           retention-days: 1
 
   e2e:
-    name: E2E (${{ matrix.shard }}/8)
+    name: E2E (${{ matrix.shard }}/16)
     needs: build-e2e
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -82,7 +82,7 @@ jobs:
         with:
           name: e2e-publish
           path: bin/e2e-publish
-      - run: npx playwright test --shard=${{ matrix.shard }}/8 --reporter=html --output ./e2e-results
+      - run: npx playwright test --shard=${{ matrix.shard }}/16 --reporter=html --output ./e2e-results
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -100,12 +100,11 @@ jobs:
         with:
           node-version: "18"
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
       - uses: actions/download-artifact@v4
         with:
           path: shard-reports
           pattern: e2e-report-shard-*
-      - run: npx playwright merge-reports ./shard-reports --reporter=html ./merged-e2e-report
+      - run: npx playwright merge-reports ./shard-reports --reporter html=./merged-e2e-report
       - uses: actions/upload-artifact@v4
         with:
           name: e2e-report
