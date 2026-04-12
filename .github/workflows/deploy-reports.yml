@@ -35,8 +35,11 @@ jobs:
 
       - name: Extract coverage summary
         run: |
-          LINE_RATE=$(grep -oP 'line-rate="\K[^"]+' ./coverage/**/coverage.cobertura.xml | head -1)
-          BRANCH_RATE=$(grep -oP 'branch-rate="\K[^"]+' ./coverage/**/coverage.cobertura.xml | head -1)
+          COV_FILE=$(find ./coverage -name "coverage.cobertura.xml" | head -1)
+          echo "Found coverage file: $COV_FILE"
+          LINE_RATE=$(grep -oP 'line-rate="\K[^"]+' "$COV_FILE" | head -1)
+          BRANCH_RATE=$(grep -oP 'branch-rate="\K[^"]+' "$COV_FILE" | head -1)
+          echo "Line rate: $LINE_RATE, Branch rate: $BRANCH_RATE"
           LINE_PCT=$(echo "$LINE_RATE * 100" | bc | xargs printf "%.1f")
           BRANCH_PCT=$(echo "$BRANCH_RATE * 100" | bc | xargs printf "%.1f")
           echo "{\"line_coverage\": $LINE_PCT, \"branch_coverage\": $BRANCH_PCT}" > ./coverage-summary.json
@@ -97,12 +100,31 @@ jobs:
         with:
           name: e2e-publish
           path: bin/e2e-publish
-      - run: npx playwright test --shard=${{ matrix.shard }}/16 --reporter=html
+      - name: Run e2e tests
+        run: npx playwright test --shard=${{ matrix.shard }}/16 --reporter=list,html 2>&1 | tee test-output.txt || true
+      - name: Save shard summary
+        if: always()
+        run: |
+          PASSED=$(grep -oP '\d+(?= passed)' test-output.txt | tail -1)
+          FAILED=$(grep -oP '\d+(?= failed)' test-output.txt | tail -1)
+          SKIPPED=$(grep -oP '\d+(?= skipped)' test-output.txt | tail -1)
+          PASSED=${PASSED:-0}
+          FAILED=${FAILED:-0}
+          SKIPPED=${SKIPPED:-0}
+          TOTAL=$((PASSED + FAILED + SKIPPED))
+          echo "{\"shard\":${{ matrix.shard }},\"passed\":$PASSED,\"failed\":$FAILED,\"skipped\":$SKIPPED,\"total\":$TOTAL}" > shard-summary.json
+          cat shard-summary.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: e2e-report-shard-${{ matrix.shard }}
           path: playwright-report
+          retention-days: 90
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-summary-shard-${{ matrix.shard }}
+          path: shard-summary.json
           retention-days: 90
 
   pages:
@@ -140,24 +162,52 @@ jobs:
           path: ./site/e2e
           pattern: e2e-report-shard-*
 
+      - uses: actions/download-artifact@v4
+        with:
+          path: ./e2e-summaries
+          pattern: e2e-summary-shard-*
+
       - name: Build index page with summary
         run: |
           LINE_COV=$(node -e "const d=require('./summaries/coverage-summary.json');console.log(d.line_coverage)")
           BRANCH_COV=$(node -e "const d=require('./summaries/coverage-summary.json');console.log(d.branch_coverage)")
           BRANCH_CLASS=$(node -e "console.log(${BRANCH_COV} >= 80 ? 'good' : 'warn')")
 
+          TOTAL_PASSED=0
+          TOTAL_FAILED=0
+          TOTAL_SKIPPED=0
+          TOTAL_TESTS=0
           SHARD_LINKS=""
-          for dir in ./site/e2e/e2e-report-shard-*/; do
-            if [ -f "$dir/index.html" ]; then
-              shard_name=$(basename "$dir")
-              shard_num=$(echo "$shard_name" | grep -oP '\d+')
-              SHARD_LINKS="$SHARD_LINKS
-              <a href=\"/Pomodoro/e2e/${shard_name}/index.html\">
-                <div class=\"label\">E2E Shard ${shard_num}/16</div>
-                <div class=\"title\">View Report</div>
+
+          for f in ./e2e-summaries/e2e-summary-shard-*/shard-summary.json; do
+            if [ -f "$f" ]; then
+              SHARD_NUM=$(node -e "const d=require('$f');console.log(d.shard)")
+              PASSED=$(node -e "const d=require('$f');console.log(d.passed)")
+              FAILED=$(node -e "const d=require('$f');console.log(d.failed)")
+              SKIPPED=$(node -e "const d=require('$f');console.log(d.skipped)")
+              TOTAL_PASSED=$((TOTAL_PASSED + PASSED))
+              TOTAL_FAILED=$((TOTAL_FAILED + FAILED))
+              TOTAL_SKIPPED=$((TOTAL_SKIPPED + SKIPPED))
+              TOTAL_TESTS=$((TOTAL_TESTS + PASSED + FAILED + SKIPPED))
+
+              if [ "$FAILED" -gt 0 ]; then
+                STATUS_CLASS="fail"
+                STATUS_TEXT="${PASSED}/${PASSED + FAILED} passed"
+              else
+                STATUS_CLASS="pass"
+                STATUS_TEXT="All ${PASSED} passed"
+              fi
+
+              SHARD_LINKS="${SHARD_LINKS}
+              <a href=\"/Pomodoro/e2e/e2e-report-shard-${SHARD_NUM}/index.html\">
+                <div class=\"label\">Shard ${SHARD_NUM}/16</div>
+                <div class=\"title\"><span class=\"${STATUS_CLASS}\">${STATUS_TEXT}</span></div>
               </a>"
             fi
           done
+
+          PASS_CLASS=$(node -e "console.log(${TOTAL_FAILED} === 0 ? 'good' : 'fail')")
+          PASS_RATE=$(node -e "console.log(($TOTAL_TESTS > 0 ? (${TOTAL_PASSED}/${TOTAL_TESTS}*100) : 100).toFixed(1))")
 
           cat > ./site/index.html << HTMLEOF
           <!DOCTYPE html>
@@ -170,12 +220,14 @@ jobs:
               * { box-sizing: border-box; margin: 0; padding: 0; }
               body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; background: #0f0f1a; color: #e0e0e0; }
               h1 { color: #fff; font-size: 1.75rem; margin-bottom: 24px; text-align: center; }
-              .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
+              .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 32px; }
               .card { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 12px; padding: 20px; text-align: center; }
               .card-value { font-size: 2rem; font-weight: 700; margin-bottom: 4px; }
               .card-label { font-size: 0.85rem; color: #888; }
               .good { color: #4ade80; }
               .warn { color: #fb923c; }
+              .fail { color: #f87171; }
+              .pass { color: #4ade80; }
               .section-title { color: #aaa; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
               .links { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
               a { color: #60a5fa; text-decoration: none; display: block; padding: 14px 20px; border: 1px solid #2a2a4e; border-radius: 8px; transition: background 0.2s; }
@@ -190,6 +242,14 @@ jobs:
             <h1>Pomodoro Reports</h1>
 
             <div class="summary-grid">
+              <div class="card">
+                <div class="card-value ${PASS_CLASS}">${TOTAL_PASSED}/${TOTAL_TESTS}</div>
+                <div class="card-label">E2E Tests Passed</div>
+              </div>
+              <div class="card">
+                <div class="card-value ${PASS_CLASS}">${PASS_RATE}%</div>
+                <div class="card-label">E2E Pass Rate</div>
+              </div>
               <div class="card">
                 <div class="card-value good">${LINE_COV}%</div>
                 <div class="card-label">Line Coverage</div>
