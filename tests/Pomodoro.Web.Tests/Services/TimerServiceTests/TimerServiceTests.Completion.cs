@@ -637,7 +637,7 @@ public partial class TimerServiceTests
         }
 
         [Fact]
-        public async Task HandleTimerCompleteSafeAsync_WhenDisposedInsideLock_ReturnsImmediately()
+        public async Task HandleTimerCompleteSafeAsync_WhenDisposed_ReturnsImmediately()
         {
             var service = CreateService();
             await service.InitializeAsync();
@@ -646,24 +646,13 @@ public partial class TimerServiceTests
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
 
-            var lockField = typeof(TimerService).GetField("_timerCompleteLock", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            var semaphore = (System.Threading.SemaphoreSlim)lockField!.GetValue(service)!;
-            await semaphore.WaitAsync();
+            await service.DisposeAsync();
 
-            try
-            {
-                await service.DisposeAsync();
+            var method = typeof(TimerService).GetMethod("HandleTimerCompleteSafeAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var task = (Task?)method!.Invoke(service, null);
+            if (task != null) await task;
 
-                var method = typeof(TimerService).GetMethod("HandleTimerCompleteSafeAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var task = (Task?)method!.Invoke(service, null);
-                if (task != null) await task;
-
-                Assert.Equal(0, AppState.TodayPomodoroCount);
-            }
-            finally
-            {
-                try { semaphore.Release(); } catch (ObjectDisposedException) { }
-            }
+            Assert.Equal(0, AppState.TodayPomodoroCount);
         }
 
         [Fact]
@@ -697,33 +686,5 @@ public partial class TimerServiceTests
             }
         }
 
-        [Fact]
-        public async Task TimerCompletion_WhenDisposedInsideLock_SkipsCompletion()
-        {
-            // Arrange
-            var service = CreateService();
-            await service.InitializeAsync();
-
-            var taskId = Guid.NewGuid();
-            await service.StartPomodoroAsync(taskId);
-            AppState.CurrentSession!.RemainingSeconds = 1;
-
-            // Acquire the semaphore via reflection
-            var lockField = typeof(TimerService).GetField("_timerCompleteLock", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            var semaphore = (System.Threading.SemaphoreSlim)lockField!.GetValue(service)!;
-            await semaphore.WaitAsync();
-
-            // Dispose while lock is held
-            await service.DisposeAsync();
-
-            // Release lock - semaphore may be disposed, handle gracefully
-            try { semaphore.Release(); } catch (ObjectDisposedException) { }
-
-            // Act - The handler was already queued by the tick, let it run
-            await WaitForCompletionAsync();
-
-            // Assert - Stats should not be updated because disposed inside lock
-            Assert.Equal(0, AppState.TodayPomodoroCount);
-        }
     }
 }

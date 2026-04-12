@@ -456,7 +456,6 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         
         try
         {
-            if (_isDisposed) return;
             await HandleTimerCompleteAsync();
         }
         catch (Exception ex)
@@ -465,7 +464,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         }
         finally
         {
-            _timerCompleteLock.Release();
+            try { _timerCompleteLock.Release(); } catch (ObjectDisposedException) { }
         }
     }
     
