@@ -77,6 +77,7 @@ jobs:
         with:
           name: e2e-publish
           path: bin/e2e-publish
+      - run: npm ci
       - run: npx playwright test --shard=1/8 --reporter=html --output ./e2e-results
       - uses: actions/upload-artifact@v4
         if: always()
@@ -99,6 +100,7 @@ jobs:
         with:
           name: e2e-publish
           path: bin/e2e-publish
+      - run: npm ci
       - run: npx playwright test --shard=2/8 --reporter=html --output ./e2e-results
       - uses: actions/upload-artifact@v4
         if: always()
@@ -121,6 +123,7 @@ jobs:
         with:
           name: e2e-publish
           path: bin/e2e-publish
+      - run: npm ci
       - run: npx playwright test --shard=3/8 --reporter=html --output ./e2e-results
       - uses: actions/upload-artifact@v4
         if: always()
@@ -143,6 +146,7 @@ jobs:
         with:
           name: e2e-publish
           path: bin/e2e-publish
+      - run: npm ci
       - run: npx playwright test --shard=4/8 --reporter=html --output ./e2e-results
       - uses: actions/upload-artifact@v4
         if: always()
@@ -165,6 +169,7 @@ jobs:
         with:
           name: e2e-publish
           path: bin/e2e-publish
+      - run: npm ci
       - run: npx playwright test --shard=5/8 --reporter=html --output ./e2e-results
       - uses: actions/upload-artifact@v4
         if: always()
@@ -187,6 +192,7 @@ jobs:
         with:
           name: e2e-publish
           path: bin/e2e-publish
+      - run: npm ci
       - run: npx playwright test --shard=6/8 --reporter=html --output ./e2e-results
       - uses: actions/upload-artifact@v4
         if: always()
@@ -209,6 +215,7 @@ jobs:
         with:
           name: e2e-publish
           path: bin/e2e-publish
+      - run: npm ci
       - run: npx playwright test --shard=7/8 --reporter=html --output ./e2e-results
       - uses: actions/upload-artifact@v4
         if: always()
@@ -231,6 +238,7 @@ jobs:
         with:
           name: e2e-publish
           path: bin/e2e-publish
+      - run: npm ci
       - run: npx playwright test --shard=8/8 --reporter=html --output ./e2e-results
       - uses: actions/upload-artifact@v4
         if: always()
