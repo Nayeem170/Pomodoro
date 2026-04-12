@@ -54,9 +54,7 @@ jobs:
           node-version: "18"
 
       - run: npm ci
-      - uses: playwright/install@v1
-        with:
-          browsers: chromium
+      - run: npx playwright install --with-deps chromium
       - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
 
       - uses: actions/upload-artifact@v4
@@ -79,9 +77,7 @@ jobs:
         with:
           node-version: "18"
       - run: npm ci
-      - uses: playwright/install@v1
-        with:
-          browsers: chromium
+      - run: npx playwright install --with-deps chromium
       - uses: actions/download-artifact@v4
         with:
           name: e2e-publish
@@ -104,9 +100,7 @@ jobs:
         with:
           node-version: "18"
       - run: npm ci
-      - uses: playwright/install@v1
-        with:
-          browsers: chromium
+      - run: npx playwright install --with-deps chromium
       - uses: actions/download-artifact@v4
         with:
           path: shard-reports
