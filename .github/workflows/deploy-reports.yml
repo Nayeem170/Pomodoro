@@ -87,7 +87,7 @@ jobs:
         if: always()
         with:
           name: e2e-report-shard-${{ matrix.shard }}
-          path: .playwright-blob
+          path: ./e2e-results/.playwright-blob
           retention-days: 90
 
   merge-e2e-reports:
