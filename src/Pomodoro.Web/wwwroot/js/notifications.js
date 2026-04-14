@@ -19,6 +19,35 @@ function initAudioContext() {
     return audioContext;
 }
 
+async function ensureAudioContextReady() {
+    const ctx = initAudioContext();
+    if (!ctx) return null;
+    if (ctx.state === 'suspended') {
+        try {
+            await ctx.resume();
+        } catch (e) {
+            console.warn(pomodoroConstants.messages.audioContextResumeFailed, e);
+            return null;
+        }
+    }
+    return ctx;
+}
+
+function playBeepSequence(freqs, durations, waveform) {
+    let delay = 0;
+    for (let i = 0; i < freqs.length; i++) {
+        const f = freqs[i];
+        const d = durations[i];
+        setTimeout(() => playBeep(f, d, waveform), delay);
+        delay += d * 1000;
+    }
+}
+
+function playBeepPattern(freqs, durations, waveform, repeatDelay) {
+    playBeepSequence(freqs, durations, waveform);
+    setTimeout(() => playBeepSequence(freqs, durations, waveform), repeatDelay);
+}
+
 // Invoke .NET callback for notification actions
 function invokeNotificationAction(action) {
     if (dotNetNotificationRef) {
@@ -138,62 +167,20 @@ window.notificationFunctions = {
 
     // Play timer complete sound (Pomodoro finished)
     playTimerCompleteSound: async function() {
-        const ctx = initAudioContext();
+        const ctx = await ensureAudioContextReady();
         if (!ctx) return;
         
-        // Ensure AudioContext is running (browser autoplay policy)
-        if (ctx.state === 'suspended') {
-            try {
-                await ctx.resume();
-            } catch (e) {
-                console.warn(pomodoroConstants.messages.audioContextResumeFailed, e);
-                return;
-            }
-        }
-        
-        // Play a pleasant chime pattern using constants
         const freq = pomodoroConstants.audioFrequencies.pomodoroChime;
-        playBeep(freq[0], 0.15, 'sine'); // C5
-        setTimeout(() => playBeep(freq[1], 0.15, 'sine'), 150); // E5
-        setTimeout(() => playBeep(freq[2], 0.15, 'sine'), 300); // G5
-        setTimeout(() => playBeep(freq[3], 0.3, 'sine'), 450); // C6
-        
-        // Repeat pattern
-        setTimeout(() => {
-            playBeep(freq[0], 0.15, 'sine');
-            setTimeout(() => playBeep(freq[1], 0.15, 'sine'), 150);
-            setTimeout(() => playBeep(freq[2], 0.15, 'sine'), 300);
-            setTimeout(() => playBeep(freq[3], 0.3, 'sine'), 450);
-        }, 900);
+        playBeepPattern(freq, [0.15, 0.15, 0.15, 0.3], 'sine', 900);
     },
 
     // Play break complete sound
     playBreakCompleteSound: async function() {
-        const ctx = initAudioContext();
+        const ctx = await ensureAudioContextReady();
         if (!ctx) return;
         
-        // Ensure AudioContext is running (browser autoplay policy)
-        if (ctx.state === 'suspended') {
-            try {
-                await ctx.resume();
-            } catch (e) {
-                console.warn(pomodoroConstants.messages.audioContextResumeFailed, e);
-                return;
-            }
-        }
-        
-        // Play a gentle attention sound using constants
         const freq = pomodoroConstants.audioFrequencies.breakChime;
-        playBeep(freq[0], 0.2, 'sine'); // A4
-        setTimeout(() => playBeep(freq[1], 0.2, 'sine'), 200); // C#5
-        setTimeout(() => playBeep(freq[2], 0.3, 'sine'), 400); // E5
-        
-        // Repeat
-        setTimeout(() => {
-            playBeep(freq[0], 0.2, 'sine');
-            setTimeout(() => playBeep(freq[1], 0.2, 'sine'), 200);
-            setTimeout(() => playBeep(freq[2], 0.3, 'sine'), 400);
-        }, 800);
+        playBeepPattern(freq, [0.2, 0.2, 0.3], 'sine', 800);
     },
     
     dispose: function() {

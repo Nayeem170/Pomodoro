@@ -1,6 +1,14 @@
 // Chart.js interop functions for Blazor
 // Uses pomodoroConstants for configurable values
 // Implements lazy loading for Chart.js to improve initial page load
+function getBarThickness() {
+    const chartStyling = window.pomodoroConstants.chartStyling;
+    const screenWidth = window.innerWidth;
+    if (screenWidth <= 480) return chartStyling.barThicknessSmall;
+    if (screenWidth <= 768) return chartStyling.barThicknessMedium;
+    return chartStyling.barThickness;
+}
+
 window.chartInterop = {
     charts: {},
     chartJsLoaded: false,
@@ -74,18 +82,7 @@ window.chartInterop = {
         const chartColors = constants.chartColors;
         const chartStyling = constants.chartStyling;
         
-        // Use smaller bar thickness for medium/small screens
-        const screenWidth = window.innerWidth;
-        let barThickness;
-        if (screenWidth <= 480) {
-            barThickness = chartStyling.barThicknessSmall;
-        } else if (screenWidth <= 768) {
-            barThickness = chartStyling.barThicknessMedium;
-        } else {
-            barThickness = chartStyling.barThickness;
-        }
-        
-        // Generate background colors - highlight selected date's bar
+        const barThickness = getBarThickness();
         const backgroundColors = data.map((_, index) =>
             index === highlightIndex ? chartColors.highlightBar : chartColors.defaultBar
         );
@@ -214,18 +211,7 @@ window.chartInterop = {
         const breakBorderColors = breakDataArray.map(() => whiteBorder);
         const breakBorderWidths = breakDataArray.map(() => 1);
 
-        // Use smaller bar thickness for medium/small screens
-        const screenWidth = window.innerWidth;
-        let barThickness;
-        if (screenWidth <= 480) {
-            barThickness = chartStyling.barThicknessSmall;
-        } else if (screenWidth <= 768) {
-            barThickness = chartStyling.barThicknessMedium;
-        } else {
-            barThickness = chartStyling.barThickness;
-        }
-        
-        // Create new grouped bar chart
+        const barThickness = getBarThickness();
         this.charts[canvasId] = new Chart(ctx, {
             type: window.pomodoroConstants.chartTypes.bar,
             data: {
