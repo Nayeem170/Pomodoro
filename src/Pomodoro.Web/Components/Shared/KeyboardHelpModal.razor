@@ -2,9 +2,9 @@
 
 <div class="keyboard-help-modal @(IsVisible ? "visible" : "")">
     <div class="modal-backdrop" @onclick="Close"></div>
-    <div class="modal-content">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="keyboard-help-title">
         <div class="modal-header">
-            <h3>@Constants.KeyboardHelp.Title</h3>
+            <h3 id="keyboard-help-title">@Constants.KeyboardHelp.Title</h3>
             <button class="modal-close" @onclick="Close" aria-label="@Constants.KeyboardHelp.CloseTooltip">@Constants.KeyboardHelp.CloseTooltip</button>
         </div>
         

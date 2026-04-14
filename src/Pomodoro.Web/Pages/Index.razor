@@ -59,7 +59,7 @@
         
         <!-- Header Actions (PiP and Help buttons) -->
         <div class="header-actions">
-            <button class="btn-pip-header" @onclick="() => ShowKeyboardHelp = true" title="@Constants.KeyboardShortcuts.HelpKey">?</button>
+            <button class="btn-pip-header" @onclick="() => ShowKeyboardHelp = true" title="@Constants.KeyboardShortcuts.HelpKey" aria-label="Keyboard shortcuts">?</button>
             <button class="btn-pip-header" @onclick="HandleTogglePip" title="@(IsPipOpen ? Constants.PipTimerUI.CloseFloatingTimerTitle : Constants.PipTimerUI.PopOutFloatingTimerTitle)">⧉</button>
         </div>
     </div>

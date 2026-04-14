@@ -6,7 +6,7 @@
             <span class="setting-icon">🍅</span>
             <span class="setting-name">Pomodoro</span>
         </div>
-        <input type="number" class="setting-input" @bind="Settings.PomodoroMinutes" @bind:after="NotifyChanged" min="1" max="60" />
+        <input type="number" class="setting-input" @bind="Settings.PomodoroMinutes" @bind:after="NotifyChanged" min="1" max="60" aria-label="Pomodoro duration (minutes)" />
     </div>
     
     <div class="setting-item">
@@ -14,7 +14,7 @@
             <span class="setting-icon">☕</span>
             <span class="setting-name">Short Break</span>
         </div>
-        <input type="number" class="setting-input" @bind="Settings.ShortBreakMinutes" @bind:after="NotifyChanged" min="1" max="30" />
+        <input type="number" class="setting-input" @bind="Settings.ShortBreakMinutes" @bind:after="NotifyChanged" min="1" max="30" aria-label="Short break duration (minutes)" />
     </div>
     
     <div class="setting-item">
@@ -22,7 +22,7 @@
             <span class="setting-icon">🏖️</span>
             <span class="setting-name">Long Break</span>
         </div>
-        <input type="number" class="setting-input" @bind="Settings.LongBreakMinutes" @bind:after="NotifyChanged" min="1" max="60" />
+        <input type="number" class="setting-input" @bind="Settings.LongBreakMinutes" @bind:after="NotifyChanged" min="1" max="60" aria-label="Long break duration (minutes)" />
     </div>
 </div>
 

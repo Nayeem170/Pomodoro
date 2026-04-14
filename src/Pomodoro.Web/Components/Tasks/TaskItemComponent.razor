@@ -8,13 +8,13 @@
         <div class="task-actions">
             @if (Item.IsCompleted)
             {
-                <button class="btn-icon" @onclick="HandleUncomplete" @onclick:stopPropagation="true" title="Undo">↩</button>
+                <button class="btn-icon" @onclick="HandleUncomplete" @onclick:stopPropagation="true" title="Undo" aria-label="Undo">↩</button>
             }
             else
             {
-                <button class="btn-icon" @onclick="HandleComplete" @onclick:stopPropagation="true" title="Complete">✓</button>
+                <button class="btn-icon" @onclick="HandleComplete" @onclick:stopPropagation="true" title="Complete" aria-label="Complete">✓</button>
             }
-            <button class="btn-icon delete" @onclick="HandleDelete" @onclick:stopPropagation="true" title="Delete">🗑</button>
+            <button class="btn-icon delete" @onclick="HandleDelete" @onclick:stopPropagation="true" title="Delete" aria-label="Delete">🗑</button>
         </div>
     </div>
     <div class="task-stats">
