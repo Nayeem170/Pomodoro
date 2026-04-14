@@ -134,32 +134,6 @@ input, textarea, [contenteditable="true"] {
     letter-spacing: 1px;
 }
 
-.header-content {
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 15px 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.app-logo {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.app-tagline {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    margin: 5px 0 0 0;
-    letter-spacing: 1px;
-}
-
 /* Main Content Area */
 .app-content {
     flex: 1;
@@ -204,7 +178,6 @@ input, textarea, [contenteditable="true"] {
         max-width: 540px;
     }
     
-    .header-content,
     .header-content-wrapper,
     .footer-content-wrapper {
         max-width: 540px;
@@ -216,7 +189,6 @@ input, textarea, [contenteditable="true"] {
         max-width: 720px;
     }
     
-    .header-content,
     .header-content-wrapper,
     .footer-content-wrapper {
         max-width: 720px;
@@ -232,7 +204,6 @@ input, textarea, [contenteditable="true"] {
         max-width: 960px;
     }
     
-    .header-content,
     .header-content-wrapper,
     .footer-content-wrapper {
         max-width: 960px;
