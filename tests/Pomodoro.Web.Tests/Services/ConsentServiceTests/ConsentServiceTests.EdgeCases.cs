@@ -21,7 +21,6 @@ public partial class ConsentServiceTests
         var sessionOptionsServiceMock = new Mock<ISessionOptionsService>();
         var loggerMock = new Mock<ILogger<ConsentService>>();
         
-        // AppState is null - should not throw
         var appState = (AppState?)null;
         
         sessionOptionsServiceMock
@@ -45,14 +44,9 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
         
-        service.Initialize();
-        
         // Act & Assert - should not throw
-        // Trigger through the public event which internally calls HandleTimerCompleteSafeAsync
-        timerServiceMock.Raise(x => x.OnTimerComplete += null, SessionType.Pomodoro);
-        
-        // Wait for async handling to complete
-        await Task.Delay(100);
+        var args = new TimerCompletedEventArgs(SessionType.Pomodoro, null, null, 25, true, DateTime.UtcNow);
+        await service.HandleTimerCompletedAsync(args);
     }
     
     [Fact]
@@ -65,7 +59,6 @@ public partial class ConsentServiceTests
         var sessionOptionsServiceMock = new Mock<ISessionOptionsService>();
         var loggerMock = new Mock<ILogger<ConsentService>>();
         
-        // AppState exists but Settings is null
         var appState = new AppState
         {
             Settings = null
@@ -92,14 +85,9 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
         
-        service.Initialize();
-        
         // Act & Assert - should not throw
-        // Trigger through the public event which internally calls HandleTimerCompleteSafeAsync
-        timerServiceMock.Raise(x => x.OnTimerComplete += null, SessionType.Pomodoro);
-        
-        // Wait for async handling to complete
-        await Task.Delay(100);
+        var args = new TimerCompletedEventArgs(SessionType.Pomodoro, null, null, 25, true, DateTime.UtcNow);
+        await service.HandleTimerCompletedAsync(args);
     }
     
     [Fact]
