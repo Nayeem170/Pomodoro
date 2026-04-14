@@ -44,6 +44,18 @@ public class TaskListBase : ComponentBase
     /// Determines if the Add button should be disabled
     /// </summary>
     protected bool IsAddDisabled => string.IsNullOrWhiteSpace(NewTaskName);
+
+    protected IReadOnlyList<TaskItem> ActiveTasks
+        => Tasks.Where(t => !t.IsCompleted)
+                .OrderByDescending(t => t.LastWorkedOn ?? t.CreatedAt)
+                .ToList();
+
+    protected IReadOnlyList<TaskItem> CompletedTasks
+        => Tasks.Where(t => t.IsCompleted)
+                .OrderByDescending(t => t.LastWorkedOn ?? t.CreatedAt)
+                .ToList();
+
+    protected bool HasCompletedTasks => Tasks.Any(t => t.IsCompleted);
     
     #endregion
 
