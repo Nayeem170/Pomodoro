@@ -34,7 +34,7 @@
     </div>
     
     <div class="task-items">
-        @foreach (var task in Tasks.Where(t => !t.IsCompleted).OrderByDescending(t => t.LastWorkedOn ?? t.CreatedAt))
+        @foreach (var task in ActiveTasks)
         {
             <TaskItemComponent @key="task.Id" 
                 Item="task" 
@@ -45,11 +45,11 @@
                 OnUncomplete="HandleTaskUncomplete" />
         }
         
-        @if (Tasks.Any(t => t.IsCompleted))
+        @if (HasCompletedTasks)
         {
             <div class="completed-section">
                 <h4>Completed</h4>
-                @foreach (var task in Tasks.Where(t => t.IsCompleted).OrderByDescending(t => t.LastWorkedOn ?? t.CreatedAt))
+                @foreach (var task in CompletedTasks)
                 {
                     <TaskItemComponent @key="task.Id" 
                         Item="task" 

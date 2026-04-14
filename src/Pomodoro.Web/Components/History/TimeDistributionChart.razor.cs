@@ -24,6 +24,8 @@ public partial class TimeDistributionChart : IDisposable
     private static readonly string CanvasId = Constants.Charts.TimeDistributionCanvasId;
     
     private DateTime _lastRenderedDate;
+    private List<string>? _previousLabels;
+    private List<int>? _previousData;
 
     /// <summary>
     /// Total minutes displayed in the chart
@@ -73,11 +75,23 @@ public partial class TimeDistributionChart : IDisposable
     
     protected override async Task OnParametersSetAsync()
     {
-        // Only update if the date has changed and we've already rendered
-        if (_isRendered && _lastRenderedDate != SelectedDate.Date)
+        if (!_isRendered) return;
+
+        var distribution = ActivityService.GetTimeDistribution(SelectedDate);
+        if (distribution == null || distribution.Count == 0) return;
+
+        var labels = distribution.Keys.ToList();
+        var data = distribution.Values.ToList();
+
+        if (_lastRenderedDate == SelectedDate.Date &&
+            _previousLabels != null && _previousData != null &&
+            _previousLabels.SequenceEqual(labels) &&
+            _previousData.SequenceEqual(data))
         {
-            await UpdateChartAsync();
+            return;
         }
+
+        await UpdateChartAsync();
     }
     
     private void OnActivityChanged()
@@ -116,6 +130,8 @@ public partial class TimeDistributionChart : IDisposable
                 
                 var labels = distribution.Keys.ToList();
                 var data = distribution.Values.ToList();
+                _previousLabels = labels;
+                _previousData = data;
                 TotalMinutes = data.Sum();
                 HasData = true;
                 

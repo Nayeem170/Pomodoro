@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Pomodoro.Web.Models;
 
 /// <summary>
@@ -14,6 +16,7 @@ public class ActivityRecord
     public bool WasCompleted { get; set; }
     
     // For display purposes
+    [JsonIgnore]
     public string DisplayText => Type switch
     {
         SessionType.Pomodoro => TaskName ?? Constants.SessionTypes.FocusTimeActivity,
@@ -22,6 +25,7 @@ public class ActivityRecord
         _ => Constants.SessionTypes.UnknownActivity
     };
     
+    [JsonIgnore]
     public string Icon => Type switch
     {
         SessionType.Pomodoro => Constants.SessionTypes.PomodoroEmoji,
@@ -30,6 +34,7 @@ public class ActivityRecord
         _ => Constants.SessionTypes.TimerEmoji
     };
     
+    [JsonIgnore]
     public string TimeAgo => GetTimeAgo(CompletedAt);
     
     private static string GetTimeAgo(DateTime completedAt)

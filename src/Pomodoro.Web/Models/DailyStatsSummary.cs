@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Pomodoro.Web.Models;
 
 /// <summary>
@@ -12,6 +14,7 @@ public class DailyStatsSummary
     /// <summary>
     /// Formats focus minutes into human-readable format
     /// </summary>
+    [JsonIgnore]
     public string FormattedFocusTime
     {
         get
