@@ -4,7 +4,7 @@ using Pomodoro.Web.Components.History;
 using Xunit;
 using System.Reflection;
 
-namespace Pomodoro.Web.Tests.Components.History;
+namespace Pomodoro.Web.Tests.History;
 
 /// <summary>
 /// bUnit tests for DateNavigator component.

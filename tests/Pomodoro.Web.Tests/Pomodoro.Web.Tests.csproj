@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -40,10 +40,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Pomodoro.Web\Pomodoro.Web.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

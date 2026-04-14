@@ -4,7 +4,7 @@ using Pomodoro.Web.Components.Timer;
 using Pomodoro.Web.Models;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components;
+namespace Pomodoro.Web.Tests;
 
 public class CurrentTaskIndicatorTests : TestContext
 {

@@ -4,7 +4,7 @@ using Pomodoro.Web.Components.History;
 using Pomodoro.Web.Services.Formatters;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components.History;
+namespace Pomodoro.Web.Tests.History;
 
 /// <summary>
 /// Tests for SummaryCards component

@@ -115,7 +115,7 @@ public class SettingsBaseTests : TestContext
     public void Component_CanBeRendered()
     {
         // Act
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         
         // Assert
         Assert.NotNull(cut);
@@ -138,7 +138,7 @@ public class SettingsBaseTests : TestContext
         TimerServiceMock.Setup(x => x.Settings).Returns(testSettings);
         
         // Act
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         
         // Assert
         var instance = cut.Instance;
@@ -157,7 +157,7 @@ public class SettingsBaseTests : TestContext
     public async Task HandleSave_UpdatesTimerServiceAndShowsToast()
     {
         // Arrange
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         
         // Act - Use InvokeAsync to run within component's dispatcher context
@@ -177,7 +177,7 @@ public class SettingsBaseTests : TestContext
         // Arrange
         TimerServiceMock.Setup(x => x.UpdateSettingsAsync(It.IsAny<TimerSettings>()))
             .ThrowsAsync(new Exception("Update failed"));
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         
         // Act & Assert
@@ -192,7 +192,7 @@ public class SettingsBaseTests : TestContext
     public void ResetToDefaults_ResetsSettingsToNewInstance()
     {
         // Arrange
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         var settings = GetProtectedProperty<TimerSettings>(instance, "Settings");
         SetProtectedProperty(instance, "Settings", new TimerSettings { PomodoroMinutes = 50 });
@@ -217,7 +217,7 @@ public class SettingsBaseTests : TestContext
     public async Task ExportJson_ExportsDataAndDownloadsFile()
     {
         // Arrange
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         
         // Act - Use InvokeAsync to run within component's dispatcher context
@@ -237,7 +237,7 @@ public class SettingsBaseTests : TestContext
         // Arrange
         ExportServiceMock.Setup(x => x.ExportToJsonAsync())
             .ThrowsAsync(new Exception("Export failed"));
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         
         // Act - Use InvokeAsync to run within component's dispatcher context
@@ -260,7 +260,7 @@ public class SettingsBaseTests : TestContext
     public void ConfirmClearData_SetsShowClearConfirmationToTrue()
     {
         // Arrange
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         
         // Act
@@ -275,7 +275,7 @@ public class SettingsBaseTests : TestContext
     public async Task ClearData_CallsExportService()
     {
         // Arrange
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         
         // Act - Use InvokeAsync to run within component's dispatcher context
@@ -289,7 +289,7 @@ public class SettingsBaseTests : TestContext
     public async Task ClearData_ReloadsServices()
     {
         // Arrange
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         
         // Act - Use InvokeAsync to run within component's dispatcher context
@@ -306,7 +306,7 @@ public class SettingsBaseTests : TestContext
         // Arrange
         ExportServiceMock.Setup(x => x.ClearAllDataAsync())
             .ThrowsAsync(new Exception("Clear failed"));
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         
         // Act - Use InvokeAsync to run within component's dispatcher context
@@ -325,7 +325,7 @@ public class SettingsBaseTests : TestContext
     public async Task DownloadFileAsync_CallsJSInteropService()
     {
         // Arrange
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         var fileName = "test.json";
         var content = "test content";
@@ -347,7 +347,7 @@ public class SettingsBaseTests : TestContext
     public void HasChanges_ReturnsFalse_WhenSettingsEqualOriginal()
     {
         // Arrange
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         
         // Act
@@ -361,7 +361,7 @@ public class SettingsBaseTests : TestContext
     public void HasChanges_ReturnsTrue_WhenSettingsDifferFromOriginal()
     {
         // Arrange
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         var settings = GetProtectedProperty<TimerSettings>(instance, "Settings");
         SetProtectedProperty(instance, "Settings", new TimerSettings { PomodoroMinutes = 50 });
@@ -381,7 +381,7 @@ public class SettingsBaseTests : TestContext
     public void IsAtDefaults_ReturnsTrue_WhenSettingsMatchDefaults()
     {
         // Arrange
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         
         // Act
@@ -395,7 +395,7 @@ public class SettingsBaseTests : TestContext
     public void IsAtDefaults_ReturnsFalse_WhenSettingsDifferFromDefaults()
     {
         // Arrange
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         var settings = GetProtectedProperty<TimerSettings>(instance, "Settings");
         SetProtectedProperty(instance, "Settings", new TimerSettings { PomodoroMinutes = 50 });
@@ -415,7 +415,7 @@ public class SettingsBaseTests : TestContext
     public async Task HandleImport_SetsImportResult_WhenFileIsEmpty()
     {
         // Arrange
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         var mockFile = new Mock<Microsoft.AspNetCore.Components.Forms.IBrowserFile>();
         mockFile.Setup(x => x.Size).Returns(0);
@@ -435,7 +435,7 @@ public class SettingsBaseTests : TestContext
     public async Task HandleImport_SetsImportResult_WhenFileIsNull()
     {
         // Arrange
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         // Create InputFileChangeEventArgs with a null file in the list
         // This tests the file is null branch
@@ -456,7 +456,7 @@ public class SettingsBaseTests : TestContext
     public async Task HandleImport_SetsImportResult_WhenFileIsTooLarge()
     {
         // Arrange
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         var mockFile = new Mock<Microsoft.AspNetCore.Components.Forms.IBrowserFile>();
         mockFile.Setup(x => x.Size).Returns(20 * 1024 * 1024); // 20 MB
@@ -478,7 +478,7 @@ public class SettingsBaseTests : TestContext
         // Arrange
         ExportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
             .ReturnsAsync(new ImportResult { Success = false, ErrorMessage = "Invalid format" });
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         var mockFile = new Mock<Microsoft.AspNetCore.Components.Forms.IBrowserFile>();
         mockFile.Setup(x => x.Size).Returns(100);
@@ -502,7 +502,7 @@ public class SettingsBaseTests : TestContext
         // Arrange
         ExportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
             .ReturnsAsync(new ImportResult { Success = false, ErrorMessage = null });
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         var mockFile = new Mock<Microsoft.AspNetCore.Components.Forms.IBrowserFile>();
         mockFile.Setup(x => x.Size).Returns(100);
@@ -526,7 +526,7 @@ public class SettingsBaseTests : TestContext
         // Arrange
         ExportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
             .ThrowsAsync(new Exception("Import error"));
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         var mockFile = new Mock<Microsoft.AspNetCore.Components.Forms.IBrowserFile>();
         mockFile.Setup(x => x.Size).Returns(100);
@@ -552,7 +552,7 @@ public class SettingsBaseTests : TestContext
         // Arrange
         ExportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
             .ReturnsAsync(new ImportResult { Success = true, ActivitiesImported = 5, TasksImported = 5 });
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         var mockFile = new Mock<Microsoft.AspNetCore.Components.Forms.IBrowserFile>();
         mockFile.Setup(x => x.Size).Returns(100);
@@ -580,7 +580,7 @@ public class SettingsBaseTests : TestContext
         // Arrange
         ExportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
             .ReturnsAsync(new ImportResult { Success = true, ActivitiesImported = 5, TasksImported = 5 });
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
         var mockFile = new Mock<Microsoft.AspNetCore.Components.Forms.IBrowserFile>();
         mockFile.Setup(x => x.Size).Returns(100);

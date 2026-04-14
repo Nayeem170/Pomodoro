@@ -5,7 +5,7 @@ using Moq;
 using Pomodoro.Web.Components.Shared;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components;
+namespace Pomodoro.Web.Tests;
 
 public class KeyboardHelpModalTests : TestContext
 {

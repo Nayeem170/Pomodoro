@@ -2,7 +2,7 @@ using Bunit;
 using Pomodoro.Web.Components.Shared;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components;
+namespace Pomodoro.Web.Tests;
 
 public class ErrorBannerTests : TestContext
 {

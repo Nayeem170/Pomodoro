@@ -3,11 +3,10 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Pomodoro.Web.Models;
-using Pomodoro.Web.Pages;
 using Pomodoro.Web.Services;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components.Pages;
+namespace Pomodoro.Web.Tests.Pages;
 
 /// <summary>
 /// Tests for History page disposal and cleanup
@@ -66,7 +65,7 @@ public class HistoryPageDisposeTests : TestHelper
             .Returns(Task.CompletedTask);
 
         // Act & Assert
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         await Task.Delay(100); // Allow initial load to complete
         
         // Dispose should not throw
@@ -132,7 +131,7 @@ public class HistoryPageDisposeTests : TestHelper
             .ThrowsAsync(new InvalidOperationException("Fallback also failed"));
 
         // Act & Assert
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         await Task.Delay(100); // Allow initial load to complete
         
         // Dispose should not throw even when both primary and fallback cleanup fail

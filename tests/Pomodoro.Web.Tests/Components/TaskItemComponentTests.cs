@@ -5,7 +5,7 @@ using Pomodoro.Web.Components.Tasks;
 using Pomodoro.Web.Models;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components;
+namespace Pomodoro.Web.Tests;
 
 /// <summary>
 /// Tests for TaskItemComponent.

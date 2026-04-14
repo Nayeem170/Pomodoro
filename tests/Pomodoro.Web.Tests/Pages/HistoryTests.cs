@@ -4,7 +4,6 @@ using Microsoft.JSInterop;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
-using Pomodoro.Web.Pages;
 using Pomodoro.Web.Services;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Components.History;
@@ -30,7 +29,7 @@ namespace Pomodoro.Web.Tests.Pages
             var infiniteScrollInteropMock = new Mock<IInfiniteScrollInterop>();
             var historyStatsServiceMock = new Mock<IHistoryStatsService>();
             var historyPagePresenterServiceMock = new Mock<HistoryPagePresenterService>(new Mock<ILogger<HistoryPagePresenterService>>().Object);
-            var loggerHistoryMock = new Mock<ILogger<History>>();
+            var loggerHistoryMock = new Mock<ILogger<Pomodoro.Web.Pages.History>>();
             var loggerPresenterMock = new Mock<ILogger<HistoryPagePresenterService>>();
             var timeFormatterMock = new Mock<TimeFormatter>();
             var activityTimelineFormatterMock = new Mock<ActivityTimelineFormatter>();
@@ -98,7 +97,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldRenderCorrectly()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             Assert.NotNull(cut);
@@ -109,7 +108,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldHaveExpectedTitle()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             var title = cut.Find("h1");
@@ -120,7 +119,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldDisplayHistoryTabs()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             var tabs = cut.FindComponents<HistoryTabs>();
@@ -131,7 +130,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldDisplaySummaryCards()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             // Check if weekly-summary-section exists (which contains the summary cards)
@@ -143,7 +142,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldDisplayActivityTimeline()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             var activityTimeline = cut.FindComponents<ActivityTimeline>();
@@ -154,7 +153,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldDisplayTimeDistributionChart()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             var timeDistributionChart = cut.FindComponents<TimeDistributionChart>();
@@ -165,7 +164,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldDisplayDateNavigator()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             var dateNavigator = cut.FindComponents<DateNavigator>();
@@ -176,7 +175,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldDisplayWeekNavigator()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             // WeekNavigator is only visible in the weekly view, which is not the default tab
@@ -189,7 +188,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldHaveResponsiveLayout()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             var historyPage = cut.Find(".history-page");
@@ -203,7 +202,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldHaveAccessibilityAttributes()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             var historyPage = cut.Find(".history-page");
@@ -214,7 +213,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldHaveProperNavigation()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             // Check if HistoryTabs component is rendered (which provides navigation within the History page)
@@ -226,7 +225,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldContainAllRequiredSections()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             // Check for main sections
@@ -244,7 +243,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldHaveCorrectCssClasses()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             var page = cut.Find(".history-page");
@@ -258,7 +257,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldRenderLoadingState()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             // Check if timeline section exists
@@ -270,7 +269,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldRenderErrorState()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             // Check if timeline-section exists (this is a key section that should always be present)
@@ -282,7 +281,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldRenderEmptyState()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             // Check if empty state message exists
@@ -295,7 +294,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_ShouldHaveDataAttributesForTesting()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
             
             // Assert
             var historyPage = cut.Find(".history-page");
@@ -312,7 +311,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_WeeklyView_ShouldRenderCorrectly()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialActiveTab, HistoryTab.Weekly));
 
             // Assert
@@ -336,7 +335,7 @@ namespace Pomodoro.Web.Tests.Pages
             };
 
             // Act
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialActiveTab, HistoryTab.Weekly)
                 .Add(p => p.InitialWeeklyStats, weeklyStats));
 
@@ -363,7 +362,7 @@ namespace Pomodoro.Web.Tests.Pages
             };
 
             // Act
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialActiveTab, HistoryTab.Weekly)
                 .Add(p => p.InitialWeeklyStats, weeklyStats));
 
@@ -379,7 +378,7 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange & Act - Weekly view but no stats (null InitialWeeklyStats)
             // Note: LoadDataAsync will still load weekly stats from ActivityService
             // So we need to verify the weekly-summary-section exists when WeeklyStats is available
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialActiveTab, HistoryTab.Weekly));
 
             // Assert - Weekly view should have the chart section regardless
@@ -391,7 +390,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_DailyView_WithMoreActivities_ShouldRenderSentinel()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialHasMoreActivities, true));
 
             // Assert
@@ -403,7 +402,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_DailyView_WithLoadingState_ShouldRenderLoadingIndicator()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialHasMoreActivities, true)
                 .Add(p => p.InitialIsLoadingMore, true));
 
@@ -423,7 +422,7 @@ namespace Pomodoro.Web.Tests.Pages
             };
 
             // Act
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialActivities, activities));
 
             // Assert
@@ -442,7 +441,7 @@ namespace Pomodoro.Web.Tests.Pages
             };
 
             // Act
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialActivities, activities)
                 .Add(p => p.InitialHasMoreActivities, true));
 
@@ -470,7 +469,7 @@ namespace Pomodoro.Web.Tests.Pages
             };
 
             // Act
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialActiveTab, HistoryTab.Weekly)
                 .Add(p => p.InitialWeeklyStats, weeklyStats));
 
@@ -496,7 +495,7 @@ namespace Pomodoro.Web.Tests.Pages
             };
 
             // Act
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialActiveTab, HistoryTab.Weekly)
                 .Add(p => p.InitialWeeklyStats, weeklyStats));
 
@@ -519,7 +518,7 @@ namespace Pomodoro.Web.Tests.Pages
             };
 
             // Act
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialActiveTab, HistoryTab.Weekly)
                 .Add(p => p.InitialWeeklyStats, weeklyStats));
 
@@ -539,7 +538,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_DailyView_HasMoreActivitiesNotLoading_ShowsEmptySentinel()
         {
             // Arrange & Act - HasMoreActivities=true but IsLoadingMore=false
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialHasMoreActivities, true)
                 .Add(p => p.InitialIsLoadingMore, false));
 
@@ -556,7 +555,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_DailyView_LoadingIndicator_ContainsAllLoaderElements()
         {
             // Arrange & Act
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialHasMoreActivities, true)
                 .Add(p => p.InitialIsLoadingMore, true));
 
@@ -585,7 +584,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_DailyView_NoActivities_NoEndOfListOrSentinel()
         {
             // Arrange & Act - Empty activities, no more to load
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialActivities, new List<ActivityRecord>())
                 .Add(p => p.InitialHasMoreActivities, false));
 
@@ -609,7 +608,7 @@ namespace Pomodoro.Web.Tests.Pages
             };
 
             // Act
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialActivities, activities)
                 .Add(p => p.InitialHasMoreActivities, false));
 
@@ -631,7 +630,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HistoryPage_DailyView_NullStats_ShowsZeroValues()
         {
             // Arrange & Act - Default setup returns empty DailyStatsSummary
-            var cut = RenderComponent<History>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>();
 
             // Assert - The daily summary section should exist
             var summarySection = cut.Find(".weekly-summary-section");
@@ -655,7 +654,7 @@ namespace Pomodoro.Web.Tests.Pages
             };
 
             // Act
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialActiveTab, HistoryTab.Weekly)
                 .Add(p => p.InitialWeeklyStats, weeklyStats));
 
@@ -679,7 +678,7 @@ namespace Pomodoro.Web.Tests.Pages
             };
 
             // Act
-            var cut = RenderComponent<History>(parameters => parameters
+            var cut = RenderComponent<Pomodoro.Web.Pages.History>(parameters => parameters
                 .Add(p => p.InitialActiveTab, HistoryTab.Weekly)
                 .Add(p => p.InitialWeeklyStats, weeklyStats));
 

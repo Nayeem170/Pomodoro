@@ -6,7 +6,7 @@ using Xunit;
 
 #pragma warning disable BL0005 // Component parameters are set directly for testing purposes
 
-namespace Pomodoro.Web.Tests.Components.History;
+namespace Pomodoro.Web.Tests.History;
 
 /// <summary>
 /// Testable wrapper for SummaryCardsBase to expose protected members
