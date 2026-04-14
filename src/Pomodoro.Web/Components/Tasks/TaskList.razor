@@ -35,7 +35,7 @@
     <div class="task-items">
         @foreach (var task in Tasks.Where(t => !t.IsCompleted).OrderByDescending(t => t.LastWorkedOn ?? t.CreatedAt))
         {
-            <TaskItemComponent 
+            <TaskItemComponent @key="task.Id" 
                 Item="task" 
                 IsSelected="task.Id == CurrentTaskId"
                 OnSelect="HandleTaskSelect"
@@ -50,7 +50,7 @@
                 <h4>Completed</h4>
                 @foreach (var task in Tasks.Where(t => t.IsCompleted).OrderByDescending(t => t.LastWorkedOn ?? t.CreatedAt))
                 {
-                    <TaskItemComponent 
+                    <TaskItemComponent @key="task.Id" 
                         Item="task" 
                         IsSelected="false"
                         OnSelect="HandleTaskSelect"

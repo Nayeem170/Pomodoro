@@ -477,17 +477,23 @@ window.pipTimer = {
                         break;
                     case pipTimer.getMessageType('toggleTimer'):
                         if (this.dotNetRef) {
-                            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onToggle'));
+                            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onToggle')).catch(function(err) {
+                                console.error('PiP toggle timer callback failed:', err);
+                            });
                         }
                         break;
                     case pipTimer.getMessageType('resetTimer'):
                         if (this.dotNetRef) {
-                            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onReset'));
+                            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onReset')).catch(function(err) {
+                                console.error('PiP reset timer callback failed:', err);
+                            });
                         }
                         break;
                     case pipTimer.getMessageType('switchSession'):
                         if (this.dotNetRef) {
-                            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onSwitchSession'), event.data.sessionType);
+                            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onSwitchSession'), event.data.sessionType).catch(function(err) {
+                                console.error('PiP switch session callback failed:', err);
+                            });
                         }
                         break;
                 }
@@ -498,19 +504,25 @@ window.pipTimer = {
     // Timer control functions (called from main window or .NET)
     toggleTimer: function() {
         if (this.dotNetRef) {
-            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onToggle'));
+            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onToggle')).catch(function(err) {
+                console.error('PiP toggle timer callback failed:', err);
+            });
         }
     },
     
     resetTimer: function() {
         if (this.dotNetRef) {
-            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onReset'));
+            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onReset')).catch(function(err) {
+                console.error('PiP reset timer callback failed:', err);
+            });
         }
     },
     
     switchSession: function(sessionType) {
         if (this.dotNetRef) {
-            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onSwitchSession'), sessionType);
+            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onSwitchSession'), sessionType).catch(function(err) {
+                console.error('PiP switch session callback failed:', err);
+            });
         }
     },
     
@@ -532,7 +544,9 @@ window.pipTimer = {
     // Notify .NET that PiP was closed
     notifyClosed: function() {
         if (this.dotNetRef) {
-            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onClosed'));
+            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onClosed')).catch(function(err) {
+                console.error('PiP closed callback failed:', err);
+            });
         }
     },
     
