@@ -410,7 +410,7 @@ public class TimerControlsTests : TestContext
 
     #endregion
 
-    #region GetSessionLabel Method Tests (via reflection)
+    #region GetSessionLabel Method Tests
 
     [Fact]
     public void TimerControls_GetSessionLabel_ReturnsPomodoroDisplayName()
@@ -422,10 +422,8 @@ public class TimerControlsTests : TestContext
             .Add(p => p.CanStart, true)
             .Add(p => p.SessionType, SessionType.Pomodoro));
 
-        // Act - Call protected method via reflection
-        var method = typeof(TimerControlsBase).GetMethod("GetSessionLabel", 
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var result = method?.Invoke(cut.Instance, null) as string;
+        // Act
+        var result = cut.Instance.GetSessionLabel();
 
         // Assert
         Assert.Equal(Constants.SessionTypes.PomodoroDisplayName, result);
@@ -441,10 +439,8 @@ public class TimerControlsTests : TestContext
             .Add(p => p.CanStart, true)
             .Add(p => p.SessionType, SessionType.ShortBreak));
 
-        // Act - Call protected method via reflection
-        var method = typeof(TimerControlsBase).GetMethod("GetSessionLabel", 
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var result = method?.Invoke(cut.Instance, null) as string;
+        // Act
+        var result = cut.Instance.GetSessionLabel();
 
         // Assert
         Assert.Equal(Constants.SessionTypes.ShortBreakDisplayName, result);
@@ -460,10 +456,8 @@ public class TimerControlsTests : TestContext
             .Add(p => p.CanStart, true)
             .Add(p => p.SessionType, SessionType.LongBreak));
 
-        // Act - Call protected method via reflection
-        var method = typeof(TimerControlsBase).GetMethod("GetSessionLabel", 
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var result = method?.Invoke(cut.Instance, null) as string;
+        // Act
+        var result = cut.Instance.GetSessionLabel();
 
         // Assert
         Assert.Equal(Constants.SessionTypes.LongBreakDisplayName, result);
@@ -479,10 +473,8 @@ public class TimerControlsTests : TestContext
             .Add(p => p.CanStart, true)
             .Add(p => p.SessionType, (SessionType)999));
 
-        // Act - Call protected method via reflection
-        var method = typeof(TimerControlsBase).GetMethod("GetSessionLabel", 
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var result = method?.Invoke(cut.Instance, null) as string;
+        // Act
+        var result = cut.Instance.GetSessionLabel();
 
         // Assert
         Assert.Equal(string.Empty, result);
@@ -490,7 +482,7 @@ public class TimerControlsTests : TestContext
 
     #endregion
 
-    #region GetSessionClass Default Branch Test (via reflection)
+    #region GetSessionClass Default Branch Test
 
     [Fact]
     public void TimerControls_GetSessionClass_ReturnsDefaultClassForInvalidSessionType()
@@ -502,10 +494,8 @@ public class TimerControlsTests : TestContext
             .Add(p => p.CanStart, true)
             .Add(p => p.SessionType, (SessionType)999));
 
-        // Act - Call protected method via reflection
-        var method = typeof(TimerControlsBase).GetMethod("GetSessionClass", 
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var result = method?.Invoke(cut.Instance, null) as string;
+        // Act
+        var result = cut.Instance.GetSessionClass();
 
         // Assert - Default case returns PomodoroClass
         Assert.Equal(Constants.SessionTypes.PomodoroClass, result);

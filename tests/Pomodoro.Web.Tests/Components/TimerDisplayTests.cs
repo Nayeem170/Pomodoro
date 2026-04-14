@@ -246,11 +246,7 @@ public partial class TimerDisplayTests : TestContext
 
     private void SetupTimerService(TimeSpan remainingTime, SessionType sessionType, bool isRunning)
     {
-        _timerServiceMock.SetupGet(s => s.RemainingTime).Returns(remainingTime);
-        _timerServiceMock.SetupGet(s => s.RemainingSeconds).Returns((int)remainingTime.TotalSeconds);
-        _timerServiceMock.SetupGet(s => s.CurrentSessionType).Returns(sessionType);
-        _timerServiceMock.SetupGet(s => s.IsRunning).Returns(isRunning);
-        _timerServiceMock.SetupGet(s => s.Settings).Returns(new TimerSettings());
+        TestBase.SetupTimerServiceMock(_timerServiceMock, remainingTime, sessionType, isRunning);
     }
 
     #endregion

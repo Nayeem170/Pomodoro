@@ -18,7 +18,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected ITaskService TaskService { get; set; } = default!;
     
     [Inject]
-    protected ILogger<IndexBase> Logger { get; set; } = default!;
+    internal ILogger<IndexBase> Logger { get; set; } = default!;
 
     [Inject]
     protected ITimerService TimerService { get; set; } = default!;
@@ -48,7 +48,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected ITodayStatsService TodayStatsService { get; set; } = default!;
     
     [Inject]
-    protected IndexPagePresenterService IndexPagePresenterService { get; set; } = default!;
+    internal IndexPagePresenterService IndexPagePresenterService { get; set; } = default!;
     
     #endregion
 
@@ -64,7 +64,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected bool IsConsentModalVisible { get; set; }
     protected int ConsentCountdown { get; set; }
     protected List<ConsentOption> ConsentOptions { get; set; } = new();
-    protected bool ShowKeyboardHelp { get; set; }
+    internal bool ShowKeyboardHelp { get; set; }
     public string? ErrorMessage { get; set; }
     public bool IsPipOpen { get; set; }
     
@@ -217,7 +217,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     /// Check for pending notification action from URL parameter
     /// This handles the case when the app is opened from a notification click
     /// </summary>
-    private async Task CheckPendingNotificationActionAsync()
+    internal async Task CheckPendingNotificationActionAsync()
     {
         try
         {

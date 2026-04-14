@@ -34,22 +34,5 @@ public class ActivityRecord
         _ => Constants.SessionTypes.TimerEmoji
     };
     
-    [JsonIgnore]
-    public string TimeAgo => GetTimeAgo(CompletedAt);
-    
-    private static string GetTimeAgo(DateTime completedAt)
-    {
-        var diff = DateTime.UtcNow - completedAt;
-        
-        if (diff.TotalMinutes < Constants.TimeThresholds.OneMinute)
-            return Constants.TimeFormats.JustNowText;
-        if (diff.TotalMinutes < Constants.TimeThresholds.OneHourInMinutes)
-            return string.Format(Constants.TimeFormats.MinutesAgoFormat, (int)diff.TotalMinutes);
-        if (diff.TotalHours < Constants.TimeThresholds.OneDayInHours)
-            return string.Format(Constants.TimeFormats.HoursAgoFormat, (int)diff.TotalHours);
-        if (diff.TotalDays < Constants.TimeThresholds.OneWeekInDays)
-            return string.Format(Constants.TimeFormats.DaysAgoFormat, (int)diff.TotalDays);
-        
-        return completedAt.ToString(Constants.TimeFormats.ShortDateFormat);
-    }
+
 }
