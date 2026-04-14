@@ -385,11 +385,6 @@
     animation: fadeIn 0.2s ease;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
 .confirmation-content {
     background: linear-gradient(145deg, #1e1e2e, #252536);
     padding: 2rem;
@@ -459,7 +454,7 @@
     transition: all 0.2s ease;
 }
 
-.btn-cancel:hover {
+.btn-cancel:not(.btn-icon-small):hover {
     background: rgba(255, 255, 255, 0.15);
 }
 

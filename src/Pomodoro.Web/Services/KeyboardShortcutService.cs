@@ -47,7 +47,7 @@ public class KeyboardShortcutService : IKeyboardShortcutService, IAsyncDisposabl
     public async Task InitializeAsync()
     {
         _dotNetRef = DotNetObjectReference.Create(this);
-        await _jsRuntime.InvokeVoidAsync("keyboardShortcuts.initialize", _dotNetRef);
+        await _jsRuntime.InvokeVoidAsync(Constants.KeyboardShortcutJsFunctions.Initialize, _dotNetRef);
         _logger.LogInformation("Keyboard shortcut service initialized");
     }
 
@@ -78,7 +78,7 @@ public class KeyboardShortcutService : IKeyboardShortcutService, IAsyncDisposabl
         {
             try
             {
-                await _jsRuntime.InvokeVoidAsync("keyboardShortcuts.dispose");
+                await _jsRuntime.InvokeVoidAsync(Constants.KeyboardShortcutJsFunctions.Dispose);
                 _dotNetRef.Dispose();
                 _dotNetRef = null;
             }

@@ -35,7 +35,7 @@ public class LocalDateTimeService : ILocalDateTimeService
         try
         {
             // Get the client's local date via JavaScript interop
-            var localDate = await _jsRuntime.InvokeAsync<DateTime>("localDateTime.getLocalDate");
+            var localDate = await _jsRuntime.InvokeAsync<DateTime>(Constants.LocalDateTimeJsFunctions.GetLocalDate);
             _cachedLocalDate = localDate;
             return localDate;
         }
@@ -61,8 +61,8 @@ public class LocalDateTimeService : ILocalDateTimeService
         try
         {
             // Get the client's local date and time via JavaScript interop
-            var localDateTime = await _jsRuntime.InvokeAsync<DateTime>("localDateTime.getLocalDateTime");
-            var offset = await _jsRuntime.InvokeAsync<int>("localDateTime.getTimezoneOffset");
+            var localDateTime = await _jsRuntime.InvokeAsync<DateTime>(Constants.LocalDateTimeJsFunctions.GetLocalDateTime);
+            var offset = await _jsRuntime.InvokeAsync<int>(Constants.LocalDateTimeJsFunctions.GetTimezoneOffset);
             
             // Create a DateTimeOffset with the local time and timezone offset
             var localDateTimeOffset = new DateTimeOffset(
@@ -102,7 +102,7 @@ public class LocalDateTimeService : ILocalDateTimeService
         try
         {
             // Get the client's local date and time via JavaScript interop
-            var localDateTime = await _jsRuntime.InvokeAsync<DateTime>("localDateTime.getLocalDateTime");
+            var localDateTime = await _jsRuntime.InvokeAsync<DateTime>(Constants.LocalDateTimeJsFunctions.GetLocalDateTime);
             return localDateTime;
         }
         catch (Exception)
@@ -121,7 +121,7 @@ public class LocalDateTimeService : ILocalDateTimeService
         try
         {
             // Get the client's timezone offset via JavaScript interop
-            var offset = await _jsRuntime.InvokeAsync<int>("localDateTime.getTimezoneOffset");
+            var offset = await _jsRuntime.InvokeAsync<int>(Constants.LocalDateTimeJsFunctions.GetTimezoneOffset);
             return offset;
         }
         catch (Exception)

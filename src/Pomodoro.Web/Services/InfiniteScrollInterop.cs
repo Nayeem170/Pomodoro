@@ -22,7 +22,7 @@ public class InfiniteScrollInterop : IInfiniteScrollInterop
     {
         try
         {
-            return await _jsRuntime.InvokeAsync<bool>("infiniteScroll.isSupported");
+            return await _jsRuntime.InvokeAsync<bool>(Constants.InfiniteScrollJsFunctions.IsSupported);
         }
         catch (JSException)
         {
@@ -43,7 +43,7 @@ public class InfiniteScrollInterop : IInfiniteScrollInterop
         try
         {
             return await _jsRuntime.InvokeAsync<bool>(
-                "infiniteScroll.createObserver",
+                Constants.InfiniteScrollJsFunctions.CreateObserver,
                 sentinelId,
                 dotNetRef,
                 containerId,
@@ -63,7 +63,7 @@ public class InfiniteScrollInterop : IInfiniteScrollInterop
     {
         try
         {
-            await _jsRuntime.InvokeVoidAsync("infiniteScroll.destroyObserver", sentinelId);
+            await _jsRuntime.InvokeVoidAsync(Constants.InfiniteScrollJsFunctions.DestroyObserver, sentinelId);
         }
         catch (JSException)
         {
@@ -78,7 +78,7 @@ public class InfiniteScrollInterop : IInfiniteScrollInterop
     {
         try
         {
-            await _jsRuntime.InvokeVoidAsync("infiniteScroll.destroyAllObservers");
+            await _jsRuntime.InvokeVoidAsync(Constants.InfiniteScrollJsFunctions.DestroyAllObservers);
         }
         catch (JSException)
         {
