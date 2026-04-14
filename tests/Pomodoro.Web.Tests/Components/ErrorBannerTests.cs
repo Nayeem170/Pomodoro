@@ -1,5 +1,5 @@
 using Bunit;
-using Pomodoro.Web.Components;
+using Pomodoro.Web.Components.Shared;
 using Xunit;
 
 namespace Pomodoro.Web.Tests.Components;

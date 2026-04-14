@@ -1,7 +1,7 @@
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Pomodoro.Web.Components;
+using Pomodoro.Web.Components.Timer;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
 using Xunit;
