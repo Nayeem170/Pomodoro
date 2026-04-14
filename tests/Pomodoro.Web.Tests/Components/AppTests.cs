@@ -37,7 +37,7 @@ namespace Pomodoro.Web.Tests.Components
             Services.AddSingleton<IConsentService>(new Mock<IConsentService>().Object);
             Services.AddSingleton<INotificationService>(new Mock<INotificationService>().Object);
             Services.AddSingleton<IPipTimerService>(new Mock<IPipTimerService>().Object);
-            Services.AddSingleton<ChartService>();
+            Services.AddSingleton<IChartService, ChartService>();
             Services.AddSingleton<IKeyboardShortcutService>(new Mock<IKeyboardShortcutService>().Object);
             Services.AddSingleton<IExportService>(new Mock<IExportService>().Object);
             Services.AddSingleton<ITodayStatsService>(new Mock<ITodayStatsService>().Object);
