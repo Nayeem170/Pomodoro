@@ -60,11 +60,6 @@ public class ActivityRepository : IActivityRepository
         return success;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
-    {
-        return await _indexedDb.DeleteAsync(Constants.Storage.ActivitiesStore, id.ToString());
-    }
-
     public async Task<int> GetCountAsync(DateTime? start = null, DateTime? end = null)
     {
         if (start.HasValue && end.HasValue)

@@ -201,39 +201,6 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         _logger.LogDebug("Computed stats for {Count} dates in single pass", dates.Count);
     }
     
-    /// <summary>
-    /// Computes daily statistics for a single date using single-pass iteration
-    /// </summary>
-    private DailyStatsCache ComputeDailyStats(DateTime date)
-    {
-        var targetDate = date.Date;
-        var pomodoroCount = 0;
-        var focusMinutes = 0;
-        var breakMinutes = 0;
-        
-        // Single-pass iteration for better performance
-        foreach (var a in _cachedActivities)
-        {
-            if (a.CompletedAt.ToLocalTime().Date != targetDate) continue;
-            
-            if (a.Type == SessionType.Pomodoro)
-            {
-                pomodoroCount++;
-                focusMinutes += a.DurationMinutes;
-            }
-            else if (a.Type == SessionType.ShortBreak || a.Type == SessionType.LongBreak)
-            {
-                breakMinutes += a.DurationMinutes;
-            }
-        }
-        
-        return new DailyStatsCache
-        {
-            PomodoroCount = pomodoroCount,
-            FocusMinutes = focusMinutes,
-            BreakMinutes = breakMinutes
-        };
-    }
     
     /// <summary>
     /// Gets task pomodoro counts for a date range (in local time)
@@ -546,46 +513,6 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         }
     }
     
-    /// <summary>
-    /// Invalidates cached data for a specific activity by its date.
-    /// Useful for future extensibility when activities can be modified or deleted individually.
-    /// </summary>
-    /// <param name="activityId">The ID of the activity that was modified/deleted</param>
-    public void InvalidateCacheForActivity(Guid activityId)
-    {
-        lock (_cacheLock)
-        {
-            // Find the activity in cache to get its date
-            var activity = _cachedActivities.FirstOrDefault(a => a.Id == activityId);
-            if (activity != null)
-            {
-                InvalidateDateCache(activity.CompletedAt.ToLocalTime().Date);
-                _logger.LogDebug("Invalidated cache for activity {ActivityId} on date {Date}", activityId, activity.CompletedAt.ToLocalTime().Date);
-            }
-        }
-    }
-    
-    /// <summary>
-    /// Invalidates cached data for a date range.
-    /// Useful for bulk operations that affect multiple days.
-    /// </summary>
-    /// <param name="from">Start date (inclusive)</param>
-    /// <param name="to">End date (inclusive)</param>
-    public void InvalidateCacheForDateRange(DateTime from, DateTime to)
-    {
-        lock (_cacheLock)
-        {
-            var count = 0;
-            for (var date = from.Date; date <= to.Date; date = date.AddDays(1))
-            {
-                _activitiesByDate.Remove(date);
-                _dailyStatsCache.Remove(date);
-                _timeDistributionCache.Remove(date);
-                count++;
-            }
-            _logger.LogDebug("Invalidated cache for {Count} dates from {From} to {To}", count, from.Date, to.Date);
-        }
-    }
     
     #endregion
 }
