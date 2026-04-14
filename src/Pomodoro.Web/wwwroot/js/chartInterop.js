@@ -365,7 +365,7 @@ window.chartInterop = {
         const borderColorValues = labels.map((label, index) => {
             if (label === activityLabels.shortBreaks) return doughnutColors.greenBorder;
             if (label === activityLabels.longBreaks) return doughnutColors.purpleBorder;
-            return doughnutColors.borders[index % doughnutColors.borders.length];
+            return doughnutColors.backgrounds[index % doughnutColors.backgrounds.length];
         });
         
         // Create new doughnut chart
