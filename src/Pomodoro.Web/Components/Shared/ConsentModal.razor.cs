@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
 
-namespace Pomodoro.Web.Components;
+namespace Pomodoro.Web.Components.Shared;
 
 /// <summary>
 /// Code-behind for ConsentModal component

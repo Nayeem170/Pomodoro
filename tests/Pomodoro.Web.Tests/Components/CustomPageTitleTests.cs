@@ -1,6 +1,6 @@
 using Bunit;
 using Microsoft.AspNetCore.Components.Web;
-using Pomodoro.Web.Components;
+using Pomodoro.Web.Components.Shared;
 using Xunit;
 
 namespace Pomodoro.Web.Tests.Components;

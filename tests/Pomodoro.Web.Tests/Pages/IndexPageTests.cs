@@ -3,7 +3,6 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Pomodoro.Web.Components;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Pages;
 using Pomodoro.Web.Services;

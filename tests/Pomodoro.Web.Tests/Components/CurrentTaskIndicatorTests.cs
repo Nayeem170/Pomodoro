@@ -1,6 +1,6 @@
 using Bunit;
 using FluentAssertions;
-using Pomodoro.Web.Components;
+using Pomodoro.Web.Components.Timer;
 using Pomodoro.Web.Models;
 using Xunit;
 

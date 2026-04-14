@@ -1,7 +1,7 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
-using Pomodoro.Web.Components;
+using Pomodoro.Web.Components.Tasks;
 using Pomodoro.Web.Models;
 using Xunit;
 

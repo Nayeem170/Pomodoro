@@ -2,7 +2,7 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Pomodoro.Web.Components;
+using Pomodoro.Web.Components.Shared;
 using Xunit;
 
 namespace Pomodoro.Web.Tests.Components;
