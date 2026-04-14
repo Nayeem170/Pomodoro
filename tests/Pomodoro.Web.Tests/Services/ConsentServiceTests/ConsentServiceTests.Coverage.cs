@@ -9,10 +9,10 @@ namespace Pomodoro.Web.Tests.Services.ConsentServiceTests;
 
 public partial class ConsentServiceTests
 {
-    #region HandleTimerCompleteSafeAsync catch block (lines 104-107)
+    #region HandleTimerCompletedAsync catch block
 
     [Fact]
-    public async Task HandleTimerComplete_WhenPlayCompletionThrows_LogsError()
+    public async Task HandleTimerCompletedAsync_WhenPlayCompletionThrows_LogsError()
     {
         var timerServiceMock = new Mock<ITimerService>();
         var taskServiceMock = new Mock<ITaskService>();
@@ -44,10 +44,9 @@ public partial class ConsentServiceTests
             timerServiceMock.Object, taskServiceMock.Object,
             notificationServiceMock.Object, appState,
             sessionOptionsServiceMock.Object, loggerMock.Object);
-        service.Initialize();
 
-        timerServiceMock.Raise(x => x.OnTimerComplete += null, SessionType.Pomodoro);
-        await Task.Delay(200);
+        var args = new TimerCompletedEventArgs(SessionType.Pomodoro, null, null, 25, true, DateTime.UtcNow);
+        await service.HandleTimerCompletedAsync(args);
 
         loggerMock.Verify(
             x => x.Log(LogLevel.Error, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()),

@@ -27,6 +27,7 @@ public class EventWiringService : IEventWiringService
         var timerService = serviceProvider.GetRequiredService<ITimerService>();
         var taskService = serviceProvider.GetService<ITaskService>();
         var activityService = serviceProvider.GetService<IActivityService>();
+        var consentService = serviceProvider.GetService<IConsentService>();
 
         // Wire up event subscribers to timer publisher
         if (timerService is ITimerEventPublisher timerPublisher)
@@ -41,6 +42,12 @@ public class EventWiringService : IEventWiringService
             if (activityService is ITimerEventSubscriber activitySubscriber)
             {
                 timerPublisher.OnTimerCompleted += activitySubscriber.HandleTimerCompletedAsync;
+            }
+
+            // Subscribe ConsentService to timer events
+            if (consentService is ITimerEventSubscriber consentSubscriber)
+            {
+                timerPublisher.OnTimerCompleted += consentSubscriber.HandleTimerCompletedAsync;
             }
         }
 

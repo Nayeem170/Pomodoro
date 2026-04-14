@@ -10,7 +10,7 @@ namespace Pomodoro.Web.Services;
 /// Uses PeriodicTimer for thread-safe async countdown handling.
 /// Dependencies are injected via constructor for explicit dependency declaration.
 /// </summary>
-public class ConsentService : IConsentService, IAsyncDisposable
+public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisposable
 {
     private readonly ISessionOptionsService _sessionOptionsService;
     private readonly ILogger<ConsentService> _logger;
@@ -64,41 +64,19 @@ public class ConsentService : IConsentService, IAsyncDisposable
             if (_isInitialized) return;
             _isInitialized = true;
         }
-        
-        if (_timerService != null)
-        {
-            _timerService.OnTimerComplete += HandleTimerComplete;
-        }
     }
 
-    private void HandleTimerComplete(SessionType sessionType)
-    {
-        // Use SafeTaskRunner for consistent fire-and-forget handling with error logging
-        SafeTaskRunner.RunAndForget(
-            () => HandleTimerCompleteSafeAsync(sessionType),
-            _logger,
-            Constants.SafeTaskOperations.ConsentTimerComplete
-        );
-    }
-    
-    /// <summary>
-    /// Safe async wrapper for HandleTimerComplete to avoid async void issues
-    /// </summary>
-    private async Task HandleTimerCompleteSafeAsync(SessionType sessionType)
+    public async Task HandleTimerCompletedAsync(TimerCompletedEventArgs args)
     {
         try
         {
-            // Play sound and show notification based on user preferences
-            await PlayCompletionSoundAndNotifyAsync(sessionType);
+            await PlayCompletionSoundAndNotifyAsync(args.SessionType);
             
-            // Get settings to check if auto-start is enabled
             var settings = _appState?.Settings;
             
-            // Only show consent modal if auto-start is enabled
-            // When auto-start is disabled, user must manually start the next session
             if (settings?.AutoStartEnabled == true)
             {
-                ShowConsentModal(sessionType);
+                ShowConsentModal(args.SessionType);
             }
         }
         catch (Exception ex)
@@ -350,11 +328,6 @@ public class ConsentService : IConsentService, IAsyncDisposable
         _isDisposed = true;
         StopCountdown();
         IsModalVisible = false;
-        
-        if (_timerService != null)
-        {
-            _timerService.OnTimerComplete -= HandleTimerComplete;
-        }
         
         await ValueTask.CompletedTask;
     }

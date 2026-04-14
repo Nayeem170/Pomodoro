@@ -190,7 +190,7 @@ public partial class ConsentServiceTests
         }
 
         [Fact]
-        public async Task DisposeAsync_UnsubscribesFromTimerService()
+        public async Task DisposeAsync_DisposesWithoutError()
         {
             // Arrange
             var timerServiceMock = new Mock<ITimerService>();
@@ -228,8 +228,8 @@ public partial class ConsentServiceTests
             // Act
             await service.DisposeAsync();
 
-            // Assert - Service should dispose without throwing
-            Assert.True(true);
+            // Assert - DisposeAsync no longer unsubscribes; service should dispose without throwing
+            timerServiceMock.VerifyRemove(x => x.OnTimerComplete -= It.IsAny<Action<SessionType>>(), Times.Never());
         }
     }
 

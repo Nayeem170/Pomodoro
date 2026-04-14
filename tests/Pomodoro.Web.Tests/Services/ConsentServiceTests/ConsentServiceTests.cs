@@ -12,7 +12,7 @@ namespace Pomodoro.Web.Tests.Services.ConsentServiceTests;
 public partial class ConsentServiceTests
 {
     [Fact]
-    public void Initialize_SubscribesToTimerCompleteEvent()
+    public void Initialize_SetsIsInitializedFlag()
     {
         // Arrange
         var timerServiceMock = new Mock<ITimerService>();
@@ -55,12 +55,12 @@ public partial class ConsentServiceTests
         // Act
         service.Initialize();
         
-        // Assert
-        timerServiceMock.VerifyAdd(x => x.OnTimerComplete += It.IsAny<Action<SessionType>>());
+        // Assert - Initialize no longer subscribes to OnTimerComplete; it sets the initialized flag
+        timerServiceMock.VerifyAdd(x => x.OnTimerComplete += It.IsAny<Action<SessionType>>(), Times.Never);
     }
     
     [Fact]
-    public void Initialize_WhenCalledMultipleTimes_SubscribesOnlyOnce()
+    public void Initialize_WhenCalledMultipleTimes_IsIdempotent()
     {
         // Arrange
         var timerServiceMock = new Mock<ITimerService>();
@@ -105,14 +105,14 @@ public partial class ConsentServiceTests
         service.Initialize();
         service.Initialize();
         
-        // Assert
+        // Assert - Initialize no longer subscribes; calling it multiple times should be safe
         timerServiceMock.VerifyAdd(
             x => x.OnTimerComplete += It.IsAny<Action<SessionType>>(),
-            Times.Once());
+            Times.Never());
     }
     
     [Fact]
-    public async Task DisposeAsync_UnsubscribesFromTimerCompleteEvent()
+    public async Task DisposeAsync_SetsIsDisposedFlag()
     {
         // Arrange
         var timerServiceMock = new Mock<ITimerService>();
@@ -156,8 +156,9 @@ public partial class ConsentServiceTests
         // Act
         await service.DisposeAsync();
         
-        // Assert
-        timerServiceMock.VerifyRemove(x => x.OnTimerComplete -= It.IsAny<Action<SessionType>>());
+        // Assert - DisposeAsync no longer unsubscribes from OnTimerComplete
+        timerServiceMock.VerifyRemove(x => x.OnTimerComplete -= It.IsAny<Action<SessionType>>(), Times.Never());
+        Assert.False(service.IsModalVisible);
     }
     
     [Fact]
