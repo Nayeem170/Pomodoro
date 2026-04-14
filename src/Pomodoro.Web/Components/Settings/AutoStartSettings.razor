@@ -22,7 +22,7 @@
                 <span class="setting-icon">⏱️</span>
                 <span class="setting-name">Auto-start Delay (seconds)</span>
             </div>
-            <input type="number" class="setting-input" @bind="Settings.AutoStartDelaySeconds" @bind:after="NotifyChanged" min="0" max="60" />
+            <input type="number" class="setting-input" @bind="Settings.AutoStartDelaySeconds" @bind:after="NotifyChanged" min="0" max="60" aria-label="Auto-start delay (seconds)" />
         </div>
     }
 </div>
