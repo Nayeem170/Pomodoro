@@ -934,22 +934,6 @@ input, textarea, [contenteditable="true"] {
                 0 2px 6px var(--glow-primary-secondary);
 }
 
-.btn-save {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-save:hover {
-    background-color: var(--primary-dark);
-}
-
 .btn-icon {
     background: transparent;
     border: none;
@@ -1316,23 +1300,6 @@ input, textarea, [contenteditable="true"] {
     font-weight: 600;
     min-width: 50px;
     text-align: center;
-}
-
-.setting-input {
-    width: 60px;
-    padding: 8px;
-    text-align: center;
-    font-size: 1.1rem;
-    font-weight: 600;
-    background-color: var(--surface-light);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    color: var(--text-primary);
-}
-
-.setting-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
 }
 
 .settings-footer {

@@ -75,6 +75,36 @@ public static partial class Constants
     }
     
     /// <summary>
+    /// Local date/time JavaScript function names
+    /// </summary>
+    public static class LocalDateTimeJsFunctions
+    {
+        public const string GetLocalDate = "localDateTime.getLocalDate";
+        public const string GetLocalDateTime = "localDateTime.getLocalDateTime";
+        public const string GetTimezoneOffset = "localDateTime.getTimezoneOffset";
+    }
+
+    /// <summary>
+    /// Keyboard shortcut JavaScript function names
+    /// </summary>
+    public static class KeyboardShortcutJsFunctions
+    {
+        public const string Initialize = "keyboardShortcuts.initialize";
+        public const string Dispose = "keyboardShortcuts.dispose";
+    }
+
+    /// <summary>
+    /// Infinite scroll JavaScript function names
+    /// </summary>
+    public static class InfiniteScrollJsFunctions
+    {
+        public const string IsSupported = "infiniteScroll.isSupported";
+        public const string CreateObserver = "infiniteScroll.createObserver";
+        public const string DestroyObserver = "infiniteScroll.destroyObserver";
+        public const string DestroyAllObservers = "infiniteScroll.destroyAllObservers";
+    }
+
+    /// <summary>
     /// Notification permission values
     /// </summary>
     public static class NotificationPermissions
