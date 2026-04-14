@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Pomodoro.Web.Models;
 
-namespace Pomodoro.Web.Components;
+namespace Pomodoro.Web.Components.Timer;
 
 /// <summary>
 /// Code-behind for TimerControls component

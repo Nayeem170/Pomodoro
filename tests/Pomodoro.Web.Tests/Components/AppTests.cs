@@ -12,7 +12,6 @@ using Pomodoro.Web.Services;
 using Pomodoro.Web.Services.Formatters;
 using Pomodoro.Web.Services.Repositories;
 using Pomodoro.Web.Models;
-using Pomodoro.Web.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;

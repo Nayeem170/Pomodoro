@@ -7,7 +7,6 @@ using Xunit;
 using Pomodoro.Web.Pages;
 using Pomodoro.Web.Services;
 using Pomodoro.Web.Models;
-using Pomodoro.Web.Components;
 using System.Threading;
 
 namespace Pomodoro.Web.Tests.Pages;

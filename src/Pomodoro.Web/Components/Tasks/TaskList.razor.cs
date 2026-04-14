@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Pomodoro.Web.Models;
 
-namespace Pomodoro.Web.Components;
+namespace Pomodoro.Web.Components.Tasks;
 
 /// <summary>
 /// Code-behind for TaskList component

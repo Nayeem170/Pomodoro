@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
 
-namespace Pomodoro.Web.Components;
+namespace Pomodoro.Web.Components.Timer;
 
 /// <summary>
 /// Code-behind for TimerDisplay component

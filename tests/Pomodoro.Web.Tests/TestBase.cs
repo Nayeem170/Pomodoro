@@ -5,7 +5,7 @@ using Moq;
 using Pomodoro.Web.Services;
 using Pomodoro.Web.Services.Formatters;
 using Pomodoro.Web.Models;
-using Pomodoro.Web.Components;
+using Pomodoro.Web.Components.Shared;
 
 namespace Pomodoro.Web.Tests;
 

@@ -5,7 +5,7 @@ using Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Pomodoro.Web.Services;
-using Pomodoro.Web.Components;
+using Pomodoro.Web.Components.Timer;
 using Microsoft.AspNetCore.Components;
 using Pomodoro.Web.Models;
 

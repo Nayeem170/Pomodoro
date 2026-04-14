@@ -2,7 +2,7 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Moq;
-using Pomodoro.Web.Components;
+using Pomodoro.Web.Components.History;
 using Pomodoro.Web.Models;
 using Xunit;
 

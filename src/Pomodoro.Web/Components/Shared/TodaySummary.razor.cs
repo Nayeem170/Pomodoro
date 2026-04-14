@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 
-namespace Pomodoro.Web.Components;
+namespace Pomodoro.Web.Components.Shared;
 
 /// <summary>
 /// Code-behind for TodaySummary component
