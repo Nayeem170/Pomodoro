@@ -12,7 +12,7 @@ else
     <div class="activity-timeline">
         @foreach (var activity in Activities)
         {
-            <ActivityItem Activity="activity" />
+            <ActivityItem @key="activity.Id" Activity="activity" />
         }
     </div>
 }

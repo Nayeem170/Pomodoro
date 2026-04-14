@@ -77,6 +77,9 @@ window.swipeNavigation = {
                     self._transitioning = false;
                 }, 500);
             }, 50);
+        }).catch(function(err) {
+            console.error('Swipe navigation failed:', err);
+            self._transitioning = false;
         });
     }
 };

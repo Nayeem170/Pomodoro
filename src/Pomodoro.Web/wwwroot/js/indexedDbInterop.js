@@ -295,8 +295,12 @@ window.indexedDbInterop = {
                 const request = store.count();
                 
                 request.onsuccess = () => resolve(request.result);
-                request.onerror = () => reject(request.error);
+                request.onerror = () => {
+                    console.error(`${pomodoroConstants.messages.indexedDbErrorGettingCount} ${storeName}:`, request.error);
+                    reject(request.error);
+                };
             } catch (error) {
+                console.error(pomodoroConstants.messages.indexedDbExceptionGetCount, error);
                 reject(error);
             }
         });

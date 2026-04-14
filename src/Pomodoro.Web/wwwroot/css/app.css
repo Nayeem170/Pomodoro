@@ -515,24 +515,24 @@ input, textarea, [contenteditable="true"] {
     will-change: transform, box-shadow;
 }
 
-.session-tabs button:nth-child(2).active {
+.session-tabs button.active.short-break {
     background-color: var(--short-break-color);
     box-shadow: 0 4px 15px var(--glow-success),
                 0 2px 6px var(--glow-success-secondary);
 }
 
-.session-tabs button:nth-child(2).active:hover {
+.session-tabs button.active.short-break:hover {
     box-shadow: 0 8px 25px var(--glow-success-hover),
                 0 4px 10px var(--glow-success-secondary-hover);
 }
 
-.session-tabs button:nth-child(3).active {
+.session-tabs button.active.long-break {
     background-color: var(--long-break-color);
     box-shadow: 0 4px 15px var(--glow-secondary),
                 0 2px 6px var(--glow-secondary-secondary);
 }
 
-.session-tabs button:nth-child(3).active:hover {
+.session-tabs button.active.long-break:hover {
     box-shadow: 0 8px 25px var(--glow-secondary-hover),
                 0 4px 10px var(--glow-secondary-secondary-hover);
 }

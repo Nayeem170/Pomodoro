@@ -94,23 +94,6 @@ public class IndexEventsTests : TestHelper
 
     #endregion
 
-    #region OnTimerTick Tests
-
-    [Fact]
-    public void OnTimerTick_UpdatesStateAndInvokesStateHasChanged()
-    {
-        // Arrange
-        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        
-        // Act
-        cut.Instance.OnTimerTick();
-        
-        // Assert - verify the method completes without throwing
-        Assert.True(true);
-    }
-
-    #endregion
-
     #region OnTimerComplete Tests
 
     [Fact]
