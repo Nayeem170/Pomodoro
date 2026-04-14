@@ -10,17 +10,16 @@ window.timerFunctions = {
         // Store reference and start new interval
         this.dotNetRef = dotNetReference;
         
-        var self = this;
-        this.intervalId = setInterval(function() {
+        this.intervalId = setInterval(() => {
             // Capture reference locally to prevent race condition with stop()
-            var ref = self.dotNetRef;
+            const ref = this.dotNetRef;
             if (ref) {
                 try {
                     ref.invokeMethodAsync(pomodoroConstants.jsCallbacks.onTimerTick);
                 } catch (e) {
                     console.error(pomodoroConstants.messages.timerTickError + e);
                     // Stop the timer on error to prevent repeated failures
-                    self.stop();
+                    this.stop();
                 }
             }
         }, pomodoroConstants.timerIntervalMs);

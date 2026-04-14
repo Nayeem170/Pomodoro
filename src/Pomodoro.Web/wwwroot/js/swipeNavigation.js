@@ -34,13 +34,13 @@ window.swipeNavigation = {
         }
 
         if (e.type === 'touchend') {
-            var dx = e.changedTouches[0].clientX - this._startX;
-            var dy = e.changedTouches[0].clientY - this._startY;
+            const dx = e.changedTouches[0].clientX - this._startX;
+            const dy = e.changedTouches[0].clientY - this._startY;
 
             if (Math.abs(dx) < this._threshold || Math.abs(dy) > Math.abs(dx)) return;
 
-            var currentPath = window.location.pathname;
-            var currentIndex = this._routes.indexOf(currentPath);
+            const currentPath = window.location.pathname;
+            const currentIndex = this._routes.indexOf(currentPath);
             if (currentIndex === -1) return;
 
             if (dx < 0 && currentIndex < this._routes.length - 1) {
@@ -52,34 +52,33 @@ window.swipeNavigation = {
     },
 
     _navigate: function(path, direction) {
-        var self = this;
-        self._transitioning = true;
+        this._transitioning = true;
 
-        var slideClass = direction === 'left' ? 'slide-from-right' : 'slide-from-left';
+        const slideClass = direction === 'left' ? 'slide-from-right' : 'slide-from-left';
 
-        self._dotNetRef.invokeMethodAsync('NavigateTo', path).then(function() {
-            setTimeout(function() {
-                var content = document.querySelector('.app-content');
+        this._dotNetRef.invokeMethodAsync('NavigateTo', path).then(() => {
+            setTimeout(() => {
+                const content = document.querySelector('.app-content');
                 if (!content) {
-                    self._transitioning = false;
+                    this._transitioning = false;
                     return;
                 }
 
                 content.classList.add(slideClass);
 
-                requestAnimationFrame(function() {
-                    requestAnimationFrame(function() {
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
                         content.classList.remove(slideClass);
                     });
                 });
 
-                setTimeout(function() {
-                    self._transitioning = false;
+                setTimeout(() => {
+                    this._transitioning = false;
                 }, 500);
             }, 50);
-        }).catch(function(err) {
+        }).catch((err) => {
             console.error('Swipe navigation failed:', err);
-            self._transitioning = false;
+            this._transitioning = false;
         });
     }
 };
