@@ -7,7 +7,7 @@ using Xunit;
 using Moq;
 using Microsoft.JSInterop;
 
-namespace Pomodoro.Web.Tests.Components.Pages;
+namespace Pomodoro.Web.Tests.Pages;
 
 /// <summary>
 /// Tests for the Settings page component.
@@ -33,7 +33,7 @@ public class SettingsPageTests : TestHelper
     public void SettingsPage_RendersWithoutErrors()
     {
         // Act
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         
         // Assert
         cut.Should().NotBeNull();
@@ -44,43 +44,43 @@ public class SettingsPageTests : TestHelper
     public void SettingsPage_HasSettingsSections()
     {
         // Act
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         
         // Assert - Settings page should have sections for Timer Durations, Preferences, Auto-Start, and Data Management
         var headers = cut.FindAll("h2");
         headers.Should().NotBeEmpty();
-        headers.Count.Should().BeGreaterOrEqualTo(3); // At least 3 sections
+        headers.Count.Should().BeGreaterThanOrEqualTo(3); // At least 3 sections
     }
 
     [Fact]
     public void SettingsPage_HasTimerDurationInputs()
     {
         // Act
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         
         // Assert - Settings page should have number inputs for timer durations
         var inputs = cut.FindAll(".setting-input[type='number']");
         inputs.Should().NotBeEmpty();
-        inputs.Count.Should().BeGreaterOrEqualTo(3); // Pomodoro, Short Break, Long Break
+        inputs.Count.Should().BeGreaterThanOrEqualTo(3); // Pomodoro, Short Break, Long Break
     }
 
     [Fact]
     public void SettingsPage_HasToggleSwitches()
     {
         // Act
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         
         // Assert - Settings page should have toggle switches for preferences
         var toggles = cut.FindAll(".toggle-input[type='checkbox']");
         toggles.Should().NotBeEmpty();
-        toggles.Count.Should().BeGreaterOrEqualTo(2); // Sound, Notifications, Auto-start
+        toggles.Count.Should().BeGreaterThanOrEqualTo(2); // Sound, Notifications, Auto-start
     }
 
     [Fact]
     public void SettingsPage_HasDataManagementButtons()
     {
         // Act
-        var cut = RenderComponent<Settings>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         
         // Assert - Settings page should have buttons for data management
         var exportButton = cut.Find(".btn-export");

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Pomodoro.Web.Models;
-using Pomodoro.Web.Pages;
 using Pomodoro.Web.Services;
 using Xunit;
 using System;
@@ -14,7 +13,7 @@ using System.Threading.Tasks;
 #pragma warning disable CS8619 // Nullability of reference types mismatch in Moq Setup/Returns
 #pragma warning disable CS8620 // Nullability mismatch in Moq Setup/Returns
 
-namespace Pomodoro.Web.Tests.Components.Pages;
+namespace Pomodoro.Web.Tests.Pages;
 
 /// <summary>
 /// Comprehensive tests for History page component.
@@ -55,7 +54,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         cut.Should().NotBeNull();
@@ -121,7 +120,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         cut.Should().NotBeNull();
@@ -180,7 +179,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         ActivityServiceMock.Verify(x => x.GetDailyFocusMinutes(
@@ -248,7 +247,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         cut.Should().NotBeNull();
@@ -306,7 +305,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         ActivityServiceMock.Verify(x => x.GetActivitiesPagedAsync(
@@ -369,7 +368,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)weeklyStats);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         ActivityServiceMock.Verify(x => x.GetWeeklyStatsAsync(
@@ -409,7 +408,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         ActivityServiceMock.Verify(x => x.GetWeeklyStatsAsync(
@@ -472,7 +471,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         ActivityServiceMock.Verify(x => x.GetActivitiesPagedAsync(
@@ -535,7 +534,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         ActivityServiceMock.Verify(x => x.GetActivitiesPagedAsync(
@@ -596,7 +595,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         ActivityServiceMock.Verify(x => x.GetActivitiesPagedAsync(
@@ -669,7 +668,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         ActivityServiceMock.Verify(x => x.GetActivitiesPagedAsync(
@@ -709,7 +708,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert - Verify subscription by checking InitializeAsync was called
         ActivityServiceMock.Verify(x => x.InitializeAsync(), Times.Once);
@@ -748,7 +747,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         cut.Dispose();
         
         // Assert - Component should dispose without errors
@@ -814,7 +813,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)weeklyStats);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         cut.Should().NotBeNull();
@@ -859,7 +858,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         cut.Should().NotBeNull();
@@ -920,7 +919,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         cut.Should().NotBeNull();
@@ -969,7 +968,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         cut.Should().NotBeNull();
@@ -1037,7 +1036,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)weeklyStats);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert - Weekly stats are loaded but component defaults to Daily view
         cut.Should().NotBeNull();
@@ -1108,7 +1107,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)weeklyStats);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert - Weekly stats are loaded but component defaults to Daily view
         cut.Should().NotBeNull();
@@ -1179,7 +1178,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)weeklyStats);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
         cut.Should().NotBeNull();
@@ -1220,7 +1219,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Find and click the Weekly tab button
         var weeklyTab = cut.Find("#weekly-tab");
@@ -1268,7 +1267,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Click Weekly tab
         var weeklyTab = cut.Find("#weekly-tab");
@@ -1317,7 +1316,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Click previous day button
         var prevButton = cut.Find("button.nav-btn[title='Previous day']");
@@ -1368,7 +1367,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Click Weekly tab
         var weeklyTab = cut.Find("#weekly-tab");
@@ -1434,7 +1433,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync((WeeklyStats?)null);
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Trigger activity change (simulate activity being added/modified)
         // This tests the OnActivityChanged event handler
@@ -1518,7 +1517,7 @@ public class HistoryPageExpandedTests : TestHelper
             .ReturnsAsync(true);
         
         // Act
-        var cut = RenderComponent<History>(builder => builder
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>(builder => builder
             .Add(p => p.InitialHasMoreActivities, true)
             .Add(p => p.InitialActivities, activitiesPage1));
         

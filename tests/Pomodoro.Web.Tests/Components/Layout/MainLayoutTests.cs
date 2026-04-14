@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 
-namespace Pomodoro.Web.Tests.Components.Layout
+namespace Pomodoro.Web.Tests.Layout
 {
     public class MainLayoutTests : TestContext
     {

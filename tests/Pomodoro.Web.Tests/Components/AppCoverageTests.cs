@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Pomodoro.Web.Tests.Components
+namespace Pomodoro.Web.Tests
 {
     /// <summary>
     /// Tests for App.razor component coverage

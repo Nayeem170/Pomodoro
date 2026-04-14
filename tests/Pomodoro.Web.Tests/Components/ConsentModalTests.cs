@@ -7,7 +7,7 @@ using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components;
+namespace Pomodoro.Web.Tests;
 
 /// <summary>
 /// Tests for ConsentModal component

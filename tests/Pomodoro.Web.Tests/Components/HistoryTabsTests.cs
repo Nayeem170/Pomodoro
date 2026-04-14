@@ -6,7 +6,7 @@ using Pomodoro.Web.Components.History;
 using Pomodoro.Web.Models;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components;
+namespace Pomodoro.Web.Tests;
 
 /// <summary>
 /// bUnit tests for HistoryTabs component.

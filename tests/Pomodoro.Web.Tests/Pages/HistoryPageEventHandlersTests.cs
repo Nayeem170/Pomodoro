@@ -2,11 +2,10 @@ using Bunit;
 using FluentAssertions;
 using Moq;
 using Pomodoro.Web.Models;
-using Pomodoro.Web.Pages;
 using Pomodoro.Web.Services;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components.Pages;
+namespace Pomodoro.Web.Tests.Pages;
 
 /// <summary>
 /// Tests for History page event handlers and edge cases during state changes
@@ -44,7 +43,7 @@ public class HistoryPageEventHandlersTests : TestHelper
             .Returns(new DailyStatsSummary());
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Trigger the OnActivityChanged event
         ActivityServiceMock.Raise(x => x.OnActivityChanged += null);
@@ -86,7 +85,7 @@ public class HistoryPageEventHandlersTests : TestHelper
             .Returns(new DailyStatsSummary());
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Trigger the OnActivityChanged event multiple times
         ActivityServiceMock.Raise(x => x.OnActivityChanged += null);
@@ -130,7 +129,7 @@ public class HistoryPageEventHandlersTests : TestHelper
             .Returns(new DailyStatsSummary());
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Trigger the OnActivityChanged event
         ActivityServiceMock.Raise(x => x.OnActivityChanged += null);

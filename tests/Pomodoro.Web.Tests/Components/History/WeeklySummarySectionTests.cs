@@ -4,7 +4,7 @@ using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components.Components.History;
+namespace Pomodoro.Web.Tests.Components.History;
 
 public class WeeklySummarySectionTests : TestHelper
 {

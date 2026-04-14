@@ -7,7 +7,7 @@ using Pomodoro.Web.Pages;
 using Pomodoro.Web.Services;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components.Pages;
+namespace Pomodoro.Web.Tests.Pages;
 
 /// <summary>
 /// Tests for Index page keyboard shortcut functionality.

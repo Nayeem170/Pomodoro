@@ -7,7 +7,7 @@ using Xunit;
 using Moq;
 using Microsoft.JSInterop;
 
-namespace Pomodoro.Web.Tests.Components.Pages;
+namespace Pomodoro.Web.Tests.Pages;
 
 /// <summary>
 /// Tests for Index page task actions in Index.razor.Tasks.cs

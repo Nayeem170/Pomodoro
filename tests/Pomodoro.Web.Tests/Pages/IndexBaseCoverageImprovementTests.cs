@@ -1,3 +1,4 @@
+using Pomodoro.Web.Pages;
 using Bunit;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -73,7 +74,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             TaskServiceMock.Setup(x => x.AddTaskAsync(It.IsAny<string>()))
                 .ThrowsAsync(new InvalidOperationException("Cannot add task"));
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTaskAdd("New Task");
 
@@ -84,7 +85,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void HandleTaskAdd_WhenSuccessful_CallsServiceAndUpdatesState()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTaskAdd("New Task");
 
@@ -101,7 +102,7 @@ namespace Pomodoro.Web.Tests.Pages
             var taskId = Guid.NewGuid();
             TaskServiceMock.Setup(x => x.SelectTaskAsync(taskId))
                 .ThrowsAsync(new InvalidOperationException("Cannot select task"));
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTaskSelect(taskId);
 
@@ -113,7 +114,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HandleTaskSelect_WhenSuccessful_CallsServiceAndUpdatesState()
         {
             var taskId = Guid.NewGuid();
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTaskSelect(taskId);
 
@@ -130,7 +131,7 @@ namespace Pomodoro.Web.Tests.Pages
             var taskId = Guid.NewGuid();
             TaskServiceMock.Setup(x => x.CompleteTaskAsync(taskId))
                 .ThrowsAsync(new InvalidOperationException("Cannot complete task"));
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTaskComplete(taskId);
 
@@ -142,7 +143,7 @@ namespace Pomodoro.Web.Tests.Pages
         public async Task HandleTaskComplete_WhenSuccessful_CallsServiceAndUpdatesState()
         {
             var taskId = Guid.NewGuid();
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             await cut.Instance.HandleTaskComplete(taskId);
 
             TaskServiceMock.Verify(x => x.CompleteTaskAsync(taskId), Times.Once);
@@ -158,7 +159,7 @@ namespace Pomodoro.Web.Tests.Pages
             var taskId = Guid.NewGuid();
             TaskServiceMock.Setup(x => x.DeleteTaskAsync(taskId))
                 .ThrowsAsync(new InvalidOperationException("Cannot delete task"));
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTaskDelete(taskId);
 
@@ -170,7 +171,7 @@ namespace Pomodoro.Web.Tests.Pages
         public async Task HandleTaskDelete_WhenSuccessful_CallsServiceAndUpdatesState()
         {
             var taskId = Guid.NewGuid();
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             await cut.Instance.HandleTaskDelete(taskId);
 
             TaskServiceMock.Verify(x => x.DeleteTaskAsync(taskId), Times.Once);
@@ -186,7 +187,7 @@ namespace Pomodoro.Web.Tests.Pages
             var taskId = Guid.NewGuid();
             TaskServiceMock.Setup(x => x.UncompleteTaskAsync(taskId))
                 .ThrowsAsync(new InvalidOperationException("Cannot uncomplete task"));
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTaskUncomplete(taskId);
 
@@ -198,7 +199,7 @@ namespace Pomodoro.Web.Tests.Pages
         public async Task HandleTaskUncomplete_WhenSuccessful_CallsServiceAndUpdatesState()
         {
             var taskId = Guid.NewGuid();
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             await cut.Instance.HandleTaskUncomplete(taskId);
 
             TaskServiceMock.Verify(x => x.UncompleteTaskAsync(taskId), Times.Once);
@@ -211,7 +212,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void HandleTimerStart_WhenSessionTypeShortBreak_StartsShortBreak()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             cut.Instance.CurrentSessionType = SessionType.ShortBreak;
 
             _ = cut.Instance.HandleTimerStart();
@@ -224,7 +225,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void HandleTimerStart_WhenSessionTypeLongBreak_StartsLongBreak()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             cut.Instance.CurrentSessionType = SessionType.LongBreak;
 
             _ = cut.Instance.HandleTimerStart();
@@ -238,7 +239,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HandleTimerStart_WhenSessionTypePomodoroWithNoTask_SetsErrorMessage()
         {
             TaskServiceMock.SetupGet(x => x.CurrentTaskId).Returns((Guid?)null);
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             cut.Instance.CurrentSessionType = SessionType.Pomodoro;
 
             _ = cut.Instance.HandleTimerStart();
@@ -252,7 +253,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             var taskId = Guid.NewGuid();
             TaskServiceMock.SetupGet(x => x.CurrentTaskId).Returns(taskId);
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             cut.Instance.CurrentSessionType = SessionType.Pomodoro;
 
             _ = cut.Instance.HandleTimerStart();
@@ -265,7 +266,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             TimerServiceMock.Setup(x => x.StartShortBreakAsync())
                 .ThrowsAsync(new InvalidOperationException("Timer error"));
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             cut.Instance.CurrentSessionType = SessionType.ShortBreak;
 
             _ = cut.Instance.HandleTimerStart();
@@ -281,7 +282,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void HandleTimerPause_WhenSuccessful_CallsServiceAndUpdatesState()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTimerPause();
 
@@ -293,7 +294,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             TimerServiceMock.Setup(x => x.PauseAsync())
                 .ThrowsAsync(new InvalidOperationException("Cannot pause"));
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTimerPause();
 
@@ -308,7 +309,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void HandleTimerResume_WhenSuccessful_CallsServiceAndUpdatesState()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTimerResume();
 
@@ -320,7 +321,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             TimerServiceMock.Setup(x => x.ResumeAsync())
                 .ThrowsAsync(new InvalidOperationException("Cannot resume"));
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTimerResume();
 
@@ -335,7 +336,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void HandleTimerReset_WhenSuccessful_CallsServiceAndUpdatesState()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTimerReset();
 
@@ -347,7 +348,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             TimerServiceMock.Setup(x => x.ResetAsync())
                 .ThrowsAsync(new InvalidOperationException("Cannot reset"));
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTimerReset();
 
@@ -362,7 +363,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void HandleSessionSwitch_WhenSuccessful_CallsServiceAndUpdatesState()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleSessionSwitch(SessionType.ShortBreak);
 
@@ -374,7 +375,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             TimerServiceMock.Setup(x => x.SwitchSessionTypeAsync(It.IsAny<SessionType>()))
                 .ThrowsAsync(new InvalidOperationException("Cannot switch"));
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleSessionSwitch(SessionType.LongBreak);
 
@@ -391,7 +392,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             PipTimerServiceMock.SetupGet(x => x.IsOpen).Returns(false);
             PipTimerServiceMock.Setup(x => x.OpenAsync()).ReturnsAsync(true);
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTogglePip();
 
@@ -403,7 +404,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void HandleTogglePip_WhenPipIsOpen_ClosesPip()
         {
             PipTimerServiceMock.SetupGet(x => x.IsOpen).Returns(true);
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTogglePip();
 
@@ -417,7 +418,7 @@ namespace Pomodoro.Web.Tests.Pages
             PipTimerServiceMock.SetupGet(x => x.IsOpen).Returns(false);
             PipTimerServiceMock.Setup(x => x.OpenAsync())
                 .ThrowsAsync(new InvalidOperationException("Cannot open PiP"));
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleTogglePip();
 
@@ -432,7 +433,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void HandleConsentOptionSelect_WhenSuccessful_CallsService()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleConsentOptionSelect(SessionType.ShortBreak);
 
@@ -442,7 +443,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void HandleConsentOptionSelect_WhenCalledWithLongBreak_CallsService()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleConsentOptionSelect(SessionType.LongBreak);
 
@@ -452,7 +453,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void HandleConsentOptionSelect_WhenCalledWithPomodoro_CallsService()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleConsentOptionSelect(SessionType.Pomodoro);
 
@@ -464,7 +465,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             ConsentServiceMock.Setup(x => x.SelectOptionAsync(It.IsAny<SessionType>()))
                 .ThrowsAsync(new InvalidOperationException("Invalid session type"));
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             _ = cut.Instance.HandleConsentOptionSelect(SessionType.ShortBreak);
 
@@ -479,7 +480,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void GetTimerThemeClass_WhenPomodoro_ReturnsPomodoroTheme()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             cut.Instance.CurrentSessionType = SessionType.Pomodoro;
 
             var result = cut.Instance.GetTimerThemeClass();
@@ -490,7 +491,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void GetTimerThemeClass_WhenShortBreak_ReturnsShortBreakTheme()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             cut.Instance.CurrentSessionType = SessionType.ShortBreak;
 
             var result = cut.Instance.GetTimerThemeClass();
@@ -501,7 +502,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void GetTimerThemeClass_WhenLongBreak_ReturnsLongBreakTheme()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             cut.Instance.CurrentSessionType = SessionType.LongBreak;
 
             var result = cut.Instance.GetTimerThemeClass();
@@ -516,7 +517,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public async Task OnNotificationAction_WhenActionShortBreak_HidesConsentAndStartsShortBreak()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.OnNotificationAction(Constants.SessionTypes.ActionShortBreak);
             await Task.Delay(100);
@@ -528,7 +529,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public async Task OnNotificationAction_WhenActionLongBreak_HidesConsentAndStartsLongBreak()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.OnNotificationAction(Constants.SessionTypes.ActionLongBreak);
             await Task.Delay(100);
@@ -540,7 +541,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public async Task OnNotificationAction_WhenActionStartPomodoro_HidesConsentAndStartsPomodoro()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.OnNotificationAction(Constants.SessionTypes.ActionStartPomodoro);
             await Task.Delay(100);
@@ -552,7 +553,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void OnNotificationAction_WhenActionSkip_DoesNothing()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.OnNotificationAction(Constants.SessionTypes.ActionSkip);
 
@@ -569,7 +570,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void Dispose_WhenCalledMultipleTimes_DoesNotThrow()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.Dispose();
             cut.Instance.Dispose();
@@ -585,7 +586,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void OnTimerComplete_WhenCalled_UpdatesState()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.OnTimerComplete(SessionType.Pomodoro);
 
@@ -595,7 +596,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void OnTimerComplete_WhenCalledWithShortBreak_UpdatesState()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.OnTimerComplete(SessionType.ShortBreak);
 
@@ -605,7 +606,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void OnTimerComplete_WhenCalledWithLongBreak_UpdatesState()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.OnTimerComplete(SessionType.LongBreak);
 
@@ -615,7 +616,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public async Task OnTimerComplete_WhenUpdateStateThrows_LogsError()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.IndexPagePresenterService = null;
 
@@ -642,7 +643,7 @@ namespace Pomodoro.Web.Tests.Pages
                     new ConsentOption { SessionType = SessionType.ShortBreak, Label = "Short Break" },
                     new ConsentOption { SessionType = SessionType.LongBreak, Label = "Long Break" }
                 });
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.OnConsentRequired();
 
@@ -657,7 +658,7 @@ namespace Pomodoro.Web.Tests.Pages
         public void OnConsentCountdownTick_WhenCalled_UpdatesCountdown()
         {
             ConsentServiceMock.SetupGet(x => x.CountdownSeconds).Returns(5);
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.OnConsentCountdownTick();
 
@@ -671,7 +672,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void OnConsentHandled_WhenCalled_HidesConsentModalAndUpdatesState()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.OnConsentHandled();
 
@@ -685,7 +686,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void OnActivityChanged_WhenCalled_InvokesStateHasChanged()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.OnActivityChanged();
 
@@ -699,7 +700,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void OnPipOpened_WhenCalled_SetsIsPipOpenToTrue()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.OnPipOpened();
 
@@ -713,7 +714,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void OnPipClosed_WhenCalled_SetsIsPipOpenToFalse()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.OnPipClosed();
 
@@ -727,7 +728,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void OnTaskServiceChanged_WhenCalled_UpdatesStateAndInvokesStateHasChanged()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.OnTaskServiceChanged();
 
@@ -741,7 +742,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void OnTimerStateChanged_WhenCalled_UpdatesStateAndInvokesStateHasChanged()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.OnTimerStateChanged();
 
@@ -755,7 +756,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void SafeAsync_WhenActionThrowsException_LogsError()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.SafeAsync(
                 new Func<Task>(() => throw new InvalidOperationException("Test exception")), 
@@ -775,7 +776,7 @@ namespace Pomodoro.Web.Tests.Pages
                 .Setup(x => x.RegisterShortcut(It.IsAny<string>(), It.IsAny<Action>(), It.IsAny<string>()))
                 .Callback((string key, Action action, string desc) => actions[key] = action);
 
-            cut = RenderComponent<Index>();
+            cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             return actions;
         }
 
@@ -897,7 +898,7 @@ namespace Pomodoro.Web.Tests.Pages
             NotificationServiceMock.Setup(x => x.InitializeAsync())
                 .ThrowsAsync(new Exception("Init failed"));
 
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             var error = cut.Instance.ErrorMessage;
             Assert.Contains("Init failed", error);
@@ -910,7 +911,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public async Task CheckPendingNotificationActionAsync_WhenNoUrlParameter_DoesNothing()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             await cut.Instance.CheckPendingNotificationActionAsync();
 
@@ -926,7 +927,7 @@ namespace Pomodoro.Web.Tests.Pages
             JSInterop.SetupVoid(Constants.JsFunctions.RemoveUrlParameter, Constants.UrlParameters.NotificationAction)
                 .SetVoidResult();
 
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             await cut.Instance.CheckPendingNotificationActionAsync();
 
@@ -940,7 +941,7 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public void Dispose_WithNullLogger_DoesNotThrow()
         {
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             var instance = cut.Instance;
 
             instance.Logger = null;
@@ -956,7 +957,7 @@ namespace Pomodoro.Web.Tests.Pages
             KeyboardShortcutServiceMock.Setup(x => x.UnregisterShortcut(It.IsAny<string>()))
                 .Throws(new InvalidOperationException("Unregister failed"));
 
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             var exception = Record.Exception(() => cut.Dispose());
 
             Assert.Null(exception);
@@ -968,7 +969,7 @@ namespace Pomodoro.Web.Tests.Pages
             KeyboardShortcutServiceMock.Setup(x => x.UnregisterShortcut(It.IsAny<string>()))
                 .Throws(new InvalidOperationException("Unregister failed"));
 
-            var cut = RenderComponent<Index>();
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             var instance = cut.Instance;
 
             instance.Logger = null;

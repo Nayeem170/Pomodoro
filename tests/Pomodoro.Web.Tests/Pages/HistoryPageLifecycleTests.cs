@@ -8,7 +8,7 @@ using Pomodoro.Web.Services;
 using System.Reflection;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components.Pages;
+namespace Pomodoro.Web.Tests.Pages;
 
 /// <summary>
 /// Tests for History page lifecycle methods

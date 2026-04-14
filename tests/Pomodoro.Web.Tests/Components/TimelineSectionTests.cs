@@ -6,7 +6,7 @@ using Pomodoro.Web.Models;
 using Pomodoro.Web.Services.Formatters;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components;
+namespace Pomodoro.Web.Tests;
 
 public class TimelineSectionTests : TestContext
 {

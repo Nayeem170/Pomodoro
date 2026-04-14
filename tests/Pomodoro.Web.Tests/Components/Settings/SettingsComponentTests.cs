@@ -4,7 +4,7 @@ using Pomodoro.Web.Components.Settings;
 using Pomodoro.Web.Models;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components.Settings;
+namespace Pomodoro.Web.Tests.Settings;
 
 public class TimerDurationSettingsTests : TestContext
 {

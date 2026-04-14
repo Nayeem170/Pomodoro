@@ -7,7 +7,7 @@ using Pomodoro.Web.Services;
 using Pomodoro.Web.Services.Formatters;
 using Pomodoro.Web.Models;
 
-namespace Pomodoro.Web.Tests.Components;
+namespace Pomodoro.Web.Tests;
 
 /// <summary>
 /// Base test class that provides common service mocks for component testing.
@@ -129,7 +129,7 @@ public abstract class TestHelper : TestContext
             activities.Add(new ActivityRecord
             {
                 Id = Guid.NewGuid(),
-                Type = Models.SessionType.Pomodoro,
+                Type = Pomodoro.Web.Models.SessionType.Pomodoro,
                 CompletedAt = DateTime.Now.AddMinutes(-(startIndex + i) * 30),
                 DurationMinutes = 25,
                 TaskId = i % 2 == 0 ? Guid.NewGuid() : null

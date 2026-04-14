@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Pomodoro.Web.Components.History;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components.History;
+namespace Pomodoro.Web.Tests.History;
 
 /// <summary>
 /// bUnit tests for WeekNavigator component.

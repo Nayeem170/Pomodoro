@@ -8,7 +8,7 @@ using Pomodoro.Web.Services;
 using Pomodoro.Web.Services.Formatters;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components.History;
+namespace Pomodoro.Web.Tests.History;
 
 /// <summary>
 /// Tests for WeeklyMiniChart exception handling in DisposeAsync

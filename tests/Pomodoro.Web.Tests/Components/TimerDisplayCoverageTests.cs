@@ -8,7 +8,7 @@ using Pomodoro.Web.Components.Timer;
 using Microsoft.AspNetCore.Components;
 using Pomodoro.Web.Models;
 
-namespace Pomodoro.Web.Tests.Components;
+namespace Pomodoro.Web.Tests;
 
 public class TimerDisplayCoverageTests : TestContext
 {

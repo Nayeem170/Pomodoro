@@ -2,11 +2,10 @@ using Bunit;
 using FluentAssertions;
 using Moq;
 using Pomodoro.Web.Models;
-using Pomodoro.Web.Pages;
 using Pomodoro.Web.Services;
 using Xunit;
 
-namespace Pomodoro.Web.Tests.Components.Pages;
+namespace Pomodoro.Web.Tests.Pages;
 
 /// <summary>
 /// Tests for History page infinite scroll functionality and edge cases
@@ -44,7 +43,7 @@ public class HistoryPageInfiniteScrollTests : TestHelper
             .Returns(new DailyStatsSummary());
         
         // Act
-        var cut = RenderComponent<History>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         await Task.Delay(100);
         
         var historyBase = cut.Instance;
