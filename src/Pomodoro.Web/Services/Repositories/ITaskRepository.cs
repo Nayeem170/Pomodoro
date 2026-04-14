@@ -28,16 +28,6 @@ public interface ITaskRepository
     Task<bool> SaveAsync(TaskItem task);
     
     /// <summary>
-    /// Soft deletes a task
-    /// </summary>
-    Task<bool> SoftDeleteAsync(Guid id);
-    
-    /// <summary>
-    /// Permanently deletes a task
-    /// </summary>
-    Task<bool> HardDeleteAsync(Guid id);
-    
-    /// <summary>
     /// Gets the count of all tasks (excluding soft-deleted)
     /// </summary>
     Task<int> GetCountAsync();
