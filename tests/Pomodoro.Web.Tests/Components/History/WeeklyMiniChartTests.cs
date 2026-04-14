@@ -22,7 +22,7 @@ public partial class WeeklyMiniChartTests : TestContext
         JSInterop.Mode = JSRuntimeMode.Loose;
         _jsRuntimeMock = new Mock<IJSRuntime>();
         Services.AddSingleton<IJSRuntime>(_jsRuntimeMock.Object);
-        Services.AddSingleton(new ChartService(_jsRuntimeMock.Object));
+        Services.AddSingleton<IChartService>(new ChartService(_jsRuntimeMock.Object));
         Services.AddSingleton(new ChartDataFormatter());
     }
 
@@ -223,7 +223,7 @@ public partial class WeeklyMiniChartTests : TestContext
         // Arrange
         var jsRuntimeMock = new Mock<IJSRuntime>();
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
 
         // Act
         var cut = RenderComponent<WeeklyMiniChart>();
@@ -241,7 +241,7 @@ public partial class WeeklyMiniChartTests : TestContext
         // Arrange
         var jsRuntimeMock = new Mock<IJSRuntime>();
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
 
         // Act
         var cut = RenderComponent<WeeklyMiniChart>();
@@ -259,7 +259,7 @@ public partial class WeeklyMiniChartTests : TestContext
         // Arrange
         var jsRuntimeMock = new Mock<IJSRuntime>();
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
 
         var weekStart = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
         var cut = RenderComponent<WeeklyMiniChart>(parameters => parameters
@@ -297,7 +297,7 @@ public partial class WeeklyMiniChartTests : TestContext
         // Arrange
         var jsRuntimeMock = new Mock<IJSRuntime>();
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
         Services.AddSingleton(new ChartDataFormatter());
 
         // Act - Render component (triggers OnAfterRenderAsync with firstRender=true)
@@ -316,7 +316,7 @@ public partial class WeeklyMiniChartTests : TestContext
         // Arrange
         var jsRuntimeMock = new Mock<IJSRuntime>();
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
         Services.AddSingleton(new ChartDataFormatter());
 
         var weekStart = DateTime.Today;
@@ -341,7 +341,7 @@ public partial class WeeklyMiniChartTests : TestContext
         // Arrange
         var jsRuntimeMock = new Mock<IJSRuntime>();
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
         Services.AddSingleton(new ChartDataFormatter());
 
         var weekStart = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
@@ -380,7 +380,7 @@ public partial class WeeklyMiniChartTests : TestContext
             .Setup(x => x.InvokeAsync<IJSVoidResult>("chartInterop.destroyChart", It.IsAny<object[]>()))
             .Returns(new ValueTask<IJSVoidResult>());
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
         Services.AddSingleton(new ChartDataFormatter());
 
         var cut = RenderComponent<WeeklyMiniChart>();
@@ -403,7 +403,7 @@ public partial class WeeklyMiniChartTests : TestContext
             .Setup(x => x.InvokeAsync<IJSVoidResult>("chartInterop.destroyChart", It.IsAny<object[]>()))
             .Throws(new JSException("Chart not found"));
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
         Services.AddSingleton(new ChartDataFormatter());
 
         var cut = RenderComponent<WeeklyMiniChart>();
@@ -419,7 +419,7 @@ public partial class WeeklyMiniChartTests : TestContext
         // Arrange
         var jsRuntimeMock = new Mock<IJSRuntime>();
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
         Services.AddSingleton(new ChartDataFormatter());
 
         var weekStart = DateTime.Today;
@@ -460,7 +460,7 @@ public partial class WeeklyMiniChartTests : TestContext
         // Arrange
         var jsRuntimeMock = new Mock<IJSRuntime>();
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
         Services.AddSingleton(new ChartDataFormatter());
 
         var weekStart = DateTime.Today;
@@ -489,7 +489,7 @@ public partial class WeeklyMiniChartTests : TestContext
             .Callback(() => destroyCalled = true)
             .Returns(new ValueTask<IJSVoidResult>());
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
         Services.AddSingleton(new ChartDataFormatter());
 
         var cut = RenderComponent<WeeklyMiniChart>();
@@ -510,7 +510,7 @@ public partial class WeeklyMiniChartTests : TestContext
             .Setup(x => x.InvokeAsync<IJSVoidResult>("chartInterop.destroyChart", It.IsAny<object[]>()))
             .Throws(new JSException("Chart destruction failed"));
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
         Services.AddSingleton(new ChartDataFormatter());
 
         var cut = RenderComponent<WeeklyMiniChart>();
@@ -535,7 +535,7 @@ public partial class WeeklyMiniChartTests : TestContext
             .Callback(() => renderChartCalled = true)
             .Returns(new ValueTask<IJSVoidResult>());
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
         Services.AddSingleton(new ChartDataFormatter());
 
         // Act - First render triggers OnAfterRenderAsync with firstRender=true
@@ -557,7 +557,7 @@ public partial class WeeklyMiniChartTests : TestContext
             .Callback(() => destroyCalled = true)
             .Returns(new ValueTask<IJSVoidResult>());
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
         Services.AddSingleton(new ChartDataFormatter());
 
         var cut = RenderComponent<WeeklyMiniChart>();
@@ -574,7 +574,7 @@ public partial class WeeklyMiniChartTests : TestContext
     {
         // Arrange - Create a ChartService that throws a general exception
         var throwingChartService = new GeneralExceptionChartService();
-        Services.AddSingleton<ChartService>(throwingChartService);
+        Services.AddSingleton<IChartService>(throwingChartService);
         Services.AddSingleton(new ChartDataFormatter());
 
         var cut = RenderComponent<WeeklyMiniChart>();

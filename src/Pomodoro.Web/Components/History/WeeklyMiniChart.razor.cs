@@ -14,7 +14,7 @@ public class WeeklyMiniChartBase : ComponentBase, IAsyncDisposable
     #region Services (Dependency Injection)
     
     [Inject]
-    protected ChartService ChartService { get; set; } = default!;
+    protected IChartService ChartService { get; set; } = default!;
     
     [Inject]
     protected ChartDataFormatter ChartDataFormatter { get; set; } = default!;

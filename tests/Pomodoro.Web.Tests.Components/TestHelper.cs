@@ -40,7 +40,7 @@ public abstract class TestHelper : TestContext
     protected ActivityItemFormatter ActivityItemFormatter { get; private set; }
     protected ActivityTimelineFormatter ActivityTimelineFormatter { get; private set; }
     protected AppState AppState { get; private set; }
-    protected ChartService ChartService { get; private set; }
+    protected IChartService ChartService { get; private set; }
     
     protected TestHelper()
     {
@@ -97,7 +97,7 @@ public abstract class TestHelper : TestContext
         Services.AddSingleton(TodayStatsServiceMock.Object);
         Services.AddSingleton(AppState);
         Services.AddSingleton<IHistoryStatsService>(HistoryStatsServiceMock.Object);
-        Services.AddSingleton(ChartService);
+        Services.AddSingleton<IChartService>(ChartService);
         Services.AddSingleton(TimerThemeFormatter);
         Services.AddSingleton(TimeFormatter);
         Services.AddSingleton(ChartDataFormatter);

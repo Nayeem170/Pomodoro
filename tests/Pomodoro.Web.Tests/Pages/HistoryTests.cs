@@ -86,10 +86,10 @@ namespace Pomodoro.Web.Tests.Pages
             Services.AddSingleton(activityTimelineFormatterMock.Object);
             
             // Add missing services for child components (WeeklyMiniChart, ActivityItem)
-            var chartServiceMock = new Mock<ChartService>(jsRuntimeMock.Object);
+            var chartServiceMock = new Mock<IChartService>();
             var activityItemFormatterMock = new Mock<ActivityItemFormatter>();
             var chartDataFormatterMock = new Mock<ChartDataFormatter>();
-            Services.AddSingleton(chartServiceMock.Object);
+            Services.AddSingleton<IChartService>(chartServiceMock.Object);
             Services.AddSingleton(activityItemFormatterMock.Object);
             Services.AddSingleton(chartDataFormatterMock.Object);
         }

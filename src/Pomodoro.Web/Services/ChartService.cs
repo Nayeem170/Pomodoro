@@ -5,7 +5,7 @@ namespace Pomodoro.Web.Services;
 /// <summary>
 /// Service for Chart.js JavaScript interop
 /// </summary>
-public class ChartService : IAsyncDisposable
+public class ChartService : IChartService
 {
     private readonly IJSRuntime _jsRuntime;
     private bool _initialized;

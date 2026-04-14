@@ -261,9 +261,10 @@ public class ServiceRegistrationServiceTests
         _service.RegisterServices(services);
 
         // Assert
-        var descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(ChartService));
+        var descriptor = services.FirstOrDefault(s => s.ServiceType == typeof(IChartService));
         Assert.NotNull(descriptor);
         Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
+        Assert.Equal(typeof(ChartService), descriptor.ImplementationType);
     }
 
     [Fact]

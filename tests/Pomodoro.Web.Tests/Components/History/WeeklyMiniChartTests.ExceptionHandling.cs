@@ -28,7 +28,7 @@ public class WeeklyMiniChartExceptionHandlingTests : TestContext
         // Arrange - Register a throwing ChartService that will trigger the catch block
         var jsRuntimeMock = new Mock<IJSRuntime>();
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton<ChartService>(new ThrowingChartService());
+        Services.AddSingleton<IChartService>(new ThrowingChartService());
         Services.AddSingleton(new ChartDataFormatter());
 
         // Act - Render and dispose component
@@ -47,7 +47,7 @@ public class WeeklyMiniChartExceptionHandlingTests : TestContext
         // Arrange - Register a throwing ChartService
         var jsRuntimeMock = new Mock<IJSRuntime>();
         Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton<ChartService>(new ThrowingChartService());
+        Services.AddSingleton<IChartService>(new ThrowingChartService());
         Services.AddSingleton(new ChartDataFormatter());
 
         // Act - Render and dispose component multiple times

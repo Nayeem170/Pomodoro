@@ -45,7 +45,7 @@ public class ServiceRegistrationService : IServiceRegistrationService
         services.AddScoped<IConsentService, ConsentService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IPipTimerService, PipTimerService>();
-        services.AddScoped<ChartService>();
+        services.AddScoped<IChartService, ChartService>();
         services.AddScoped<IKeyboardShortcutService, KeyboardShortcutService>();
         services.AddScoped<IExportService, ExportService>();
 
