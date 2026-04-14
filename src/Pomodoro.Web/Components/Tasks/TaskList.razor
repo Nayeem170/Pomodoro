@@ -15,11 +15,12 @@
                         @bind:event="oninput"
                         @onkeydown="HandleKeyPress"
                         placeholder="Enter task name..." 
-                        class="task-input" />
-                <button class="btn-icon-small btn-add" @onclick="HandleAddTask" disabled="@IsAddDisabled" title="Add">
+                        class="task-input" 
+                        aria-label="New task name" />
+                <button class="btn-icon-small btn-add" @onclick="HandleAddTask" disabled="@IsAddDisabled" title="Add" aria-label="Add task">
                     +
                 </button>
-                <button class="btn-icon-small btn-cancel" @onclick="CancelAddTask" title="Cancel">
+                <button class="btn-icon-small btn-cancel" @onclick="CancelAddTask" title="Cancel" aria-label="Cancel">
                     ✕
                 </button>
             </div>
