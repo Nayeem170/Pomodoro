@@ -247,69 +247,6 @@ public partial class ActivityRepositoryTests
 
     #endregion
 
-    #region DeleteAsync Tests
-
-    [Fact]
-    public async Task DeleteAsync_WithExistingId_ReturnsTrue()
-    {
-        // Arrange
-        var activityId = Guid.NewGuid();
-
-        MockIndexedDb
-            .Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(true);
-
-        var repository = CreateRepository();
-
-        // Act
-        var result = await repository.DeleteAsync(activityId);
-
-        // Assert
-        Assert.True(result);
-    }
-
-    [Fact]
-    public async Task DeleteAsync_WithNonExistingId_ReturnsFalse()
-    {
-        // Arrange
-        var activityId = Guid.NewGuid();
-
-        MockIndexedDb
-            .Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(false);
-
-        var repository = CreateRepository();
-
-        // Act
-        var result = await repository.DeleteAsync(activityId);
-
-        // Assert
-        Assert.False(result);
-    }
-
-    [Fact]
-    public async Task DeleteAsync_CallsIndexedDbWithCorrectParameters()
-    {
-        // Arrange
-        var activityId = Guid.NewGuid();
-
-        MockIndexedDb
-            .Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(true);
-
-        var repository = CreateRepository();
-
-        // Act
-        await repository.DeleteAsync(activityId);
-
-        // Assert
-        MockIndexedDb.Verify(
-            x => x.DeleteAsync(Constants.Storage.ActivitiesStore, activityId.ToString()),
-            Times.Once);
-    }
-
-    #endregion
-
     #region ClearAllAsync Tests
 
     [Fact]

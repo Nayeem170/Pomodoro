@@ -44,21 +44,6 @@ public class TaskRepository : ITaskRepository
         return success;
     }
 
-    public async Task<bool> SoftDeleteAsync(Guid id)
-    {
-        var task = await GetByIdAsync(id);
-        if (task == null) return false;
-        
-        task.IsDeleted = true;
-        task.DeletedAt = DateTime.UtcNow;
-        return await SaveAsync(task);
-    }
-
-    public async Task<bool> HardDeleteAsync(Guid id)
-    {
-        return await _indexedDb.DeleteAsync(Constants.Storage.TasksStore, id.ToString());
-    }
-
     public async Task<int> GetCountAsync()
     {
         var all = await GetAllAsync();

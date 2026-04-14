@@ -33,11 +33,6 @@ public interface IActivityRepository
     Task<bool> SaveAsync(ActivityRecord activity);
     
     /// <summary>
-    /// Deletes an activity
-    /// </summary>
-    Task<bool> DeleteAsync(Guid id);
-    
-    /// <summary>
     /// Gets count of activities in a date range
     /// </summary>
     Task<int> GetCountAsync(DateTime? start = null, DateTime? end = null);
