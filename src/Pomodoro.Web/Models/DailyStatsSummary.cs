@@ -11,19 +11,5 @@ public class DailyStatsSummary
     public int FocusMinutes { get; set; }
     public int TasksWorkedOn { get; set; }
     
-    /// <summary>
-    /// Formats focus minutes into human-readable format
-    /// </summary>
-    [JsonIgnore]
-    public string FormattedFocusTime
-    {
-        get
-        {
-            if (FocusMinutes < Constants.TimeConversion.MinutesPerHour)
-                return string.Format(Constants.TimeFormats.MinutesFormat, FocusMinutes);
-            var hours = FocusMinutes / Constants.TimeConversion.MinutesPerHour;
-            var mins = FocusMinutes % Constants.TimeConversion.MinutesPerHour;
-            return string.Format(Constants.TimeFormats.HoursMinutesFormat, hours, mins);
-        }
-    }
+
 }

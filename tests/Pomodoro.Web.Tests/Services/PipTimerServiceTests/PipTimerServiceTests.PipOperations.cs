@@ -17,46 +17,27 @@ using Microsoft.JSInterop.Infrastructure;
         /// </summary>
         protected void SetupJsInvokeAsync<T>(string methodName, T result)
         {
-            MockJsRuntime
-                .Setup(js => js.InvokeAsync<T>(methodName, It.IsAny<object?[]?>()))
-                .ReturnsAsync(result);
+            TestBase.SetupJsInvokeAsync(MockJsRuntime, methodName, result);
         }
 
-        /// <summary>
-        /// Helper method to setup JS InvokeVoidAsync
-        /// </summary>
         protected void SetupJsInvokeVoidAsync(string methodName)
         {
-            MockJsRuntime
-                .Setup(js => js.InvokeAsync<IJSVoidResult>(methodName, It.IsAny<object?[]?>()))
-                .Returns(new ValueTask<IJSVoidResult>(default(IJSVoidResult)!));
+            TestBase.SetupJsInvokeVoidAsync(MockJsRuntime, methodName);
         }
 
-        /// <summary>
-        /// Helper method to setup JS InvokeAsync exception
-        /// </summary>
         protected void SetupJsInvokeAsyncException<T>(string methodName, Exception exception)
         {
-            MockJsRuntime
-                .Setup(js => js.InvokeAsync<T>(methodName, It.IsAny<object?[]?>()))
-                .ThrowsAsync(exception);
+            TestBase.SetupJsInvokeAsyncException<T>(MockJsRuntime, methodName, exception);
         }
 
-        /// <summary>
-        /// Helper method to setup JS InvokeVoidAsync exception
-        /// </summary>
         protected void SetupJsInvokeVoidAsyncException(string methodName, Exception exception)
         {
-            MockJsRuntime
-                .Setup(js => js.InvokeAsync<IJSVoidResult>(methodName, It.IsAny<object?[]?>()))
-                .ThrowsAsync(exception);
+            TestBase.SetupJsInvokeVoidAsyncException(MockJsRuntime, methodName, exception);
         }
 
-        /// <summary>
-        /// Helper method to verify JS InvokeVoidAsync was        /// </summary>
         protected void VerifyJsInvokeVoidAsync(string methodName, Moq.Times times)
         {
-            MockJsRuntime.Verify(js => js.InvokeAsync<IJSVoidResult>(methodName, It.IsAny<object?[]?>()), times);
+            TestBase.VerifyJsInvokeVoidAsync(MockJsRuntime, methodName, times);
         }
 
         /// <summary>

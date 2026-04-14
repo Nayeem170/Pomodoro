@@ -55,14 +55,14 @@ public class TimerDisplayBase : ComponentBase, IDisposable
         TimerService.OnStateChanged += OnTimerStateChanged;
     }
     
-    protected virtual void UpdateDisplay()
+    internal virtual void UpdateDisplay()
     {
         StateHasChanged();
     }
 
-    protected virtual void HandleStateChangeError() { }
+    internal virtual void HandleStateChangeError() { }
     
-    private async void OnTimerTick()
+    internal async void OnTimerTick()
     {
         try
         {
@@ -74,7 +74,7 @@ public class TimerDisplayBase : ComponentBase, IDisposable
         }
     }
     
-    private async void OnTimerStateChanged()
+    internal async void OnTimerStateChanged()
     {
         try
         {
@@ -107,7 +107,7 @@ public class TimerDisplayBase : ComponentBase, IDisposable
     /// <summary>
     /// Gets the display label for the current session type
     /// </summary>
-    protected string GetSessionTypeLabel()
+    internal string GetSessionTypeLabel()
     {
         var sessionType = CurrentSessionType;
         return sessionType switch
@@ -123,7 +123,7 @@ public class TimerDisplayBase : ComponentBase, IDisposable
     /// Gets the CSS class based on timer state and session type
     /// Returns both session class and paused state to allow session color with reduced opacity
     /// </summary>
-    protected string GetTimerClass()
+    internal string GetTimerClass()
     {
         // Get session class (matches PIP window behavior)
         var sessionClass = CurrentSessionType switch

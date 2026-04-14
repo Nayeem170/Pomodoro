@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
 using Moq;
 using Pomodoro.Web.Services;
 using Pomodoro.Web.Services.Formatters;
@@ -196,5 +197,59 @@ public abstract class TestBase
             CreateTodayStatsService(sp.GetRequiredService<IActivityService>()));
         
         return services;
+    }
+
+    public static void SetupTimerServiceMock(Mock<ITimerService> mock, TimeSpan remainingTime, SessionType sessionType, bool isRunning)
+    {
+        mock.SetupGet(s => s.RemainingTime).Returns(remainingTime);
+        mock.SetupGet(s => s.RemainingSeconds).Returns((int)remainingTime.TotalSeconds);
+        mock.SetupGet(s => s.CurrentSessionType).Returns(sessionType);
+        mock.SetupGet(s => s.IsRunning).Returns(isRunning);
+        mock.SetupGet(s => s.Settings).Returns(new TimerSettings());
+    }
+
+    public static void SetupCurrentSession(AppState appState, bool isRunning, bool wasStarted, int remainingSeconds = 300, SessionType sessionType = SessionType.Pomodoro)
+    {
+        appState.CurrentSession = new TimerSession
+        {
+            Type = sessionType,
+            DurationSeconds = 1500,
+            RemainingSeconds = remainingSeconds,
+            IsRunning = isRunning,
+            WasStarted = wasStarted
+        };
+    }
+
+    public static void SetupJsInvokeAsync<T>(Mock<IJSRuntime> mockJsRuntime, string methodName, T result)
+    {
+        mockJsRuntime
+            .Setup(js => js.InvokeAsync<T>(methodName, It.IsAny<object?[]?>()))
+            .ReturnsAsync(result);
+    }
+
+    public static void SetupJsInvokeVoidAsync(Mock<IJSRuntime> mockJsRuntime, string methodName)
+    {
+        mockJsRuntime
+            .Setup(js => js.InvokeAsync<IJSVoidResult>(methodName, It.IsAny<object?[]?>()))
+            .Returns(new ValueTask<IJSVoidResult>(default(IJSVoidResult)!));
+    }
+
+    public static void SetupJsInvokeAsyncException<T>(Mock<IJSRuntime> mockJsRuntime, string methodName, Exception exception)
+    {
+        mockJsRuntime
+            .Setup(js => js.InvokeAsync<T>(methodName, It.IsAny<object?[]?>()))
+            .ThrowsAsync(exception);
+    }
+
+    public static void SetupJsInvokeVoidAsyncException(Mock<IJSRuntime> mockJsRuntime, string methodName, Exception exception)
+    {
+        mockJsRuntime
+            .Setup(js => js.InvokeAsync<IJSVoidResult>(methodName, It.IsAny<object?[]?>()))
+            .ThrowsAsync(exception);
+    }
+
+    public static void VerifyJsInvokeVoidAsync(Mock<IJSRuntime> mockJsRuntime, string methodName, Times times)
+    {
+        mockJsRuntime.Verify(js => js.InvokeAsync<IJSVoidResult>(methodName, It.IsAny<object?[]?>()), times);
     }
 }
