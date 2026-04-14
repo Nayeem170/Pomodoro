@@ -54,7 +54,7 @@ public class TimerControlsBase : ComponentBase
     /// <summary>
     /// Gets the display label for the current session type
     /// </summary>
-    protected string GetSessionLabel()
+    internal string GetSessionLabel()
     {
         return SessionType switch
         {
@@ -69,7 +69,7 @@ public class TimerControlsBase : ComponentBase
     /// Gets the CSS class for buttons based on current session type
     /// Matches PIP window behavior for consistent styling
     /// </summary>
-    protected string GetSessionClass()
+    internal string GetSessionClass()
     {
         return SessionType switch
         {

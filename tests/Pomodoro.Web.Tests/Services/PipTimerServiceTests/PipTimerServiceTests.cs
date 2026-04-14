@@ -61,13 +61,6 @@ public partial class PipTimerServiceTests
     /// </summary>
     protected void SetupCurrentSession(bool isRunning, bool wasStarted, int remainingSeconds = 300, SessionType sessionType = SessionType.Pomodoro)
     {
-        AppState.CurrentSession = new TimerSession
-        {
-            Type = sessionType,
-            DurationSeconds = 1500,
-            RemainingSeconds = remainingSeconds,
-            IsRunning = isRunning,
-            WasStarted = wasStarted
-        };
+        TestBase.SetupCurrentSession(AppState, isRunning, wasStarted, remainingSeconds, sessionType);
     }
 }

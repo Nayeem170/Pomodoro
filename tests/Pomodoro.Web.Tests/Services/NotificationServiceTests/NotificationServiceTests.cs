@@ -39,38 +39,27 @@ public partial class NotificationServiceTests
     
     protected void SetupJsInvokeAsync<T>(string methodName, T result)
     {
-        // Setup for overload with args - this is what IJSRuntime.InvokeAsync actually uses
-        MockJsRuntime
-            .Setup(js => js.InvokeAsync<T>(methodName, It.IsAny<object?[]?>()))
-            .ReturnsAsync(result);
+        TestBase.SetupJsInvokeAsync(MockJsRuntime, methodName, result);
     }
     
     protected void SetupJsInvokeVoidAsync(string methodName)
     {
-        // InvokeVoidAsync internally calls InvokeAsync<IJSVoidResult>
-        MockJsRuntime
-            .Setup(js => js.InvokeAsync<IJSVoidResult>(methodName, It.IsAny<object?[]?>()))
-            .Returns(new ValueTask<IJSVoidResult>(default(IJSVoidResult)!));
+        TestBase.SetupJsInvokeVoidAsync(MockJsRuntime, methodName);
     }
     
     protected void SetupJsInvokeAsyncException<T>(string methodName, Exception exception)
     {
-        MockJsRuntime
-            .Setup(js => js.InvokeAsync<T>(methodName, It.IsAny<object?[]?>()))
-            .ThrowsAsync(exception);
+        TestBase.SetupJsInvokeAsyncException<T>(MockJsRuntime, methodName, exception);
     }
     
     protected void SetupJsInvokeVoidAsyncException(string methodName, Exception exception)
     {
-        // InvokeVoidAsync internally calls InvokeAsync<IJSVoidResult>
-        MockJsRuntime
-            .Setup(js => js.InvokeAsync<IJSVoidResult>(methodName, It.IsAny<object?[]?>()))
-            .ThrowsAsync(exception);
+        TestBase.SetupJsInvokeVoidAsyncException(MockJsRuntime, methodName, exception);
     }
     
     protected void VerifyJsInvokeVoidAsync(string methodName, Times times)
     {
-        MockJsRuntime.Verify(js => js.InvokeAsync<IJSVoidResult>(methodName, It.IsAny<object?[]?>()), times);
+        TestBase.VerifyJsInvokeVoidAsync(MockJsRuntime, methodName, times);
     }
     
     protected void VerifyJsInvokeVoidAsync(string methodName, Func<object?[]?, bool> predicate, Times times)
