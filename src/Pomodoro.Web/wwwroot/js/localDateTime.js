@@ -1,6 +1,6 @@
 window.localDateTime = {
     getLocalDate: function() {
-        var now = new Date();
+        const now = new Date();
         return new Date(now.getFullYear(), now.getMonth(), now.getDate());
     },
     getLocalDateTime: function() {

@@ -177,55 +177,28 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
     public async Task StartPomodoroAsync(Guid? taskId = null)
     {
-        var durationSeconds = _appState.Settings.GetDurationSeconds(SessionType.Pomodoro);
+        await StartSessionAsync(SessionType.Pomodoro, taskId);
+    }
+
+    public async Task StartShortBreakAsync()
+    {
+        await StartSessionAsync(SessionType.ShortBreak);
+    }
+
+    public async Task StartLongBreakAsync()
+    {
+        await StartSessionAsync(SessionType.LongBreak);
+    }
+
+    private async Task StartSessionAsync(SessionType sessionType, Guid? taskId = null)
+    {
+        var durationSeconds = _appState.Settings.GetDurationSeconds(sessionType);
         
         _appState.CurrentSession = new TimerSession
         {
             Id = Guid.NewGuid(),
             TaskId = taskId,
-            Type = SessionType.Pomodoro,
-            StartedAt = DateTime.UtcNow,
-            DurationSeconds = durationSeconds,
-            RemainingSeconds = durationSeconds,
-            IsRunning = true,
-            IsCompleted = false,
-            WasStarted = true
-        };
-        
-        NotifyStateChanged();
-        await StartJsTimerAsync();
-    }
-
-    public async Task StartShortBreakAsync()
-    {
-        var durationSeconds = _appState.Settings.GetDurationSeconds(SessionType.ShortBreak);
-        
-        _appState.CurrentSession = new TimerSession
-        {
-            Id = Guid.NewGuid(),
-            TaskId = null,
-            Type = SessionType.ShortBreak,
-            StartedAt = DateTime.UtcNow,
-            DurationSeconds = durationSeconds,
-            RemainingSeconds = durationSeconds,
-            IsRunning = true,
-            IsCompleted = false,
-            WasStarted = true
-        };
-        
-        NotifyStateChanged();
-        await StartJsTimerAsync();
-    }
-
-    public async Task StartLongBreakAsync()
-    {
-        var durationSeconds = _appState.Settings.GetDurationSeconds(SessionType.LongBreak);
-        
-        _appState.CurrentSession = new TimerSession
-        {
-            Id = Guid.NewGuid(),
-            TaskId = null,
-            Type = SessionType.LongBreak,
+            Type = sessionType,
             StartedAt = DateTime.UtcNow,
             DurationSeconds = durationSeconds,
             RemainingSeconds = durationSeconds,
