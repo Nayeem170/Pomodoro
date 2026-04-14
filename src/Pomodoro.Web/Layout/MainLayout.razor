@@ -15,7 +15,7 @@
             <div class="header-nav">
                 @foreach (var navLink in LayoutPresenter.GetNavigationLinks())
                 {
-                    <NavLink href="@navLink.Href" Match="@navLink.Match" title="@navLink.Title">
+                    <NavLink @key="navLink.Href" href="@navLink.Href" Match="@navLink.Match" title="@navLink.Title">
                         <span>@navLink.Icon</span>
                     </NavLink>
                 }

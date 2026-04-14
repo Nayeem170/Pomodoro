@@ -45,7 +45,9 @@ window.keyboardShortcuts = (function() {
     
     function invokeShortcut(key) {
         if (dotNetRef) {
-            dotNetRef.invokeMethodAsync('HandleShortcut', key);
+            dotNetRef.invokeMethodAsync('HandleShortcut', key).catch(function(err) {
+                console.error('Keyboard shortcut callback failed:', err);
+            });
         }
     }
     

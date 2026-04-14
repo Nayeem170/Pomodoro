@@ -97,7 +97,6 @@ public partial class IndexBase : ComponentBase, IDisposable
             
             // Subscribe to service events
             TaskService.OnChange += OnTaskServiceChanged;
-            TimerService.OnTick += OnTimerTick;
             TimerService.OnTimerComplete += OnTimerComplete;
             TimerService.OnStateChanged += OnTimerStateChanged;
             ConsentService.OnConsentRequired += OnConsentRequired;
@@ -284,7 +283,6 @@ public partial class IndexBase : ComponentBase, IDisposable
             TaskService.OnChange -= OnTaskServiceChanged;
         if (TimerService != null)
         {
-            TimerService.OnTick -= OnTimerTick;
             TimerService.OnTimerComplete -= OnTimerComplete;
             TimerService.OnStateChanged -= OnTimerStateChanged;
         }

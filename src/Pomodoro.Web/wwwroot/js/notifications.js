@@ -41,12 +41,13 @@ try {
 }
 
 // Listen for service worker notification messages (backup method)
+let serviceWorkerMessageHandler = function(event) {
+    if (event.data && event.data.type === pomodoroConstants.notifications.actionType) {
+        invokeNotificationAction(event.data.action);
+    }
+};
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('message', function(event) {
-        if (event.data && event.data.type === pomodoroConstants.notifications.actionType) {
-            invokeNotificationAction(event.data.action);
-        }
-    });
+    navigator.serviceWorker.addEventListener('message', serviceWorkerMessageHandler);
 }
 
 // Create namespace for notification functions
@@ -195,6 +196,17 @@ window.notificationFunctions = {
         }, 800);
     },
     
+    dispose: function() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.removeEventListener('message', serviceWorkerMessageHandler);
+        }
+        if (broadcastChannel) {
+            broadcastChannel.close();
+            broadcastChannel = null;
+        }
+        dotNetNotificationRef = null;
+    },
+
     // Unlock audio context on user interaction (call this when timer starts)
     unlockAudio: function() {
         const ctx = initAudioContext();

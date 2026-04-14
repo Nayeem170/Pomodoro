@@ -428,7 +428,10 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
     
     public async Task AddActivityAsync(ActivityRecord activity)
     {
-        // Add to cache with thread safety and trim if needed
+        // Persist first to ensure cache and storage stay consistent
+        await _activityRepository.SaveAsync(activity);
+        
+        // Add to cache only after successful persistence
         lock (_cacheLock)
         {
             _cachedActivities.Insert(0, activity);
@@ -456,21 +459,20 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         
         _logger.LogDebug(Constants.Messages.LogAddedActivityFormat, activity.Type, activity.CompletedAt, _cachedActivities.Count);
         
-        // Save to repository
-        await _activityRepository.SaveAsync(activity);
-        
         OnActivityChanged?.Invoke();
     }
     
     public async Task ClearAllActivitiesAsync()
     {
+        // Persist first to ensure cache and storage stay consistent
+        await _activityRepository.ClearAllAsync();
+        
         lock (_cacheLock)
         {
             _cachedActivities.Clear();
             ClearAllDerivedCaches();
         }
         
-        await _activityRepository.ClearAllAsync();
         OnActivityChanged?.Invoke();
     }
     

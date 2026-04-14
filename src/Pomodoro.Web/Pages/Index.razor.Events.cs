@@ -51,15 +51,6 @@ public partial class IndexBase
 
     #region Timer Service Events
 
-    public void OnTimerTick()
-    {
-        SafeAsync(async () =>
-        {
-            UpdateState();
-            await InvokeAsync(StateHasChanged);
-        }, nameof(OnTimerTick));
-    }
-
     public void OnTimerComplete(SessionType sessionType)
     {
         // Must use InvokeAsync to run on UI thread since timer runs on background thread

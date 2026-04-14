@@ -94,13 +94,12 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             PomodoroCount = Constants.Tasks.InitialPomodoroCount
         };
         
-        // Insert task at beginning (thread-safe via AppState method)
-        _appState.InsertTask(task, Constants.Tasks.InsertAtBeginning);
-        
-        // Auto-select the new task
-        _appState.CurrentTaskId = task.Id;
-        
+        // Persist first to ensure cache and storage stay consistent
         await SaveTaskAsync(task);
+        
+        // Update in-memory state only after successful persistence
+        _appState.InsertTask(task, Constants.Tasks.InsertAtBeginning);
+        _appState.CurrentTaskId = task.Id;
         await SaveCurrentTaskIdAsync();
         NotifyStateChanged();
     }
@@ -115,74 +114,114 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             return;
         }
         
-        // Thread-safe task update via AppState method
-        var updated = _appState.UpdateTask(task.Id, t => t.Name = sanitized);
+        var existingTask = _appState.FindTaskById(task.Id);
+        if (existingTask == null) return;
         
-        if (updated)
+        // Persist first to ensure cache and storage stay consistent
+        var taskToSave = new TaskItem
         {
-            var updatedTask = _appState.FindTaskById(task.Id);
-            if (updatedTask != null)
-            {
-                await SaveTaskAsync(updatedTask);
-            }
-            NotifyStateChanged();
-        }
+            Id = existingTask.Id,
+            Name = sanitized,
+            CreatedAt = existingTask.CreatedAt,
+            IsCompleted = existingTask.IsCompleted,
+            TotalFocusMinutes = existingTask.TotalFocusMinutes,
+            PomodoroCount = existingTask.PomodoroCount,
+            LastWorkedOn = existingTask.LastWorkedOn,
+            IsDeleted = existingTask.IsDeleted,
+            DeletedAt = existingTask.DeletedAt
+        };
+        await SaveTaskAsync(taskToSave);
+        
+        // Update in-memory state only after successful persistence
+        _appState.UpdateTask(task.Id, t => t.Name = sanitized);
+        NotifyStateChanged();
     }
 
     public async Task DeleteTaskAsync(Guid taskId)
     {
-        var updated = _appState.UpdateTask(taskId, t =>
+        var existingTask = _appState.FindTaskById(taskId);
+        if (existingTask == null) return;
+        
+        // Persist first to ensure cache and storage stay consistent
+        var taskToSave = new TaskItem
+        {
+            Id = existingTask.Id,
+            Name = existingTask.Name,
+            CreatedAt = existingTask.CreatedAt,
+            IsCompleted = existingTask.IsCompleted,
+            TotalFocusMinutes = existingTask.TotalFocusMinutes,
+            PomodoroCount = existingTask.PomodoroCount,
+            LastWorkedOn = existingTask.LastWorkedOn,
+            IsDeleted = true,
+            DeletedAt = DateTime.UtcNow
+        };
+        await SaveTaskAsync(taskToSave);
+        
+        // Update in-memory state only after successful persistence
+        _appState.UpdateTask(taskId, t =>
         {
             // Soft delete - mark as deleted but keep for history
             t.IsDeleted = true;
             t.DeletedAt = DateTime.UtcNow;
         });
         
-        if (updated)
+        if (_appState.CurrentTaskId == taskId)
         {
-            if (_appState.CurrentTaskId == taskId)
-            {
-                _appState.CurrentTaskId = null;
-                await SaveCurrentTaskIdAsync();
-            }
-            
-            var deletedTask = _appState.FindTaskById(taskId);
-            if (deletedTask != null)
-            {
-                await SaveTaskAsync(deletedTask);
-            }
-            NotifyStateChanged();
+            _appState.CurrentTaskId = null;
+            await SaveCurrentTaskIdAsync();
         }
+        
+        NotifyStateChanged();
     }
 
     public async Task CompleteTaskAsync(Guid taskId)
     {
-        var updated = _appState.UpdateTask(taskId, t => t.IsCompleted = true);
+        var existingTask = _appState.FindTaskById(taskId);
+        if (existingTask == null) return;
         
-        if (updated)
+        // Persist first to ensure cache and storage stay consistent
+        var taskToSave = new TaskItem
         {
-            var task = _appState.FindTaskById(taskId);
-            if (task != null)
-            {
-                await SaveTaskAsync(task);
-            }
-            NotifyStateChanged();
-        }
+            Id = existingTask.Id,
+            Name = existingTask.Name,
+            CreatedAt = existingTask.CreatedAt,
+            IsCompleted = true,
+            TotalFocusMinutes = existingTask.TotalFocusMinutes,
+            PomodoroCount = existingTask.PomodoroCount,
+            LastWorkedOn = existingTask.LastWorkedOn,
+            IsDeleted = existingTask.IsDeleted,
+            DeletedAt = existingTask.DeletedAt
+        };
+        await SaveTaskAsync(taskToSave);
+        
+        // Update in-memory state only after successful persistence
+        _appState.UpdateTask(taskId, t => t.IsCompleted = true);
+        NotifyStateChanged();
     }
 
     public async Task UncompleteTaskAsync(Guid taskId)
     {
-        var updated = _appState.UpdateTask(taskId, t => t.IsCompleted = false);
+        var existingTask = _appState.FindTaskById(taskId);
+        if (existingTask == null) return;
         
-        if (updated)
+        // Persist first to ensure cache and storage stay consistent
+        var taskToSave = new TaskItem
         {
-            var task = _appState.FindTaskById(taskId);
-            if (task != null)
-            {
-                await SaveTaskAsync(task);
-            }
-            NotifyStateChanged();
-        }
+            Id = existingTask.Id,
+            Name = existingTask.Name,
+            CreatedAt = existingTask.CreatedAt,
+            IsCompleted = false,
+            TotalFocusMinutes = existingTask.TotalFocusMinutes,
+            PomodoroCount = existingTask.PomodoroCount,
+            LastWorkedOn = existingTask.LastWorkedOn,
+            IsDeleted = existingTask.IsDeleted,
+            DeletedAt = existingTask.DeletedAt
+        };
+        await SaveTaskAsync(taskToSave);
+        
+        // Update in-memory state only after successful persistence
+        _appState.UpdateTask(taskId, t => t.IsCompleted = false);
+        NotifyStateChanged();
     }
 
     public async Task SelectTaskAsync(Guid taskId)
