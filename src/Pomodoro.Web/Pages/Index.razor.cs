@@ -54,6 +54,7 @@ public partial class IndexBase : ComponentBase, IDisposable
 
     #region State
     
+    protected bool IsLoading { get; set; } = true;
     protected List<TaskItem> Tasks { get; set; } = new();
     protected Guid? CurrentTaskId { get; set; }
     protected TimeSpan RemainingTime { get; set; } = TimeSpan.FromMinutes(Constants.Timer.DefaultPomodoroMinutes);
@@ -210,6 +211,10 @@ public partial class IndexBase : ComponentBase, IDisposable
         catch (Exception ex)
         {
             ErrorMessage = $"{Constants.Messages.ErrorInitializing}: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
     
