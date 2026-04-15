@@ -19,6 +19,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// Comprehensive tests for History page component.
 /// These tests verify rendering, interactions, and lifecycle methods of History page.
 /// </summary>
+[Trait("Category", "Page")]
 public class HistoryPageExpandedTests : TestHelper
 {
     [Fact]
@@ -1530,3 +1531,4 @@ public class HistoryPageExpandedTests : TestHelper
             It.IsAny<DateTime>(), It.IsAny<DateTime>(), 0, 20), Times.Once);
     }
 }
+

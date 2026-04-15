@@ -10,8 +10,10 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for ActivityService weekly statistics with exception handling.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class ActivityServiceTests
 {
+    [Trait("Category", "Service")]
     public class WeeklyStatsTests : ActivityServiceTests
     {
         [Fact]

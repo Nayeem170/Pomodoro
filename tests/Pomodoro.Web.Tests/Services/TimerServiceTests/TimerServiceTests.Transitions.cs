@@ -8,8 +8,10 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for TimerService session type transitions.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class TimerServiceTests
 {
+    [Trait("Category", "Service")]
     public class TransitionsTests : TimerServiceTests
     {
         [Fact]
@@ -212,3 +214,4 @@ public partial class TimerServiceTests
         }
     }
 }
+

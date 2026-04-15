@@ -9,11 +9,13 @@ namespace Pomodoro.Web.Tests.Services.ConsentServiceTests;
 /// <summary>
 /// Tests for ConsentService countdown timer behavior and error handling.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class ConsentServiceTests
 {
     /// <summary>
     /// Tests for countdown timer behavior
     /// </summary>
+    [Trait("Category", "Service")]
     public class CountdownTests : ConsentServiceTests
     {
         [Fact]
@@ -236,6 +238,7 @@ public partial class ConsentServiceTests
     /// <summary>
     /// Tests for error handling scenarios
     /// </summary>
+    [Trait("Category", "Service")]
     public class ErrorHandlingTests : ConsentServiceTests
     {
 
@@ -444,3 +447,4 @@ public partial class ConsentServiceTests
         }
     }
 }
+

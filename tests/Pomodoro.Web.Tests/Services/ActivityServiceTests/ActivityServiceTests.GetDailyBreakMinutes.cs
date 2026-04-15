@@ -10,8 +10,10 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for ActivityService.GetDailyBreakMinutes edge cases and uncovered branches
 /// </summary>
+[Trait("Category", "Service")]
 public partial class ActivityServiceTests
 {
+    [Trait("Category", "Service")]
     public class GetDailyBreakMinutesTests : ActivityServiceTests
     {
         [Fact]
@@ -245,3 +247,4 @@ public partial class ActivityServiceTests
         }
     }
 }
+

@@ -5,8 +5,10 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Services.SettingsRepositoryTests;
 
+[Trait("Category", "Service")]
 public partial class SettingsRepositoryTests
 {
+    [Trait("Category", "Service")]
     public class ErrorHandlingTests : SettingsRepositoryTests
     {
         [Fact]
@@ -140,3 +142,4 @@ public partial class SettingsRepositoryTests
         }
     }
 }
+

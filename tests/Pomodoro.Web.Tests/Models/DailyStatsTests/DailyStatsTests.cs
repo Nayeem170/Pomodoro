@@ -6,6 +6,7 @@ namespace Pomodoro.Web.Tests.Models.DailyStatsTests;
 /// <summary>
 /// Tests for DailyStats model
 /// </summary>
+[Trait("Category", "Model")]
 public class DailyStatsTests
 {
     #region Constructor Tests
@@ -328,3 +329,4 @@ public class DailyStatsTests
 
     #endregion
 }
+

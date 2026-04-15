@@ -5,8 +5,10 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Tests.Services;
 
+[Trait("Category", "Service")]
 public partial class PipTimerServiceTests
 {
+    [Trait("Category", "Service")]
     public class CoverageTests : PipTimerServiceTests
     {
         [Fact]
@@ -110,3 +112,4 @@ public partial class PipTimerServiceTests
         }
     }
 }
+

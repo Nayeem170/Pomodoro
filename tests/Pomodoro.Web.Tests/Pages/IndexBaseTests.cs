@@ -13,6 +13,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// Comprehensive tests for Index.razor.cs core functionality
 /// Tests initialization, state management, lifecycle, and disposal
 /// </summary>
+[Trait("Category", "Page")]
 public class IndexBaseTests : TestHelper
 {
     public IndexBaseTests()

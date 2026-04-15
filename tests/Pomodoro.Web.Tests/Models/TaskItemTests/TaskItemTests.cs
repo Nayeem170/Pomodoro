@@ -6,8 +6,10 @@ namespace Pomodoro.Web.Tests.Models;
 /// <summary>
 /// Tests for TaskItem model
 /// </summary>
+[Trait("Category", "Model")]
 public class TaskItemTests
 {
+    [Trait("Category", "Model")]
     public class Constructor : TaskItemTests
     {
         [Fact]
@@ -54,6 +56,7 @@ public class TaskItemTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class Name : TaskItemTests
     {
         [Theory]
@@ -94,6 +97,7 @@ public class TaskItemTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class CompletionStatus : TaskItemTests
     {
         [Fact]
@@ -130,6 +134,7 @@ public class TaskItemTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class FocusTracking : TaskItemTests
     {
         [Fact]
@@ -170,6 +175,7 @@ public class TaskItemTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class PomodoroCount : TaskItemTests
     {
         [Fact]
@@ -210,6 +216,7 @@ public class TaskItemTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class LastWorkedOn : TaskItemTests
     {
         [Fact]
@@ -236,6 +243,7 @@ public class TaskItemTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class SoftDelete : TaskItemTests
     {
         [Fact]
@@ -278,6 +286,7 @@ public class TaskItemTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class AllProperties : TaskItemTests
     {
         [Fact]
@@ -316,3 +325,4 @@ public class TaskItemTests
         }
     }
 }
+

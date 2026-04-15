@@ -10,6 +10,7 @@ namespace Pomodoro.Web.Tests.History;
 /// bUnit tests for DateNavigator component.
 /// Tests date navigation and formatting behavior via UI interactions.
 /// </summary>
+[Trait("Category", "Component")]
 public class DateNavigatorTests : TestContext
 {
     public DateNavigatorTests()
@@ -326,3 +327,4 @@ public class DateNavigatorTests : TestContext
 
     #endregion
 }
+

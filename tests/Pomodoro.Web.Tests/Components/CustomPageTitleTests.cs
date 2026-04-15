@@ -5,6 +5,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests;
 
+[Trait("Category", "Component")]
 public class CustomPageTitleTests : TestContext
 {
     public CustomPageTitleTests()
@@ -22,3 +23,4 @@ public class CustomPageTitleTests : TestContext
         Assert.NotNull(cut.Instance);
     }
 }
+

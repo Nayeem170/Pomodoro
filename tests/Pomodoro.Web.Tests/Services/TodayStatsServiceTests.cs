@@ -9,6 +9,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for TodayStatsService
 /// </summary>
+[Trait("Category", "Service")]
 public class TodayStatsServiceTests
 {
     private readonly Mock<IActivityService> _mockActivityService;
@@ -342,3 +343,4 @@ public class TodayStatsServiceTests
         Assert.Equal(1, tasksWorkedOn);
     }
 }
+

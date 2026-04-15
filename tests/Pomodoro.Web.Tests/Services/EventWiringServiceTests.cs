@@ -7,6 +7,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Services;
 
+[Trait("Category", "Service")]
 public class EventWiringServiceTests
 {
     private readonly Mock<ILogger<EventWiringService>> _loggerMock;
@@ -265,3 +266,4 @@ public class EventWiringServiceTests
             Times.Once);
     }
 }
+

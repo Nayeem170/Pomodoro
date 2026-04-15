@@ -6,6 +6,7 @@ namespace Pomodoro.Web.Tests.Services.SettingsRepositoryTests;
 /// <summary>
 /// Tests for SettingsRepository.ResetToDefaultsAsync method.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class SettingsRepositoryTests
 {
     #region ResetToDefaultsAsync Tests
@@ -125,3 +126,4 @@ public partial class SettingsRepositoryTests
 
     #endregion
 }
+

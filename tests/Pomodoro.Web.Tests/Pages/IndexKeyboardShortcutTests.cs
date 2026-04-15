@@ -15,6 +15,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// Note: Due to SafeTaskRunner.RunAndForget using Task.Run for async execution,
 /// we focus on verifying shortcut registration rather than execution.
 /// </summary>
+[Trait("Category", "Page")]
 public class IndexKeyboardShortcutTests : TestHelper
 {
     public IndexKeyboardShortcutTests()
@@ -228,3 +229,4 @@ public class IndexKeyboardShortcutTests : TestHelper
 
     #endregion
 }
+

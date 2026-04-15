@@ -5,6 +5,7 @@ namespace Pomodoro.Web.Tests.Models.TimerSettingsTests;
 /// <summary>
 /// Tests for TimerSettings Clone method.
 /// </summary>
+[Trait("Category", "Model")]
 public partial class TimerSettingsTests
 {
     #region Clone Tests
@@ -113,3 +114,4 @@ public partial class TimerSettingsTests
 
     #endregion
 }
+

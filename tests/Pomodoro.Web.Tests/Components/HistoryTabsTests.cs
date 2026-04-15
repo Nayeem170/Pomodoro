@@ -12,6 +12,7 @@ namespace Pomodoro.Web.Tests;
 /// bUnit tests for HistoryTabs component.
 /// Tests tab rendering and switching behavior.
 /// </summary>
+[Trait("Category", "Component")]
 public class HistoryTabsTests : TestContext
 {
     public HistoryTabsTests()
@@ -257,3 +258,4 @@ public class HistoryTabsTests : TestContext
 
     #endregion
 }
+

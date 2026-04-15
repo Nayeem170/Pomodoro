@@ -8,8 +8,10 @@ namespace Pomodoro.Web.Tests.Services.SettingsRepositoryTests;
 /// <summary>
 /// Additional tests for SettingsRepository.GetAsync method to improve coverage
 /// </summary>
+[Trait("Category", "Service")]
 public partial class SettingsRepositoryTests
 {
+    [Trait("Category", "Service")]
     public class GetAsyncCoverageTests : SettingsRepositoryTests
     {
         [Fact]
@@ -265,3 +267,4 @@ public partial class SettingsRepositoryTests
         }
     }
 }
+

@@ -7,8 +7,10 @@ namespace Pomodoro.Web.Tests.Services.SettingsRepositoryTests;
 /// <summary>
 /// Tests for SettingsRepository error path handling.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class SettingsRepositoryTests
 {
+    [Trait("Category", "Service")]
     public class ErrorTests : SettingsRepositoryTests
     {
         [Fact]

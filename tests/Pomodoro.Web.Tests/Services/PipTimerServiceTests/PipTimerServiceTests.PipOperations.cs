@@ -10,6 +10,7 @@ using Microsoft.JSInterop.Infrastructure;
  /// <summary>
  /// Tests for PipTimerService PiP operations (Initialize, Open, Close, Update, Dispose).
  /// </summary>
+    [Trait("Category", "Service")]
     public partial class PipTimerServiceTests
     {
         /// <summary>
@@ -43,6 +44,7 @@ using Microsoft.JSInterop.Infrastructure;
         /// <summary>
         /// Tests for InitializeAsync method
         /// </summary>
+        [Trait("Category", "Service")]
         public class InitializeAsyncTests : PipTimerServiceTests
         {
             [Fact]
@@ -146,6 +148,7 @@ using Microsoft.JSInterop.Infrastructure;
         /// <summary>
         /// Tests for OpenAsync method
         /// </summary>
+        [Trait("Category", "Service")]
         public class OpenAsyncTests : PipTimerServiceTests
         {
             [Fact]
@@ -250,6 +253,7 @@ using Microsoft.JSInterop.Infrastructure;
         /// <summary>
         /// Tests for CloseAsync method
         /// </summary>
+        [Trait("Category", "Service")]
         public class CloseAsyncTests : PipTimerServiceTests
         {
             [Fact]
@@ -333,6 +337,7 @@ using Microsoft.JSInterop.Infrastructure;
         /// <summary>
         /// Tests for UpdateTimerAsync method
         /// </summary>
+        [Trait("Category", "Service")]
         public class UpdateTimerAsyncTests : PipTimerServiceTests
         {
             [Fact]
@@ -403,6 +408,7 @@ using Microsoft.JSInterop.Infrastructure;
         /// <summary>
         /// Tests for DisposeAsync method
         /// </summary>
+        [Trait("Category", "Service")]
         public class DisposeAsyncTests : PipTimerServiceTests
         {
             [Fact]
@@ -491,3 +497,4 @@ using Microsoft.JSInterop.Infrastructure;
            }
      }
 }
+

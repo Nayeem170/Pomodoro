@@ -10,6 +10,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// Tests for the Index page component.
 /// These tests verify rendering and basic interactions of the Index page.
 /// </summary>
+[Trait("Category", "Page")]
 public class IndexPageTests : TestHelper
 {
     [Fact]
@@ -43,3 +44,4 @@ public class IndexPageTests : TestHelper
         cut.Markup.Should().Contain("task");
     }
 }
+

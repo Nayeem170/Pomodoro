@@ -10,6 +10,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// <summary>
 /// Tests for Index.razor.Events.cs event handlers
 /// </summary>
+[Trait("Category", "Page")]
 public class IndexEventsTests : TestHelper
 {
     public IndexEventsTests()
@@ -334,3 +335,4 @@ public class IndexEventsTests : TestHelper
 
     #endregion
 }
+

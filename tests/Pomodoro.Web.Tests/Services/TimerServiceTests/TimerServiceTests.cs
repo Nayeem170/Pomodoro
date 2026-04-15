@@ -11,6 +11,8 @@ namespace Pomodoro.Web.Tests.Services;
 /// Base test class for TimerService.
 /// Contains shared setup and helper methods.
 /// </summary>
+using Xunit;
+[Trait("Category", "Service")]
 public partial class TimerServiceTests
 {
     protected readonly Mock<IIndexedDbService> MockIndexedDb;
@@ -58,3 +60,4 @@ public partial class TimerServiceTests
         AppState.CurrentSession = null;
     }
 }
+

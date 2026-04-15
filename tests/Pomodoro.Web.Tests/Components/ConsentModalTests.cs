@@ -12,6 +12,7 @@ namespace Pomodoro.Web.Tests;
 /// <summary>
 /// Tests for ConsentModal component
 /// </summary>
+[Trait("Category", "Component")]
 public class ConsentModalTests : TestContext
 {
     public ConsentModalTests()
@@ -328,3 +329,4 @@ public class ConsentModalTests : TestContext
         cut.Markup.Contains("width: 0%");
     }
 }
+

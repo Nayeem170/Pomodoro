@@ -9,6 +9,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.History;
 
+[Trait("Category", "Component")]
 public class DailySummarySectionTests : TestContext
 {
     public DailySummarySectionTests()
@@ -189,4 +190,5 @@ public class DailySummarySectionTests : TestContext
         Assert.Contains("5", cut.Markup);
     }
 }
+
 

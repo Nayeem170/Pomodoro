@@ -13,6 +13,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Base test class for NotificationService tests.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class NotificationServiceTests
 {
     protected readonly Mock<IJSRuntime> MockJsRuntime;
@@ -78,3 +79,4 @@ public partial class NotificationServiceTests
         return args[index]!.ToString() == expectedValue;
     }
 }
+

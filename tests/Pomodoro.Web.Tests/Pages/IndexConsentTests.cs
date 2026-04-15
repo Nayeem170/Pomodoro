@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// <summary>
 /// Tests for Index.razor.Consent.cs consent action handler
 /// </summary>
+[Trait("Category", "Page")]
 public class IndexConsentTests : TestHelper
 {
     public IndexConsentTests()
@@ -86,3 +87,4 @@ public class IndexConsentTests : TestHelper
 
     #endregion
 }
+

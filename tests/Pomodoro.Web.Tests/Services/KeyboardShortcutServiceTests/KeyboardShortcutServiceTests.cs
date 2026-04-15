@@ -5,6 +5,8 @@ using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Tests.Services.KeyboardShortcutServiceTests;
 
+using Xunit;
+[Trait("Category", "Service")]
 public partial class KeyboardShortcutServiceTests
 {
     protected readonly Mock<IJSRuntime> _mockJsRuntime;
@@ -21,3 +23,4 @@ public partial class KeyboardShortcutServiceTests
         return new KeyboardShortcutService(_mockJsRuntime.Object, _mockLogger.Object);
     }
 }
+

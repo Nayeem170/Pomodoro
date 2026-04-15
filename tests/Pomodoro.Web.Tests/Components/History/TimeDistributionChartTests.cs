@@ -15,8 +15,10 @@ namespace Pomodoro.Web.Tests.History;
 /// <summary>
 /// Tests for TimeDistributionChart component
 /// </summary>
+[Trait("Category", "Component")]
 public class TimeDistributionChartTests
 {
+    [Trait("Category", "Component")]
     public class RenderingTests : TestContext
     {
         [Fact]
@@ -62,6 +64,7 @@ public class TimeDistributionChartTests
         }
     }
 
+    [Trait("Category", "Component")]
     public class OnInitializedTests : TestContext
     {
         [Fact]
@@ -87,6 +90,7 @@ public class TimeDistributionChartTests
         }
     }
 
+    [Trait("Category", "Component")]
     public class FormattedTotalMinutesTests : TestContext
     {
         [Fact]
@@ -202,6 +206,7 @@ public class TimeDistributionChartTests
         }
     }
 
+    [Trait("Category", "Component")]
     public class HasDataTests : TestContext
     {
         [Fact]
@@ -255,6 +260,7 @@ public class TimeDistributionChartTests
         }
     }
 
+    [Trait("Category", "Component")]
     public class DisposeTests : TestContext
     {
         [Fact]
@@ -309,6 +315,7 @@ public class TimeDistributionChartTests
         }
     }
 
+    [Trait("Category", "Component")]
     public class OnParametersSetTests : TestContext
     {
         [Fact]
@@ -340,6 +347,7 @@ public class TimeDistributionChartTests
         }
     }
 
+    [Trait("Category", "Component")]
     public class OnActivityChangedTests : TestContext
     {
         [Fact]
@@ -455,6 +463,7 @@ public class TimeDistributionChartTests
         }
     }
 
+    [Trait("Category", "Component")]
     public class UpdateChartAsyncTests : TestContext
     {
         [Fact]
@@ -490,6 +499,7 @@ public class TimeDistributionChartTests
         }
     }
 
+    [Trait("Category", "Component")]
     public class JSErrorHandlingTests : TestContext
     {
         [Fact]
@@ -559,6 +569,7 @@ public class TimeDistributionChartTests
         }
     }
 
+    [Trait("Category", "Component")]
     public class TotalMinutesTests : TestContext
     {
         [Fact]
@@ -597,3 +608,4 @@ internal class ThrowingTimeFormatter : TimeFormatter
     public override string FormatTime(int minutes) =>
         throw new InvalidOperationException("Test exception from FormatTime");
 }
+

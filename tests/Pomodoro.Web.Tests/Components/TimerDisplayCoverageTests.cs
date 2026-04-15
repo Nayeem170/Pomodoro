@@ -10,6 +10,7 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Tests;
 
+[Trait("Category", "Component")]
 public class TimerDisplayCoverageTests : TestContext
 {
     private readonly Mock<ITimerService> _timerServiceMock;
@@ -153,3 +154,4 @@ public class TimerDisplayCoverageTests : TestContext
         }
     }
 }
+

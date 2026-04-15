@@ -9,6 +9,7 @@ namespace Pomodoro.Web.Tests.Services.TaskRepositoryTests;
 /// <summary>
 /// Operation tests for TaskRepository.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class TaskRepositoryTests
 {
     #region GetAllAsync Tests
@@ -357,3 +358,4 @@ public partial class TaskRepositoryTests
 
     #endregion
 }
+

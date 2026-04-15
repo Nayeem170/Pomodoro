@@ -12,6 +12,7 @@ namespace Pomodoro.Web.Tests;
 /// bUnit tests for TaskList component.
 /// Tests task list rendering, adding tasks, and task interactions.
 /// </summary>
+[Trait("Category", "Component")]
 public class TaskListTests : TestContext
 {
     public TaskListTests()
@@ -443,3 +444,4 @@ public class TaskListTests : TestContext
 
     #endregion
 }
+

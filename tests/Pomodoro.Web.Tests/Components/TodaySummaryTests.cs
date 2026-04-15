@@ -10,6 +10,7 @@ namespace Pomodoro.Web.Tests;
 /// bUnit tests for TodaySummary component.
 /// Tests rendering of today's summary statistics.
 /// </summary>
+[Trait("Category", "Component")]
 public class TodaySummaryTests : TestContext
 {
     public TodaySummaryTests()
@@ -222,3 +223,4 @@ public class TodaySummaryTests : TestContext
 
     #endregion
 }
+

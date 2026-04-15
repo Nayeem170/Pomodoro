@@ -6,6 +6,7 @@ namespace Pomodoro.Web.Tests.Models.TimerSettingsTests;
 /// Tests for TimerSettings value clamping behavior.
 /// Properties use Math.Clamp to ensure values stay within valid ranges.
 /// </summary>
+[Trait("Category", "Model")]
 public partial class TimerSettingsTests
 {
     #region PomodoroMinutes Tests
@@ -288,3 +289,4 @@ public partial class TimerSettingsTests
 
     #endregion
 }
+

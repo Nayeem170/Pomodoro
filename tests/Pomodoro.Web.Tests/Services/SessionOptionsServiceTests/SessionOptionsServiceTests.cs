@@ -10,6 +10,7 @@ namespace Pomodoro.Web.Tests.Services.SessionOptionsServiceTests;
 /// Tests for SessionOptionsService.
 /// SessionOptionsService generates session options based on completed session type.
 /// </summary>
+[Trait("Category", "Service")]
 public class SessionOptionsServiceTests
 {
     private SessionOptionsService CreateService(TimerSettings? settings = null)
@@ -147,3 +148,4 @@ public class SessionOptionsServiceTests
         Assert.Equal(SessionType.Pomodoro, defaultOption);
     }
 }
+

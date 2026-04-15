@@ -6,6 +6,7 @@ namespace Pomodoro.Web.Tests.Services.Formatters;
 /// <summary>
 /// Tests for ChartDataFormatter service
 /// </summary>
+[Trait("Category", "Service")]
 public class ChartDataFormatterTests
 {
     private readonly ChartDataFormatter _formatter;
@@ -209,3 +210,4 @@ public class ChartDataFormatterTests
         Assert.Equal(0, focusResult[6]);
     }
 }
+

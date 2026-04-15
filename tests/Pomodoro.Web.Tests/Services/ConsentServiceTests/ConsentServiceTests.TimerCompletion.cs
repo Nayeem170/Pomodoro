@@ -9,6 +9,7 @@ namespace Pomodoro.Web.Tests.Services.ConsentServiceTests;
 /// <summary>
 /// Tests for ConsentService timer completion handling.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class ConsentServiceTests
 {
     private static TimerCompletedEventArgs CreateArgs(SessionType sessionType) =>
@@ -457,3 +458,4 @@ public partial class ConsentServiceTests
         Assert.Contains(countdownTicks, t => t < 3);
     }
 }
+

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.Routing;
 
 namespace Pomodoro.Web.Tests.Layout
 {
+    [Trait("Category", "Component")]
     public class MainLayoutTests : TestContext
     {
         private readonly Mock<LayoutPresenterService> _mockLayoutPresenter;
@@ -485,3 +486,4 @@ namespace Pomodoro.Web.Tests.Layout
         }
     }
 }
+

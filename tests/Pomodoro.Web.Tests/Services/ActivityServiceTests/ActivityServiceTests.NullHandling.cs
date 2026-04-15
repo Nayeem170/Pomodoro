@@ -9,8 +9,10 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for ActivityService null handling and edge cases
 /// </summary>
+[Trait("Category", "Service")]
 public partial class ActivityServiceTests
 {
+    [Trait("Category", "Service")]
     public class NullHandlingTests : ActivityServiceTests
     {
         [Fact]
@@ -436,3 +438,4 @@ public partial class ActivityServiceTests
         }
     }
 }
+

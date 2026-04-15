@@ -4,6 +4,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests;
 
+[Trait("Category", "Component")]
 public class ErrorBannerTests : TestContext
 {
     public ErrorBannerTests()
@@ -51,3 +52,4 @@ public class ErrorBannerTests : TestContext
         Assert.True(dismissed);
     }
 }
+

@@ -12,6 +12,7 @@ namespace Pomodoro.Web.Tests.History;
 /// Tests for ActivityItem component.
 /// Tests rendering with different activity types and values.
 /// </summary>
+[Trait("Category", "Component")]
 public class ActivityItemTests : TestContext
 {
     public ActivityItemTests()
@@ -426,3 +427,4 @@ public class ActivityItemTests : TestContext
 
     #endregion
 }
+

@@ -9,6 +9,7 @@ namespace Pomodoro.Web.Tests.Services.ActivityRepositoryTests;
 /// <summary>
 /// CRUD operation tests for ActivityRepository.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class ActivityRepositoryTests
 {
     #region GetAllAsync Tests
@@ -287,3 +288,4 @@ public partial class ActivityRepositoryTests
 
     #endregion
 }
+

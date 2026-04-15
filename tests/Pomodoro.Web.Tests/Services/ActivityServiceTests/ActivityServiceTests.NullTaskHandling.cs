@@ -10,8 +10,10 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for ActivityService null task name handling.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class ActivityServiceTests
 {
+    [Trait("Category", "Service")]
     public class NullTaskHandlingTests : ActivityServiceTests
     {
         [Fact]

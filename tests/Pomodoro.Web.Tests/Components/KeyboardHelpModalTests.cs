@@ -7,6 +7,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests;
 
+[Trait("Category", "Component")]
 public class KeyboardHelpModalTests : TestContext
 {
     public KeyboardHelpModalTests()
@@ -144,3 +145,4 @@ public class KeyboardHelpModalTests : TestContext
         Assert.True(sections.Count >= 3, "Should have at least 3 sections (Timer, Session, Other)");
     }
 }
+

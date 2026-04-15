@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests.Models;
 /// Comprehensive tests for AppState to improve coverage from 89.4% to 95%+
 /// Tests thread-safety, event handling, edge cases, and daily reset functionality
 /// </summary>
+[Trait("Category", "Model")]
 public class AppStateTests
 {
     private readonly AppState _appState;

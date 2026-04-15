@@ -7,6 +7,7 @@ namespace Pomodoro.Web.Tests.Services.Formatters;
 /// <summary>
 /// Tests for TimerThemeFormatter service
 /// </summary>
+[Trait("Category", "Service")]
 public class TimerThemeFormatterTests
 {
     private readonly TimerThemeFormatter _formatter;
@@ -56,3 +57,4 @@ public class TimerThemeFormatterTests
         Assert.Equal(Constants.SessionTypes.PomodoroTheme, result);
     }
 }
+

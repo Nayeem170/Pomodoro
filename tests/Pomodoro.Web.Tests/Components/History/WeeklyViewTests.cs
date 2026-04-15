@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Components.History;
 
+[Trait("Category", "Component")]
 public class WeeklyViewTests : TestHelper
 {
     public WeeklyViewTests()
@@ -109,3 +110,4 @@ public class WeeklyViewTests : TestHelper
         Assert.Contains("Weekly Trend", cut.Find("h2").TextContent);
     }
 }
+

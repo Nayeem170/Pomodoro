@@ -13,6 +13,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// Tests for the Settings page component.
 /// These tests verify rendering and basic interactions of the Settings page.
 /// </summary>
+[Trait("Category", "Page")]
 public class SettingsPageTests : TestHelper
 {
     public SettingsPageTests()
@@ -92,3 +93,4 @@ public class SettingsPageTests : TestHelper
         clearButton.Should().NotBeNull();
     }
 }
+

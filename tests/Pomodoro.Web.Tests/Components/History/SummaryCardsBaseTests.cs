@@ -27,8 +27,10 @@ public class TestableSummaryCardsBase : SummaryCardsBase
 /// <summary>
 /// Unit tests for SummaryCardsBase class
 /// </summary>
+[Trait("Category", "Component")]
 public class SummaryCardsBaseTests
 {
+    [Trait("Category", "Component")]
     public class FormatTimeTests : TestContext
     {
         private readonly SummaryCardsFormatter _formatter;
@@ -126,6 +128,7 @@ public class SummaryCardsBaseTests
         }
     }
 
+    [Trait("Category", "Component")]
     public class FormatCountTests : TestContext
     {
         private readonly SummaryCardsFormatter _formatter;
@@ -189,6 +192,7 @@ public class SummaryCardsBaseTests
         }
     }
 
+    [Trait("Category", "Component")]
     public class ParameterTests
     {
         [Fact]
@@ -260,6 +264,7 @@ public class SummaryCardsBaseTests
     /// Tests that exercise Formatter property getter and setter directly
     /// to improve branch coverage for line 28
     /// </summary>
+    [Trait("Category", "Component")]
     public class FormatterPropertyTests : TestContext
     {
         public FormatterPropertyTests()
@@ -313,6 +318,7 @@ public class SummaryCardsBaseTests
     /// Tests that exercise SummaryCardsBase through the SummaryCards component
     /// to ensure proper coverage of [Parameter] and [Inject] attributes
     /// </summary>
+    [Trait("Category", "Component")]
     public class ComponentRenderingTests : TestContext
     {
         public ComponentRenderingTests()
@@ -400,3 +406,4 @@ public class SummaryCardsBaseTests
         }
     }
 }
+

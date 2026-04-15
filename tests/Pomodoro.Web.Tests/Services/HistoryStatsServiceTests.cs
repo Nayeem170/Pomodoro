@@ -7,6 +7,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for HistoryStatsService
 /// </summary>
+[Trait("Category", "Service")]
 public class HistoryStatsServiceTests
 {
     private readonly HistoryStatsService _service;
@@ -202,3 +203,4 @@ public class HistoryStatsServiceTests
         Assert.Equal(20, result.TasksWorkedOn); // Every 5th activity has a unique task ID
     }
 }
+

@@ -6,8 +6,10 @@ namespace Pomodoro.Web.Tests.Models;
 /// <summary>
 /// Tests for ActivityRecord model
 /// </summary>
+[Trait("Category", "Model")]
 public class ActivityRecordTests
 {
+    [Trait("Category", "Model")]
     public class Constructor : ActivityRecordTests
     {
         [Fact]
@@ -38,6 +40,7 @@ public class ActivityRecordTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class DisplayText : ActivityRecordTests
     {
         [Fact]
@@ -107,6 +110,7 @@ public class ActivityRecordTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class Icon : ActivityRecordTests
     {
         [Fact]
@@ -158,6 +162,7 @@ public class ActivityRecordTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class Properties : ActivityRecordTests
     {
         [Fact]
@@ -207,3 +212,4 @@ public class ActivityRecordTests
         }
     }
 }
+

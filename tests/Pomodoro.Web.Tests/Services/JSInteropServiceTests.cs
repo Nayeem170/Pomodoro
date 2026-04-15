@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Unit tests for JSInteropService
 /// </summary>
+[Trait("Category", "Service")]
 public class JSInteropServiceTests
 {
     [Fact]

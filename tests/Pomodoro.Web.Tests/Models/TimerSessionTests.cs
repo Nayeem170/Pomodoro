@@ -4,6 +4,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Models;
 
+[Trait("Category", "Model")]
 public class TimerSessionTests
 {
     [Fact]
@@ -112,3 +113,4 @@ public class TimerSessionTests
         Assert.True(session.WasStarted);
     }
 }
+

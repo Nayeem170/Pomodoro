@@ -11,8 +11,10 @@ namespace Pomodoro.Web.Tests.Services;
 /// Test cases for IndexedDbService.GetAllAsync() method.
 /// Verifies retrieval of all items from IndexedDB stores.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class IndexedDbServiceTests
 {
+    [Trait("Category", "Service")]
     public class GetAllAsyncTests : IndexedDbServiceTests
     {
         [Fact]
@@ -92,3 +94,4 @@ public partial class IndexedDbServiceTests
         }
     }
 }
+

@@ -14,6 +14,7 @@ using Index = Pomodoro.Web.Pages.Index;
 
 namespace Pomodoro.Web.Tests.Pages
 {
+    [Trait("Category", "Page")]
     public class IndexBaseCoverageImprovementTests : TestContext
     {
         private readonly Mock<ITimerService> TimerServiceMock;
@@ -981,3 +982,4 @@ namespace Pomodoro.Web.Tests.Pages
         #endregion
     }
 }
+

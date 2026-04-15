@@ -22,6 +22,7 @@ namespace Pomodoro.Web.Tests
     /// Improved tests for App.razor component coverage
     /// Focuses on actually executing the code in the @code block
     /// </summary>
+    [Trait("Category", "Component")]
     public class AppCoverageImprovedTests : TestContext
     {
         public AppCoverageImprovedTests()
@@ -338,3 +339,4 @@ namespace Pomodoro.Web.Tests
         #endregion
     }
 }
+

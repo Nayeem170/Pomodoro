@@ -3,6 +3,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Models;
 
+[Trait("Category", "Model")]
 public class ActivityRecordTestsCoverage
 {
     [Fact]
@@ -27,3 +28,4 @@ public class ActivityRecordTestsCoverage
         Assert.Equal(Constants.SessionTypes.TimerEmoji, record.Icon);
     }
 }
+

@@ -7,6 +7,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Services
 {
+    [Trait("Category", "Service")]
     public partial class IndexedDbServiceTests
     {
         private readonly Mock<IJSRuntime> _mockJsRuntime;

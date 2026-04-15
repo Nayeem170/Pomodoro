@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Components.History;
 
+[Trait("Category", "Component")]
 public class WeeklySummarySectionTests : TestHelper
 {
     public WeeklySummarySectionTests()
@@ -138,3 +139,4 @@ public class WeeklySummarySectionTests : TestHelper
         Assert.Equal(3, cut.FindAll(".stat:not(.trend)").Count);
     }
 }
+

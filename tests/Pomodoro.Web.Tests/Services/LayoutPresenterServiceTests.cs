@@ -8,6 +8,7 @@ namespace Pomodoro.Web.Tests.Services
     /// <summary>
     /// Tests for LayoutPresenterService
     /// </summary>
+    [Trait("Category", "Service")]
     public class LayoutPresenterServiceTests
     {
         private readonly LayoutPresenterService _service;

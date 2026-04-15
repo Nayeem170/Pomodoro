@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Components.History;
 
+[Trait("Category", "Component")]
 public class DailyViewTests : TestHelper
 {
     public DailyViewTests()
@@ -123,3 +124,4 @@ public class DailyViewTests : TestHelper
         Assert.Contains("history-content", cut.Markup);
     }
 }
+

@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// <summary>
 /// Tests for Index.razor.Timer.cs timer action handlers
 /// </summary>
+[Trait("Category", "Page")]
 public class IndexTimerTests : TestHelper
 {
     public IndexTimerTests()
@@ -440,3 +441,4 @@ public class IndexTimerTests : TestHelper
 
     #endregion
 }
+

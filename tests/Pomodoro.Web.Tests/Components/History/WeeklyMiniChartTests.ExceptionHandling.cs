@@ -14,6 +14,7 @@ namespace Pomodoro.Web.Tests.History;
 /// Tests for WeeklyMiniChart exception handling in DisposeAsync
 /// These tests specifically target lines 79, 80, and 82 in the catch block
 /// </summary>
+[Trait("Category", "Component")]
 public class WeeklyMiniChartExceptionHandlingTests : TestContext
 {
     public WeeklyMiniChartExceptionHandlingTests()
@@ -73,3 +74,4 @@ public class WeeklyMiniChartExceptionHandlingTests : TestContext
         }
     }
 }
+

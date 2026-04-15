@@ -10,8 +10,10 @@ namespace Pomodoro.Web.Tests.Services;
 /// Test cases for IndexedDbService.GetCountAsync() method.
 /// Verifies counting items in IndexedDB stores.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class IndexedDbServiceTests
 {
+    [Trait("Category", "Service")]
     public class GetCountAsyncTests : IndexedDbServiceTests
     {
         [Fact]
@@ -70,3 +72,4 @@ public partial class IndexedDbServiceTests
         }
     }
 }
+

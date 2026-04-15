@@ -7,6 +7,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Services.ConsentServiceTests;
 
+[Trait("Category", "Service")]
 public partial class ConsentServiceTests
 {
     #region HandleTimerCompletedAsync catch block
@@ -364,3 +365,4 @@ public partial class ConsentServiceTests
 
     #endregion
 }
+

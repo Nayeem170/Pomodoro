@@ -6,8 +6,10 @@ namespace Pomodoro.Web.Tests.Models;
 /// <summary>
 /// Tests for DailyStatsSummary model
 /// </summary>
+[Trait("Category", "Model")]
 public class DailyStatsSummaryTests
 {
+    [Trait("Category", "Model")]
     public class Constructor : DailyStatsSummaryTests
     {
         [Fact]
@@ -23,6 +25,7 @@ public class DailyStatsSummaryTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class PomodoroCount : DailyStatsSummaryTests
     {
         [Theory]
@@ -40,6 +43,7 @@ public class DailyStatsSummaryTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class FocusMinutes : DailyStatsSummaryTests
     {
         [Theory]
@@ -57,6 +61,7 @@ public class DailyStatsSummaryTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class TasksWorkedOn : DailyStatsSummaryTests
     {
         [Theory]
@@ -74,6 +79,7 @@ public class DailyStatsSummaryTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class AllProperties : DailyStatsSummaryTests
     {
         [Fact]
@@ -111,3 +117,4 @@ public class DailyStatsSummaryTests
         }
     }
 }
+

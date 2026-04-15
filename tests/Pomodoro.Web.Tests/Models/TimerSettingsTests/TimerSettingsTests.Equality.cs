@@ -6,6 +6,7 @@ namespace Pomodoro.Web.Tests.Models.TimerSettingsTests;
 /// <summary>
 /// Tests for TimerSettings equality, inequality operators, and hash code.
 /// </summary>
+[Trait("Category", "Model")]
 public partial class TimerSettingsTests
 {
     #region Equals Method Tests
@@ -421,3 +422,4 @@ public partial class TimerSettingsTests
 
     #endregion
 }
+

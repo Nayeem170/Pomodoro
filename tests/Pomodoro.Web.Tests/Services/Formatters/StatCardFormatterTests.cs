@@ -6,6 +6,7 @@ namespace Pomodoro.Web.Tests.Services.Formatters;
 /// <summary>
 /// Tests for StatCardFormatter service
 /// </summary>
+[Trait("Category", "Service")]
 public class StatCardFormatterTests
 {
     private readonly StatCardFormatter _formatter = new();
@@ -384,3 +385,4 @@ public class StatCardFormatterTests
 
     #endregion
 }
+

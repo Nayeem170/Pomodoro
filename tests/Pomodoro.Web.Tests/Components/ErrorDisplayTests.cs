@@ -9,6 +9,7 @@ namespace Pomodoro.Web.Tests;
 /// <summary>
 /// Tests for ErrorDisplay component
 /// </summary>
+[Trait("Category", "Component")]
 public class ErrorDisplayTests : TestContext
 {
     public ErrorDisplayTests()
@@ -160,3 +161,4 @@ public class ErrorDisplayTests : TestContext
         messageElement.TextContent.Contains("Custom error message");
     }
 }
+

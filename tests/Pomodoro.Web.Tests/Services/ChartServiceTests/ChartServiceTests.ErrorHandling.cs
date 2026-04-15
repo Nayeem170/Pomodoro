@@ -10,6 +10,7 @@ namespace Pomodoro.Web.Tests.Services.ChartServiceTests;
 /// <summary>
 /// Tests for ChartService error handling and edge cases
 /// </summary>
+[Trait("Category", "Service")]
 public partial class ChartServiceTests_ErrorHandling
 {
     [Fact]
@@ -282,3 +283,4 @@ public partial class ChartServiceTests_ErrorHandling
             Times.Once);
     }
 }
+

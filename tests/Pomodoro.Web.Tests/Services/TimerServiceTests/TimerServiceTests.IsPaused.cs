@@ -13,11 +13,13 @@ namespace Pomodoro.Web.Tests.Services;
 /// IsPaused returns false so PiP toggle logic correctly calls
 /// StartPomodoroAsync instead of ResumeAsync.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class TimerServiceTests
 {
     /// <summary>
     /// Test class for IsPaused property tests
     /// </summary>
+    [Trait("Category", "Service")]
     public class IsPausedTests : TimerServiceTests
     {
         [Fact]
@@ -120,3 +122,4 @@ public partial class TimerServiceTests
         }
     }
 }
+

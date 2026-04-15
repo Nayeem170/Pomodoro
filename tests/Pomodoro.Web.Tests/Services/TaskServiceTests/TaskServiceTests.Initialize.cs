@@ -10,6 +10,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for TaskService.InitializeAsync operations.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class TaskServiceTests
 {
     #region InitializeAsync Tests
@@ -136,3 +137,4 @@ public partial class TaskServiceTests
 
     #endregion
 }
+

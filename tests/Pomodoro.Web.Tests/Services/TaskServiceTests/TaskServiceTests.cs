@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// Base test class for TaskService.
 /// Contains shared setup and helper methods.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class TaskServiceTests
 {
     protected readonly Mock<ITaskRepository> MockTaskRepository;
@@ -60,3 +61,4 @@ public partial class TaskServiceTests
         ((List<TaskItem>)AppState.Tasks).Add(task);
     }
 }
+

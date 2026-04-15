@@ -6,6 +6,7 @@ namespace Pomodoro.Web.Tests.Models.ImportResultTests;
 /// <summary>
 /// Tests for ImportResult model
 /// </summary>
+[Trait("Category", "Model")]
 public class ImportResultTests
 {
     #region Constructor Tests
@@ -604,3 +605,4 @@ public class ImportResultTests
 
     #endregion
 }
+

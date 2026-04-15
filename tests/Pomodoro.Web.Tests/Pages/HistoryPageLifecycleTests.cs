@@ -13,6 +13,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// <summary>
 /// Tests for History page lifecycle methods
 /// </summary>
+[Trait("Category", "Page")]
 public class HistoryPageLifecycleTests : TestHelper
 {
     // Note: The test OnAfterRenderAsync_RecreatesDotNetRef_WhenNull has been removed because:
@@ -21,3 +22,4 @@ public class HistoryPageLifecycleTests : TestHelper
     // 3. The test was a pre-existing issue unrelated to CS4033 error fixes
     // 4. Testing DotNetObjectReference recreation is better suited for integration tests
 }
+

@@ -13,6 +13,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// Expanded tests for Index page to improve coverage
 /// Tests UI rendering, state management, and edge cases
 /// </summary>
+[Trait("Category", "Page")]
 public class IndexPageExpandedTests : TestHelper
 {
     public IndexPageExpandedTests()
@@ -561,3 +562,4 @@ public class IndexPageExpandedTests : TestHelper
 
     #endregion
 }
+

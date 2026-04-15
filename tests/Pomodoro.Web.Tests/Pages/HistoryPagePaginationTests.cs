@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// <summary>
 /// Tests for History page pagination logic
 /// </summary>
+[Trait("Category", "Page")]
 public class HistoryPagePaginationTests : TestHelper
 {
     [Fact]
@@ -355,3 +356,4 @@ public class HistoryPagePaginationTests : TestHelper
             It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>()), Times.AtMost(2));
     }
 }
+

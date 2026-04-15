@@ -20,6 +20,7 @@ namespace Pomodoro.Web.Tests
     /// Tests for App.razor component coverage
     /// Focuses on NotFound template and CustomPageTitle component
     /// </summary>
+    [Trait("Category", "Component")]
     public class AppCoverageTests : TestContext
     {
         public AppCoverageTests()
@@ -346,3 +347,4 @@ namespace Pomodoro.Web.Tests
         #endregion
     }
 }
+
