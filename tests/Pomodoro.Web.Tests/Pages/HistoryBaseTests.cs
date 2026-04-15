@@ -99,6 +99,7 @@ public class TestableHistoryBase : HistoryBase
 public partial class HistoryBaseTests : TestContext
 {
     protected readonly Mock<IActivityService> _mockActivityService;
+    protected readonly Mock<IStatisticsService> _mockStatisticsService;
     protected readonly Mock<IJSRuntime> _mockJSRuntime;
     protected readonly Mock<IInfiniteScrollInterop> _mockInfiniteScrollInterop;
     protected readonly Mock<ILogger<HistoryBase>> _mockLogger;
@@ -108,6 +109,7 @@ public partial class HistoryBaseTests : TestContext
     public HistoryBaseTests()
     {
         _mockActivityService = new Mock<IActivityService>();
+        _mockStatisticsService = new Mock<IStatisticsService>();
         _mockJSRuntime = new Mock<IJSRuntime>();
         _mockInfiniteScrollInterop = new Mock<IInfiniteScrollInterop>();
         _mockLogger = new Mock<ILogger<HistoryBase>>();
@@ -125,7 +127,7 @@ public partial class HistoryBaseTests : TestContext
             .Returns(new Dictionary<DateTime, int>());
         _mockActivityService.Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
-        _mockActivityService.Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
+        _mockStatisticsService.Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new WeeklyStats());
         _mockActivityService.Setup(x => x.InitializeAsync())
             .Returns(Task.CompletedTask);
@@ -151,6 +153,7 @@ public partial class HistoryBaseTests : TestContext
         
         // Override with test-specific mocks
         Services.AddSingleton(_mockActivityService.Object);
+        Services.AddSingleton(_mockStatisticsService.Object);
         Services.AddSingleton(_mockJSRuntime.Object);
         Services.AddSingleton(_mockInfiniteScrollInterop.Object);
         Services.AddSingleton(_mockLogger.Object);
@@ -266,7 +269,7 @@ public partial class HistoryBaseTests : TestContext
             await cut.InvokeAsync(async () => await cut.Instance.HandleWeekChangedProtected(newWeekStart));
 
             // Assert
-            _mockActivityService.Verify(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()), Times.AtLeastOnce);
+            _mockStatisticsService.Verify(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()), Times.AtLeastOnce);
         }
     }
 

@@ -57,41 +57,5 @@ public partial class ActivityServiceTests
             Assert.Equal(20, result2[date.Date]);
         }
     }
-
-    [Trait("Category", "Service")]
-    public class WeeklyStatsCoverageTests : ActivityServiceTests
-    {
-        [Fact]
-        public async Task GetWeeklyStatsAsync_WhenBothWeeksHaveData_CalculatesWeekOverWeekChange()
-        {
-            var weekStart = new DateTime(2024, 6, 15);
-            var previousWeekStart = weekStart.AddDays(-7);
-
-            var currentWeekActivities = new List<ActivityRecord>
-            {
-                new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = weekStart.AddDays(1), DurationMinutes = 50, TaskName = "Task 1" },
-                new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = weekStart.AddDays(2), DurationMinutes = 50, TaskName = "Task 2" }
-            };
-
-            var previousWeekActivities = new List<ActivityRecord>
-            {
-                new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = previousWeekStart.AddDays(1), DurationMinutes = 50, TaskName = "Task A" }
-            };
-
-            MockActivityRepository
-                .SetupSequence(r => r.GetByDateRangeAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-                .ReturnsAsync(currentWeekActivities)
-                .ReturnsAsync(previousWeekActivities);
-
-            var service = CreateService();
-
-            var result = await service.GetWeeklyStatsAsync(weekStart);
-
-            Assert.Equal(100, result.TotalFocusMinutes);
-            Assert.Equal(2, result.TotalPomodoroCount);
-            Assert.Equal(50, result.PreviousWeekFocusMinutes);
-            Assert.Equal(100.0, result.WeekOverWeekChange);
-        }
-    }
 }
 

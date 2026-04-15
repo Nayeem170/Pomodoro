@@ -35,7 +35,7 @@ public class HistoryPageEventHandlersTests : TestHelper
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(20);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new WeeklyStats());
         
@@ -77,7 +77,7 @@ public class HistoryPageEventHandlersTests : TestHelper
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(20);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new WeeklyStats());
         
@@ -121,7 +121,7 @@ public class HistoryPageEventHandlersTests : TestHelper
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(20);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new WeeklyStats());
         
@@ -141,7 +141,7 @@ public class HistoryPageEventHandlersTests : TestHelper
             It.IsAny<DateTime>(), It.IsAny<DateTime>(), 0, 20), Times.Exactly(2));
         
         // GetWeeklyStatsAsync should also be called twice
-        ActivityServiceMock.Verify(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()), Times.Exactly(2));
+        StatisticsServiceMock.Verify(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()), Times.Exactly(2));
     }
 }
 

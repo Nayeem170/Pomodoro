@@ -424,67 +424,6 @@ public partial class ActivityServiceTests
 
     #endregion
 
-    #region GetWeeklyStatsAsync Tests
-
-    [Fact]
-    public async Task GetWeeklyStatsAsync_ReturnsCorrectStats()
-    {
-        // Arrange
-        var weekStart = new DateTime(2024, 6, 15); // Saturday
-        var weekEnd = weekStart.AddDays(7);
-        
-        var activities = Enumerable.Range(0, 7)
-            .SelectMany(i => new[]
-            {
-                new ActivityRecord
-                {
-                    Id = Guid.NewGuid(),
-                    Type = SessionType.Pomodoro,
-                    TaskName = $"Task {i}",
-                    CompletedAt = weekStart.AddDays(i),
-                    DurationMinutes = 25
-                }
-            })
-            .ToList();
-        
-        MockActivityRepository.Setup(r => r.GetByDateRangeAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-            .ReturnsAsync((DateTime start, DateTime end) =>
-                activities.Where(a => a.CompletedAt >= start && a.CompletedAt < end).ToList());
-        
-        var service = CreateService();
-        
-        // Act
-        var result = await service.GetWeeklyStatsAsync(weekStart);
-        
-        // Assert
-        Assert.Equal(7, result.TotalPomodoroCount);
-        Assert.Equal(175, result.TotalFocusMinutes); // 7 * 25
-        Assert.Equal(7, result.UniqueTasksWorkedOn);
-    }
-
-    [Fact]
-    public async Task GetWeeklyStatsAsync_WithNoActivities_ReturnsZeroStats()
-    {
-        // Arrange
-        var weekStart = new DateTime(2024, 6, 15);
-        
-        MockActivityRepository.Setup(r => r.GetByDateRangeAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-            .ReturnsAsync(new List<ActivityRecord>());
-        
-        var service = CreateService();
-        await service.InitializeAsync();
-        
-        // Act
-        var result = await service.GetWeeklyStatsAsync(weekStart);
-        
-        // Assert
-        Assert.Equal(0, result.TotalPomodoroCount);
-        Assert.Equal(0, result.TotalFocusMinutes);
-        Assert.Equal(0, result.UniqueTasksWorkedOn);
-    }
-
-    #endregion
-
     #region GetCacheStatistics Tests
 
     [Fact]

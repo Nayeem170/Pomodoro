@@ -18,6 +18,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Create and configure mocks for all services that History page requires
             var activityServiceMock = new Mock<IActivityService>();
+            var statisticsServiceMock = new Mock<IStatisticsService>();
             var timerServiceMock = new Mock<ITimerService>();
             var notificationServiceMock = new Mock<INotificationService>();
             var exportServiceMock = new Mock<IExportService>();
@@ -46,7 +47,7 @@ namespace Pomodoro.Web.Tests.Pages
                 .Returns(new Dictionary<DateTime, int>());
             activityServiceMock.Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
                 .Returns(new Dictionary<DateTime, int>());
-            activityServiceMock.Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
+            statisticsServiceMock.Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
                 .ReturnsAsync(new WeeklyStats());
             activityServiceMock.Setup(x => x.InitializeAsync())
                 .Returns(Task.CompletedTask);
@@ -68,6 +69,7 @@ namespace Pomodoro.Web.Tests.Pages
             
             // Override with test-specific mocks
             Services.AddSingleton(activityServiceMock.Object);
+            Services.AddSingleton(statisticsServiceMock.Object);
             Services.AddSingleton(timerServiceMock.Object);
             Services.AddSingleton(notificationServiceMock.Object);
             Services.AddSingleton(exportServiceMock.Object);
