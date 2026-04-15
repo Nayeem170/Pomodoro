@@ -105,6 +105,7 @@ public partial class HistoryBaseTests : TestContext
     protected readonly Mock<ILogger<HistoryBase>> _mockLogger;
     protected readonly Mock<IHistoryStatsService> _mockHistoryStatsService;
     protected readonly Mock<HistoryPagePresenterService> _mockHistoryPagePresenterService;
+    protected readonly Mock<IImportService> _mockImportService;
 
     public HistoryBaseTests()
     {
@@ -115,6 +116,7 @@ public partial class HistoryBaseTests : TestContext
         _mockLogger = new Mock<ILogger<HistoryBase>>();
         _mockHistoryStatsService = new Mock<IHistoryStatsService>();
         _mockHistoryPagePresenterService = new Mock<HistoryPagePresenterService>(new Mock<ILogger<HistoryPagePresenterService>>().Object);
+        _mockImportService = new Mock<IImportService>();
 
         // Configure ActivityService mock
         _mockActivityService.Setup(x => x.GetActivitiesPagedAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>()))
@@ -159,6 +161,7 @@ public partial class HistoryBaseTests : TestContext
         Services.AddSingleton(_mockLogger.Object);
         Services.AddSingleton(_mockHistoryStatsService.Object);
         Services.AddSingleton(_mockHistoryPagePresenterService.Object);
+        Services.AddSingleton(_mockImportService.Object);
     }
 
     [Trait("Category", "Page")]

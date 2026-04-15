@@ -22,6 +22,7 @@ public class SettingsBaseTests : TestContext
 
     private Mock<ITimerService> TimerServiceMock { get; set; } = null!;
     private Mock<IExportService> ExportServiceMock { get; set; } = null!;
+    private Mock<IImportService> ImportServiceMock { get; set; } = null!;
     private Mock<ITaskService> TaskServiceMock { get; set; } = null!;
     private Mock<IActivityService> ActivityServiceMock { get; set; } = null!;
     private Mock<IJSRuntime> JSRuntimeMock { get; set; } = null!;
@@ -39,6 +40,7 @@ public class SettingsBaseTests : TestContext
         // Create mocks
         TimerServiceMock = new Mock<ITimerService>();
         ExportServiceMock = new Mock<IExportService>();
+        ImportServiceMock = new Mock<IImportService>();
         TaskServiceMock = new Mock<ITaskService>();
         ActivityServiceMock = new Mock<IActivityService>();
         JSRuntimeMock = new Mock<IJSRuntime>();
@@ -58,7 +60,7 @@ public class SettingsBaseTests : TestContext
         // Setup ExportService mock
         ExportServiceMock.Setup(x => x.ExportToJsonAsync())
             .ReturnsAsync("{}");
-        ExportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
+        ImportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
             .ReturnsAsync(new ImportResult { Success = true, ActivitiesImported = 5, TasksImported = 5, ActivitiesSkipped = 0, TasksSkipped = 0 });
         ExportServiceMock.Setup(x => x.ClearAllDataAsync())
             .Returns(Task.CompletedTask);
@@ -78,6 +80,7 @@ public class SettingsBaseTests : TestContext
         // Register all required services
         Services.AddSingleton(TimerServiceMock.Object);
         Services.AddSingleton(ExportServiceMock.Object);
+        Services.AddSingleton(ImportServiceMock.Object);
         Services.AddSingleton(TaskServiceMock.Object);
         Services.AddSingleton(ActivityServiceMock.Object);
         Services.AddSingleton(JSRuntimeMock.Object);
@@ -477,7 +480,7 @@ public class SettingsBaseTests : TestContext
     public async Task HandleImport_SetsImportResult_WhenImportFails()
     {
         // Arrange
-        ExportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
+        ImportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
             .ReturnsAsync(new ImportResult { Success = false, ErrorMessage = "Invalid format" });
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
@@ -501,7 +504,7 @@ public class SettingsBaseTests : TestContext
     public async Task HandleImport_SetsImportResult_WhenImportFailsWithNullErrorMessage()
     {
         // Arrange
-        ExportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
+        ImportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
             .ReturnsAsync(new ImportResult { Success = false, ErrorMessage = null });
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
@@ -525,7 +528,7 @@ public class SettingsBaseTests : TestContext
     public async Task HandleImport_HandlesException_AndSetsImportResult()
     {
         // Arrange
-        ExportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
+        ImportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
             .ThrowsAsync(new Exception("Import error"));
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
@@ -551,7 +554,7 @@ public class SettingsBaseTests : TestContext
     public async Task HandleImport_ShowsToast_WhenImportSucceeds()
     {
         // Arrange
-        ExportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
+        ImportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
             .ReturnsAsync(new ImportResult { Success = true, ActivitiesImported = 5, TasksImported = 5 });
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
@@ -579,7 +582,7 @@ public class SettingsBaseTests : TestContext
     public async Task HandleImport_AutoHidesToast_AfterDelay()
     {
         // Arrange
-        ExportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
+        ImportServiceMock.Setup(x => x.ImportFromJsonAsync(It.IsAny<string>()))
             .ReturnsAsync(new ImportResult { Success = true, ActivitiesImported = 5, TasksImported = 5 });
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;

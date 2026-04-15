@@ -23,6 +23,7 @@ namespace Pomodoro.Web.Tests.Pages
     {
         private readonly Mock<ITimerService> _mockTimerService;
         private readonly Mock<IExportService> _mockExportService;
+        private readonly Mock<IImportService> _mockImportService;
         private readonly Mock<ITaskService> _mockTaskService;
         private readonly Mock<IActivityService> _mockActivityService;
         private readonly Mock<IJSRuntime> _mockJSRuntime;
@@ -35,6 +36,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             _mockTimerService = new Mock<ITimerService>();
             _mockExportService = new Mock<IExportService>();
+            _mockImportService = new Mock<IImportService>();
             _mockTaskService = new Mock<ITaskService>();
             _mockActivityService = new Mock<IActivityService>();
             _mockJSRuntime = new Mock<IJSRuntime>();
@@ -48,6 +50,7 @@ namespace Pomodoro.Web.Tests.Pages
 
             Services.AddSingleton(_mockTimerService.Object);
             Services.AddSingleton(_mockExportService.Object);
+            Services.AddSingleton(_mockImportService.Object);
             Services.AddSingleton(_mockTaskService.Object);
             Services.AddSingleton(_mockActivityService.Object);
             Services.AddSingleton(_mockJSRuntime.Object);
