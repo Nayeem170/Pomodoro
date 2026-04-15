@@ -65,15 +65,25 @@
     </div>
     
     <!-- Tasks Section -->
-    <div class="tasks-section">
-        <TaskList Tasks="Tasks"
-                  CurrentTaskId="CurrentTaskId"
-                  OnTaskAdd="HandleTaskAdd"
-                  OnTaskSelect="HandleTaskSelect"
-                  OnTaskComplete="HandleTaskComplete"
-                  OnTaskDelete="HandleTaskDelete"
-                  OnTaskUncomplete="HandleTaskUncomplete" />
-    </div>
+    <ErrorBoundary @ref="_tasksErrorBoundary">
+        <ChildContent>
+            <div class="tasks-section">
+                <TaskList Tasks="Tasks"
+                          CurrentTaskId="CurrentTaskId"
+                          OnTaskAdd="HandleTaskAdd"
+                          OnTaskSelect="HandleTaskSelect"
+                          OnTaskComplete="HandleTaskComplete"
+                          OnTaskDelete="HandleTaskDelete"
+                          OnTaskUncomplete="HandleTaskUncomplete" />
+            </div>
+        </ChildContent>
+        <ErrorContent Context="ex">
+            <div class="section-error" role="alert">
+                <p>Tasks failed to load.</p>
+                <button class="btn btn-secondary" @onclick="() => _tasksErrorBoundary?.Recover()">Retry</button>
+            </div>
+        </ErrorContent>
+    </ErrorBoundary>
     
     <!-- Consent Modal -->
     <ConsentModal IsVisible="IsConsentModalVisible"
@@ -87,3 +97,7 @@
                        OnClose="() => ShowKeyboardHelp = false" />
     
 </div>
+
+@code {
+    private ErrorBoundary? _tasksErrorBoundary;
+}
