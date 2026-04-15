@@ -21,6 +21,7 @@ public abstract class TestHelper : TestContext
     protected Mock<IStatisticsService> StatisticsServiceMock { get; private set; }
     protected Mock<INotificationService> NotificationServiceMock { get; private set; }
     protected Mock<IExportService> ExportServiceMock { get; private set; }
+    protected Mock<IImportService> ImportServiceMock { get; private set; }
     protected Mock<IIndexedDbService> IndexedDbServiceMock { get; private set; }
     protected Mock<IConsentService> ConsentServiceMock { get; private set; }
     protected Mock<IPipTimerService> PipTimerServiceMock { get; private set; }
@@ -52,6 +53,7 @@ public abstract class TestHelper : TestContext
         StatisticsServiceMock = new Mock<IStatisticsService>();
         NotificationServiceMock = new Mock<INotificationService>();
         ExportServiceMock = new Mock<IExportService>();
+        ImportServiceMock = new Mock<IImportService>();
         IndexedDbServiceMock = new Mock<IIndexedDbService>();
         ConsentServiceMock = new Mock<IConsentService>();
         PipTimerServiceMock = new Mock<IPipTimerService>();
@@ -90,6 +92,7 @@ public abstract class TestHelper : TestContext
         Services.AddSingleton(StatisticsServiceMock.Object);
         Services.AddSingleton(NotificationServiceMock.Object);
         Services.AddSingleton(ExportServiceMock.Object);
+        Services.AddSingleton(ImportServiceMock.Object);
         Services.AddSingleton(IndexedDbServiceMock.Object);
         Services.AddSingleton(ConsentServiceMock.Object);
         Services.AddSingleton(PipTimerServiceMock.Object);

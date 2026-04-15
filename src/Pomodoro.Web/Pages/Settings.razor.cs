@@ -19,7 +19,9 @@ public class SettingsPageBase : ComponentBase
     
     [Inject]
     protected IExportService ExportService { get; set; } = default!;
-    
+
+    [Inject]
+    protected IImportService ImportService { get; set; } = default!;
     [Inject]
     protected ITaskService TaskService { get; set; } = default!;
     
@@ -175,7 +177,7 @@ public class SettingsPageBase : ComponentBase
             using var reader = new StreamReader(stream);
             var jsonData = await reader.ReadToEndAsync();
             
-            var result = await ExportService.ImportFromJsonAsync(jsonData);
+            var result = await ImportService.ImportFromJsonAsync(jsonData);
             
             if (result.Success)
             {
