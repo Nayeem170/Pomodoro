@@ -49,6 +49,7 @@ public class ServiceRegistrationService : IServiceRegistrationService
         services.AddScoped<IKeyboardShortcutService, KeyboardShortcutService>();
         services.AddScoped<IExportService, ExportService>();
         services.AddScoped<IImportService, ImportService>();
+        services.AddScoped<IDailyStatsService, DailyStatsService>();
         services.AddScoped<IStatisticsService, StatisticsService>();
 
         // Register formatter services for components (enables testable code with coverage tracking)

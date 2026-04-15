@@ -16,6 +16,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 {
     private readonly IIndexedDbService _indexedDb;
     private readonly ISettingsRepository _settingsRepository;
+    private readonly IDailyStatsService _dailyStatsService;
     private readonly AppState _appState;
     private readonly IJSRuntime _jsRuntime;
     private readonly ILogger<TimerService> _logger;
@@ -51,12 +52,14 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     public TimerService(
         IIndexedDbService indexedDb,
         ISettingsRepository settingsRepository,
+        IDailyStatsService dailyStatsService,
         AppState appState,
         IJSRuntime jsRuntime,
         ILogger<TimerService> logger)
     {
         _indexedDb = indexedDb;
         _settingsRepository = settingsRepository;
+        _dailyStatsService = dailyStatsService;
         _appState = appState;
         _jsRuntime = jsRuntime;
         _logger = logger;
@@ -75,31 +78,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         }
         
         // Load daily stats from IndexedDB
-        var todayKey = AppState.GetCurrentDayKey().ToString(Constants.DateFormats.IsoFormat);
-        var dailyStats = await _indexedDb.GetAsync<DailyStats>(Constants.Storage.DailyStatsStore, todayKey);
-        if (dailyStats != null)
-        {
-            // Check if the stats are from today (using UTC date = 6 AM Bangladesh time reset)
-            var currentDayKey = AppState.GetCurrentDayKey();
-            if (dailyStats.Date == currentDayKey)
-            {
-                // Stats are from today, restore them
-                _appState.TodayTotalFocusMinutes = dailyStats.TotalFocusMinutes;
-                _appState.TodayPomodoroCount = dailyStats.PomodoroCount;
-                _appState.TodayTaskIdsWorkedOn = dailyStats.TaskIdsWorkedOn ?? new List<Guid>();
-                _appState.LastResetDate = dailyStats.Date;
-            }
-            else
-            {
-                // Stats are from a previous day, reset them
-                _appState.ResetDailyStats();
-            }
-        }
-        else
-        {
-            // No saved stats, initialize fresh
-            _appState.ResetDailyStats();
-        }
+        await _dailyStatsService.InitializeTodayStatsAsync();
         
         // Initialize with a default Pomodoro session if none exists
         if (_appState.CurrentSession == null)
@@ -134,11 +113,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     [JSInvokable(Constants.JsInvokableMethods.OnTimerTick)]
     public void OnTimerTickJs()
     {
-        // Check if day has changed and reset daily stats if needed
-        if (_appState.NeedsDailyReset())
-        {
-            _appState.ResetDailyStats();
-        }
+        _dailyStatsService.CheckAndResetIfNeeded();
         
         // Use lock to ensure thread-safe access to session state
         // This prevents race conditions if JS callback fires during other state modifications
@@ -379,14 +354,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         // If pomodoro completed, update today's stats
         if (session.Type == SessionType.Pomodoro && session.TaskId.HasValue)
         {
-            // Update today's stats
-            _appState.TodayTotalFocusMinutes += durationMinutes;
-            _appState.TodayPomodoroCount++;
-            
-            // Track unique task worked on today (thread-safe, avoids duplicates)
-            _appState.AddTodayTaskId(session.TaskId.Value);
-            
-            // Persist daily stats to storage
+            _dailyStatsService.RecordPomodoroCompletion(durationMinutes, session.TaskId.Value);
             await SaveDailyStatsAsync();
         }
 
