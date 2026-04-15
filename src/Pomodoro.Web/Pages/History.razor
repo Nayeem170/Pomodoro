@@ -2,53 +2,63 @@
 @inherits HistoryBase
 @using Pomodoro.Web.Components.History
 
-<div class="history-page">
-    <div class="history-header">
-        <h1>@Constants.Routing.HistoryPageTitle</h1>
-        <p class="history-tagline">@Constants.Routing.HistoryPageSubtitle</p>
+@if (IsLoading)
+{
+    <div class="loading-container" role="status" aria-label="Loading">
+        <div class="loading-spinner">@Constants.Layout.AppIcon</div>
+        <div class="loading-text">Loading history...</div>
     </div>
-    
-    <HistoryTabs ActiveTab="ActiveTab" OnTabChanged="HandleTabChanged" />
-    
-    @if (ActiveTab == HistoryTab.Daily)
-    {
-        <ErrorBoundary @ref="_dailyViewErrorBoundary">
-            <ChildContent>
-                <DailyView SelectedDate="SelectedDate"
-                          CurrentStats="CurrentStats"
-                          Activities="CurrentActivities"
-                          HasMoreActivities="HasMoreActivities"
-                          IsLoadingMore="IsLoadingMore"
-                          OnDateChanged="HandleDateChanged"
-                          OnLoadMore="LoadMoreActivitiesAsync" />
-            </ChildContent>
-            <ErrorContent Context="ex">
-                <div class="section-error" role="alert">
-                    <p>Failed to load daily view.</p>
-                    <button class="btn btn-secondary" @onclick="() => _dailyViewErrorBoundary?.Recover()">Retry</button>
-                </div>
-            </ErrorContent>
-        </ErrorBoundary>
-    }
-    else if (ActiveTab == HistoryTab.Weekly)
-    {
-        <ErrorBoundary @ref="_weeklyViewErrorBoundary">
-            <ChildContent>
-                <WeeklyView SelectedWeekStart="SelectedWeekStart"
-                           WeeklyStats="WeeklyStats"
-                           WeeklyFocusMinutes="WeeklyFocusMinutes"
-                           WeeklyBreakMinutes="WeeklyBreakMinutes"
-                           OnWeekChanged="HandleWeekChanged" />
-            </ChildContent>
-            <ErrorContent Context="ex">
-                <div class="section-error" role="alert">
-                    <p>Failed to load weekly view.</p>
-                    <button class="btn btn-secondary" @onclick="() => _weeklyViewErrorBoundary?.Recover()">Retry</button>
-                </div>
-            </ErrorContent>
-        </ErrorBoundary>
-    }
-</div>
+}
+else
+{
+    <div class="history-page">
+        <div class="history-header">
+            <h1>@Constants.Routing.HistoryPageTitle</h1>
+            <p class="history-tagline">@Constants.Routing.HistoryPageSubtitle</p>
+        </div>
+        
+        <HistoryTabs ActiveTab="ActiveTab" OnTabChanged="HandleTabChanged" />
+        
+        @if (ActiveTab == HistoryTab.Daily)
+        {
+            <ErrorBoundary @ref="_dailyViewErrorBoundary">
+                <ChildContent>
+                    <DailyView SelectedDate="SelectedDate"
+                              CurrentStats="CurrentStats"
+                              Activities="CurrentActivities"
+                              HasMoreActivities="HasMoreActivities"
+                              IsLoadingMore="IsLoadingMore"
+                              OnDateChanged="HandleDateChanged"
+                              OnLoadMore="LoadMoreActivitiesAsync" />
+                </ChildContent>
+                <ErrorContent Context="ex">
+                    <div class="section-error" role="alert">
+                        <p>Failed to load daily view.</p>
+                        <button class="btn btn-secondary" @onclick="() => _dailyViewErrorBoundary?.Recover()">Retry</button>
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
+        }
+        else if (ActiveTab == HistoryTab.Weekly)
+        {
+            <ErrorBoundary @ref="_weeklyViewErrorBoundary">
+                <ChildContent>
+                    <WeeklyView SelectedWeekStart="SelectedWeekStart"
+                               WeeklyStats="WeeklyStats"
+                               WeeklyFocusMinutes="WeeklyFocusMinutes"
+                               WeeklyBreakMinutes="WeeklyBreakMinutes"
+                               OnWeekChanged="HandleWeekChanged" />
+                </ChildContent>
+                <ErrorContent Context="ex">
+                    <div class="section-error" role="alert">
+                        <p>Failed to load weekly view.</p>
+                        <button class="btn btn-secondary" @onclick="() => _weeklyViewErrorBoundary?.Recover()">Retry</button>
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
+        }
+    </div>
+}
 
 @code {
     private ErrorBoundary? _dailyViewErrorBoundary;

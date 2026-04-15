@@ -41,6 +41,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
 
     #region State
 
+    protected bool IsLoading { get; set; } = true;
     protected DateTime SelectedDate { get; set; } = DateTime.Now.Date;
     protected DateTime SelectedWeekStart { get; set; }
     protected HistoryTab ActiveTab { get; set; } = HistoryTab.Daily;
@@ -156,19 +157,19 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        // Subscribe to activity changes
-        ActivityService.OnActivityChanged += OnActivityChanged;
-        
-        // Initialize activity service if needed
-        await ActivityService.InitializeAsync();
-        
-        // Initialize SelectedDate and SelectedWeekStart to client's local date
-        var localDate = await LocalDateTimeService.GetLocalDateAsync();
-        SelectedDate = localDate;
-        SelectedWeekStart = WeekNavigatorBase.GetWeekStart(localDate);
-        
-        // Load initial data
-        await LoadDataAsync();
+        try
+        {
+            ActivityService.OnActivityChanged += OnActivityChanged;
+            await ActivityService.InitializeAsync();
+            var localDate = await LocalDateTimeService.GetLocalDateAsync();
+            SelectedDate = localDate;
+            SelectedWeekStart = WeekNavigatorBase.GetWeekStart(localDate);
+            await LoadDataAsync();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
