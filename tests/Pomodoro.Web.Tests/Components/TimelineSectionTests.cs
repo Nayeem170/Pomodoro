@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests;
 
+[Trait("Category", "Component")]
 public class TimelineSectionTests : TestContext
 {
     public TimelineSectionTests()
@@ -131,3 +132,4 @@ public class TimelineSectionTests : TestContext
         Assert.Contains("Timeline", cut.Markup);
     }
 }
+

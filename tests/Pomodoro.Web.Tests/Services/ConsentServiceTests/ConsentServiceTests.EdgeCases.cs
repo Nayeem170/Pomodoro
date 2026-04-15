@@ -9,6 +9,7 @@ namespace Pomodoro.Web.Tests.Services.ConsentServiceTests;
 /// <summary>
 /// Tests for edge cases and error handling in ConsentService.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class ConsentServiceTests
 {
     [Fact]
@@ -585,3 +586,4 @@ public partial class ConsentServiceTests
         Assert.False(service.IsModalVisible);
     }
 }
+

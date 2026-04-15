@@ -7,8 +7,10 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Services;
 
+[Trait("Category", "Service")]
 public partial class ActivityServiceTests
 {
+    [Trait("Category", "Service")]
     public class CacheHitCoverageTests : ActivityServiceTests
     {
         [Fact]
@@ -56,6 +58,7 @@ public partial class ActivityServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class WeeklyStatsCoverageTests : ActivityServiceTests
     {
         [Fact]
@@ -91,3 +94,4 @@ public partial class ActivityServiceTests
         }
     }
 }
+

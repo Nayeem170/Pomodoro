@@ -7,6 +7,7 @@ namespace Pomodoro.Web.Tests.Services.Formatters;
 /// <summary>
 /// Tests for ActivityTimelineFormatter service
 /// </summary>
+[Trait("Category", "Service")]
 public class ActivityTimelineFormatterTests
 {
     private readonly ActivityTimelineFormatter _formatter = new();
@@ -618,3 +619,4 @@ public class ActivityTimelineFormatterTests
 
     #endregion
 }
+

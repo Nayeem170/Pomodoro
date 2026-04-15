@@ -11,6 +11,7 @@ using Pomodoro.Web.Services.Formatters;
 
 namespace Pomodoro.Web.Tests.Pages
 {
+    [Trait("Category", "Page")]
     public class HistoryTests : TestContext
     {
         public HistoryTests()

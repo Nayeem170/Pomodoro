@@ -8,8 +8,10 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Services;
 
+[Trait("Category", "Service")]
 public partial class TimerServiceTests
 {
+    [Trait("Category", "Service")]
     public class CoverageTests : TimerServiceTests
     {
         #region Property getters with null session (lines 38, 41, 43, 47, 48)
@@ -424,3 +426,4 @@ public partial class TimerServiceTests
         }
     }
 }
+

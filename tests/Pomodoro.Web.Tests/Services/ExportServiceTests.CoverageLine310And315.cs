@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// Tests specifically designed to achieve line coverage for record struct definitions
 /// at lines 310 and 315 in ExportService.cs
 /// </summary>
+[Trait("Category", "Service")]
 public class ExportServiceTests_CoverageLine310And315 : TestBase
 {
     [Fact]
@@ -256,3 +257,4 @@ public class ExportServiceTests_CoverageLine310And315 : TestBase
         Assert.NotNull(result.ErrorMessage);
     }
 }
+

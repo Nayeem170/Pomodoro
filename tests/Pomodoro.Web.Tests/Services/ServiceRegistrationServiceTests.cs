@@ -9,6 +9,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Services;
 
+[Trait("Category", "Service")]
 public class ServiceRegistrationServiceTests
 {
     private readonly Mock<ILogger<ServiceRegistrationService>> _loggerMock;
@@ -337,3 +338,4 @@ public class ServiceRegistrationServiceTests
         Assert.True(services.Count >= 20, $"Expected at least 20 services, but got {services.Count}");
     }
 }
+

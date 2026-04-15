@@ -95,6 +95,7 @@ public class TestableHistoryBase : HistoryBase
 /// <summary>
 /// Unit tests for HistoryBase class
 /// </summary>
+[Trait("Category", "Page")]
 public partial class HistoryBaseTests : TestContext
 {
     protected readonly Mock<IActivityService> _mockActivityService;
@@ -157,6 +158,7 @@ public partial class HistoryBaseTests : TestContext
         Services.AddSingleton(_mockHistoryPagePresenterService.Object);
     }
 
+    [Trait("Category", "Page")]
     public class HandleDateChangedTests : HistoryBaseTests
     {
         [Fact]
@@ -203,6 +205,7 @@ public partial class HistoryBaseTests : TestContext
         }
     }
 
+    [Trait("Category", "Page")]
     public class HandleTabChangedTests : HistoryBaseTests
     {
         [Fact]
@@ -235,6 +238,7 @@ public partial class HistoryBaseTests : TestContext
         }
     }
 
+    [Trait("Category", "Page")]
     public class HandleWeekChangedTests : HistoryBaseTests
     {
         [Fact]
@@ -266,6 +270,7 @@ public partial class HistoryBaseTests : TestContext
         }
     }
 
+    [Trait("Category", "Page")]
     public class LoadMoreActivitiesTests : HistoryBaseTests
     {
         [Fact]
@@ -335,6 +340,7 @@ public partial class HistoryBaseTests : TestContext
         }
     }
 
+    [Trait("Category", "Page")]
     public class FormatFocusTimeTests : HistoryBaseTests
     {
         [Fact]
@@ -371,6 +377,7 @@ public partial class HistoryBaseTests : TestContext
         }
     }
 
+    [Trait("Category", "Page")]
     public class OnSentinelIntersectingTests : HistoryBaseTests
     {
         [Fact]
@@ -422,6 +429,7 @@ public partial class HistoryBaseTests : TestContext
         }
     }
 
+    [Trait("Category", "Page")]
     public class DisposeTests : HistoryBaseTests
     {
         [Fact]
@@ -450,6 +458,7 @@ public partial class HistoryBaseTests : TestContext
         }
     }
 
+    [Trait("Category", "Page")]
     public class StateTests : HistoryBaseTests
     {
         [Fact]
@@ -477,6 +486,7 @@ public partial class HistoryBaseTests : TestContext
         }
     }
 
+    [Trait("Category", "Page")]
     public class SetupInfiniteScrollObserverTests : HistoryBaseTests
     {
         [Fact]
@@ -586,6 +596,7 @@ public partial class HistoryBaseTests : TestContext
         }
     }
 
+    [Trait("Category", "Page")]
     public class OnSentinelIntersectingExceptionTests : HistoryBaseTests
     {
         [Fact]
@@ -644,6 +655,7 @@ public partial class HistoryBaseTests : TestContext
         }
     }
 
+    [Trait("Category", "Page")]
     public class HandleDateChangedExceptionTests : HistoryBaseTests
     {
         [Fact]
@@ -685,6 +697,7 @@ public partial class HistoryBaseTests : TestContext
         }
     }
 
+    [Trait("Category", "Page")]
     public class HandleTabChangedExceptionTests : HistoryBaseTests
     {
         [Fact]
@@ -757,6 +770,7 @@ public partial class HistoryBaseTests : TestContext
         }
     }
 
+    [Trait("Category", "Page")]
     public class DisposeAsyncTests : HistoryBaseTests
     {
         [Fact]
@@ -799,6 +813,7 @@ public partial class HistoryBaseTests : TestContext
                 Times.AtLeast(2));
         }
     
+        [Trait("Category", "Page")]
         public class SetupInfiniteScrollObserverRetryTests : HistoryBaseTests
         {
             [Fact]
@@ -1213,6 +1228,7 @@ public partial class HistoryBaseTests : TestContext
             }
         }
     
+        [Trait("Category", "Page")]
         public class OnAfterRenderAsyncEdgeCasesTests : HistoryBaseTests
         {
             [Fact]
@@ -1311,6 +1327,7 @@ public partial class HistoryBaseTests : TestContext
             }
         }
     
+        [Trait("Category", "Page")]
         public class HandleTabChangedAdditionalTests : HistoryBaseTests
         {
             [Fact]
@@ -1409,6 +1426,7 @@ public partial class HistoryBaseTests : TestContext
             }
         }
     
+        [Trait("Category", "Page")]
         public class HandleDateChangedAdditionalTests : HistoryBaseTests
         {
             [Fact]
@@ -1490,6 +1508,7 @@ public partial class HistoryBaseTests : TestContext
             }
         }
     
+    [Trait("Category", "Page")]
     public class OnSentinelIntersectingAdditionalTests : HistoryBaseTests
     {
         [Fact]
@@ -1684,6 +1703,7 @@ public partial class HistoryBaseTests : TestContext
         }
     }
     
+        [Trait("Category", "Page")]
         public class DisposeAsyncAdditionalTests : HistoryBaseTests
         {
             [Fact]
@@ -1827,3 +1847,4 @@ public partial class HistoryBaseTests : TestContext
         }
     }
 }
+

@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Pomodoro.Web.Tests
 {
+    [Trait("Category", "Component")]
     public class AppTests : TestContext
     {
         public AppTests()
@@ -385,3 +386,4 @@ namespace Pomodoro.Web.Tests
         #endregion
     }
 }
+

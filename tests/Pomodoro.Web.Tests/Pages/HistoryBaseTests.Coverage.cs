@@ -11,8 +11,10 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Pages;
 
+[Trait("Category", "Page")]
 public partial class HistoryBaseTests
 {
+    [Trait("Category", "Page")]
     public class OnParametersSetCoverageTests : HistoryBaseTests
     {
         [Fact]
@@ -67,6 +69,7 @@ public partial class HistoryBaseTests
         }
     }
 
+    [Trait("Category", "Page")]
     public class ObserverRetryCoverageTests : HistoryBaseTests
     {
         [Fact]
@@ -132,6 +135,7 @@ public partial class HistoryBaseTests
         }
     }
 
+    [Trait("Category", "Page")]
     public class SentinelIntersectingCoverageTests : HistoryBaseTests
     {
         [Fact]
@@ -170,6 +174,7 @@ public partial class HistoryBaseTests
         }
     }
 
+    [Trait("Category", "Page")]
     public class ActivityChangedCoverageTests : HistoryBaseTests
     {
         [Fact]
@@ -187,6 +192,7 @@ public partial class HistoryBaseTests
         }
     }
 
+    [Trait("Category", "Page")]
     public class DateChangedCoverageTests : HistoryBaseTests
     {
         [Fact]
@@ -216,6 +222,7 @@ public partial class HistoryBaseTests
         }
     }
 
+    [Trait("Category", "Page")]
     public class DisposeNullLockTests : HistoryBaseTests
     {
         [Fact]
@@ -232,3 +239,4 @@ public partial class HistoryBaseTests
         }
     }
 }
+

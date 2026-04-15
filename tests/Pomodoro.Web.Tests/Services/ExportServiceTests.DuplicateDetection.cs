@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for ExportService duplicate detection logic covering ActivityKey and TaskKey record structs
 /// </summary>
+[Trait("Category", "Service")]
 public class ExportServiceTestsDuplicateDetection
 {
     private readonly Mock<IActivityRepository> _mockActivityRepository;
@@ -235,3 +236,4 @@ public class ExportServiceTestsDuplicateDetection
         _mockTaskRepository.Verify(r => r.SaveAsync(It.IsAny<TaskItem>()), Times.Once);
     }
 }
+

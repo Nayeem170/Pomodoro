@@ -10,6 +10,8 @@ namespace Pomodoro.Web.Tests.Services;
 /// Base test class for ActivityService.
 /// Contains shared setup and helper methods.
 /// </summary>
+using Xunit;
+[Trait("Category", "Service")]
 public partial class ActivityServiceTests
 {
     protected readonly Mock<IActivityRepository> MockActivityRepository;
@@ -55,3 +57,4 @@ public partial class ActivityServiceTests
         return dates.Select(d => CreateSampleActivity(completedAt: d)).ToList();
     }
 }
+

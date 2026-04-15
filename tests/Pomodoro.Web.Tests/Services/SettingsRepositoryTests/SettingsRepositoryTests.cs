@@ -9,6 +9,8 @@ namespace Pomodoro.Web.Tests.Services.SettingsRepositoryTests;
 /// Base test class for SettingsRepository tests.
 /// SettingsRepository uses IIndexedDbService for persistence.
 /// </summary>
+using Xunit;
+[Trait("Category", "Service")]
 public partial class SettingsRepositoryTests
 {
     protected readonly Mock<IIndexedDbService> MockIndexedDb;
@@ -76,3 +78,4 @@ public partial class SettingsRepositoryTests
         };
     }
 }
+

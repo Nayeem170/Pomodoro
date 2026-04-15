@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// <summary>
 /// Tests for History page disposal and cleanup
 /// </summary>
+[Trait("Category", "Page")]
 public class HistoryPageDisposeTests : TestHelper
 {
     [Fact]
@@ -140,3 +141,4 @@ public class HistoryPageDisposeTests : TestHelper
         exception.Should().BeNull("DisposeAsync should handle total cleanup failure gracefully");
     }
 }
+

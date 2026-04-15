@@ -10,6 +10,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// <summary>
 /// Tests for History page infinite scroll functionality and edge cases
 /// </summary>
+[Trait("Category", "Page")]
 public class HistoryPageInfiniteScrollTests : TestHelper
 {
     [Fact]

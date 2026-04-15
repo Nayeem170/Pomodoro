@@ -6,6 +6,7 @@ namespace Pomodoro.Web.Tests.Services.Formatters;
 /// <summary>
 /// Tests for SummaryCardsFormatter service
 /// </summary>
+[Trait("Category", "Service")]
 public class SummaryCardsFormatterTests
 {
     private readonly SummaryCardsFormatter _formatter;
@@ -15,6 +16,7 @@ public class SummaryCardsFormatterTests
         _formatter = new SummaryCardsFormatter(new TimeFormatter());
     }
 
+    [Trait("Category", "Service")]
     public class FormatTime : SummaryCardsFormatterTests
     {
         [Fact]
@@ -88,6 +90,7 @@ public class SummaryCardsFormatterTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class FormatCount : SummaryCardsFormatterTests
     {
         [Fact]
@@ -135,3 +138,4 @@ public class SummaryCardsFormatterTests
         }
     }
 }
+

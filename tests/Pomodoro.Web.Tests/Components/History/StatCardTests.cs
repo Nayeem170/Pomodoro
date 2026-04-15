@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests.History;
 /// Tests for StatCard component.
 /// Tests rendering with different parameter values.
 /// </summary>
+[Trait("Category", "Component")]
 public class StatCardTests : TestContext
 {
     public StatCardTests()
@@ -244,3 +245,4 @@ public class StatCardTests : TestContext
 
     #endregion
 }
+

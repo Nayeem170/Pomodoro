@@ -7,6 +7,7 @@ namespace Pomodoro.Web.Tests.Services.SettingsRepositoryTests;
 /// <summary>
 /// Tests for SettingsRepository.SaveAsync method.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class SettingsRepositoryTests
 {
     #region SaveAsync Tests
@@ -193,3 +194,4 @@ public partial class SettingsRepositoryTests
 
     #endregion
 }
+

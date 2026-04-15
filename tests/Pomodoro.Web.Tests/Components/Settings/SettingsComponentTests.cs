@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Settings;
 
+[Trait("Category", "Component")]
 public class TimerDurationSettingsTests : TestContext
 {
     public TimerDurationSettingsTests()
@@ -44,6 +45,7 @@ public class TimerDurationSettingsTests : TestContext
     }
 }
 
+[Trait("Category", "Component")]
 public class PreferenceSettingsTests : TestContext
 {
     public PreferenceSettingsTests()
@@ -102,6 +104,7 @@ public class PreferenceSettingsTests : TestContext
     }
 }
 
+[Trait("Category", "Component")]
 public class AutoStartSettingsTests : TestContext
 {
     public AutoStartSettingsTests()
@@ -160,6 +163,7 @@ public class AutoStartSettingsTests : TestContext
     }
 }
 
+[Trait("Category", "Component")]
 public class DataManagementSettingsTests : TestContext
 {
     public DataManagementSettingsTests()
@@ -226,6 +230,7 @@ public class DataManagementSettingsTests : TestContext
     }
 }
 
+[Trait("Category", "Component")]
 public class ClearConfirmationModalTests : TestContext
 {
     public ClearConfirmationModalTests()
@@ -275,3 +280,4 @@ public class ClearConfirmationModalTests : TestContext
         invoked.Should().BeTrue();
     }
 }
+

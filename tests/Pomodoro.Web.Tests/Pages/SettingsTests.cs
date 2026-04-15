@@ -18,6 +18,7 @@ using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Tests.Pages
 {
+    [Trait("Category", "Page")]
     public class SettingsTests : TestContext
     {
         private readonly Mock<ITimerService> _mockTimerService;
@@ -1317,3 +1318,4 @@ namespace Pomodoro.Web.Tests.Pages
         }
     }
 }
+

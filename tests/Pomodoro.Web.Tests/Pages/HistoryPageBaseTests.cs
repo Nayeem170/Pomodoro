@@ -14,6 +14,7 @@ using Bunit;
 /// <summary>
 /// Tests for History.razor.cs (HistoryBase class)
 /// </summary>
+[Trait("Category", "Page")]
 public class HistoryPageBaseTests
 {
     /// <summary>
@@ -118,3 +119,4 @@ public class HistoryPageBaseTests
 
     }
 }
+

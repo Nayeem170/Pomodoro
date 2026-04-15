@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Unit tests for LocalDateTimeService
 /// </summary>
+[Trait("Category", "Service")]
 public class LocalDateTimeServiceTests
 {
     #region Constructor Tests
@@ -491,3 +492,4 @@ public class LocalDateTimeServiceTests
 
     #endregion
 }
+

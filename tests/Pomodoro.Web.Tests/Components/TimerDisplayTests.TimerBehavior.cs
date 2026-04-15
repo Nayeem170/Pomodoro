@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests;
 /// <summary>
 /// Tests for TimerDisplay timer behavior and event handling
 /// </summary>
+[Trait("Category", "Component")]
 public partial class TimerDisplayTests
 {
     #region Timer Tick Tests
@@ -220,3 +221,4 @@ public partial class TimerDisplayTests
 
     #endregion
 }
+

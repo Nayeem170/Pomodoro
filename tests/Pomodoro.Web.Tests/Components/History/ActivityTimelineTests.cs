@@ -12,6 +12,7 @@ namespace Pomodoro.Web.Tests.History;
 /// Tests for ActivityTimeline component.
 /// Tests rendering with different activity lists.
 /// </summary>
+[Trait("Category", "Component")]
 public class ActivityTimelineTests : TestContext
 {
     public ActivityTimelineTests()
@@ -487,3 +488,4 @@ public class ActivityTimelineTests : TestContext
 
     #endregion
 }
+

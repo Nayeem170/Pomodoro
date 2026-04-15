@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// <summary>
 /// Tests for History page integration scenarios
 /// </summary>
+[Trait("Category", "Page")]
 public class HistoryPageIntegrationTests : TestHelper{
     [Fact]
     public void HistoryPage_RendersWithAllComponents()

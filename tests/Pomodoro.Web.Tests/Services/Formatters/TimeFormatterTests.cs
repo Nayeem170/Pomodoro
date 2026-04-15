@@ -6,6 +6,7 @@ namespace Pomodoro.Web.Tests.Services.Formatters;
 /// <summary>
 /// Tests for TimeFormatter service
 /// </summary>
+[Trait("Category", "Service")]
 public class TimeFormatterTests
 {
     private readonly TimeFormatter _formatter;
@@ -135,3 +136,4 @@ public class TimeFormatterTests
         Assert.Equal("3h 0m", result);
     }
 }
+

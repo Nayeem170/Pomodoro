@@ -3,6 +3,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Models;
 
+[Trait("Category", "Model")]
 public class TimerCompletedEventArgsTests
 {
     [Fact]
@@ -98,3 +99,4 @@ public class TimerCompletedEventArgsTests
         Assert.Equal(SessionType.LongBreak, longBreak.SessionType);
     }
 }
+

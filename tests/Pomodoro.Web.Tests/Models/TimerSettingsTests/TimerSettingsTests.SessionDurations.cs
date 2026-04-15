@@ -6,6 +6,7 @@ namespace Pomodoro.Web.Tests.Models.TimerSettingsTests;
 /// <summary>
 /// Tests for TimerSettings session duration methods.
 /// </summary>
+[Trait("Category", "Model")]
 public partial class TimerSettingsTests
 {
     #region GetDurationMinutes Tests
@@ -165,3 +166,4 @@ public partial class TimerSettingsTests
 
     #endregion
 }
+

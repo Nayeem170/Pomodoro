@@ -13,6 +13,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// Tests for Index page task actions in Index.razor.Tasks.cs
 /// Tests all task-related event handlers
 /// </summary>
+[Trait("Category", "Page")]
 public class IndexTasksTests : TestHelper
 {
     public IndexTasksTests()
@@ -317,3 +318,4 @@ public class IndexTasksTests : TestHelper
 
     #endregion
 }
+

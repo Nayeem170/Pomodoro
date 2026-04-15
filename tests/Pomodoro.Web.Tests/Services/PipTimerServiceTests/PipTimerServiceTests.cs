@@ -10,6 +10,8 @@ namespace Pomodoro.Web.Tests.Services;
 /// Base test class for PipTimerService.
 /// Contains shared setup and helper methods.
 /// </summary>
+using Xunit;
+[Trait("Category", "Service")]
 public partial class PipTimerServiceTests
 {
     protected readonly Mock<IJSRuntime> MockJsRuntime;
@@ -64,3 +66,4 @@ public partial class PipTimerServiceTests
         TestBase.SetupCurrentSession(AppState, isRunning, wasStarted, remainingSeconds, sessionType);
     }
 }
+

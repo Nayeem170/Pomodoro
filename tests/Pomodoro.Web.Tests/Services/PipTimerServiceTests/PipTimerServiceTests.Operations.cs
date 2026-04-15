@@ -8,11 +8,13 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for PipTimerService JSInvokable operations.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class PipTimerServiceTests
 {
     /// <summary>
     /// Tests for OnPipToggleTimer operation
     /// </summary>
+    [Trait("Category", "Service")]
     public class OperationsTests : PipTimerServiceTests
     {
         [Fact]
@@ -178,3 +180,4 @@ public partial class PipTimerServiceTests
         }
     }
 }
+

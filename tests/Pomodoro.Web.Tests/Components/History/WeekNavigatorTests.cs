@@ -9,6 +9,7 @@ namespace Pomodoro.Web.Tests.History;
 /// bUnit tests for WeekNavigator component.
 /// Tests week navigation and formatting behavior via UI interactions.
 /// </summary>
+[Trait("Category", "Component")]
 public class WeekNavigatorTests : TestContext
 {
     public WeekNavigatorTests()
@@ -305,3 +306,4 @@ public class WeekNavigatorTests : TestContext
 
     #endregion
 }
+

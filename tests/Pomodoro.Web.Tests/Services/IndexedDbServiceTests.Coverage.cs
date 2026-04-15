@@ -7,8 +7,10 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Services;
 
+[Trait("Category", "Service")]
 public partial class IndexedDbServiceTests
 {
+    [Trait("Category", "Service")]
     public class GetAllAsyncCoverageTests : IndexedDbServiceTests
     {
         [Fact]
@@ -37,6 +39,7 @@ public partial class IndexedDbServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class QueryByIndexAsyncCoverageTests : IndexedDbServiceTests
     {
         [Fact]
@@ -77,6 +80,7 @@ public partial class IndexedDbServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class QueryByDateRangeAsyncCoverageTests : IndexedDbServiceTests
     {
         [Fact]
@@ -117,6 +121,7 @@ public partial class IndexedDbServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class PutAllAsyncCoverageTests : IndexedDbServiceTests
     {
         [Fact]
@@ -133,6 +138,7 @@ public partial class IndexedDbServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class GetAsyncCoverageTests : IndexedDbServiceTests
     {
         [Fact]
@@ -161,6 +167,7 @@ public partial class IndexedDbServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class GetAllAsyncCoverageTests2 : IndexedDbServiceTests
     {
         [Fact]
@@ -239,6 +246,7 @@ public partial class IndexedDbServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class QueryByDateRangeAsyncCoverageTests2 : IndexedDbServiceTests
     {
         [Fact]
@@ -264,6 +272,7 @@ public partial class IndexedDbServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class PutAllAsyncCoverageTests2 : IndexedDbServiceTests
     {
         [Fact]
@@ -293,6 +302,7 @@ public partial class IndexedDbServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class ClearAsyncCoverageTests : IndexedDbServiceTests
     {
         [Fact]
@@ -311,3 +321,4 @@ public partial class IndexedDbServiceTests
         }
     }
 }
+

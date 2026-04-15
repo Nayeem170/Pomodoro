@@ -8,6 +8,7 @@ using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Tests.Services
 {
+    [Trait("Category", "Service")]
     public class InfiniteScrollInteropTests
     {
         private readonly Mock<IJSRuntime> _mockJsRuntime;

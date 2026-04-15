@@ -9,6 +9,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for ActivityService query operations.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class ActivityServiceTests
 {
     #region GetTodayActivities Tests
@@ -517,3 +518,4 @@ public partial class ActivityServiceTests
 
     #endregion
 }
+

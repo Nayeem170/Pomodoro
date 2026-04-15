@@ -8,6 +8,7 @@ namespace Pomodoro.Web.Tests.Services.ActivityRepositoryTests;
 /// <summary>
 /// Query operation tests for ActivityRepository.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class ActivityRepositoryTests
 {
     #region GetByDateRangeAsync Tests
@@ -438,3 +439,4 @@ public partial class ActivityRepositoryTests
 
     #endregion
 }
+

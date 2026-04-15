@@ -4,6 +4,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Pages
 {
+    [Trait("Category", "Page")]
     public class AboutPageTests : TestContext
     {
         [Fact]
@@ -231,3 +232,4 @@ namespace Pomodoro.Web.Tests.Pages
         }
     }
 }
+

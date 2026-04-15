@@ -7,8 +7,10 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for TimerService ResetAsync method.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class TimerServiceTests
 {
+    [Trait("Category", "Service")]
     public class ResetAsyncTests : TimerServiceTests
     {
         [Fact]
@@ -202,3 +204,4 @@ public partial class TimerServiceTests
         }
     }
 }
+

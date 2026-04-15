@@ -9,6 +9,7 @@ namespace Pomodoro.Web.Tests.History;
 /// <summary>
 /// Tests for SummaryCards component
 /// </summary>
+[Trait("Category", "Component")]
 public class SummaryCardsTests : TestContext
 {
     public SummaryCardsTests()
@@ -166,3 +167,4 @@ public class SummaryCardsTests : TestContext
         Assert.Contains("2h 5m", cut.Markup);
     }
 }
+

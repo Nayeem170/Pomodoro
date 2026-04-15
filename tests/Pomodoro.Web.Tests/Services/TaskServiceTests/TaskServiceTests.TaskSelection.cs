@@ -10,6 +10,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for TaskService selection operations.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class TaskServiceTests
 {
     #region SelectTaskAsync Tests
@@ -125,3 +126,4 @@ public partial class TaskServiceTests
 
     #endregion
 }
+

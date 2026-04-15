@@ -7,11 +7,13 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for PipTimerService lifecycle methods.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class PipTimerServiceTests
 {
     /// <summary>
     /// Tests for service initialization
     /// </summary>
+    [Trait("Category", "Service")]
     public class LifecycleTests : PipTimerServiceTests
     {
         [Fact]
@@ -108,3 +110,4 @@ public partial class PipTimerServiceTests
         }
     }
 }
+

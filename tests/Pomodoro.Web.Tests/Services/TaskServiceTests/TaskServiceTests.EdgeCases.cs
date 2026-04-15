@@ -10,6 +10,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for TaskService edge cases and error handling.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class TaskServiceTests
 {
     #region Edge Case Tests - Non-Existent Task Operations
@@ -164,3 +165,4 @@ public partial class TaskServiceTests
 
     #endregion
 }
+

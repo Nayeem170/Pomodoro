@@ -5,6 +5,7 @@ namespace Pomodoro.Web.Tests.Models.TimerSettingsTests;
 /// <summary>
 /// Tests for TimerSettings default values.
 /// </summary>
+[Trait("Category", "Model")]
 public partial class TimerSettingsTests
 {
     #region Default Values Tests
@@ -96,3 +97,4 @@ public partial class TimerSettingsTests
 
     #endregion
 }
+

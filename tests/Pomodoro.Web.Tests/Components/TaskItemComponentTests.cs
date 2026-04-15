@@ -10,6 +10,7 @@ namespace Pomodoro.Web.Tests;
 /// <summary>
 /// Tests for TaskItemComponent.
 /// </summary>
+[Trait("Category", "Component")]
 public class TaskItemComponentTests : TestContext
 {
     [Fact]
@@ -640,3 +641,4 @@ public class TaskItemComponentTests : TestContext
         Assert.False(selected);
     }
 }
+

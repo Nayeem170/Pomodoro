@@ -8,6 +8,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for HistoryPagePresenterService
 /// </summary>
+[Trait("Category", "Service")]
 public class HistoryPagePresenterServiceTests
 {
     private readonly HistoryPagePresenterService _service;
@@ -77,6 +78,7 @@ public class HistoryPagePresenterServiceTests
     }
 }
 
+[Trait("Category", "Service")]
 public class HistoryPagePaginationStateTests
 {
     [Fact]
@@ -123,3 +125,4 @@ public class HistoryPagePaginationStateTests
         Assert.False(state.ObserverInitialized);
     }
 }
+

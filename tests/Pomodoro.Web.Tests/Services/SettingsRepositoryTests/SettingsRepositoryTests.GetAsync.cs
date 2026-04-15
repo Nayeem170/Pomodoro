@@ -10,6 +10,7 @@ namespace Pomodoro.Web.Tests.Services.SettingsRepositoryTests;
 /// which is complex. The core functionality is tested through SaveAsync and ResetToDefaultsAsync.
 /// Integration tests would be more appropriate for testing the full GetAsync flow.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class SettingsRepositoryTests
 {
     #region GetAsync Tests (Integration-focused)
@@ -54,3 +55,4 @@ public partial class SettingsRepositoryTests
  
     #endregion
 }
+

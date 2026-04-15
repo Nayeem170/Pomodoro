@@ -6,8 +6,10 @@ namespace Pomodoro.Web.Tests.Models;
 /// <summary>
 /// Tests for WeeklyStats record model
 /// </summary>
+[Trait("Category", "Model")]
 public class WeeklyStatsTests
 {
+    [Trait("Category", "Model")]
     public class Constructor : WeeklyStatsTests
     {
         [Fact]
@@ -27,6 +29,7 @@ public class WeeklyStatsTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class TotalFocusMinutes : WeeklyStatsTests
     {
         [Theory]
@@ -44,6 +47,7 @@ public class WeeklyStatsTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class TotalPomodoroCount : WeeklyStatsTests
     {
         [Theory]
@@ -61,6 +65,7 @@ public class WeeklyStatsTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class UniqueTasksWorkedOn : WeeklyStatsTests
     {
         [Theory]
@@ -78,6 +83,7 @@ public class WeeklyStatsTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class DailyAverageMinutes : WeeklyStatsTests
     {
         [Theory]
@@ -95,6 +101,7 @@ public class WeeklyStatsTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class MostProductiveDay : WeeklyStatsTests
     {
         [Theory]
@@ -115,6 +122,7 @@ public class WeeklyStatsTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class PreviousWeekFocusMinutes : WeeklyStatsTests
     {
         [Theory]
@@ -131,6 +139,7 @@ public class WeeklyStatsTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class WeekOverWeekChange : WeeklyStatsTests
     {
         [Theory]
@@ -148,6 +157,7 @@ public class WeeklyStatsTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class RecordEquality : WeeklyStatsTests
     {
         [Fact]
@@ -203,6 +213,7 @@ public class WeeklyStatsTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class AllProperties : WeeklyStatsTests
     {
         [Fact]
@@ -231,6 +242,7 @@ public class WeeklyStatsTests
         }
     }
 
+    [Trait("Category", "Model")]
     public class InitOnlyProperties : WeeklyStatsTests
     {
         [Fact]
@@ -249,3 +261,4 @@ public class WeeklyStatsTests
         }
     }
 }
+

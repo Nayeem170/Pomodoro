@@ -9,6 +9,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for SettingsPresenterService
 /// </summary>
+[Trait("Category", "Service")]
 public class SettingsPresenterServiceTests
 {
     private readonly SettingsPresenterService _service;
@@ -303,3 +304,4 @@ public class SettingsPresenterServiceTests
     }
 
 }
+

@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests;
 /// <summary>
 /// Unit tests for TimerDisplay component
 /// </summary>
+[Trait("Category", "Component")]
 public partial class TimerDisplayTests : TestContext
 {
     private readonly Mock<ITimerService> _timerServiceMock;
@@ -251,3 +252,4 @@ public partial class TimerDisplayTests : TestContext
 
     #endregion
 }
+

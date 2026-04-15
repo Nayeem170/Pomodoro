@@ -10,6 +10,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// <summary>
 /// Tests for History page event handlers and edge cases during state changes
 /// </summary>
+[Trait("Category", "Page")]
 public class HistoryPageEventHandlersTests : TestHelper
 {
     [Fact]
@@ -143,3 +144,4 @@ public class HistoryPageEventHandlersTests : TestHelper
         ActivityServiceMock.Verify(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()), Times.Exactly(2));
     }
 }
+

@@ -7,6 +7,7 @@ namespace Pomodoro.Web.Tests.Services.Formatters;
 /// <summary>
 /// Tests for ActivityItemFormatter service
 /// </summary>
+[Trait("Category", "Service")]
 public class ActivityItemFormatterTests
 {
     private readonly ActivityItemFormatter _formatter = new();
@@ -503,3 +504,4 @@ public class ActivityItemFormatterTests
 
     #endregion
 }
+

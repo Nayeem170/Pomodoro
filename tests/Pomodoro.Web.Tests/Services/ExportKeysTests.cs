@@ -4,6 +4,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Services;
 
+[Trait("Category", "Service")]
 public class ExportKeysTests
 {
     [Fact]
@@ -150,3 +151,4 @@ public class ExportKeysTests
         Assert.Equal(1, dict[key]);
     }
 }
+

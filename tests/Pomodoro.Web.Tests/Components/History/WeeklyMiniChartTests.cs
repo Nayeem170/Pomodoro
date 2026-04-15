@@ -13,6 +13,7 @@ namespace Pomodoro.Web.Tests.History;
 /// <summary>
 /// Tests for WeeklyMiniChart component
 /// </summary>
+[Trait("Category", "Component")]
 public partial class WeeklyMiniChartTests : TestContext
 {
     private readonly Mock<IJSRuntime> _jsRuntimeMock;
@@ -599,3 +600,4 @@ public partial class WeeklyMiniChartTests : TestContext
 
     #endregion
 }
+

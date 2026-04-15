@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests;
 
+[Trait("Category", "Component")]
 public class CurrentTaskIndicatorTests : TestContext
 {
     public CurrentTaskIndicatorTests()
@@ -84,3 +85,4 @@ public class CurrentTaskIndicatorTests : TestContext
         cut.Markup.Should().NotContain("current-task-indicator");
     }
 }
+

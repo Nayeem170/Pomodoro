@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Services;
 
+[Trait("Category", "Service")]
 public class ServiceInitializationServiceTests
 {
     private readonly Mock<ILogger<ServiceInitializationService>> _loggerMock;
@@ -561,3 +562,4 @@ public class ServiceInitializationServiceTests
         }
     }
 }
+

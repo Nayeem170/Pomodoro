@@ -16,8 +16,10 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for ApplicationStartupService
 /// </summary>
+[Trait("Category", "Service")]
 public class ApplicationStartupServiceTests
 {
+    [Trait("Category", "Service")]
     public class ConstructorTests
     {
         [Fact]
@@ -44,6 +46,7 @@ public class ApplicationStartupServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class ConfigureHttpClientTests
     {
         [Fact]
@@ -66,6 +69,7 @@ public class ApplicationStartupServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class ConfigureLoggingTests
     {
         [Fact]
@@ -86,6 +90,7 @@ public class ApplicationStartupServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class RegisterInfrastructureServicesTests
     {
         [Fact]
@@ -179,6 +184,7 @@ public class ApplicationStartupServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class RegisterApplicationServicesTests
     {
         [Fact]
@@ -197,6 +203,7 @@ public class ApplicationStartupServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class InitializeServicesWithErrorHandlingTests
     {
         [Fact]
@@ -288,6 +295,7 @@ public class ApplicationStartupServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class ConfigureHostBuilderTests
     {
         [Fact]
@@ -361,6 +369,7 @@ public class ApplicationStartupServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class ConfigureServicesTests
     {
         [Fact]
@@ -402,6 +411,7 @@ public class ApplicationStartupServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class RegisterApplicationServicesBaseTests
     {
         [Fact]
@@ -454,6 +464,7 @@ public class ApplicationStartupServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class InitializeServicesWithErrorHandlingNullLoggerTests
     {
         [Fact]
@@ -480,6 +491,7 @@ public class ApplicationStartupServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class BaseClassDirectCallTests
     {
         [Fact]
@@ -527,6 +539,7 @@ public class ApplicationStartupServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class WrapperClassesTests
     {
         [Fact]
@@ -774,3 +787,4 @@ public class ApplicationStartupServiceTests
         }
     }
 }
+

@@ -9,8 +9,10 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for TimerService timer completion handling.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class TimerServiceTests
 {
+    [Trait("Category", "Service")]
     public class CompletionTests : TimerServiceTests
     {
         [Fact]

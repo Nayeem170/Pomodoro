@@ -6,8 +6,10 @@ namespace Pomodoro.Web.Tests.Services.SettingsRepositoryTests;
 /// <summary>
 /// Tests for SettingsRepository concurrent access scenarios.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class SettingsRepositoryTests
 {
+    [Trait("Category", "Service")]
     public class ConcurrentTests : SettingsRepositoryTests
     {
         [Fact]
@@ -169,3 +171,4 @@ public partial class SettingsRepositoryTests
         }
     }
 }
+

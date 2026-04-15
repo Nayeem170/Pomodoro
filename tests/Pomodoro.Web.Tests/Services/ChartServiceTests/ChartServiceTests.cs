@@ -10,6 +10,7 @@ namespace Pomodoro.Web.Tests.Services.ChartServiceTests;
 /// <summary>
 /// Tests for ChartService chart creation and management methods.
 /// </summary>
+[Trait("Category", "Service")]
 public class ChartServiceTests
 {
     protected readonly Mock<IJSRuntime> JsRuntimeMock = new();
@@ -164,3 +165,4 @@ public class ChartServiceTests
         await service.DisposeAsync();
     }
 }
+

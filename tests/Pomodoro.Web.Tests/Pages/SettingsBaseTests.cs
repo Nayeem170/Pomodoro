@@ -15,6 +15,7 @@ namespace Pomodoro.Web.Tests.Pages;
 /// Comprehensive tests for Settings.razor.cs code-behind
 /// Tests initialization, actions, export/import, and state management
 /// </summary>
+[Trait("Category", "Page")]
 public class SettingsBaseTests : TestContext
 {
     #region Services and Mocks
@@ -606,3 +607,4 @@ public class SettingsBaseTests : TestContext
 
     #endregion
 }
+

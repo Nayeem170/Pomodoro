@@ -6,6 +6,8 @@ namespace Pomodoro.Web.Tests.Models.TimerSettingsTests;
 /// Base test class for TimerSettings tests.
 /// TimerSettings is a pure model class with no dependencies.
 /// </summary>
+using Xunit;
+[Trait("Category", "Model")]
 public partial class TimerSettingsTests
 {
     /// <summary>
@@ -37,3 +39,4 @@ public partial class TimerSettingsTests
         };
     }
 }
+

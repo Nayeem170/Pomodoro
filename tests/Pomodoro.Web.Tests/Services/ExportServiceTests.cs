@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Comprehensive tests for ExportService
 /// </summary>
+[Trait("Category", "Service")]
 public class ExportServiceTests
 {
     private readonly Mock<IActivityRepository> _mockActivityRepository;
@@ -1062,3 +1063,4 @@ public class ExportServiceTests
 
     #endregion
 }
+

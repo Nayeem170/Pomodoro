@@ -11,6 +11,7 @@ namespace Pomodoro.Web.Tests.Services;
 /// <summary>
 /// Tests for TimerService initialization.
 /// </summary>
+[Trait("Category", "Service")]
 public partial class TimerServiceTests
 {
     [Fact]
@@ -154,3 +155,4 @@ public partial class TimerServiceTests
         Assert.Equal(25, AppState.Settings.PomodoroMinutes); // Default value
     }
 }
+

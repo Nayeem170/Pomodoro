@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Services;
 
+[Trait("Category", "Service")]
 public class IndexPagePresenterServiceTests
 {
     private readonly Mock<ILogger<IndexPagePresenterService>> _loggerMock;
@@ -136,3 +137,4 @@ public class IndexPagePresenterServiceTests
         Assert.False(state.IsTimerStarted);
     }
 }
+
