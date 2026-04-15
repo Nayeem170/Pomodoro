@@ -35,7 +35,7 @@ public class HistoryPageInfiniteScrollTests : TestHelper
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(25);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new WeeklyStats());
         

@@ -50,7 +50,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -116,7 +116,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -175,7 +175,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(weeklyBreakMinutes);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -243,7 +243,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -301,7 +301,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -364,7 +364,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)weeklyStats);
         
@@ -372,7 +372,7 @@ public class HistoryPageExpandedTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
-        ActivityServiceMock.Verify(x => x.GetWeeklyStatsAsync(
+        StatisticsServiceMock.Verify(x => x.GetWeeklyStatsAsync(
             It.IsAny<DateTime>()), Times.Once);
     }
 
@@ -404,7 +404,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -412,7 +412,7 @@ public class HistoryPageExpandedTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         
         // Assert
-        ActivityServiceMock.Verify(x => x.GetWeeklyStatsAsync(
+        StatisticsServiceMock.Verify(x => x.GetWeeklyStatsAsync(
             It.IsAny<DateTime>()), Times.Once);
     }
 
@@ -467,7 +467,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -530,7 +530,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -591,7 +591,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -664,7 +664,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -704,7 +704,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -743,7 +743,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -809,7 +809,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(weeklyBreakMinutes);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)weeklyStats);
         
@@ -822,7 +822,7 @@ public class HistoryPageExpandedTests : TestHelper
             It.IsAny<DateTime>(), It.IsAny<DateTime>()), Times.Once);
         ActivityServiceMock.Verify(x => x.GetDailyBreakMinutes(
             It.IsAny<DateTime>(), It.IsAny<DateTime>()), Times.Once);
-        ActivityServiceMock.Verify(x => x.GetWeeklyStatsAsync(
+        StatisticsServiceMock.Verify(x => x.GetWeeklyStatsAsync(
             It.IsAny<DateTime>()), Times.Once);
     }
 
@@ -854,7 +854,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -863,7 +863,7 @@ public class HistoryPageExpandedTests : TestHelper
         
         // Assert
         cut.Should().NotBeNull();
-        ActivityServiceMock.Verify(x => x.GetWeeklyStatsAsync(
+        StatisticsServiceMock.Verify(x => x.GetWeeklyStatsAsync(
             It.IsAny<DateTime>()), Times.Once);
     }
 
@@ -915,7 +915,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -964,7 +964,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -1032,7 +1032,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(weeklyBreakMinutes);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)weeklyStats);
         
@@ -1045,7 +1045,7 @@ public class HistoryPageExpandedTests : TestHelper
             It.IsAny<DateTime>(), It.IsAny<DateTime>()), Times.Once);
         ActivityServiceMock.Verify(x => x.GetDailyBreakMinutes(
             It.IsAny<DateTime>(), It.IsAny<DateTime>()), Times.Once);
-        ActivityServiceMock.Verify(x => x.GetWeeklyStatsAsync(
+        StatisticsServiceMock.Verify(x => x.GetWeeklyStatsAsync(
             It.IsAny<DateTime>()), Times.Once);
     }
 
@@ -1103,7 +1103,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(weeklyBreakMinutes);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)weeklyStats);
         
@@ -1116,7 +1116,7 @@ public class HistoryPageExpandedTests : TestHelper
             It.IsAny<DateTime>(), It.IsAny<DateTime>()), Times.Once);
         ActivityServiceMock.Verify(x => x.GetDailyBreakMinutes(
             It.IsAny<DateTime>(), It.IsAny<DateTime>()), Times.Once);
-        ActivityServiceMock.Verify(x => x.GetWeeklyStatsAsync(
+        StatisticsServiceMock.Verify(x => x.GetWeeklyStatsAsync(
             It.IsAny<DateTime>()), Times.Once);
     }
 
@@ -1174,7 +1174,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(weeklyBreakMinutes);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)weeklyStats);
         
@@ -1183,7 +1183,7 @@ public class HistoryPageExpandedTests : TestHelper
         
         // Assert
         cut.Should().NotBeNull();
-        ActivityServiceMock.Verify(x => x.GetWeeklyStatsAsync(
+        StatisticsServiceMock.Verify(x => x.GetWeeklyStatsAsync(
             It.IsAny<DateTime>()), Times.Once);
     }
 
@@ -1215,7 +1215,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -1263,7 +1263,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -1312,7 +1312,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -1363,7 +1363,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -1384,7 +1384,7 @@ public class HistoryPageExpandedTests : TestHelper
         
         // Assert
         cut.Render();
-        ActivityServiceMock.Verify(x => x.GetWeeklyStatsAsync(
+        StatisticsServiceMock.Verify(x => x.GetWeeklyStatsAsync(
             It.IsAny<DateTime>()), Times.AtLeastOnce());
     }
 
@@ -1429,7 +1429,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         
@@ -1500,7 +1500,7 @@ public class HistoryPageExpandedTests : TestHelper
             .Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null);
         

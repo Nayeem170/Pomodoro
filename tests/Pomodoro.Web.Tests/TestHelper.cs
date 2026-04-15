@@ -18,6 +18,7 @@ public abstract class TestHelper : TestContext
     protected Mock<ITimerService> TimerServiceMock { get; private set; }
     protected Mock<ITaskService> TaskServiceMock { get; private set; }
     protected Mock<IActivityService> ActivityServiceMock { get; private set; }
+    protected Mock<IStatisticsService> StatisticsServiceMock { get; private set; }
     protected Mock<INotificationService> NotificationServiceMock { get; private set; }
     protected Mock<IExportService> ExportServiceMock { get; private set; }
     protected Mock<IIndexedDbService> IndexedDbServiceMock { get; private set; }
@@ -48,6 +49,7 @@ public abstract class TestHelper : TestContext
         TimerServiceMock = new Mock<ITimerService>();
         TaskServiceMock = new Mock<ITaskService>();
         ActivityServiceMock = new Mock<IActivityService>();
+        StatisticsServiceMock = new Mock<IStatisticsService>();
         NotificationServiceMock = new Mock<INotificationService>();
         ExportServiceMock = new Mock<IExportService>();
         IndexedDbServiceMock = new Mock<IIndexedDbService>();
@@ -85,6 +87,7 @@ public abstract class TestHelper : TestContext
         Services.AddSingleton(TimerServiceMock.Object);
         Services.AddSingleton(TaskServiceMock.Object);
         Services.AddSingleton(ActivityServiceMock.Object);
+        Services.AddSingleton(StatisticsServiceMock.Object);
         Services.AddSingleton(NotificationServiceMock.Object);
         Services.AddSingleton(ExportServiceMock.Object);
         Services.AddSingleton(IndexedDbServiceMock.Object);

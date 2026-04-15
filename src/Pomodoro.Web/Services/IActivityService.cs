@@ -128,16 +128,6 @@ public interface IActivityService
     Dictionary<DateTime, int> GetDailyBreakMinutes(DateTime from, DateTime to);
     
     /// <summary>
-    /// Gets weekly statistics for a given week start date.
-    /// </summary>
-    /// <param name="weekStartDate">The start date of week (typically Monday or Sunday).</param>
-    /// <returns>A task that resolves to a <see cref="WeeklyStats"/> instance.</returns>
-    /// <remarks>
-    /// Aggregates daily statistics for a 7-day week starting from the provided date.
-    /// </remarks>
-    Task<WeeklyStats> GetWeeklyStatsAsync(DateTime weekStartDate);
-    
-    /// <summary>
     /// Adds a new activity record to the history.
     /// </summary>
     /// <param name="activity">The activity record to add.</param>

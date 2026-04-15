@@ -36,7 +36,7 @@ public class HistoryPageDisposeTests : TestHelper
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(10);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new WeeklyStats());
         
@@ -102,7 +102,7 @@ public class HistoryPageDisposeTests : TestHelper
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(10);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new WeeklyStats());
         

@@ -36,7 +36,7 @@ public class HistoryPagePaginationTests : TestHelper
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(20);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new WeeklyStats());
         
@@ -81,7 +81,7 @@ public class HistoryPagePaginationTests : TestHelper
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(40);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new WeeklyStats());
         
@@ -121,7 +121,7 @@ public class HistoryPagePaginationTests : TestHelper
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(10);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new WeeklyStats());
         
@@ -159,7 +159,7 @@ public class HistoryPagePaginationTests : TestHelper
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(0);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new WeeklyStats());
         
@@ -199,7 +199,7 @@ public class HistoryPagePaginationTests : TestHelper
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(15);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new WeeklyStats());
         
@@ -239,7 +239,7 @@ public class HistoryPagePaginationTests : TestHelper
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(20);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new WeeklyStats());
         
@@ -287,7 +287,7 @@ public class HistoryPagePaginationTests : TestHelper
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(10); // Same as initial load count
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new WeeklyStats());
         
@@ -331,7 +331,7 @@ public class HistoryPagePaginationTests : TestHelper
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(20);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new WeeklyStats());
         

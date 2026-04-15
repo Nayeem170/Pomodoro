@@ -18,6 +18,8 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
     
     [Inject]
     protected IActivityService ActivityService { get; set; } = default!;
+    [Inject]
+    protected IStatisticsService StatisticsService { get; set; } = default!;
     
     [Inject]
     protected IJSRuntime JSRuntime { get; set; } = default!;
@@ -532,7 +534,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         WeeklyBreakMinutes = ActivityService.GetDailyBreakMinutes(weekStart, weekEnd);
         
         // Load weekly statistics
-        WeeklyStats = await ActivityService.GetWeeklyStatsAsync(weekStart);
+        WeeklyStats = await StatisticsService.GetWeeklyStatsAsync(weekStart);
         
         // Observer will be set up in OnAfterRenderAsync after DOM is fully updated
         // This ensures sentinel element exists before observer is created

@@ -35,7 +35,7 @@ public class HistoryPageIntegrationTests : TestHelper{
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(5);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null!);
         
@@ -76,7 +76,7 @@ public class HistoryPageIntegrationTests : TestHelper{
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(5);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null!);
         
@@ -117,7 +117,7 @@ public class HistoryPageIntegrationTests : TestHelper{
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(5);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null!);
         
@@ -158,7 +158,7 @@ public class HistoryPageIntegrationTests : TestHelper{
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(5);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null!);
         
@@ -199,7 +199,7 @@ public class HistoryPageIntegrationTests : TestHelper{
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(5);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null!);
         
@@ -263,7 +263,7 @@ public class HistoryPageIntegrationTests : TestHelper{
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(3);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null!);
         
@@ -304,7 +304,7 @@ public class HistoryPageIntegrationTests : TestHelper{
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(50);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null!);
         
@@ -343,7 +343,7 @@ public class HistoryPageIntegrationTests : TestHelper{
             .Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(0);
         
-        ActivityServiceMock
+        StatisticsServiceMock
             .Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
             .ReturnsAsync((WeeklyStats?)null!);
         
