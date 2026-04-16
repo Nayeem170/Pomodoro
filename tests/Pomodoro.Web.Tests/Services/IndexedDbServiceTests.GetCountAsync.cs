@@ -13,7 +13,6 @@ namespace Pomodoro.Web.Tests.Services;
 [Trait("Category", "Service")]
 public partial class IndexedDbServiceTests
 {
-    [Trait("Category", "Service")]
     public class GetCountAsyncTests : IndexedDbServiceTests
     {
         [Fact]

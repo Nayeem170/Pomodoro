@@ -8,7 +8,6 @@ namespace Pomodoro.Web.Tests.Services;
 [Trait("Category", "Service")]
 public class SafeTaskRunnerTests
 {
-    [Trait("Category", "Service")]
     public class RunAndForgetTests
     {
         [Fact]

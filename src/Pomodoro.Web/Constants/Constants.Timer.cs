@@ -93,24 +93,6 @@ public static partial class Constants
     }
 
     /// <summary>
-    /// Time threshold constants for relative time calculations
-    /// </summary>
-    public static class TimeThresholds
-    {
-        /// <summary>One minute threshold</summary>
-        public const int OneMinute = 1;
-
-        /// <summary>One hour in minutes</summary>
-        public const int OneHourInMinutes = 60;
-
-        /// <summary>One day in hours</summary>
-        public const int OneDayInHours = 24;
-
-        /// <summary>One week in days</summary>
-        public const int OneWeekInDays = 7;
-    }
-
-    /// <summary>
     /// Threading and concurrency constants
     /// </summary>
     public static class Threading
@@ -120,8 +102,5 @@ public static partial class Constants
 
         /// <summary>Maximum count for semaphore</summary>
         public const int SemaphoreMaxCount = 1;
-
-        /// <summary>Wait timeout in milliseconds (no wait)</summary>
-        public const int WaitTimeoutMs = 0;
     }
 }

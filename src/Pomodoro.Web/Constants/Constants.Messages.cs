@@ -130,8 +130,6 @@ public static partial class Constants
         public const string BreakNotificationMessage = "Ready to focus again? Start your next Pomodoro.";
 
         // Export/Import Log Messages
-        public const string LogExportCsvFormat = "Exported {Count} activities to CSV from {StartDate} to {EndDate}";
-        public const string LogExportCsvFailed = "Failed to export activities to CSV";
         public const string LogExportJsonFormat = "Exported {ActivityCount} activities and {TaskCount} tasks to JSON";
         public const string LogExportJsonFailed = "Failed to export data to JSON";
         public const string LogImportJsonInvalid = "Invalid JSON data format";

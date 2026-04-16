@@ -11,7 +11,6 @@ namespace Pomodoro.Web.Tests.Services;
 [Trait("Category", "Service")]
 public partial class TimerServiceTests
 {
-    [Trait("Category", "Service")]
     public class TransitionsTests : TimerServiceTests
     {
         [Fact]

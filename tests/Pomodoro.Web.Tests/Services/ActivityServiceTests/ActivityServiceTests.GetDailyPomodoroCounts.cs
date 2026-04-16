@@ -13,7 +13,6 @@ namespace Pomodoro.Web.Tests.Services;
 [Trait("Category", "Service")]
 public partial class ActivityServiceTests
 {
-    [Trait("Category", "Service")]
     public class GetDailyPomodoroCountsTests : ActivityServiceTests
     {
         [Fact]

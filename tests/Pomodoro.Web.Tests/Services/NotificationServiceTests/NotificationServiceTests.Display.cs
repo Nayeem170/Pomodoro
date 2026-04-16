@@ -10,7 +10,6 @@ namespace Pomodoro.Web.Tests.Services;
 [Trait("Category", "Service")]
 public partial class NotificationServiceTests
 {
-    [Trait("Category", "Service")]
     public class DisplayTests : NotificationServiceTests
     {
         [Fact]

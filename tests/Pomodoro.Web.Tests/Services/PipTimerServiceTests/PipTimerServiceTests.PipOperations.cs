@@ -44,7 +44,6 @@ public partial class PipTimerServiceTests
     /// <summary>
     /// Tests for InitializeAsync method
     /// </summary>
-    [Trait("Category", "Service")]
     public class InitializeAsyncTests : PipTimerServiceTests
     {
         [Fact]
@@ -148,7 +147,6 @@ public partial class PipTimerServiceTests
     /// <summary>
     /// Tests for OpenAsync method
     /// </summary>
-    [Trait("Category", "Service")]
     public class OpenAsyncTests : PipTimerServiceTests
     {
         [Fact]
@@ -253,7 +251,6 @@ public partial class PipTimerServiceTests
     /// <summary>
     /// Tests for CloseAsync method
     /// </summary>
-    [Trait("Category", "Service")]
     public class CloseAsyncTests : PipTimerServiceTests
     {
         [Fact]
@@ -337,7 +334,6 @@ public partial class PipTimerServiceTests
     /// <summary>
     /// Tests for UpdateTimerAsync method
     /// </summary>
-    [Trait("Category", "Service")]
     public class UpdateTimerAsyncTests : PipTimerServiceTests
     {
         [Fact]
@@ -408,7 +404,6 @@ public partial class PipTimerServiceTests
     /// <summary>
     /// Tests for DisposeAsync method
     /// </summary>
-    [Trait("Category", "Service")]
     public class DisposeAsyncTests : PipTimerServiceTests
     {
         [Fact]

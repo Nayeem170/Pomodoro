@@ -6,7 +6,6 @@ namespace Pomodoro.Web.Tests.Services.KeyboardShortcutServiceTests;
 [Trait("Category", "Service")]
 public partial class KeyboardShortcutServiceTests
 {
-    [Trait("Category", "Service")]
     public class RegisterShortcutTests : KeyboardShortcutServiceTests
     {
         [Fact]
@@ -72,7 +71,6 @@ public partial class KeyboardShortcutServiceTests
         }
     }
 
-    [Trait("Category", "Service")]
     public class UnregisterShortcutTests : KeyboardShortcutServiceTests
     {
         [Fact]
@@ -133,7 +131,6 @@ public partial class KeyboardShortcutServiceTests
         }
     }
 
-    [Trait("Category", "Service")]
     public class GetRegisteredShortcutsTests : KeyboardShortcutServiceTests
     {
         [Fact]
@@ -167,7 +164,6 @@ public partial class KeyboardShortcutServiceTests
         }
     }
 
-    [Trait("Category", "Service")]
     public class HandleShortcutTests : KeyboardShortcutServiceTests
     {
         [Fact]
@@ -222,7 +218,6 @@ public partial class KeyboardShortcutServiceTests
         }
     }
 
-    [Trait("Category", "Service")]
     public class InitializeAsyncTests : KeyboardShortcutServiceTests
     {
         [Fact]
@@ -259,7 +254,6 @@ public partial class KeyboardShortcutServiceTests
         }
     }
 
-    [Trait("Category", "Service")]
     public class DisposeAsyncTests : KeyboardShortcutServiceTests
     {
         [Fact]

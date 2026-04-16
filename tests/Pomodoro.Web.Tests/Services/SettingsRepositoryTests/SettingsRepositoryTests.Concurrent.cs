@@ -9,7 +9,6 @@ namespace Pomodoro.Web.Tests.Services.SettingsRepositoryTests;
 [Trait("Category", "Service")]
 public partial class SettingsRepositoryTests
 {
-    [Trait("Category", "Service")]
     public class ConcurrentTests : SettingsRepositoryTests
     {
         [Fact]

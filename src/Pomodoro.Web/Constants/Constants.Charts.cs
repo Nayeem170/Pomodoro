@@ -17,7 +17,6 @@ public static partial class Constants
 
         // Weekly chart constants
         public const string WeeklyChartPrefix = "weekly-chart-";
-        public const string DefaultBarLabel = "Pomodoros";
 
         // Day indices for weekly chart
         public const int DaysPerWeek = 7;
