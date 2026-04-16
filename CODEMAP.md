@@ -193,28 +193,28 @@ graph LR
         TimerService["⏱️ TimerService"]
     end
 
-    subgraph NewSubscribers["New Event System<br/>(ITimerEventPublisher)"]
+    subgraph NewSubscribers["New Event System (ITimerEventPublisher)"]
         TaskService["✅ TaskService"]
         ActivityService["📋 ActivityService"]
         ConsentService["🔔 ConsentService"]
         PipTimerService["🖼️ PipTimerService"]
     end
 
-    subgraph OldSubscribers["Legacy Events<br/>(ITimerService)"]
+    subgraph OldSubscribers["Legacy Events (ITimerService)"]
         Index["📄 Index.razor"]
         TimerDisplay["⏲️ TimerDisplay"]
     end
 
-    TimerService ==>"OnTimerCompleted<br/><i>async with args</i>"===> TaskService
-    TimerService ==>"OnTimerCompleted"===> ActivityService
-    TimerService ==>"OnTimerCompleted"===> ConsentService
-    TimerService ==>"OnTick"===> PipTimerService
-    TimerService ==>"OnTimerStateChanged"===> PipTimerService
+    TimerService -->|"OnTimerCompleted"| TaskService
+    TimerService -->|"OnTimerCompleted"| ActivityService
+    TimerService -->|"OnTimerCompleted"| ConsentService
+    TimerService -->|"OnTick"| PipTimerService
+    TimerService -->|"OnTimerStateChanged"| PipTimerService
 
-    TimerService -.->|"OnTimerComplete<br/><i>legacy, sync</i>"| Index
-    TimerService -.->|"OnStateChanged<br/><i>legacy</i>"| Index
-    TimerService -.->|"OnTick<br/><i>shared backing field</i>"| TimerDisplay
-    TimerService -.->|"OnStateChanged<br/><i>legacy</i>"| TimerDisplay
+    TimerService -.->|"OnTimerComplete (legacy)"| Index
+    TimerService -.->|"OnStateChanged (legacy)"| Index
+    TimerService -.->|"OnTick (shared)"| TimerDisplay
+    TimerService -.->|"OnStateChanged (legacy)"| TimerDisplay
 ```
 
 ---
