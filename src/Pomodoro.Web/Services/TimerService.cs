@@ -370,6 +370,12 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         OnTick?.Invoke();
     }
 
+    private void NotifyStateChanged()
+    {
+        OnStateChanged?.Invoke();
+        OnTimerStateChanged?.Invoke();
+    }
+
     private async Task NotifyTimerCompletedAsync(TimerCompletedEventArgs args)
     {
         if (OnTimerCompleted != null)
@@ -388,11 +394,6 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
                 }
             }
         }
-    }
-
-    private void NotifyStateChanged()
-    {
-        OnStateChanged?.Invoke();
     }
 
     public async ValueTask DisposeAsync()

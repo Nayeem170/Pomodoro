@@ -64,7 +64,7 @@ public partial class PipTimerServiceTests
             await service.InitializeAsync();
             await service.OpenAsync();
 
-            MockTimerService.Raise(x => x.OnTick += null);
+            service.HandleTimerTick();
             await Task.Delay(200);
 
             VerifyJsInvokeVoidAsync(Constants.PipJsFunctions.Update, Moq.Times.AtLeastOnce());
@@ -83,7 +83,7 @@ public partial class PipTimerServiceTests
             await service.InitializeAsync();
             await service.OpenAsync();
 
-            MockTimerService.Raise(x => x.OnStateChanged += null);
+            service.HandleTimerStateChanged();
             await Task.Delay(200);
 
             VerifyJsInvokeVoidAsync(Constants.PipJsFunctions.Update, Moq.Times.AtLeastOnce());

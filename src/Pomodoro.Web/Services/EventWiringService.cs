@@ -28,6 +28,7 @@ public class EventWiringService : IEventWiringService
         var taskService = serviceProvider.GetService<ITaskService>();
         var activityService = serviceProvider.GetService<IActivityService>();
         var consentService = serviceProvider.GetService<IConsentService>();
+        var pipTimerService = serviceProvider.GetService<IPipTimerService>();
 
         // Wire up event subscribers to timer publisher
         if (timerService is ITimerEventPublisher timerPublisher)
@@ -48,6 +49,13 @@ public class EventWiringService : IEventWiringService
             if (consentService is ITimerEventSubscriber consentSubscriber)
             {
                 timerPublisher.OnTimerCompleted += consentSubscriber.HandleTimerCompletedAsync;
+            }
+
+            // Subscribe PipTimerService to tick and state change events
+            if (pipTimerService is ITimerEventPublisherSubscriber pipSubscriber)
+            {
+                timerPublisher.OnTick += pipSubscriber.HandleTimerTick;
+                timerPublisher.OnTimerStateChanged += pipSubscriber.HandleTimerStateChanged;
             }
         }
 

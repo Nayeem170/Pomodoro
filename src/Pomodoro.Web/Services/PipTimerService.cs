@@ -9,7 +9,7 @@ namespace Pomodoro.Web.Services;
 /// Service for Picture-in-Picture timer functionality
 /// Provides a floating, always-on-top timer window
 /// </summary>
-public class PipTimerService : IPipTimerService
+public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
 {
     private readonly IJSRuntime _jsRuntime;
     private readonly ITimerService _timerService;
@@ -52,10 +52,6 @@ public class PipTimerService : IPipTimerService
             // Create .NET reference for JS callbacks
             _dotNetRef = DotNetObjectReference.Create(this);
             await _jsRuntime.InvokeVoidAsync(Constants.PipJsFunctions.RegisterDotNetRef, _dotNetRef);
-            
-            // Subscribe to timer events to update PiP window
-            _timerService.OnTick += OnTimerTick;
-            _timerService.OnStateChanged += OnTimerStateChanged;
             
             _isInitialized = true;
             
@@ -253,7 +249,7 @@ public class PipTimerService : IPipTimerService
         OnPipClosed?.Invoke();
     }
 
-    private void OnTimerTick()
+    public void HandleTimerTick()
     {
         SafeTaskRunner.RunAndForget(
             UpdateTimerAsync,
@@ -262,7 +258,7 @@ public class PipTimerService : IPipTimerService
         );
     }
 
-    private void OnTimerStateChanged()
+    public void HandleTimerStateChanged()
     {
         SafeTaskRunner.RunAndForget(
             UpdateTimerAsync,
@@ -278,9 +274,6 @@ public class PipTimerService : IPipTimerService
         
         try
         {
-            _timerService.OnTick -= OnTimerTick;
-            _timerService.OnStateChanged -= OnTimerStateChanged;
-            
             await _jsRuntime.InvokeVoidAsync(Constants.PipJsFunctions.UnregisterDotNetRef);
             await CloseAsync();
         }
