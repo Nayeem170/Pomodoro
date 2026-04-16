@@ -51,56 +51,33 @@ graph TB
 
 ## Service Dependency Graph
 
-All DI-injected dependencies between services. `AppState` is a singleton shared across services. `IJSRuntime` is the gateway to all JavaScript interop.
+Split into 4 diagrams by layer. Pages inject services; services inject repositories or other services; repositories go through IndexedDbService to JS.
+
+### Pages → Services
 
 ```mermaid
 graph TD
     subgraph Pages["Pages"]
-        Index["📄 Index.razor<br/><i>12 injected services</i>"]
-        History["📄 History.razor<br/><i>8 injected services</i>"]
-        Settings["📄 Settings.razor<br/><i>8 injected services</i>"]
+        Index["📄 Index.razor"]
+        History["📄 History.razor"]
+        Settings["📄 Settings.razor"]
     end
 
-    subgraph CoreServices["Core Services"]
-        TimerService["⏱️ TimerService<br/><i>ITimerService, ITimerEventPublisher</i>"]
-        TaskService["✅ TaskService<br/><i>ITaskService, ITimerEventSubscriber</i>"]
-        ActivityService["📋 ActivityService<br/><i>IActivityService, ITimerEventSubscriber</i>"]
-        PipTimerService["🖼️ PipTimerService<br/><i>IPipTimerService, ITimerEventPublisherSubscriber</i>"]
-        ConsentService["🔔 ConsentService<br/><i>IConsentService, ITimerEventSubscriber</i>"]
-    end
-
-    subgraph ExtractedServices["Extracted Services"]
-        DailyStatsService["📊 DailyStatsService"]
-        JsTimerInterop["🔄 JsTimerInterop"]
-        StatisticsService["📈 StatisticsService"]
-        ImportService["📥 ImportService"]
-        ExportService["📤 ExportService"]
-        TodayStatsService["📅 TodayStatsService"]
-    end
-
-    subgraph UIInterop["UI Interop Services"]
+    subgraph Services["Services"]
+        TimerService["⏱️ TimerService"]
+        TaskService["✅ TaskService"]
+        ActivityService["📋 ActivityService"]
+        ConsentService["🔔 ConsentService"]
         NotificationService["🔔 NotificationService"]
-        ChartService["📊 ChartService"]
-        KeyboardShortcutService["⌨️ KeyboardShortcutService"]
-        LocalDateTimeService["🕐 LocalDateTimeService"]
-        InfiniteScrollInterop["📜 InfiniteScrollInterop"]
-    end
-
-    subgraph Repositories["Repositories"]
-        IndexedDbService["🗄️ IndexedDbService"]
-        ActivityRepository["ActivityRepository"]
-        TaskRepository["TaskRepository"]
-        SettingsRepository["SettingsRepository"]
-    end
-
-    subgraph State["State"]
-        AppState["📦 AppState<br/><i>Singleton</i>"]
-    end
-
-    subgraph Infra["Infrastructure"]
-        JSRuntime["🌐 IJSRuntime"]
-        SessionOptionsService["SessionOptionsService"]
-        HistoryStatsService["HistoryStatsService"]
+        PipTimerService["🖼️ PipTimerService"]
+        ExportService["📤 ExportService"]
+        ImportService["📥 ImportService"]
+        StatisticsService["📈 StatisticsService"]
+        TodayStatsService["📅 TodayStatsService"]
+        KeyboardShortcutService["⌨️ KeyboardShortcut"]
+        InfiniteScroll["📜 InfiniteScroll"]
+        LocalDateTimeService["🕐 LocalDateTime"]
+        HistoryStatsService["HistoryStats"]
     end
 
     Index --> TimerService
@@ -109,17 +86,14 @@ graph TD
     Index --> NotificationService
     Index --> ActivityService
     Index --> PipTimerService
-    Index --> AppState
-    Index --> JSRuntime
     Index --> KeyboardShortcutService
     Index --> TodayStatsService
-    Index --> InfiniteScrollInterop
+    Index --> InfiniteScroll
     Index --> LocalDateTimeService
 
     History --> ActivityService
     History --> StatisticsService
-    History --> JSRuntime
-    History --> InfiniteScrollInterop
+    History --> InfiniteScroll
     History --> HistoryStatsService
     History --> LocalDateTimeService
 
@@ -128,6 +102,36 @@ graph TD
     Settings --> ImportService
     Settings --> TaskService
     Settings --> ActivityService
+```
+
+### Core Services → Their Dependencies
+
+```mermaid
+graph TD
+    subgraph Core["Core Services"]
+        TimerService["⏱️ TimerService"]
+        TaskService["✅ TaskService"]
+        ActivityService["📋 ActivityService"]
+        PipTimerService["🖼️ PipTimerService"]
+        ConsentService["🔔 ConsentService"]
+    end
+
+    subgraph Extracted["Extracted Services"]
+        DailyStatsService["📊 DailyStatsService"]
+        JsTimerInterop["🔄 JsTimerInterop"]
+        SessionOptionsService["SessionOptions"]
+    end
+
+    subgraph Repos["Repositories"]
+        TaskRepository["TaskRepository"]
+        ActivityRepository["ActivityRepository"]
+        SettingsRepository["SettingsRepository"]
+        IndexedDbService["🗄️ IndexedDbService"]
+    end
+
+    subgraph State["Shared State"]
+        AppState["📦 AppState"]
+    end
 
     TimerService --> IndexedDbService
     TimerService --> SettingsRepository
@@ -135,28 +139,12 @@ graph TD
     TimerService --> JsTimerInterop
     TimerService --> AppState
 
-    DailyStatsService --> IndexedDbService
-    DailyStatsService --> AppState
-
-    JsTimerInterop --> JSRuntime
-
     TaskService --> TaskRepository
     TaskService --> IndexedDbService
     TaskService --> AppState
 
     ActivityService --> ActivityRepository
 
-    StatisticsService --> ActivityRepository
-
-    ImportService --> ActivityRepository
-    ImportService --> TaskRepository
-    ImportService --> SettingsRepository
-
-    ExportService --> ActivityRepository
-    ExportService --> TaskRepository
-    ExportService --> SettingsRepository
-
-    PipTimerService --> JSRuntime
     PipTimerService --> TimerService
     PipTimerService --> TaskService
     PipTimerService --> AppState
@@ -167,23 +155,64 @@ graph TD
     ConsentService --> AppState
     ConsentService --> SessionOptionsService
 
-    NotificationService --> JSRuntime
-    NotificationService --> AppState
+    DailyStatsService --> IndexedDbService
+    DailyStatsService --> AppState
 
-    ChartService --> JSRuntime
-
-    KeyboardShortcutService --> JSRuntime
-
-    LocalDateTimeService --> JSRuntime
-
-    SessionOptionsService --> AppState
-
-    TodayStatsService --> ActivityService
-
-    ActivityRepository --> IndexedDbService
     TaskRepository --> IndexedDbService
+    ActivityRepository --> IndexedDbService
     SettingsRepository --> IndexedDbService
+```
 
+### Import / Export Services
+
+```mermaid
+graph LR
+    subgraph Data["Data Services"]
+        ImportService["📥 ImportService"]
+        ExportService["📤 ExportService"]
+    end
+
+    subgraph Repos["Repositories"]
+        ActivityRepo["ActivityRepository"]
+        TaskRepo["TaskRepository"]
+        SettingsRepo["SettingsRepository"]
+    end
+
+    ImportService --> ActivityRepo
+    ImportService --> TaskRepo
+    ImportService --> SettingsRepo
+
+    ExportService --> ActivityRepo
+    ExportService --> TaskRepo
+    ExportService --> SettingsRepo
+```
+
+### UI Interop → JS Runtime
+
+```mermaid
+graph LR
+    subgraph Services["Services"]
+        JsTimerInterop["🔄 JsTimerInterop"]
+        PipTimerService["🖼️ PipTimer"]
+        NotificationService["🔔 Notification"]
+        ChartService["📊 ChartService"]
+        KeyboardShortcut["⌨️ Keyboard"]
+        LocalDateTime["🕐 LocalDateTime"]
+        InfiniteScroll["📜 InfiniteScroll"]
+        IndexedDbService["🗄️ IndexedDb"]
+    end
+
+    subgraph JS["🌐 IJSRuntime"]
+        JSRuntime["IJSRuntime"]
+    end
+
+    JsTimerInterop --> JSRuntime
+    PipTimerService --> JSRuntime
+    NotificationService --> JSRuntime
+    ChartService --> JSRuntime
+    KeyboardShortcut --> JSRuntime
+    LocalDateTime --> JSRuntime
+    InfiniteScroll --> JSRuntime
     IndexedDbService --> JSRuntime
 ```
 
