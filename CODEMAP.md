@@ -2,33 +2,47 @@
 
 ## Architecture Overview
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Blazor WASM App                       │
-│                                                         │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐ │
-│  │  Index    │  │ History  │  │ Settings │  │ About  │ │
-│  │  .razor   │  │  .razor  │  │  .razor  │  │ .razor │ │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────────┘ │
-│       │              │              │                    │
-│  ┌────▼──────────────▼──────────────▼─────────────────┐ │
-│  │              Service Layer                          │ │
-│  │  TimerService · TaskService · ActivityService       │ │
-│  │  PipTimerService · ConsentService · ChartService    │ │
-│  └────────────────────┬───────────────────────────────┘ │
-│                       │                                  │
-│  ┌────────────────────▼───────────────────────────────┐ │
-│  │           Repository Layer                          │ │
-│  │  ActivityRepository · TaskRepository                │ │
-│  │  SettingsRepository · IndexedDbService              │ │
-│  └────────────────────┬───────────────────────────────┘ │
-│                       │                                  │
-│  ┌────────────────────▼───────────────────────────────┐ │
-│  │           JS Interop Layer                          │ │
-│  │  timerFunctions · indexedDbInterop · pipTimer       │ │
-│  │  notificationFunctions · chartInterop · localDateTime│ │
-│  └────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph UI["UI Layer"]
+        direction LR
+        Index["🏠 Index"]
+        History["📊 History"]
+        Settings["⚙️ Settings"]
+        About["ℹ️ About"]
+    end
+
+    subgraph Services["Service Layer"]
+        direction LR
+        Timer["TimerService"]
+        Task["TaskService"]
+        Activity["ActivityService"]
+        Pip["PipTimerService"]
+        Consent["ConsentService"]
+        Chart["ChartService"]
+    end
+
+    subgraph Repos["Repository Layer"]
+        direction LR
+        ActRepo["ActivityRepository"]
+        TaskRepo["TaskRepository"]
+        SettingsRepo["SettingsRepository"]
+        IDB["IndexedDbService"]
+    end
+
+    subgraph JS["JS Interop Layer"]
+        direction LR
+        TimerJS["timerFunctions"]
+        IDBJS["indexedDbInterop"]
+        PipJS["pipTimer"]
+        NotifJS["notificationFunctions"]
+        ChartJS["chartInterop"]
+    end
+
+    UI --> Services
+    Services --> Repos
+    Repos --> IDB
+    Services --> JS
 ```
 
 ---
@@ -37,45 +51,52 @@
 
 ```mermaid
 graph TD
-    subgraph Pages
-        Index["Index.razor"]
-        History["History.razor"]
-        Settings["Settings.razor"]
+    subgraph Pages["Pages"]
+        Index["📄 Index.razor<br/><i>12 injected services</i>"]
+        History["📄 History.razor<br/><i>8 injected services</i>"]
+        Settings["📄 Settings.razor<br/><i>8 injected services</i>"]
     end
 
-    subgraph Services
-        TimerService["TimerService"]
-        TaskService["TaskService"]
-        ActivityService["ActivityService"]
-        PipTimerService["PipTimerService"]
-        ConsentService["ConsentService"]
-        DailyStatsService["DailyStatsService"]
-        JsTimerInterop["JsTimerInterop"]
-        StatisticsService["StatisticsService"]
-        ImportService["ImportService"]
-        ExportService["ExportService"]
-        NotificationService["NotificationService"]
-        ChartService["ChartService"]
-        KeyboardShortcutService["KeyboardShortcutService"]
-        LocalDateTimeService["LocalDateTimeService"]
-        HistoryStatsService["HistoryStatsService"]
-        SessionOptionsService["SessionOptionsService"]
-        TodayStatsService["TodayStatsService"]
+    subgraph CoreServices["Core Services"]
+        TimerService["⏱️ TimerService<br/><i>ITimerService, ITimerEventPublisher</i>"]
+        TaskService["✅ TaskService<br/><i>ITaskService, ITimerEventSubscriber</i>"]
+        ActivityService["📋 ActivityService<br/><i>IActivityService, ITimerEventSubscriber</i>"]
+        PipTimerService["🖼️ PipTimerService<br/><i>IPipTimerService, ITimerEventPublisherSubscriber</i>"]
+        ConsentService["🔔 ConsentService<br/><i>IConsentService, ITimerEventSubscriber</i>"]
     end
 
-    subgraph Repositories
-        IndexedDbService["IndexedDbService"]
+    subgraph ExtractedServices["Extracted Services"]
+        DailyStatsService["📊 DailyStatsService"]
+        JsTimerInterop["🔄 JsTimerInterop"]
+        StatisticsService["📈 StatisticsService"]
+        ImportService["📥 ImportService"]
+        ExportService["📤 ExportService"]
+        TodayStatsService["📅 TodayStatsService"]
+    end
+
+    subgraph UIInterop["UI Interop Services"]
+        NotificationService["🔔 NotificationService"]
+        ChartService["📊 ChartService"]
+        KeyboardShortcutService["⌨️ KeyboardShortcutService"]
+        LocalDateTimeService["🕐 LocalDateTimeService"]
+        InfiniteScrollInterop["📜 InfiniteScrollInterop"]
+    end
+
+    subgraph Repositories["Repositories"]
+        IndexedDbService["🗄️ IndexedDbService"]
         ActivityRepository["ActivityRepository"]
         TaskRepository["TaskRepository"]
         SettingsRepository["SettingsRepository"]
     end
 
-    subgraph State
-        AppState["AppState"]
+    subgraph State["State"]
+        AppState["📦 AppState<br/><i>Singleton</i>"]
     end
 
-    subgraph JS
-        JSRuntime["IJSRuntime"]
+    subgraph Infra["Infrastructure"]
+        JSRuntime["🌐 IJSRuntime"]
+        SessionOptionsService["SessionOptionsService"]
+        HistoryStatsService["HistoryStatsService"]
     end
 
     Index --> TimerService
@@ -88,10 +109,13 @@ graph TD
     Index --> JSRuntime
     Index --> KeyboardShortcutService
     Index --> TodayStatsService
+    Index --> InfiniteScrollInterop
+    Index --> LocalDateTimeService
 
     History --> ActivityService
     History --> StatisticsService
     History --> JSRuntime
+    History --> InfiniteScrollInterop
     History --> HistoryStatsService
     History --> LocalDateTimeService
 
@@ -165,64 +189,70 @@ graph TD
 
 ```mermaid
 graph LR
-    subgraph Publisher
-        TimerService["TimerService<br/>(ITimerEventPublisher)"]
+    subgraph Publisher["Publisher"]
+        TimerService["⏱️ TimerService"]
     end
 
-    subgraph "Timer Completed Subscribers"
-        TaskService["TaskService<br/>HandleTimerCompletedAsync"]
-        ActivityService["ActivityService<br/>HandleTimerCompletedAsync"]
-        ConsentService["ConsentService<br/>HandleTimerCompletedAsync"]
+    subgraph NewSubscribers["New Event System<br/>(ITimerEventPublisher)"]
+        TaskService["✅ TaskService"]
+        ActivityService["📋 ActivityService"]
+        ConsentService["🔔 ConsentService"]
+        PipTimerService["🖼️ PipTimerService"]
     end
 
-    subgraph "Tick/State Subscribers"
-        PipTimerService["PipTimerService<br/>HandleTimerTick<br/>HandleTimerStateChanged"]
+    subgraph OldSubscribers["Legacy Events<br/>(ITimerService)"]
+        Index["📄 Index.razor"]
+        TimerDisplay["⏲️ TimerDisplay"]
     end
 
-    subgraph "UI Subscribers (old events)"
-        Index["Index.razor<br/>OnTimerComplete<br/>OnStateChanged"]
-        TimerDisplay["TimerDisplay<br/>OnTick<br/>OnStateChanged"]
-    end
+    TimerService ==>"OnTimerCompleted<br/><i>async with args</i>"===> TaskService
+    TimerService ==>"OnTimerCompleted"===> ActivityService
+    TimerService ==>"OnTimerCompleted"===> ConsentService
+    TimerService ==>"OnTick"===> PipTimerService
+    TimerService ==>"OnTimerStateChanged"===> PipTimerService
 
-    TimerService -->|"OnTimerCompleted"| TaskService
-    TimerService -->|"OnTimerCompleted"| ActivityService
-    TimerService -->|"OnTimerCompleted"| ConsentService
-    TimerService -->|"OnTick"| PipTimerService
-    TimerService -->|"OnTimerStateChanged"| PipTimerService
-    TimerService -.->|"OnTimerComplete (legacy)"| Index
-    TimerService -.->|"OnStateChanged (legacy)"| Index
-    TimerService -.->|"OnTick (legacy)"| TimerDisplay
-    TimerService -.->|"OnStateChanged (legacy)"| TimerDisplay
+    TimerService -.->|"OnTimerComplete<br/><i>legacy, sync</i>"| Index
+    TimerService -.->|"OnStateChanged<br/><i>legacy</i>"| Index
+    TimerService -.->|"OnTick<br/><i>shared backing field</i>"| TimerDisplay
+    TimerService -.->|"OnStateChanged<br/><i>legacy</i>"| TimerDisplay
+
+    style TimerService fill:#4a90d9,color:#fff
+    style TaskService fill:#27ae60,color:#fff
+    style ActivityService fill:#27ae60,color:#fff
+    style ConsentService fill:#27ae60,color:#fff
+    style PipTimerService fill:#27ae60,color:#fff
+    style Index fill:#e67e22,color:#fff
+    style TimerDisplay fill:#e67e22,color:#fff
 ```
 
 ---
 
-## Sequence: Timer Start (Pomodoro)
+## Sequence: Timer Start
 
 ```mermaid
 sequenceDiagram
-    actor User
-    participant Index as Index.razor
-    participant TS as TimerService
-    participant JTI as JsTimerInterop
-    participant JS as JS Runtime
-    participant AS as AppState
+    actor U as 👤 User
+    participant I as 📄 Index.razor
+    participant TS as ⏱️ TimerService
+    participant JTI as 🔄 JsTimerInterop
+    participant JS as 🌐 JS Runtime
+    participant AS as 📦 AppState
 
-    User->>Index: Click Start
-    Index->>TS: StartPomodoroAsync(taskId)
-    TS->>AS: Set CurrentSession (type=Pomodoro, running=true)
+    U->>I: Click Start
+    I->>TS: StartPomodoroAsync(taskId)
+    TS->>AS: Set CurrentSession (Pomodoro, running)
     TS->>AS: Set SelectedTaskId
     TS->>TS: NotifyStateChanged()
-    TS-->>Index: OnStateChanged event
-    Index->>Index: StateHasChanged()
+    TS--xI: OnStateChanged event
+    I->>I: StateHasChanged()
     TS->>JTI: StartAsync(dotNetRef)
-    JTI->>JS: unlockAudio()
+    JTI->>JS: notificationFunctions.unlockAudio()
     JTI->>JS: timerFunctions.start(dotNetRef)
-    JS-->>User: Timer ticking (1s interval)
+    JS--xU: ⏱️ Timer ticking (1s)
     JS->>TS: OnTimerTickJs() [JSInvokable]
     TS->>AS: Decrement RemainingSeconds
-    TS-->>Index: OnTick event
-    Index->>Index: StateHasChanged()
+    TS--xI: OnTick event
+    I->>I: StateHasChanged()
 ```
 
 ---
@@ -231,151 +261,293 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant JS as JS Runtime
-    participant TS as TimerService
-    participant DSS as DailyStatsService
-    participant TaskSvc as TaskService
-    participant ActSvc as ActivityService
-    participant Consent as ConsentService
-    participant Pip as PipTimerService
-    participant Index as Index.razor
-    participant AS as AppState
+    participant JS as 🌐 JS Runtime
+    participant TS as ⏱️ TimerService
+    participant DSS as 📊 DailyStatsService
+    participant TaskSvc as ✅ TaskService
+    participant ActSvc as 📋 ActivityService
+    participant Consent as 🔔 ConsentService
+    participant Pip as 🖼️ PipTimerService
+    participant I as 📄 Index.razor
+    participant AS as 📦 AppState
 
-    JS->>TS: OnTimerTickJs() (remaining = 0)
+    JS->>TS: OnTimerTickJs() (remaining=0)
     TS->>TS: HandleTimerCompleteAsync()
     TS->>JTI: StopAsync()
-    TS->>DSS: RecordPomodoroCompletion(minutes, taskId)
-    DSS->>AS: Increment TodayPomodoroCount
-    DSS->>AS: Add TodayTotalFocusMinutes
-    TS->>TS: SaveDailyStatsAsync() → IndexedDB
-    TS->>TS: NotifyTimerCompletedAsync(args)
-    TS-->>TaskSvc: OnTimerCompleted → HandleTimerCompletedAsync()
-    TaskSvc->>TaskSvc: CompleteTaskAsync()
-    TS-->>ActSvc: OnTimerCompleted → HandleTimerCompletedAsync()
-    ActSvc->>ActSvc: RecordActivityAsync()
-    TS-->>Consent: OnTimerCompleted → HandleTimerCompletedAsync()
-    Consent->>Consent: ShowConsentModal()
-    TS->>TS: OnTimerComplete (legacy event)
-    TS-->>Index: OnTimerComplete event
-    Index->>Index: Show consent UI
+
+    rect rgb(240, 248, 255)
+        Note over TS,DSS: Update Daily Stats
+        TS->>DSS: RecordPomodoroCompletion(min, taskId)
+        DSS->>AS: ++TodayPomodoroCount, +=FocusMinutes
+        TS->>TS: SaveDailyStatsAsync() → IndexedDB
+    end
+
+    rect rgb(255, 248, 240)
+        Note over TS,Consent: Notify Subscribers (ITimerEventPublisher)
+        TS->>TS: NotifyTimerCompletedAsync(args)
+        TS--xTaskSvc: OnTimerCompleted
+        TaskSvc->>TaskSvc: CompleteTaskAsync()
+        TS--xActSvc: OnTimerCompleted
+        ActSvc->>ActSvc: RecordActivityAsync()
+        TS--xConsent: OnTimerCompleted
+        Consent->>Consent: ShowConsentModal()
+    end
+
+    rect rgb(255, 240, 240)
+        Note over TS,I: Legacy Events (ITimerService)
+        TS->>TS: OnTimerComplete?.Invoke(type)
+        TS--xI: OnTimerComplete event
+        I->>I: Show consent UI
+    end
+
     TS->>TS: NotifyStateChanged()
-    TS-->>Pip: OnTimerStateChanged → HandleTimerStateChanged()
-    Pip->>Pip: UpdateTimerAsync() → PiP window
+    TS--xPip: OnTimerStateChanged
+    Pip->>JS: pipTimer.update(state)
 ```
 
 ---
 
-## Sequence: Page Initialization
+## Sequence: App Initialization
 
 ```mermaid
 sequenceDiagram
-    participant App as App.razor
-    participant SIS as ServiceInitializationService
-    participant IDB as IndexedDbService
-    participant TS as TimerService
-    participant TaskSvc as TaskService
-    participant ActSvc as ActivityService
-    participant EWS as EventWiringService
-    participant Index as Index.razor
+    participant App as 🚀 App.razor
+    participant SIS as ⚙️ ServiceInitializationService
+    participant IDB as 🗄️ IndexedDbService
+    participant TS as ⏱️ TimerService
+    participant DSS as 📊 DailyStatsService
+    participant TaskSvc as ✅ TaskService
+    participant ActSvc as 📋 ActivityService
+    participant EWS as 🔗 EventWiringService
+    participant I as 📄 Index.razor
 
     App->>SIS: InitializeServicesAsync()
-    SIS->>IDB: InitializeAsync()
-    IDB->>JS: indexedDbInterop.initDatabase()
-    SIS->>TS: InitializeAsync()
-    TS->>SR: GetAsync() → load settings
-    TS->>DSS: InitializeTodayStatsAsync()
-    DSS->>IDB: GetAsync<DailyStats>()
-    DSS->>AS: Restore TodayTotalFocusMinutes, PomodoroCount
-    SIS->>TaskSvc: InitializeAsync()
-    TaskSvc->>IDB: GetAllItems<TaskItem>()
-    SIS->>ActSvc: InitializeAsync()
-    ActSvc->>IDB: GetAllItems<ActivityRecord>()
-    SIS->>EWS: WireEventSubscribers()
-    EWS->>TS: OnTimerCompleted += TaskService
-    EWS->>TS: OnTimerCompleted += ActivityService
-    EWS->>TS: OnTimerCompleted += ConsentService
-    EWS->>TS: OnTick += PipTimerService
-    EWS->>TS: OnTimerStateChanged += PipTimerService
-    App->>Index: OnInitializedAsync()
-    Index->>TS: OnStateChanged += handler
-    Index->>TS: OnTimerComplete += handler
-    Index->>TaskSvc: OnTasksChanged += handler
+
+    rect rgb(240, 248, 255)
+        Note over SIS,IDB: Database Init
+        SIS->>IDB: InitializeAsync()
+        IDB->>JS: indexedDbInterop.initDatabase()
+    end
+
+    rect rgb(240, 255, 240)
+        Note over SIS,ActSvc: Service Init
+        SIS->>TS: InitializeAsync()
+        TS->>SettingsRepo: GetAsync() → TimerSettings
+        TS->>DSS: InitializeTodayStatsAsync()
+        DSS->>IDB: GetAsync<DailyStats>()
+        DSS->>AppState: Restore daily counters
+        SIS->>TaskSvc: InitializeAsync()
+        TaskSvc->>IDB: GetAllItems<TaskItem>()
+        SIS->>ActSvc: InitializeAsync()
+        ActSvc->>IDB: GetAllItems<ActivityRecord>()
+    end
+
+    rect rgb(255, 248, 240)
+        Note over EWS: Event Wiring
+        SIS->>EWS: WireEventSubscribers()
+        EWS->>TS: OnTimerCompleted += TaskService
+        EWS->>TS: OnTimerCompleted += ActivityService
+        EWS->>TS: OnTimerCompleted += ConsentService
+        EWS->>TS: OnTick += PipTimerService
+        EWS->>TS: OnTimerStateChanged += PipTimerService
+    end
+
+    App->>I: Render page
+    I->>TS: OnStateChanged += handler
+    I->>TS: OnTimerComplete += handler
+    I->>TaskSvc: OnTasksChanged += handler
 ```
 
 ---
 
 ## JS Interop Map
 
-### .NET → JS Calls (41 functions)
-
-| Module | Functions | Called By |
-|--------|-----------|-----------|
-| `timerFunctions` | `start`, `stop` | JsTimerInterop |
-| `indexedDbInterop` | `initDatabase`, `getItem`, `getAllItems`, `getItemsByIndex`, `getItemsByDateRange`, `putItem`, `putAllItems`, `deleteItem`, `clearStore`, `getCount` | IndexedDbService |
-| `pomodoroConstants` | `initialize` | IndexedDbService |
-| `pipTimer` | `isSupported`, `registerDotNetRef`, `unregisterDotNetRef`, `open`, `close`, `update` | PipTimerService |
-| `notificationFunctions` | `registerDotNetRef`, `unregisterDotNetRef`, `requestNotificationPermission`, `showNotification`, `playTimerCompleteSound`, `playBreakCompleteSound`, `unlockAudio` | NotificationService, JsTimerInterop |
-| `localDateTime` | `getLocalDate`, `getLocalDateTime`, `getTimezoneOffset` | LocalDateTimeService |
-| `keyboardShortcuts` | `initialize`, `dispose` | KeyboardShortcutService |
-| `infiniteScroll` | `isSupported`, `createObserver`, `destroyObserver`, `destroyAllObservers` | InfiniteScrollInterop |
-| `chartInterop` | `createBarChart`, `createGroupedBarChart`, `createDoughnutChart`, `updateChart`, `destroyChart`, `ensureInitialized` | ChartService |
-| Global | `getUrlParameter`, `removeUrlParameter` | JSInteropService |
-
-### JS → .NET Callbacks (6 [JSInvokable] methods)
-
-| Method | On Class | Triggered By |
-|--------|----------|-------------|
-| `OnTimerTickJs` | TimerService | `timerFunctions.start` (1s interval) |
-| `OnPipToggleTimer` | PipTimerService | PiP window play/pause button |
-| `OnPipResetTimer` | PipTimerService | PiP window reset button |
-| `OnPipSwitchSession` | PipTimerService | PiP window session tab |
-| `OnPipClosed` | PipTimerService | PiP window close |
-| `OnNotificationActionClick` | NotificationService | Browser notification click |
-
----
-
-## Dual Event System (Technical Debt)
-
-TimerService currently fires **both** old and new events for backward compatibility:
-
-| Notification | Old Event (ITimerService) | New Event (ITimerEventPublisher) |
-|---|---|---|
-| Tick | `OnTick` | `OnTick` (same name, same backing field) |
-| State changed | `OnStateChanged` | `OnTimerStateChanged` |
-| Timer completed | `OnTimerComplete(SessionType)` | `OnTimerCompleted(TimerCompletedEventArgs)` |
-
-**Subscribers by event system:**
-
-| Subscriber | Uses Old Events | Uses New Events |
-|---|---|---|
-| Index.razor | `OnTimerComplete`, `OnStateChanged` | - |
-| TimerDisplay.razor | `OnTick`, `OnStateChanged` | - |
-| TaskService | - | `OnTimerCompleted` |
-| ActivityService | - | `OnTimerCompleted` |
-| ConsentService | - | `OnTimerCompleted` |
-| PipTimerService | - | `OnTick`, `OnTimerStateChanged` |
-
----
-
-## Data Flow: IndexedDB Stores
+### .NET → JS Calls
 
 ```mermaid
 graph LR
-    subgraph Stores
-        Tasks["tasks store<br/>TaskItem[]"]
-        Activities["activities store<br/>ActivityRecord[]"]
-        Settings["settings store<br/>TimerSettings"]
-        DailyStats["dailyStats store<br/>DailyStats"]
+    subgraph NET[".NET Services"]
+        IDB["🗄️ IndexedDbService"]
+        JTI["🔄 JsTimerInterop"]
+        Pip["🖼️ PipTimerService"]
+        Notif["🔔 NotificationService"]
+        Chart["📊 ChartService"]
+        KBD["⌨️ KeyboardShortcut"]
+        LDT["🕐 LocalDateTime"]
+        IS["📜 InfiniteScroll"]
+        JSI["JSInteropService"]
     end
 
-    TaskService -->|"CRUD"| Tasks
-    ActivityService -->|"CRUD"| Activities
-    SettingsRepository -->|"Get/Save"| Settings
-    TimerService -->|"Put (daily)"| DailyStats
-    DailyStatsService -->|"Get (init)"| DailyStats
-    ExportService -->|"Read all"| Tasks
-    ExportService -->|"Read all"| Activities
-    ImportService -->|"Write all"| Tasks
-    ImportService -->|"Write all"| Activities
-    ImportService -->|"Write"| Settings
+    subgraph JSModules["JS Modules"]
+        IDBJS["indexedDbInterop<br/><i>11 functions</i>"]
+        TimerJS["timerFunctions<br/><i>2 functions</i>"]
+        PipJS["pipTimer<br/><i>6 functions</i>"]
+        NotifJS["notificationFunctions<br/><i>7 functions</i>"]
+        ChartJS["chartInterop<br/><i>6 functions</i>"]
+        KBDJS["keyboardShortcuts<br/><i>2 functions</i>"]
+        LDTJS["localDateTime<br/><i>3 functions</i>"]
+        ISJS["infiniteScroll<br/><i>4 functions</i>"]
+        GlobalJS["Global<br/><i>2 functions</i>"]
+    end
+
+    IDB --> IDBJS
+    JTI --> TimerJS
+    JTI --> NotifJS
+    Pip --> PipJS
+    Notif --> NotifJS
+    Chart --> ChartJS
+    KBD --> KBDJS
+    LDT --> LDTJS
+    IS --> ISJS
+    JSI --> GlobalJS
 ```
+
+| Module | Functions | Called By |
+|--------|-----------|-----------|
+| `indexedDbInterop` | `initDatabase`, `getItem`, `getAllItems`, `getItemsByIndex`, `getItemsByDateRange`, `putItem`, `putAllItems`, `deleteItem`, `clearStore`, `getCount`, `initializeJsConstants` | IndexedDbService |
+| `timerFunctions` | `start`, `stop` | JsTimerInterop |
+| `pipTimer` | `isSupported`, `registerDotNetRef`, `unregisterDotNetRef`, `open`, `close`, `update` | PipTimerService |
+| `notificationFunctions` | `registerDotNetRef`, `unregisterDotNetRef`, `requestNotificationPermission`, `showNotification`, `playTimerCompleteSound`, `playBreakCompleteSound`, `unlockAudio` | NotificationService, JsTimerInterop |
+| `chartInterop` | `createBarChart`, `createGroupedBarChart`, `createDoughnutChart`, `updateChart`, `destroyChart`, `ensureInitialized` | ChartService |
+| `keyboardShortcuts` | `initialize`, `dispose` | KeyboardShortcutService |
+| `localDateTime` | `getLocalDate`, `getLocalDateTime`, `getTimezoneOffset` | LocalDateTimeService |
+| `infiniteScroll` | `isSupported`, `createObserver`, `destroyObserver`, `destroyAllObservers` | InfiniteScrollInterop |
+| Global | `getUrlParameter`, `removeUrlParameter` | JSInteropService |
+
+### JS → .NET Callbacks
+
+| Method | Class | Trigger |
+|--------|-------|---------|
+| `OnTimerTickJs` | TimerService | Timer tick (1s interval) |
+| `OnPipToggleTimer` | PipTimerService | PiP play/pause button |
+| `OnPipResetTimer` | PipTimerService | PiP reset button |
+| `OnPipSwitchSession` | PipTimerService | PiP session tab |
+| `OnPipClosed` | PipTimerService | PiP window close |
+| `OnNotificationActionClick` | NotificationService | Browser notification click |
+| `OnSentinelIntersecting` | HistoryBase | Scroll sentinel visible |
+| `HandleShortcut` | KeyboardShortcutService | Key press |
+| `NavigateTo` | MainLayout | Navigation event |
+
+---
+
+## Dual Event System
+
+TimerService fires both old and new events for backward compatibility:
+
+```mermaid
+graph TB
+    subgraph Events["TimerService Events"]
+        direction LR
+        Old["Legacy (ITimerService)<br/>OnTick, OnStateChanged,<br/>OnTimerComplete"]
+        New["Modern (ITimerEventPublisher)<br/>OnTick, OnTimerStateChanged,<br/>OnTimerCompleted"]
+    end
+
+    Old -.->|"⚠️ Fragile dual-fire"| New
+
+    style Old fill:#e67e22,color:#fff
+    style New fill:#27ae60,color:#fff
+```
+
+| Notification | Legacy Event | Modern Event |
+|---|---|---|
+| Tick | `OnTick` (Action) | `OnTick` (Action) — same backing field |
+| State changed | `OnStateChanged` (Action) | `OnTimerStateChanged` (Action) |
+| Timer completed | `OnTimerComplete` (Action\<SessionType\>) | `OnTimerCompleted` (Func\<TimerCompletedEventArgs, Task\>) |
+
+| Subscriber | System | Events |
+|---|---|---|
+| Index.razor | Legacy | `OnTimerComplete`, `OnStateChanged` |
+| TimerDisplay.razor | Legacy | `OnTick`, `OnStateChanged` |
+| TaskService | Modern | `OnTimerCompleted` |
+| ActivityService | Modern | `OnTimerCompleted` |
+| ConsentService | Modern | `OnTimerCompleted` |
+| PipTimerService | Modern | `OnTick`, `OnTimerStateChanged` |
+
+---
+
+## Data Flow: IndexedDB
+
+```mermaid
+graph LR
+    subgraph Stores["IndexedDB Stores"]
+        Tasks["tasks<br/>TaskItem[]"]
+        Activities["activities<br/>ActivityRecord[]"]
+        Settings["settings<br/>TimerSettings"]
+        DailyStats["dailyStats<br/>DailyStats"]
+    end
+
+    subgraph Writers["Writers"]
+        TaskSvc["TaskService"]
+        ActSvc["ActivityService"]
+        TimerSvc["TimerService"]
+        ImportSvc["ImportService"]
+        SettingsRepo["SettingsRepository"]
+    end
+
+    subgraph Readers["Readers"]
+        ExportSvc["ExportService"]
+        DailyStatsSvc["DailyStatsService"]
+        StatisticsSvc["StatisticsService"]
+    end
+
+    TaskSvc -->|"CRUD"| Tasks
+    ActSvc -->|"CRUD"| Activities
+    TimerSvc -->|"Put"| DailyStats
+    ImportSvc -->|"Write"| Tasks
+    ImportSvc -->|"Write"| Activities
+    ImportSvc -->|"Write"| Settings
+    SettingsRepo -->|"Get/Save"| Settings
+
+    ExportSvc -->|"Read"| Tasks
+    ExportSvc -->|"Read"| Activities
+    DailyStatsSvc -->|"Get"| DailyStats
+    StatisticsSvc -->|"Read"| Activities
+```
+
+---
+
+## Page Injection Summary
+
+### Index.razor (12 services)
+
+| Service | Purpose |
+|---------|---------|
+| `ITaskService` | Task CRUD, selection, completion |
+| `ITimerService` | Timer start/pause/reset |
+| `IConsentService` | Post-pomodoro consent modal |
+| `INotificationService` | Browser notifications |
+| `IActivityService` | Activity history queries |
+| `IPipTimerService` | Picture-in-Picture timer |
+| `AppState` | Global state (session, settings, stats) |
+| `IJSRuntime` | Direct JS interop |
+| `IKeyboardShortcutService` | Keyboard shortcuts |
+| `ITodayStatsService` | Today's summary stats |
+| `IInfiniteScrollInterop` | Infinite scroll for tasks |
+| `ILocalDateTimeService` | Local date/time |
+| `ILogger<IndexBase>` | Logging |
+
+### History.razor (8 services)
+
+| Service | Purpose |
+|---------|---------|
+| `IActivityService` | Activity queries |
+| `IStatisticsService` | Weekly stats, time distribution |
+| `IJSRuntime` | Direct JS interop |
+| `IInfiniteScrollInterop` | Infinite scroll for activities |
+| `IHistoryStatsService` | Daily summary formatting |
+| `HistoryPagePresenterService` | View formatting logic |
+| `ILocalDateTimeService` | Local date/time |
+| `ILogger<HistoryBase>` | Logging |
+
+### Settings.razor (8 services)
+
+| Service | Purpose |
+|---------|---------|
+| `ITimerService` | Timer settings reference |
+| `IExportService` | Data export (JSON) |
+| `IImportService` | Data import (JSON) |
+| `ITaskService` | Task data for import/export |
+| `IActivityService` | Activity data for import/export |
+| `IJSInteropService` | JS interop (file picker) |
+| `SettingsPresenterService` | Settings formatting logic |
+| `ILogger<SettingsPageBase>` | Logging |
