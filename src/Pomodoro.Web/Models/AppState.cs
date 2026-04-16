@@ -264,13 +264,13 @@ public class AppState
     /// </summary>
     public void ResetDailyStats()
     {
-        TodayTotalFocusMinutes = 0;
-        TodayPomodoroCount = 0;
+        _todayTotalFocusMinutes = 0;
+        _todayPomodoroCount = 0;
         lock (_todayTaskIdsLock)
         {
             _todayTaskIdsWorkedOn = new List<Guid>();
         }
-        LastResetDate = GetCurrentDayKey();
+        _lastResetDate = GetCurrentDayKey();
         NotifyStateChanged();
     }
 

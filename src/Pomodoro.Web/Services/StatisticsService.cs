@@ -89,7 +89,7 @@ public class StatisticsService : IStatisticsService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error calculating weekly stats for week starting {WeekStartDate}", weekStartDate);
+            _logger.LogError(ex, Constants.Messages.LogWeeklyStatsError, weekStartDate);
             return new WeeklyStats
             {
                 TotalFocusMinutes = 0,

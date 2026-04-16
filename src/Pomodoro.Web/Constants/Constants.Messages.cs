@@ -109,6 +109,9 @@ public static partial class Constants
         public const string ErrorInDispose = "Error in Dispose";
         public const string SelectTaskBeforePomodoro = "Please select a task before starting a pomodoro.";
 
+        // StatisticsService Log Messages
+        public const string LogWeeklyStatsError = "Error calculating weekly stats for week starting {WeekStartDate}";
+
         // NotificationService Log Messages
         public const string ErrorInitializingNotificationService = "Failed to initialize notification service";
         public const string ErrorRequestingNotificationPermission = "Failed to request notification permission";
