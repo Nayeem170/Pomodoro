@@ -17,7 +17,6 @@ public partial class TimerServiceTests
 {
     protected readonly Mock<IIndexedDbService> MockIndexedDb;
     protected readonly Mock<ISettingsRepository> MockSettingsRepository;
-    protected readonly Mock<IDailyStatsService> MockDailyStats;
     protected readonly Mock<IJSRuntime> MockJsRuntime;
     protected readonly Mock<ILogger<TimerService>> MockLogger;
     protected readonly AppState AppState;
@@ -26,25 +25,21 @@ public partial class TimerServiceTests
     {
         MockIndexedDb = new Mock<IIndexedDbService>();
         MockSettingsRepository = new Mock<ISettingsRepository>();
-        MockDailyStats = new Mock<IDailyStatsService>();
         MockJsRuntime = new Mock<IJSRuntime>();
         MockLogger = new Mock<ILogger<TimerService>>();
         AppState = new AppState();
     }
 
-    /// <summary>
-    /// Creates a TimerService instance with mocked dependencies.
-    /// Uses a real DailyStatsService by default for daily stats operations.
-    /// </summary>
     protected TimerService CreateService()
     {
         var dailyStatsService = new DailyStatsService(MockIndexedDb.Object, AppState, new Mock<ILogger<DailyStatsService>>().Object);
+        var jsTimerInterop = new JsTimerInterop(MockJsRuntime.Object, new Mock<ILogger<JsTimerInterop>>().Object);
         return new TimerService(
             MockIndexedDb.Object,
             MockSettingsRepository.Object,
             dailyStatsService,
+            jsTimerInterop,
             AppState,
-            MockJsRuntime.Object,
             MockLogger.Object
         );
     }

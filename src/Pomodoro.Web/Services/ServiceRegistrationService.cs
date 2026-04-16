@@ -50,6 +50,7 @@ public class ServiceRegistrationService : IServiceRegistrationService
         services.AddScoped<IExportService, ExportService>();
         services.AddScoped<IImportService, ImportService>();
         services.AddScoped<IDailyStatsService, DailyStatsService>();
+        services.AddScoped<IJsTimerInterop, JsTimerInterop>();
         services.AddScoped<IStatisticsService, StatisticsService>();
 
         // Register formatter services for components (enables testable code with coverage tracking)

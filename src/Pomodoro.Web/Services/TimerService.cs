@@ -6,21 +6,15 @@ using Pomodoro.Web.Services.Repositories;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Service for managing the pomodoro timer.
-/// Uses JavaScript interop for reliable timer in Blazor WebAssembly.
-/// Uses IndexedDB for persistent storage.
-/// Implements event publisher pattern to decouple from TaskService and ActivityService.
-/// </summary>
 public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposable
 {
     private readonly IIndexedDbService _indexedDb;
     private readonly ISettingsRepository _settingsRepository;
     private readonly IDailyStatsService _dailyStatsService;
+    private readonly IJsTimerInterop _jsTimerInterop;
     private readonly AppState _appState;
-    private readonly IJSRuntime _jsRuntime;
     private readonly ILogger<TimerService> _logger;
-    private DotNetObjectReference<TimerService>? _dotNetRef;
+    private DotNetObjectReference<object>? _dotNetRef;
     private SynchronizationContext? _syncContext;
     private readonly SemaphoreSlim _timerCompleteLock = new(Constants.Threading.SemaphoreInitialCount, Constants.Threading.SemaphoreMaxCount);
     private readonly object _timerTickLock = new();
@@ -53,15 +47,15 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         IIndexedDbService indexedDb,
         ISettingsRepository settingsRepository,
         IDailyStatsService dailyStatsService,
+        IJsTimerInterop jsTimerInterop,
         AppState appState,
-        IJSRuntime jsRuntime,
         ILogger<TimerService> logger)
     {
         _indexedDb = indexedDb;
         _settingsRepository = settingsRepository;
         _dailyStatsService = dailyStatsService;
+        _jsTimerInterop = jsTimerInterop;
         _appState = appState;
-        _jsRuntime = jsRuntime;
         _logger = logger;
     }
 
@@ -98,7 +92,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         }
         
         // Create dotnet reference for JS callbacks
-        _dotNetRef = DotNetObjectReference.Create(this);
+        _dotNetRef = DotNetObjectReference.Create<object>(this);
         
         // Initialize JavaScript constants with user settings for chart time calculations
         await _indexedDb.InitializeJsConstantsAsync(
@@ -183,13 +177,14 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         };
         
         NotifyStateChanged();
-        await StartJsTimerAsync();
+        _dotNetRef ??= DotNetObjectReference.Create<object>(this);
+        await _jsTimerInterop.StartAsync(_dotNetRef);
     }
 
     public async Task SwitchSessionTypeAsync(SessionType sessionType)
     {
         // Stop current timer
-        await StopJsTimer();
+        await _jsTimerInterop.StopAsync();
         
         // Get duration for the new session type using helper method
         var durationSeconds = _appState.Settings.GetDurationSeconds(sessionType);
@@ -215,7 +210,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         if (_appState.CurrentSession != null && _appState.CurrentSession.IsRunning)
         {
             _appState.CurrentSession.IsRunning = false;
-            await StopJsTimer();
+            await _jsTimerInterop.StopAsync();
             NotifyStateChanged();
         }
     }
@@ -226,13 +221,14 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         {
             _appState.CurrentSession.IsRunning = true;
             NotifyStateChanged();
-            await StartJsTimerAsync();
+            _dotNetRef ??= DotNetObjectReference.Create<object>(this);
+            await _jsTimerInterop.StartAsync(_dotNetRef);
         }
     }
 
     public async Task ResetAsync()
     {
-        await StopJsTimer();
+        await _jsTimerInterop.StopAsync();
         
         // Reset tick count to prevent potential overflow
         TickCount = 0;
@@ -275,61 +271,9 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         await _settingsRepository.SaveAsync(_appState.Settings);
     }
 
-    private async Task StartJsTimerAsync()
-    {
-        // Create the reference only once - it will be disposed in DisposeAsync()
-        _dotNetRef ??= DotNetObjectReference.Create(this);
-        
-        // Unlock audio context on user interaction (timer start)
-        // This is required for browser autoplay policies
-        try
-        {
-            await _jsRuntime.InvokeVoidAsync(Constants.NotificationJsFunctions.UnlockAudio);
-        }
-        catch (Exception ex)
-        {
-            // Audio unlock may fail on some browsers - log for debugging but don't block timer
-            _logger.LogDebug(ex, Constants.Messages.AudioUnlockFailed);
-        }
-        
-        try
-        {
-            await _jsRuntime.InvokeVoidAsync(Constants.JsFunctions.TimerStart, _dotNetRef);
-        }
-        catch (Exception ex)
-        {
-            // Log the error and retry with a delay
-            _logger.LogWarning(ex, Constants.Messages.TimerStartFailed);
-            
-            try
-            {
-                // Add a small delay before retry to allow JS runtime to stabilize
-                await Task.Delay(100);
-                await _jsRuntime.InvokeVoidAsync(Constants.JsFunctions.TimerStart, _dotNetRef);
-            }
-            catch (Exception retryEx)
-            {
-                _logger.LogError(retryEx, Constants.Messages.TimerStartFailedAfterRetry);
-                // Don't rethrow - the timer not starting is not critical, user can try again
-            }
-        }
-    }
-
-    private async Task StopJsTimer()
-    {
-        try
-        {
-            await _jsRuntime.InvokeVoidAsync(Constants.JsFunctions.TimerStop);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, Constants.Messages.TimerStopFailed);
-        }
-    }
-
     private async Task HandleTimerCompleteAsync()
     {
-        await StopJsTimer();
+        await _jsTimerInterop.StopAsync();
         
         var session = _appState.CurrentSession;
         if (session == null) return;
@@ -454,7 +398,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     public async ValueTask DisposeAsync()
     {
         _isDisposed = true;
-        await StopJsTimer();
+        await _jsTimerInterop.StopAsync();
         _dotNetRef?.Dispose();
         _timerCompleteLock.Dispose();
     }
