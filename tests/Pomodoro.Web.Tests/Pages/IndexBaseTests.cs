@@ -123,9 +123,9 @@ public class IndexBaseTests : TestHelper
 
         // Assert - Verify event subscriptions using Action delegates
         TaskServiceMock.VerifyAdd(x => x.OnChange += It.IsAny<Action>(), Times.Once);
-        TimerServiceMock.VerifyAdd(x => x.OnTick += It.IsAny<Action>(), Times.AtLeastOnce);
-        TimerServiceMock.VerifyAdd(x => x.OnTimerComplete += It.IsAny<Action<SessionType>>(), Times.Once);
-        TimerServiceMock.VerifyAdd(x => x.OnStateChanged += It.IsAny<Action>(), Times.AtLeastOnce);
+        TimerEventPublisherMock.VerifyAdd(x => x.OnTick += It.IsAny<Action>(), Times.AtLeastOnce);
+        TimerEventPublisherMock.VerifyAdd(x => x.OnTimerCompleted += It.IsAny<Func<TimerCompletedEventArgs, Task>>(), Times.Once);
+        TimerEventPublisherMock.VerifyAdd(x => x.OnTimerStateChanged += It.IsAny<Action>(), Times.AtLeastOnce);
         ConsentServiceMock.VerifyAdd(x => x.OnConsentRequired += It.IsAny<Action>(), Times.Once);
         ConsentServiceMock.VerifyAdd(x => x.OnCountdownTick += It.IsAny<Action>(), Times.Once);
         ConsentServiceMock.VerifyAdd(x => x.OnConsentHandled += It.IsAny<Action>(), Times.Once);
@@ -285,9 +285,9 @@ public class IndexBaseTests : TestHelper
 
         // Assert - Verify that events were subscribed to during initialization
         TaskServiceMock.VerifyAdd(x => x.OnChange += It.IsAny<Action>(), Times.Once);
-        TimerServiceMock.VerifyAdd(x => x.OnTick += It.IsAny<Action>(), Times.AtLeastOnce);
-        TimerServiceMock.VerifyAdd(x => x.OnTimerComplete += It.IsAny<Action<SessionType>>(), Times.Once);
-        TimerServiceMock.VerifyAdd(x => x.OnStateChanged += It.IsAny<Action>(), Times.AtLeastOnce);
+        TimerEventPublisherMock.VerifyAdd(x => x.OnTick += It.IsAny<Action>(), Times.AtLeastOnce);
+        TimerEventPublisherMock.VerifyAdd(x => x.OnTimerCompleted += It.IsAny<Func<TimerCompletedEventArgs, Task>>(), Times.Once);
+        TimerEventPublisherMock.VerifyAdd(x => x.OnTimerStateChanged += It.IsAny<Action>(), Times.AtLeastOnce);
         ConsentServiceMock.VerifyAdd(x => x.OnConsentRequired += It.IsAny<Action>(), Times.Once);
         ConsentServiceMock.VerifyAdd(x => x.OnCountdownTick += It.IsAny<Action>(), Times.Once);
         ConsentServiceMock.VerifyAdd(x => x.OnConsentHandled += It.IsAny<Action>(), Times.Once);

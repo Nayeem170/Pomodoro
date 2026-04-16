@@ -95,42 +95,42 @@ public class IndexEventsTests : TestHelper
 
     #endregion
 
-    #region OnTimerComplete Tests
+    #region OnTimerCompleted Tests
 
     [Fact]
-    public void OnTimerComplete_UpdatesStateAndInvokesStateHasChanged()
+    public async Task OnTimerCompleted_UpdatesStateAndInvokesStateHasChanged()
     {
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         // Act
-        cut.Instance.OnTimerComplete(SessionType.Pomodoro);
+        await cut.Instance.OnTimerCompleted(new TimerCompletedEventArgs(SessionType.Pomodoro, null, null, 25, true, DateTime.UtcNow));
 
         // Assert - verify the method completes without throwing
         Assert.True(true);
     }
 
     [Fact]
-    public void OnTimerComplete_WithShortBreak_UpdatesState()
+    public async Task OnTimerCompleted_WithShortBreak_UpdatesState()
     {
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         // Act
-        cut.Instance.OnTimerComplete(SessionType.ShortBreak);
+        await cut.Instance.OnTimerCompleted(new TimerCompletedEventArgs(SessionType.ShortBreak, null, null, 5, true, DateTime.UtcNow));
 
         // Assert - verify the method completes without throwing
         Assert.True(true);
     }
 
     [Fact]
-    public void OnTimerComplete_WithLongBreak_UpdatesState()
+    public async Task OnTimerCompleted_WithLongBreak_UpdatesState()
     {
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         // Act
-        cut.Instance.OnTimerComplete(SessionType.LongBreak);
+        await cut.Instance.OnTimerCompleted(new TimerCompletedEventArgs(SessionType.LongBreak, null, null, 15, true, DateTime.UtcNow));
 
         // Assert - verify the method completes without throwing
         Assert.True(true);

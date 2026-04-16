@@ -24,7 +24,7 @@ public partial class TimerDisplayTests
         var cut = RenderComponent<TimerDisplay>();
 
         // Act
-        _timerServiceMock.Raise(s => s.OnTick += null);
+        _timerEventPublisherMock.Raise(s => s.OnTick += null);
 
         // Assert - Component should re-render when tick event fires
         Assert.NotNull(cut.Find(".timer-display"));
@@ -40,7 +40,7 @@ public partial class TimerDisplayTests
 
         // Act - Change remaining time
         SetupTimerService(TimeSpan.FromMinutes(24), SessionType.Pomodoro, false);
-        _timerServiceMock.Raise(s => s.OnTick += null);
+        _timerEventPublisherMock.Raise(s => s.OnTick += null);
 
         // Assert
         Assert.Contains("24:00", cut.Markup);
@@ -56,7 +56,7 @@ public partial class TimerDisplayTests
 
         // Act - Change session type
         SetupTimerService(TimeSpan.FromMinutes(5), SessionType.ShortBreak, false);
-        _timerServiceMock.Raise(s => s.OnStateChanged += null);
+        _timerEventPublisherMock.Raise(s => s.OnTimerStateChanged += null);
 
         // Assert
         Assert.Contains("SHORT BREAK", cut.Markup);
@@ -77,7 +77,7 @@ public partial class TimerDisplayTests
 
         // Act - Change to running state
         SetupTimerService(TimeSpan.FromMinutes(25), SessionType.Pomodoro, true);
-        _timerServiceMock.Raise(s => s.OnStateChanged += null);
+        _timerEventPublisherMock.Raise(s => s.OnTimerStateChanged += null);
 
         // Assert
         timerDisplay = cut.Find(".timer-display");
@@ -95,7 +95,7 @@ public partial class TimerDisplayTests
 
         // Act - Change to short break
         SetupTimerService(TimeSpan.FromMinutes(5), SessionType.ShortBreak, true);
-        _timerServiceMock.Raise(s => s.OnStateChanged += null);
+        _timerEventPublisherMock.Raise(s => s.OnTimerStateChanged += null);
 
         // Assert
         timerDisplay = cut.Find(".timer-display");
@@ -112,13 +112,13 @@ public partial class TimerDisplayTests
 
         // Act - Multiple state changes
         SetupTimerService(TimeSpan.FromMinutes(25), SessionType.Pomodoro, true);
-        _timerServiceMock.Raise(s => s.OnStateChanged += null);
+        _timerEventPublisherMock.Raise(s => s.OnTimerStateChanged += null);
 
         SetupTimerService(TimeSpan.FromMinutes(5), SessionType.ShortBreak, false);
-        _timerServiceMock.Raise(s => s.OnStateChanged += null);
+        _timerEventPublisherMock.Raise(s => s.OnTimerStateChanged += null);
 
         SetupTimerService(TimeSpan.FromMinutes(15), SessionType.LongBreak, true);
-        _timerServiceMock.Raise(s => s.OnStateChanged += null);
+        _timerEventPublisherMock.Raise(s => s.OnTimerStateChanged += null);
 
         // Assert - Final state should be long break running
         var timerDisplay = cut.Find(".timer-display");
@@ -140,8 +140,8 @@ public partial class TimerDisplayTests
 
         // Act - Fire both events
         SetupTimerService(TimeSpan.FromMinutes(24), SessionType.Pomodoro, true);
-        _timerServiceMock.Raise(s => s.OnTick += null);
-        _timerServiceMock.Raise(s => s.OnStateChanged += null);
+        _timerEventPublisherMock.Raise(s => s.OnTick += null);
+        _timerEventPublisherMock.Raise(s => s.OnTimerStateChanged += null);
 
         // Assert
         Assert.Contains("24:00", cut.Markup);
@@ -159,8 +159,8 @@ public partial class TimerDisplayTests
         var cut = RenderComponent<TimerDisplay>();
 
         // Assert - Verify both events were subscribed
-        _timerServiceMock.VerifyAdd(s => s.OnTick += It.IsAny<Action>(), Times.Once);
-        _timerServiceMock.VerifyAdd(s => s.OnStateChanged += It.IsAny<Action>(), Times.Once);
+        _timerEventPublisherMock.VerifyAdd(s => s.OnTick += It.IsAny<Action>(), Times.Once);
+        _timerEventPublisherMock.VerifyAdd(s => s.OnTimerStateChanged += It.IsAny<Action>(), Times.Once);
     }
 
     #endregion

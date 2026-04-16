@@ -17,6 +17,9 @@ public class TimerDisplayBase : ComponentBase, IDisposable
     protected ITimerService TimerService { get; set; } = default!;
 
     [Inject]
+    protected ITimerEventPublisher TimerEventPublisher { get; set; } = default!;
+
+    [Inject]
     protected ILogger<TimerDisplayBase> Logger { get; set; } = default!;
 
     #endregion
@@ -51,8 +54,8 @@ public class TimerDisplayBase : ComponentBase, IDisposable
     protected override void OnInitialized()
     {
         // Subscribe to timer service events
-        TimerService.OnTick += OnTimerTick;
-        TimerService.OnStateChanged += OnTimerStateChanged;
+        TimerEventPublisher.OnTick += OnTimerTick;
+        TimerEventPublisher.OnTimerStateChanged += OnTimerStateChanged;
     }
 
     internal virtual void UpdateDisplay()
@@ -88,8 +91,8 @@ public class TimerDisplayBase : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        TimerService.OnTick -= OnTimerTick;
-        TimerService.OnStateChanged -= OnTimerStateChanged;
+        TimerEventPublisher.OnTick -= OnTimerTick;
+        TimerEventPublisher.OnTimerStateChanged -= OnTimerStateChanged;
     }
 
     #endregion

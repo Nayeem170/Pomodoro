@@ -18,31 +18,6 @@ namespace Pomodoro.Web.Services;
 public interface ITimerService
 {
     /// <summary>
-    /// Event raised on each timer tick (typically every second).
-    /// </summary>
-    /// <remarks>
-    /// Subscribe to this event to update UI elements that display the remaining time.
-    /// </remarks>
-    event Action? OnTick;
-
-    /// <summary>
-    /// Event raised when a timer session completes.
-    /// </summary>
-    /// <remarks>
-    /// The <see cref="SessionType"/> parameter indicates which type of session completed.
-    /// Use this to trigger notifications and consent modals.
-    /// </remarks>
-    event Action<SessionType>? OnTimerComplete;
-
-    /// <summary>
-    /// Event raised when the timer state changes (started, paused, resumed, reset).
-    /// </summary>
-    /// <remarks>
-    /// Subscribe to this event to update UI state indicators and control buttons.
-    /// </remarks>
-    event Action? OnStateChanged;
-
-    /// <summary>
     /// Gets the current timer session information, or null if no session is active.
     /// </summary>
     /// <value>

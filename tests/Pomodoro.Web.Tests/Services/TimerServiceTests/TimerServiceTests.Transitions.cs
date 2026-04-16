@@ -141,7 +141,7 @@ public partial class TimerServiceTests
             await service.InitializeAsync();
             await service.StartPomodoroAsync();
             var eventFired = false;
-            service.OnStateChanged += () => eventFired = true;
+            service.OnTimerStateChanged += () => eventFired = true;
 
             // Act
             await service.SwitchSessionTypeAsync(SessionType.ShortBreak);

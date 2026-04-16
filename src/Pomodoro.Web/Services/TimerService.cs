@@ -23,11 +23,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     // ITimerEventPublisher events
     public event Func<TimerCompletedEventArgs, Task>? OnTimerCompleted;
     public event Action? OnTimerStateChanged;
-
-    // ITimerService events
     public event Action? OnTick;
-    public event Action<SessionType>? OnTimerComplete; // Backward compatibility
-    public event Action? OnStateChanged;
 
     // Public properties for UI binding
     public int RemainingSeconds => _appState.CurrentSession?.RemainingSeconds ?? 0;
@@ -315,9 +311,6 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         // Raise event for subscribers (TaskService, ActivityService)
         await NotifyTimerCompletedAsync(eventArgs);
 
-        // Backward compatibility - also raise old event
-        OnTimerComplete?.Invoke(session.Type);
-
         NotifyStateChanged();
 
         // Note: Auto-start is handled by ConsentService which shows a consent modal
@@ -372,7 +365,6 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
     private void NotifyStateChanged()
     {
-        OnStateChanged?.Invoke();
         OnTimerStateChanged?.Invoke();
     }
 

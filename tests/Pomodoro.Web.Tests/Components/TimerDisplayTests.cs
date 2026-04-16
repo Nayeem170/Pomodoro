@@ -15,11 +15,14 @@ namespace Pomodoro.Web.Tests;
 public partial class TimerDisplayTests : TestContext
 {
     private readonly Mock<ITimerService> _timerServiceMock;
+    private readonly Mock<ITimerEventPublisher> _timerEventPublisherMock;
 
     public TimerDisplayTests()
     {
         _timerServiceMock = new Mock<ITimerService>();
+        _timerEventPublisherMock = new Mock<ITimerEventPublisher>();
         Services.AddSingleton(_timerServiceMock.Object);
+        Services.AddSingleton(_timerEventPublisherMock.Object);
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
@@ -225,7 +228,7 @@ public partial class TimerDisplayTests : TestContext
         var cut = RenderComponent<TimerDisplay>();
 
         // Assert
-        _timerServiceMock.VerifyAdd(s => s.OnTick += It.IsAny<Action>(), Times.Once);
+        _timerEventPublisherMock.VerifyAdd(s => s.OnTick += It.IsAny<Action>(), Times.Once);
     }
 
     [Fact]
@@ -238,7 +241,7 @@ public partial class TimerDisplayTests : TestContext
         var cut = RenderComponent<TimerDisplay>();
 
         // Assert
-        _timerServiceMock.VerifyAdd(s => s.OnStateChanged += It.IsAny<Action>(), Times.Once);
+        _timerEventPublisherMock.VerifyAdd(s => s.OnTimerStateChanged += It.IsAny<Action>(), Times.Once);
     }
 
     #endregion

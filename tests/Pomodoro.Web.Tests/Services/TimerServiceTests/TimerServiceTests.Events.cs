@@ -18,7 +18,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             var eventFired = false;
-            service.OnStateChanged += () => eventFired = true;
+            service.OnTimerStateChanged += () => eventFired = true;
 
             // Act
             await service.StartPomodoroAsync();
@@ -35,7 +35,7 @@ public partial class TimerServiceTests
             await service.StartPomodoroAsync();
 
             var eventFired = false;
-            service.OnStateChanged += () => eventFired = true;
+            service.OnTimerStateChanged += () => eventFired = true;
 
             // Act
             await service.PauseAsync();
@@ -53,7 +53,7 @@ public partial class TimerServiceTests
             await service.PauseAsync();
 
             var eventFired = false;
-            service.OnStateChanged += () => eventFired = true;
+            service.OnTimerStateChanged += () => eventFired = true;
 
             // Act
             await service.ResumeAsync();
@@ -70,7 +70,7 @@ public partial class TimerServiceTests
             await service.StartPomodoroAsync();
 
             var eventFired = false;
-            service.OnStateChanged += () => eventFired = true;
+            service.OnTimerStateChanged += () => eventFired = true;
 
             // Act
             await service.ResetAsync();
@@ -87,7 +87,7 @@ public partial class TimerServiceTests
             await service.StartPomodoroAsync();
 
             var eventFired = false;
-            service.OnStateChanged += () => eventFired = true;
+            service.OnTimerStateChanged += () => eventFired = true;
 
             // Act
             await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
@@ -104,7 +104,7 @@ public partial class TimerServiceTests
             await service.InitializeAsync();
 
             var eventFired = false;
-            service.OnStateChanged += () => eventFired = true;
+            service.OnTimerStateChanged += () => eventFired = true;
 
             // Act
             var newSettings = new TimerSettings();
@@ -124,9 +124,9 @@ public partial class TimerServiceTests
             var handler2Fired = false;
             var handler3Fired = false;
 
-            service.OnStateChanged += () => handler1Fired = true;
-            service.OnStateChanged += () => handler2Fired = true;
-            service.OnStateChanged += () => handler3Fired = true;
+            service.OnTimerStateChanged += () => handler1Fired = true;
+            service.OnTimerStateChanged += () => handler2Fired = true;
+            service.OnTimerStateChanged += () => handler3Fired = true;
 
             // Act
             await service.StartPomodoroAsync();
@@ -143,7 +143,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             var eventFired = false;
-            service.OnStateChanged += () => eventFired = true;
+            service.OnTimerStateChanged += () => eventFired = true;
 
             // Act
             await service.StartShortBreakAsync();
@@ -158,7 +158,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             var eventFired = false;
-            service.OnStateChanged += () => eventFired = true;
+            service.OnTimerStateChanged += () => eventFired = true;
 
             // Act
             await service.StartLongBreakAsync();
@@ -198,16 +198,20 @@ public partial class TimerServiceTests
         }
 
         [Fact]
-        public void OnTimerComplete_BackwardCompatibilityEvent_CanBeSubscribedTo()
+        public async Task OnTimerCompleted_WithEventArgs_ContainsCorrectData()
         {
             // Arrange
             var service = CreateService();
+            await service.InitializeAsync();
+
+            TimerCompletedEventArgs? receivedArgs = null;
+            service.OnTimerCompleted += args =>
+            {
+                receivedArgs = args;
+                return Task.CompletedTask;
+            };
 
             // Act
-            // Verify event can be subscribed to (no exception means success)
-            service.OnTimerComplete += (type) => { };
-
-            // Assert
             // Event subscription succeeded if no exception was thrown
             Assert.True(true);
         }
@@ -220,14 +224,14 @@ public partial class TimerServiceTests
 
             var eventFired = false;
             Action handler = () => eventFired = true;
-            service.OnStateChanged += handler;
+            service.OnTimerStateChanged += handler;
 
             // Act
             await service.StartPomodoroAsync();
             var firstFireCount = eventFired ? 1 : 0;
 
             // Unsubscribe
-            service.OnStateChanged -= handler;
+            service.OnTimerStateChanged -= handler;
 
             // Trigger another state change
             await service.ResetAsync();

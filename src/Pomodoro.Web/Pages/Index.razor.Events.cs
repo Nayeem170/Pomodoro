@@ -51,25 +51,17 @@ public partial class IndexBase
 
     #region Timer Service Events
 
-    public void OnTimerComplete(SessionType sessionType)
+    public async Task OnTimerCompleted(TimerCompletedEventArgs args)
     {
-        // Must use InvokeAsync to run on UI thread since timer runs on background thread
-        _ = InvokeAsync(() =>
+        try
         {
-            try
-            {
-                UpdateState();
-                // Note: ConsentService.HandleTimerCompleteAsync already handles showing the modal
-                // based on AutoStartEnabled setting. It will trigger OnConsentRequired event which
-                // we handle in OnConsentRequired() method below.
-                // Do NOT call ShowConsentModal directly here - it bypasses the AutoStartEnabled check.
-                StateHasChanged();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, Constants.Messages.ErrorInOnTimerComplete);
-            }
-        });
+            UpdateState();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, Constants.Messages.ErrorInOnTimerComplete);
+        }
     }
 
     public void OnTimerStateChanged()

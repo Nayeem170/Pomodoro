@@ -64,7 +64,7 @@ public partial class TimerServiceTests
             SetupCurrentSession(isRunning: true, wasStarted: true);
             var service = CreateService();
             var eventFired = false;
-            service.OnStateChanged += () => eventFired = true;
+            service.OnTimerStateChanged += () => eventFired = true;
 
             // Act
             await service.ResetAsync();
@@ -80,7 +80,7 @@ public partial class TimerServiceTests
             ClearCurrentSession();
             var service = CreateService();
             var eventFired = false;
-            service.OnStateChanged += () => eventFired = true;
+            service.OnTimerStateChanged += () => eventFired = true;
 
             // Act
             await service.ResetAsync();

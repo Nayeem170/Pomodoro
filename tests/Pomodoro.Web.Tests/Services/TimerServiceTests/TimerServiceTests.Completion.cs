@@ -151,7 +151,7 @@ public partial class TimerServiceTests
         }
 
         [Fact]
-        public async Task TimerCompletion_RaisesBackwardCompatibleOnTimerComplete()
+        public async Task TimerCompletion_RaisesOnTimerCompletedWithCorrectSessionType()
         {
             // Arrange
             var service = CreateService();
@@ -162,7 +162,11 @@ public partial class TimerServiceTests
             AppState.Tasks = new List<TaskItem> { task };
 
             SessionType? completedSessionType = null;
-            service.OnTimerComplete += (sessionType) => completedSessionType = sessionType;
+            service.OnTimerCompleted += args =>
+            {
+                completedSessionType = args.SessionType;
+                return Task.CompletedTask;
+            };
 
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
@@ -325,7 +329,7 @@ public partial class TimerServiceTests
             AppState.CurrentSession!.RemainingSeconds = 1;
 
             var stateChangedRaised = false;
-            service.OnStateChanged += () => stateChangedRaised = true;
+            service.OnTimerStateChanged += () => stateChangedRaised = true;
 
             // Act
             service.OnTimerTickJs();

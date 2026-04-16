@@ -196,7 +196,7 @@ public partial class TimerServiceTests
             var service = CreateService();
             var newSettings = new TimerSettings { PomodoroMinutes = 25 };
             var stateChangedCalled = false;
-            service.OnStateChanged += () => stateChangedCalled = true;
+            service.OnTimerStateChanged += () => stateChangedCalled = true;
 
             MockSettingsRepository
                 .Setup(x => x.SaveAsync(It.IsAny<TimerSettings>()))

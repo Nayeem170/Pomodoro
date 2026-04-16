@@ -21,6 +21,7 @@ public class TimerDisplayCoverageTests : TestContext
         _timerServiceMock = new Mock<ITimerService>();
         _mockLogger = new Mock<ILogger<TimerDisplayBase>>();
         Services.AddSingleton(_timerServiceMock.Object);
+        Services.AddSingleton(Mock.Of<ITimerEventPublisher>());
         Services.AddSingleton(_mockLogger.Object);
         JSInterop.Mode = JSRuntimeMode.Loose;
     }

@@ -16,6 +16,7 @@ namespace Pomodoro.Web.Tests;
 public abstract class TestHelper : TestContext
 {
     protected Mock<ITimerService> TimerServiceMock { get; private set; }
+    protected Mock<ITimerEventPublisher> TimerEventPublisherMock { get; private set; }
     protected Mock<ITaskService> TaskServiceMock { get; private set; }
     protected Mock<IActivityService> ActivityServiceMock { get; private set; }
     protected Mock<IStatisticsService> StatisticsServiceMock { get; private set; }
@@ -48,6 +49,7 @@ public abstract class TestHelper : TestContext
     {
         // Create mocks for all services
         TimerServiceMock = new Mock<ITimerService>();
+        TimerEventPublisherMock = new Mock<ITimerEventPublisher>();
         TaskServiceMock = new Mock<ITaskService>();
         ActivityServiceMock = new Mock<IActivityService>();
         StatisticsServiceMock = new Mock<IStatisticsService>();
@@ -87,6 +89,7 @@ public abstract class TestHelper : TestContext
 
         // Register all mocks as singletons in test context
         Services.AddSingleton(TimerServiceMock.Object);
+        Services.AddSingleton(TimerEventPublisherMock.Object);
         Services.AddSingleton(TaskServiceMock.Object);
         Services.AddSingleton(ActivityServiceMock.Object);
         Services.AddSingleton(StatisticsServiceMock.Object);

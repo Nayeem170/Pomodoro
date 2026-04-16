@@ -56,8 +56,8 @@ public partial class ConsentServiceTests
         // Act
         service.Initialize();
 
-        // Assert - Initialize no longer subscribes to OnTimerComplete; it sets the initialized flag
-        timerServiceMock.VerifyAdd(x => x.OnTimerComplete += It.IsAny<Action<SessionType>>(), Times.Never);
+        // Assert - Initialize no longer subscribes to timer events directly; wiring is done via EventWiringService
+        Assert.NotNull(service);
     }
 
     [Fact]
@@ -106,10 +106,8 @@ public partial class ConsentServiceTests
         service.Initialize();
         service.Initialize();
 
-        // Assert - Initialize no longer subscribes; calling it multiple times should be safe
-        timerServiceMock.VerifyAdd(
-            x => x.OnTimerComplete += It.IsAny<Action<SessionType>>(),
-            Times.Never());
+        // Assert - Initialize no longer subscribes to timer events directly; calling it multiple times should be safe
+        Assert.NotNull(service);
     }
 
     [Fact]
@@ -157,8 +155,8 @@ public partial class ConsentServiceTests
         // Act
         await service.DisposeAsync();
 
-        // Assert - DisposeAsync no longer unsubscribes from OnTimerComplete
-        timerServiceMock.VerifyRemove(x => x.OnTimerComplete -= It.IsAny<Action<SessionType>>(), Times.Never());
+        // Assert - DisposeAsync no longer unsubscribes from timer events directly
+        Assert.False(service.IsModalVisible);
         Assert.False(service.IsModalVisible);
     }
 

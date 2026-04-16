@@ -51,6 +51,7 @@ namespace Pomodoro.Web.Tests
             Services.AddSingleton(new Mock<ILogger<App>>().Object);
             Services.AddSingleton(new Mock<ILogger<LayoutPresenterService>>().Object);
             Services.AddSingleton(new Mock<ILogger<ErrorDisplay>>().Object);
+            Services.AddSingleton(new Mock<ITimerEventPublisher>().Object);
             Services.AddSingleton(new Mock<AppState>().Object);
         }
 

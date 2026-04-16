@@ -24,6 +24,9 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected ITimerService TimerService { get; set; } = default!;
 
     [Inject]
+    protected ITimerEventPublisher TimerEventPublisher { get; set; } = default!;
+
+    [Inject]
     protected IConsentService ConsentService { get; set; } = default!;
 
     [Inject]
@@ -98,8 +101,8 @@ public partial class IndexBase : ComponentBase, IDisposable
 
             // Subscribe to service events
             TaskService.OnChange += OnTaskServiceChanged;
-            TimerService.OnTimerComplete += OnTimerComplete;
-            TimerService.OnStateChanged += OnTimerStateChanged;
+            TimerEventPublisher.OnTimerCompleted += OnTimerCompleted;
+            TimerEventPublisher.OnTimerStateChanged += OnTimerStateChanged;
             ConsentService.OnConsentRequired += OnConsentRequired;
             ConsentService.OnCountdownTick += OnConsentCountdownTick;
             ConsentService.OnConsentHandled += OnConsentHandled;
@@ -286,10 +289,10 @@ public partial class IndexBase : ComponentBase, IDisposable
     {
         if (TaskService != null)
             TaskService.OnChange -= OnTaskServiceChanged;
-        if (TimerService != null)
+        if (TimerEventPublisher != null)
         {
-            TimerService.OnTimerComplete -= OnTimerComplete;
-            TimerService.OnStateChanged -= OnTimerStateChanged;
+            TimerEventPublisher.OnTimerCompleted -= OnTimerCompleted;
+            TimerEventPublisher.OnTimerStateChanged -= OnTimerStateChanged;
         }
         if (ConsentService != null)
         {

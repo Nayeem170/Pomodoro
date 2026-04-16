@@ -380,7 +380,7 @@ public partial class TimerServiceTests
         {
             var service = CreateService();
             var stateChangedRaised = false;
-            service.OnStateChanged += () => stateChangedRaised = true;
+            service.OnTimerStateChanged += () => stateChangedRaised = true;
 
             await service.StartPomodoroAsync();
 

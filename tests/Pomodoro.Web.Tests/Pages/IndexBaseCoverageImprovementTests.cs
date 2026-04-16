@@ -18,6 +18,7 @@ namespace Pomodoro.Web.Tests.Pages
     public class IndexBaseCoverageImprovementTests : TestContext
     {
         private readonly Mock<ITimerService> TimerServiceMock;
+        private readonly Mock<ITimerEventPublisher> TimerEventPublisherMock;
         private readonly Mock<ITaskService> TaskServiceMock;
         private readonly Mock<IConsentService> ConsentServiceMock;
         private readonly Mock<IPipTimerService> PipTimerServiceMock;
@@ -34,6 +35,7 @@ namespace Pomodoro.Web.Tests.Pages
         public IndexBaseCoverageImprovementTests()
         {
             TimerServiceMock = new Mock<ITimerService>();
+            TimerEventPublisherMock = new Mock<ITimerEventPublisher>();
             TaskServiceMock = new Mock<ITaskService>();
             ConsentServiceMock = new Mock<IConsentService>();
             PipTimerServiceMock = new Mock<IPipTimerService>();
@@ -55,6 +57,7 @@ namespace Pomodoro.Web.Tests.Pages
             TimerServiceMock.Setup(x => x.StartLongBreakAsync()).Returns(Task.CompletedTask);
 
             Services.AddSingleton(TimerServiceMock.Object);
+            Services.AddSingleton(TimerEventPublisherMock.Object);
             Services.AddSingleton(TaskServiceMock.Object);
             Services.AddSingleton(ConsentServiceMock.Object);
             Services.AddSingleton(PipTimerServiceMock.Object);
@@ -582,46 +585,46 @@ namespace Pomodoro.Web.Tests.Pages
 
         #endregion
 
-        #region OnTimerComplete Tests
+        #region OnTimerCompleted Tests
 
         [Fact]
-        public void OnTimerComplete_WhenCalled_UpdatesState()
+        public async Task OnTimerCompleted_WhenCalled_UpdatesState()
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            cut.Instance.OnTimerComplete(SessionType.Pomodoro);
+            await cut.Instance.OnTimerCompleted(new TimerCompletedEventArgs(SessionType.Pomodoro, null, null, 25, true, DateTime.UtcNow));
 
             Assert.True(true);
         }
 
         [Fact]
-        public void OnTimerComplete_WhenCalledWithShortBreak_UpdatesState()
+        public async Task OnTimerCompleted_WhenCalledWithShortBreak_UpdatesState()
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            cut.Instance.OnTimerComplete(SessionType.ShortBreak);
+            await cut.Instance.OnTimerCompleted(new TimerCompletedEventArgs(SessionType.ShortBreak, null, null, 5, true, DateTime.UtcNow));
 
             Assert.True(true);
         }
 
         [Fact]
-        public void OnTimerComplete_WhenCalledWithLongBreak_UpdatesState()
+        public async Task OnTimerCompleted_WhenCalledWithLongBreak_UpdatesState()
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            cut.Instance.OnTimerComplete(SessionType.LongBreak);
+            await cut.Instance.OnTimerCompleted(new TimerCompletedEventArgs(SessionType.LongBreak, null, null, 15, true, DateTime.UtcNow));
 
             Assert.True(true);
         }
 
         [Fact]
-        public async Task OnTimerComplete_WhenUpdateStateThrows_LogsError()
+        public async Task OnTimerCompleted_WhenUpdateStateThrows_LogsError()
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.IndexPagePresenterService = null;
 
-            cut.Instance.OnTimerComplete(SessionType.Pomodoro);
+            await cut.Instance.OnTimerCompleted(new TimerCompletedEventArgs(SessionType.Pomodoro, null, null, 25, true, DateTime.UtcNow));
 
             try { cut.Render(); } catch { }
             await Task.Delay(100);

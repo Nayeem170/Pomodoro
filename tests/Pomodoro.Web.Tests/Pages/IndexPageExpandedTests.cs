@@ -385,7 +385,7 @@ public class IndexPageExpandedTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         // Act - Fire multiple events
-        TimerServiceMock.Raise(x => x.OnTick += null);
+        TimerEventPublisherMock.Raise(x => x.OnTick += null);
         TaskServiceMock.Raise(x => x.OnChange += null);
         ActivityServiceMock.Raise(x => x.OnActivityChanged += null);
 

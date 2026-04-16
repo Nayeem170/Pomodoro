@@ -93,7 +93,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             var eventFired = false;
-            service.OnStateChanged += () => eventFired = true;
+            service.OnTimerStateChanged += () => eventFired = true;
 
             // Act
             await service.StartPomodoroAsync();
