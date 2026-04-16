@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Services;
