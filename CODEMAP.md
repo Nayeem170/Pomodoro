@@ -193,14 +193,11 @@ graph LR
         TimerService["⏱️ TimerService"]
     end
 
-    subgraph NewSubscribers["New Event System (ITimerEventPublisher)"]
+    subgraph Subscribers["Subscribers (ITimerEventPublisher)"]
         TaskService["✅ TaskService"]
         ActivityService["📋 ActivityService"]
         ConsentService["🔔 ConsentService"]
         PipTimerService["🖼️ PipTimerService"]
-    end
-
-    subgraph OldSubscribers["Legacy Events (ITimerService)"]
         Index["📄 Index.razor"]
         TimerDisplay["⏲️ TimerDisplay"]
     end
@@ -208,13 +205,12 @@ graph LR
     TimerService -->|"OnTimerCompleted"| TaskService
     TimerService -->|"OnTimerCompleted"| ActivityService
     TimerService -->|"OnTimerCompleted"| ConsentService
+    TimerService -->|"OnTimerCompleted"| Index
     TimerService -->|"OnTick"| PipTimerService
+    TimerService -->|"OnTick"| TimerDisplay
     TimerService -->|"OnTimerStateChanged"| PipTimerService
-
-    TimerService -.->|"OnTimerComplete (legacy)"| Index
-    TimerService -.->|"OnStateChanged (legacy)"| Index
-    TimerService -.->|"OnTick (shared)"| TimerDisplay
-    TimerService -.->|"OnStateChanged (legacy)"| TimerDisplay
+    TimerService -->|"OnTimerStateChanged"| Index
+    TimerService -->|"OnTimerStateChanged"| TimerDisplay
 ```
 
 ---
@@ -272,7 +268,7 @@ sequenceDiagram
     DSS->>AS: ++TodayPomodoroCount, +=FocusMinutes
     TS->>TS: SaveDailyStatsAsync() → IndexedDB
 
-    Note over TS,Consent: Notify Subscribers (ITimerEventPublisher)
+    Note over TS,Consent: Notify Subscribers
     TS->>TS: NotifyTimerCompletedAsync(args)
     TS--xTaskSvc: OnTimerCompleted
     TaskSvc->>TaskSvc: CompleteTaskAsync()
@@ -280,11 +276,8 @@ sequenceDiagram
     ActSvc->>ActSvc: RecordActivityAsync()
     TS--xConsent: OnTimerCompleted
     Consent->>Consent: ShowConsentModal()
-
-    Note over TS,I: Legacy Events (ITimerService)
-    TS->>TS: OnTimerComplete?.Invoke(type)
-    TS--xI: OnTimerComplete event
-    I->>I: Show consent UI
+    TS--xI: OnTimerCompleted
+    I->>I: Update state, show consent UI
 
     TS->>TS: NotifyStateChanged()
     TS--xPip: OnTimerStateChanged
@@ -407,38 +400,6 @@ graph LR
 | `OnSentinelIntersecting` | HistoryBase | Scroll sentinel visible |
 | `HandleShortcut` | KeyboardShortcutService | Key press |
 | `NavigateTo` | MainLayout | Navigation event |
-
----
-
-## Dual Event System
-
-TimerService fires both old and new events for backward compatibility:
-
-```mermaid
-graph TB
-    subgraph Events["TimerService Events"]
-        direction LR
-        Old["Legacy (ITimerService)<br/>OnTick, OnStateChanged,<br/>OnTimerComplete"]
-        New["Modern (ITimerEventPublisher)<br/>OnTick, OnTimerStateChanged,<br/>OnTimerCompleted"]
-    end
-
-    Old -.->|"Fragile dual-fire"| New
-```
-
-| Notification | Legacy Event | Modern Event |
-|---|---|---|
-| Tick | `OnTick` (Action) | `OnTick` (Action) — same backing field |
-| State changed | `OnStateChanged` (Action) | `OnTimerStateChanged` (Action) |
-| Timer completed | `OnTimerComplete` (Action\<SessionType\>) | `OnTimerCompleted` (Func\<TimerCompletedEventArgs, Task\>) |
-
-| Subscriber | System | Events |
-|---|---|---|
-| Index.razor | Legacy | `OnTimerComplete`, `OnStateChanged` |
-| TimerDisplay.razor | Legacy | `OnTick`, `OnStateChanged` |
-| TaskService | Modern | `OnTimerCompleted` |
-| ActivityService | Modern | `OnTimerCompleted` |
-| ConsentService | Modern | `OnTimerCompleted` |
-| PipTimerService | Modern | `OnTick`, `OnTimerStateChanged` |
 
 ---
 
