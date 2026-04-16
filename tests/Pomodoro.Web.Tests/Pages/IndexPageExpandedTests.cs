@@ -403,14 +403,14 @@ public class IndexPageExpandedTests : TestHelper
     {
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        
+
         // Set an error message to show the banner
         cut.Instance.ErrorMessage = "Test error";
         cut.Render();
-        
+
         // Act - Click the close button inside the error banner
         cut.Find(".error-banner button").Click();
-        
+
         // Assert - Error message should be cleared
         cut.Instance.ErrorMessage.Should().BeNull();
     }
@@ -420,10 +420,10 @@ public class IndexPageExpandedTests : TestHelper
     {
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        
+
         // Act - Click the Pomodoro session tab button
         cut.Find(".session-tabs button:first-child").Click();
-        
+
         // Assert
         cut.Should().NotBeNull();
     }
@@ -433,14 +433,14 @@ public class IndexPageExpandedTests : TestHelper
     {
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        
+
         // Act - Click the Short Break session button
         var shortBreakButton = cut.FindAll("button").FirstOrDefault(b => b.TextContent.Contains("Short Break"));
         if (shortBreakButton != null)
         {
             shortBreakButton.Click();
         }
-        
+
         // Assert
         cut.Should().NotBeNull();
     }
@@ -450,14 +450,14 @@ public class IndexPageExpandedTests : TestHelper
     {
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        
+
         // Act - Click the Long Break session button
         var longBreakButton = cut.FindAll("button").FirstOrDefault(b => b.TextContent.Contains("Long Break"));
         if (longBreakButton != null)
         {
             longBreakButton.Click();
         }
-        
+
         // Assert
         cut.Should().NotBeNull();
     }
@@ -467,14 +467,14 @@ public class IndexPageExpandedTests : TestHelper
     {
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        
+
         // Act - Click the keyboard help button
         var helpButton = cut.FindAll("button").FirstOrDefault(b => b.TextContent == "?");
         if (helpButton != null)
         {
             helpButton.Click();
         }
-        
+
         // Assert - Component should still render without errors
         cut.Should().NotBeNull();
         cut.Markup.Should().NotBeNullOrEmpty();
@@ -485,14 +485,14 @@ public class IndexPageExpandedTests : TestHelper
     {
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        
+
         // Act - Click the PiP timer button
         var pipButton = cut.FindAll("button").FirstOrDefault(b => b.TextContent == "⧉");
         if (pipButton != null)
         {
             pipButton.Click();
         }
-        
+
         // Assert
         cut.Should().NotBeNull();
     }
@@ -511,7 +511,7 @@ public class IndexPageExpandedTests : TestHelper
             new TaskItem { Id = taskId, Name = "Current Task" },
             new TaskItem { Id = Guid.NewGuid(), Name = "Another Task" }
         };
-        
+
         TaskServiceMock
             .SetupGet(x => x.Tasks)
             .Returns(tasks);
@@ -521,14 +521,14 @@ public class IndexPageExpandedTests : TestHelper
         TaskServiceMock
             .SetupGet(x => x.CurrentTask)
             .Returns(tasks[0]);
-        
+
         TimerServiceMock
             .SetupGet(x => x.CurrentSessionType)
             .Returns(SessionType.Pomodoro);
-        
+
         // Act
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        
+
         // Assert
         cut.Markup.Should().Contain("Current Task");
         cut.Should().NotBeNull();
@@ -547,14 +547,14 @@ public class IndexPageExpandedTests : TestHelper
         TaskServiceMock
             .SetupGet(x => x.CurrentTask)
             .Returns((TaskItem?)null);
-        
+
         TimerServiceMock
             .SetupGet(x => x.CurrentSessionType)
             .Returns(SessionType.Pomodoro);
-        
+
         // Act
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        
+
         // Assert
         cut.Should().NotBeNull();
         cut.Markup.Should().NotBeNullOrEmpty();

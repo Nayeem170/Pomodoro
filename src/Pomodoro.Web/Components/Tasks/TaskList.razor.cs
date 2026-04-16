@@ -11,7 +11,7 @@ namespace Pomodoro.Web.Components.Tasks;
 public class TaskListBase : ComponentBase
 {
     #region Parameters (Model)
-    
+
     [Parameter]
     public List<TaskItem> Tasks { get; set; } = new();
 
@@ -32,14 +32,14 @@ public class TaskListBase : ComponentBase
 
     [Parameter]
     public EventCallback<Guid> OnTaskUncomplete { get; set; }
-    
+
     #endregion
 
     #region State
-    
+
     protected bool IsAddingTask { get; set; }
     protected string NewTaskName { get; set; } = string.Empty;
-    
+
     /// <summary>
     /// Determines if the Add button should be disabled
     /// </summary>
@@ -56,7 +56,7 @@ public class TaskListBase : ComponentBase
                 .ToList();
 
     protected bool HasCompletedTasks => Tasks.Any(t => t.IsCompleted);
-    
+
     #endregion
 
     #region Business Logic Methods
@@ -138,6 +138,6 @@ public class TaskListBase : ComponentBase
     {
         await OnTaskUncomplete.InvokeAsync(taskId);
     }
-    
+
     #endregion
 }

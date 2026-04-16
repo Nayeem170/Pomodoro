@@ -281,15 +281,15 @@ public class SummaryCardsBaseTests
             var timeFormatter = new TimeFormatter();
             var summaryCardsFormatter = new SummaryCardsFormatter(timeFormatter);
             Services.AddSingleton(summaryCardsFormatter);
-            
+
             var cut = new TestableSummaryCardsBase();
-            
+
             // Act - Set the Formatter property through DI injection
             cut.Formatter = summaryCardsFormatter;
-            
+
             // Act - Access the Formatter property getter through the testable wrapper
             var formatterValue = cut.Formatter;
-            
+
             // Assert
             Assert.NotNull(formatterValue);
             Assert.IsType<SummaryCardsFormatter>(formatterValue);
@@ -301,12 +301,12 @@ public class SummaryCardsBaseTests
             // Arrange
             var timeFormatter = new TimeFormatter();
             var newFormatter = new SummaryCardsFormatter(timeFormatter);
-            
+
             var cut = new TestableSummaryCardsBase();
-            
+
             // Act - Set the Formatter property through the testable wrapper (exercises setter)
             cut.Formatter = newFormatter;
-            
+
             // Assert - Verify the setter worked by getting the value back
             var updatedValue = cut.Formatter;
             Assert.NotNull(updatedValue);

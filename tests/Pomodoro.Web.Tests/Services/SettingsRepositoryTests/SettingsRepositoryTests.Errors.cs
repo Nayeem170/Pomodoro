@@ -18,15 +18,15 @@ public partial class SettingsRepositoryTests
         {
             // Arrange
             var settings = CreateTestSettings();
-            
+
             MockIndexedDb
                 .Setup(x => x.PutAsync(
                     Constants.Storage.SettingsStore,
                     It.IsAny<object>()))
                 .ThrowsAsync(new InvalidOperationException("Storage operation failed"));
-            
+
             var repository = CreateRepository();
-            
+
             // Act & Assert
             var exception = await Record.ExceptionAsync(async () => await repository.SaveAsync(settings));
             Assert.NotNull(exception);
@@ -39,19 +39,19 @@ public partial class SettingsRepositoryTests
         {
             // Arrange
             var settings = CreateTestSettings();
-            
+
             MockIndexedDb
                 .Setup(x => x.PutAsync(
                     Constants.Storage.SettingsStore,
                     It.IsAny<object>()))
                 .ReturnsAsync(false); // Storage operation failed but didn't throw
-            
+
             var repository = CreateRepository();
-            
+
             // Act & Assert
             var exception = await Record.ExceptionAsync(async () => await repository.SaveAsync(settings));
             Assert.Null(exception); // Should not throw when storage returns false
-            
+
             // Should return false to indicate failure
             var result = await repository.SaveAsync(settings);
             Assert.False(result);
@@ -66,9 +66,9 @@ public partial class SettingsRepositoryTests
                     Constants.Storage.SettingsStore,
                     Constants.Storage.DefaultSettingsId))
                 .ThrowsAsync(new InvalidOperationException("Storage read failed"));
-            
+
             var repository = CreateRepository();
-            
+
             // Act & Assert
             var exception = await Record.ExceptionAsync(async () => await repository.GetAsync());
             Assert.NotNull(exception);
@@ -81,12 +81,12 @@ public partial class SettingsRepositoryTests
         {
             // Arrange - Simulate first time usage by making GetAsync return null
             // With Loose mocking, we don't need to set up the GetAsync call
-            
+
             var repository = CreateRepository();
-            
+
             // Act
             var result = await repository.GetAsync();
-            
+
             // Assert
             Assert.Null(result); // Should return null when no settings are stored
         }
@@ -100,9 +100,9 @@ public partial class SettingsRepositoryTests
                     Constants.Storage.SettingsStore,
                     Constants.Storage.DefaultSettingsId))
                 .ThrowsAsync(new System.Text.Json.JsonException("JSON deserialization failed"));
-            
+
             var repository = CreateRepository();
-            
+
             // Act & Assert
             var exception = await Record.ExceptionAsync(async () => await repository.GetAsync());
             Assert.NotNull(exception);
@@ -119,9 +119,9 @@ public partial class SettingsRepositoryTests
                     Constants.Storage.SettingsStore,
                     It.IsAny<object>()))
                 .ThrowsAsync(new InvalidOperationException("Storage reset failed"));
-            
+
             var repository = CreateRepository();
-            
+
             // Act & Assert
             var exception = await Record.ExceptionAsync(async () => await repository.ResetToDefaultsAsync());
             Assert.NotNull(exception);
@@ -138,13 +138,13 @@ public partial class SettingsRepositoryTests
                     Constants.Storage.SettingsStore,
                     It.IsAny<object>()))
                 .ReturnsAsync(true);
-            
+
             var repository = CreateRepository();
-            
+
             // Act & Assert
             var exception = await Record.ExceptionAsync(async () => await repository.ResetToDefaultsAsync());
             Assert.Null(exception); // Should complete successfully without throwing
-            
+
             // Verify PutAsync was called with default settings
             MockIndexedDb.Verify(
                 x => x.PutAsync(

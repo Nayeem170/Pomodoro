@@ -18,7 +18,7 @@ public class SettingsRepository : ISettingsRepository
     {
         var record = await _indexedDb.GetAsync<TimerSettingsRecord>(Constants.Storage.SettingsStore, Constants.Storage.DefaultSettingsId);
         if (record == null) return null;
-        
+
         return new TimerSettings
         {
             PomodoroMinutes = record.PomodoroMinutes,

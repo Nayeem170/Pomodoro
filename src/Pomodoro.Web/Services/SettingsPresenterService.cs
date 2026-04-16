@@ -42,18 +42,18 @@ public class SettingsPresenterService
     public virtual string BuildImportSuccessMessage(int totalImported, int totalSkipped)
     {
         var messageParts = new List<string>();
-        
+
         if (totalImported > 0)
         {
             messageParts.Add($"imported {totalImported} records");
         }
-        
+
         if (totalSkipped > 0)
         {
             messageParts.Add($"skipped {totalSkipped} duplicates");
         }
-        
-        return messageParts.Count > 0 
+
+        return messageParts.Count > 0
             ? $"Import complete: {string.Join(", ", messageParts)}."
             : "Import complete: no new records to import.";
     }
@@ -71,7 +71,7 @@ public class SettingsPresenterService
         {
             var bytes = System.Text.Encoding.UTF8.GetBytes(content);
             var base64 = Convert.ToBase64String(bytes);
-            
+
             await jsInteropService.InvokeVoidAsync("fileInterop.downloadFile", filename, base64, mimeType);
         }
         catch (Exception ex)

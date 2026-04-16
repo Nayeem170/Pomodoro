@@ -19,7 +19,7 @@ public partial class ChartServiceTests_ErrorHandling
         // Arrange
         var jsRuntimeMock = new Mock<IJSRuntime>();
         var callCount = 0;
-        
+
         jsRuntimeMock
             .Setup(x => x.InvokeAsync<IJSVoidResult>(It.IsAny<string>(), It.IsAny<object?[]?>()))
             .Returns(() =>
@@ -49,7 +49,7 @@ public partial class ChartServiceTests_ErrorHandling
         // Arrange
         var jsRuntimeMock = new Mock<IJSRuntime>();
         var callCount = 0;
-        
+
         jsRuntimeMock
             .Setup(x => x.InvokeAsync<IJSVoidResult>(It.IsAny<string>(), It.IsAny<object?[]?>()))
             .Returns(() =>
@@ -82,7 +82,7 @@ public partial class ChartServiceTests_ErrorHandling
         // Arrange
         var jsRuntimeMock = new Mock<IJSRuntime>();
         var callCount = 0;
-        
+
         jsRuntimeMock
             .Setup(x => x.InvokeAsync<IJSVoidResult>(It.IsAny<string>(), It.IsAny<object?[]?>()))
             .Returns(() =>
@@ -176,8 +176,8 @@ public partial class ChartServiceTests_ErrorHandling
         jsRuntimeMock.Verify(
             x => x.InvokeAsync<IJSVoidResult>(
                 Constants.ChartJsFunctions.CreateBarChart,
-                It.Is<object?[]?>(args => 
-                    args != null && 
+                It.Is<object?[]?>(args =>
+                    args != null &&
                     args.Length == 5 &&
                     args[0]!.ToString() == "testChart" &&
                     args[4] is int && (int)args[4]! == 1)),
@@ -207,8 +207,8 @@ public partial class ChartServiceTests_ErrorHandling
         jsRuntimeMock.Verify(
             x => x.InvokeAsync<IJSVoidResult>(
                 Constants.ChartJsFunctions.CreateGroupedBarChart,
-                It.Is<object?[]?>(args => 
-                    args != null && 
+                It.Is<object?[]?>(args =>
+                    args != null &&
                     args.Length == 5 &&
                     args[0]!.ToString() == "testChart" &&
                     args[4] == null)),
@@ -233,7 +233,7 @@ public partial class ChartServiceTests_ErrorHandling
         // Arrange
         var jsRuntimeMock = new Mock<IJSRuntime>();
         var initializationCount = 0;
-        
+
         jsRuntimeMock
             .Setup(x => x.InvokeAsync<IJSVoidResult>(It.IsAny<string>(), It.IsAny<object?[]?>()))
             .Callback<string, object?[]?>((func, args) =>
@@ -275,8 +275,8 @@ public partial class ChartServiceTests_ErrorHandling
         jsRuntimeMock.Verify(
             x => x.InvokeAsync<IJSVoidResult>(
                 Constants.ChartJsFunctions.CreateBarChart,
-                It.Is<object?[]?>(args => 
-                    args != null && 
+                It.Is<object?[]?>(args =>
+                    args != null &&
                     args.Length == 5 &&
                     args[0]!.ToString() == "testChart" &&
                     args[3]!.ToString() == customLabel)),

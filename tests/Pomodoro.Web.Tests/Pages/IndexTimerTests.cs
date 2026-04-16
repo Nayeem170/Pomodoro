@@ -84,7 +84,7 @@ public class IndexTimerTests : TestHelper
         // we cannot reliably test the CurrentTaskId null check.
         // Instead, we verify exception handling works (covered by other tests).
         // The error message is tested in HandleTimerStart_OnException_SetsErrorMessage.
-        
+
         // Act - Simulate exception scenario
         var expectedException = new InvalidOperationException("Test exception");
         TaskServiceMock

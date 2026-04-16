@@ -141,7 +141,7 @@ public partial class TimerServiceTests
             // Arrange
             SetupCurrentSession(isRunning: true, wasStarted: true);
             var service = CreateService();
-            
+
             // Simulate some ticks
             service.OnTimerTickJs();
             service.OnTimerTickJs();

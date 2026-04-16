@@ -8,7 +8,7 @@ namespace Pomodoro.Web.Models;
 public class TaskItem
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    
+
     [Required(ErrorMessage = Constants.Validation.TaskNameRequiredMessage)]
     [StringLength(Constants.Validation.MaxTaskNameLength, ErrorMessage = Constants.Validation.TaskNameMaxLengthMessage)]
     public string Name { get; set; } = string.Empty;
@@ -17,12 +17,12 @@ public class TaskItem
     public int TotalFocusMinutes { get; set; }
     public int PomodoroCount { get; set; }
     public DateTime? LastWorkedOn { get; set; }
-    
+
     /// <summary>
     /// Soft delete flag - when true, task is hidden from active lists but preserved for history
     /// </summary>
     public bool IsDeleted { get; set; }
-    
+
     /// <summary>
     /// Timestamp when the task was soft-deleted
     /// </summary>

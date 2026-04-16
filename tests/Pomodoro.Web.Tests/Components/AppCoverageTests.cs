@@ -31,7 +31,7 @@ namespace Pomodoro.Web.Tests
             mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(new List<Pomodoro.Web.Services.NavLinkData>());
             mockLayoutPresenter.Setup(x => x.ToggleNavMenu());
             Services.AddSingleton<LayoutPresenterService>(mockLayoutPresenter.Object);
-             
+
             // Register all of the services that Index.razor requires
             Services.AddSingleton(new Mock<ITaskService>().Object);
             Services.AddSingleton(new Mock<IActivityService>().Object);
@@ -63,7 +63,7 @@ namespace Pomodoro.Web.Tests
 
             // Assert - Verify the Value parameter is set correctly
             Assert.Equal("Test Title", cut.Instance.Value);
-            
+
             // Note: PageTitle component doesn't render a <title> element in bunit tests
             // It's handled by Blazor's HeadOutlet at runtime
         }
@@ -105,7 +105,7 @@ namespace Pomodoro.Web.Tests
             // When Value is empty, PageTitle component may not render a title element
             // Verify the component accepts empty value without throwing and the parameter is set correctly
             Assert.Equal(string.Empty, cut.Instance.Value);
-            
+
             // Verify the component renders without errors (empty title is valid)
             var titleElements = cut.FindAll("title");
             if (titleElements.Count > 0)
@@ -119,14 +119,14 @@ namespace Pomodoro.Web.Tests
         {
             // Arrange
             var testValue = "Coverage Test Title " + Guid.NewGuid();
-            
+
             // Act - Render and access markup to force BuildRenderTree execution
             var cut = RenderComponent<CustomPageTitle>(parameters => parameters
                 .Add(p => p.Value, testValue));
-            
+
             // Access markup to ensure rendering pipeline completes
             var markup = cut.Markup;
-            
+
             // Assert - Verify the Value was evaluated during rendering
             Assert.Equal(testValue, cut.Instance.Value);
             Assert.NotNull(markup);
@@ -138,10 +138,10 @@ namespace Pomodoro.Web.Tests
             // Arrange & Act
             var cut = RenderComponent<CustomPageTitle>(parameters => parameters
                 .Add(p => p.Value, "Markup Test"));
-            
+
             // Access the rendered markup to trigger full rendering
             var markup = cut.Markup;
-            
+
             // Assert - Component should render without errors
             Assert.NotNull(markup);
             Assert.Equal("Markup Test", cut.Instance.Value);
@@ -157,10 +157,10 @@ namespace Pomodoro.Web.Tests
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
             var component = RenderComponent<App>();
-             
+
             // Act - Navigate to a non-existent route
             navigationManager.NavigateTo("/non-existent-route-for-coverage");
-             
+
             // Assert
             Assert.NotNull(component);
             Assert.Contains("/non-existent-route-for-coverage", navigationManager.Uri);
@@ -171,14 +171,14 @@ namespace Pomodoro.Web.Tests
         {
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
-             
+
             // Act - Navigate to a non-existent route to trigger NotFound
             navigationManager.NavigateTo("/test-not-found-message");
             var cut = RenderComponent<App>();
 
             // Assert - Verify the component renders without error
             Assert.NotNull(cut);
-            
+
             // Verify we're on the not-found route
             Assert.Contains("/test-not-found-message", navigationManager.Uri);
         }
@@ -188,14 +188,14 @@ namespace Pomodoro.Web.Tests
         {
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
-             
+
             // Act - Navigate to trigger NotFound
             navigationManager.NavigateTo("/test-not-found-layout");
             var cut = RenderComponent<App>();
 
             // Assert - Component should render successfully
             Assert.NotNull(cut);
-            
+
             // Verify navigation occurred
             Assert.Contains("/test-not-found-layout", navigationManager.Uri);
         }
@@ -300,7 +300,7 @@ namespace Pomodoro.Web.Tests
 
             // Act - Navigate to trigger NotFound
             navigationManager.NavigateTo("/test-get-not-found-page-title");
-             
+
             // Get the page title
             var pageTitle = appInstance.GetNotFoundPageTitle();
 
@@ -321,11 +321,11 @@ namespace Pomodoro.Web.Tests
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
             var component = RenderComponent<App>();
-             
+
             // Act - Navigate to invalid routes
             navigationManager.NavigateTo("/invalid-route-test-1");
             navigationManager.NavigateTo("/invalid-route-test-2");
-             
+
             // Assert
             Assert.NotNull(component);
         }
@@ -336,10 +336,10 @@ namespace Pomodoro.Web.Tests
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
             var component = RenderComponent<App>();
-             
+
             // Act - Navigate to trigger NotFound
             navigationManager.NavigateTo("/error-boundary-not-found-test");
-             
+
             // Assert
             Assert.NotNull(component);
         }

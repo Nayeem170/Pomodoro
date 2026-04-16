@@ -27,12 +27,12 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             // Act
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
@@ -48,12 +48,12 @@ public class TimeDistributionChartTests
             var selectedDate = DateTime.Now;
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             // Act
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, selectedDate));
@@ -73,12 +73,12 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             // Act
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
@@ -99,16 +99,16 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int> { { "Focus", 120 } });
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             // Act
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
@@ -123,16 +123,16 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int> { { "Focus", 120 } });
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
 
@@ -153,16 +153,16 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int> { { "Focus", 120 } });
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton<TimeFormatter>(new ThrowingTimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
 
@@ -183,16 +183,16 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int> { { "Focus", 120 } });
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton<TimeFormatter>(new ThrowingTimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
 
@@ -215,16 +215,16 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int> { { "Focus", 100 }, { "Break", 20 } });
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             // Act
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
@@ -240,16 +240,16 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int>());
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             // Act
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
@@ -269,20 +269,20 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int>());
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             // Act
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
-            
+
             cut.Instance.Dispose();
 
             // Assert - After dispose, raising the event should not cause issues
@@ -296,16 +296,16 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int>());
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
 
@@ -324,16 +324,16 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int> { { "Focus", 100 } });
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             var initialDate = new DateTime(2024, 1, 1);
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, initialDate));
@@ -356,16 +356,16 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int> { { "Focus", 100 } });
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
 
@@ -382,16 +382,16 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int> { { "Focus", 100 } });
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
 
@@ -412,11 +412,11 @@ public class TimeDistributionChartTests
             // Arrange - Create component without triggering render lifecycle
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int> { { "Focus", 100 } });
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
@@ -435,16 +435,16 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int> { { "Focus", 100 } });
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
 
@@ -472,16 +472,16 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int> { { "Focus", 100 } });
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
 
@@ -508,21 +508,21 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int> { { "Focus", 100 } });
-            
+
             // Setup JS to throw
             JSInterop.Mode = JSRuntimeMode.Strict;
             JSInterop.SetupVoid("destroyChart", _ => true);
             JSInterop.SetupVoid("createDoughnutChart", _ => true)
                 .SetException(new Microsoft.JSInterop.JSException("Chart.js error"));
-            
+
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             // Act - Render component which triggers OnAfterRenderAsync
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
@@ -547,20 +547,20 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
                 .Returns(new Dictionary<string, int>());
-            
+
             // Setup JS to throw on destroy
             JSInterop.Mode = JSRuntimeMode.Strict;
             JSInterop.SetupVoid("destroyChart", _ => true)
                 .SetException(new Microsoft.JSInterop.JSException("Chart.js error"));
-            
+
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));
 
@@ -578,21 +578,21 @@ public class TimeDistributionChartTests
             // Arrange
             var mockActivityService = new Mock<IActivityService>();
             var mockLogger = new Mock<ILogger<TimeDistributionChart>>();
-            
+
             mockActivityService
                 .Setup(x => x.GetTimeDistribution(It.IsAny<DateTime>()))
-                .Returns(new Dictionary<string, int> 
-                { 
-                    { "Focus", 100 }, 
-                    { "Short Break", 15 }, 
-                    { "Long Break", 30 } 
+                .Returns(new Dictionary<string, int>
+                {
+                    { "Focus", 100 },
+                    { "Short Break", 15 },
+                    { "Long Break", 30 }
                 });
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             Services.AddSingleton(mockActivityService.Object);
             Services.AddSingleton(new TimeFormatter());
             Services.AddSingleton(mockLogger.Object);
-            
+
             // Act
             var cut = RenderComponent<TimeDistributionChart>(parameters => parameters
                 .Add(p => p.SelectedDate, DateTime.Now));

@@ -9,7 +9,7 @@ namespace Pomodoro.Web.Components.Shared;
 public class TodaySummaryBase : ComponentBase
 {
     #region Parameters (Model)
-    
+
     [Parameter]
     public int TotalFocusMinutes { get; set; }
 
@@ -18,7 +18,7 @@ public class TodaySummaryBase : ComponentBase
 
     [Parameter]
     public int TasksWorkedOn { get; set; }
-    
+
     #endregion
 
     #region Business Logic Methods
@@ -34,6 +34,6 @@ public class TodaySummaryBase : ComponentBase
         var mins = minutes % Constants.TimeConversion.MinutesPerHour;
         return string.Format(Constants.TimeFormats.HoursMinutesFormat, hours, mins);
     }
-    
+
     #endregion
 }

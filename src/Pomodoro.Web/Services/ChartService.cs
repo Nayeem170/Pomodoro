@@ -59,7 +59,7 @@ public class ChartService : IChartService
     private async Task EnsureInitializedAsync()
     {
         if (_initialized) return;
-        
+
         try
         {
             await _jsRuntime.InvokeVoidAsync(Constants.ChartJsFunctions.EnsureInitialized);

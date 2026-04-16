@@ -20,10 +20,10 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             await service.DisposeAsync();
-            
+
             // Assert
             Assert.True(GetIsDisposed(service));
         }
@@ -34,16 +34,16 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Start a timer to ensure it's running
             await service.StartPomodoroAsync();
-            
+
             // Verify timer is running
             Assert.True(GetIsRunning(service));
-            
+
             // Act
             await service.DisposeAsync();
-            
+
             // Assert
             // Timer should be stopped after disposal
             // The actual behavior might be different, so let's check what happens
@@ -58,14 +58,14 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Get the DotNetObjectReference before disposal
             var dotNetRefBefore = GetDotNetRef(service);
             Assert.NotNull(dotNetRefBefore);
-            
+
             // Act
             await service.DisposeAsync();
-            
+
             // Assert
             // After disposal, the DotNetObjectReference might be null or disposed
             var dotNetRefAfter = GetDotNetRef(service);
@@ -80,14 +80,14 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Get the SemaphoreSlim before disposal
             var timerCompleteLockBefore = GetTimerCompleteLock(service);
             Assert.NotNull(timerCompleteLockBefore);
-            
+
             // Act
             await service.DisposeAsync();
-            
+
             // Assert
             // After disposal, trying to use the service should not throw due to disposed lock
             // The lock should be disposed but we can't directly verify that without reflection
@@ -101,11 +101,11 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act & Assert
             // First disposal
             await service.DisposeAsync();
-            
+
             // Second disposal should not throw
             var exception = await Record.ExceptionAsync(async () => await service.DisposeAsync());
             Assert.Null(exception);
@@ -117,13 +117,13 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Start and complete a timer
             await service.StartPomodoroAsync();
             AppState.CurrentSession!.RemainingSeconds = 1;
             service.OnTimerTickJs();
             await Task.Delay(200); // Wait for async completion
-            
+
             // Act & Assert
             var exception = await Record.ExceptionAsync(async () => await service.DisposeAsync());
             Assert.Null(exception);
@@ -135,7 +135,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             // Don't initialize the service
-            
+
             // Act & Assert
             var exception = await Record.ExceptionAsync(async () => await service.DisposeAsync());
             Assert.Null(exception);
@@ -147,25 +147,25 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var timerCompletedRaised = false;
             service.OnTimerCompleted += args =>
             {
                 timerCompletedRaised = true;
                 return Task.CompletedTask;
             };
-            
+
             // Start a timer
             await service.StartPomodoroAsync();
-            
+
             // Dispose the service
             await service.DisposeAsync();
-            
+
             // Try to trigger timer completion (should not work after disposal)
             AppState.CurrentSession!.RemainingSeconds = 1;
             service.OnTimerTickJs();
             await Task.Delay(200);
-            
+
             // Assert
             Assert.False(timerCompletedRaised);
         }

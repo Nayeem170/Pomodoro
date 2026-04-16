@@ -72,24 +72,24 @@ public partial class SettingsRepositoryTests
 
             // Act - Mix GetAsync and SaveAsync calls concurrently
             var tasks = new List<Task>();
-            
+
             // Add 5 GetAsync calls
             tasks.AddRange(Enumerable.Range(0, 5)
                 .Select(_ => repository.GetAsync()));
-            
+
             // Add 5 SaveAsync calls
             tasks.AddRange(Enumerable.Range(0, 5)
                 .Select(i => repository.SaveAsync(CreateTestSettings(pomodoroMinutes: 30 + i))));
-            
+
             await Task.WhenAll(tasks);
 
             // Assert - All calls should complete successfully
             var getTasks = tasks.OfType<Task<Pomodoro.Web.Models.TimerSettings?>>().ToArray();
             var saveTasks = tasks.OfType<Task<bool>>().ToArray();
-            
+
             Assert.Equal(5, getTasks.Length);
             Assert.Equal(5, saveTasks.Length);
-            
+
             Assert.All(saveTasks, task => Assert.True(task.Result));
         }
 
@@ -157,13 +157,13 @@ public partial class SettingsRepositoryTests
                 .ToArray();
 
             // Assert - All calls should throw
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => 
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
                 await Task.WhenAll(tasks);
             });
-            
+
             // Verify all individual tasks threw exceptions
-            Assert.All(tasks, task => 
+            Assert.All(tasks, task =>
             {
                 var exception = Assert.ThrowsAsync<InvalidOperationException>(async () => await task);
                 Assert.Contains("Storage operation failed", exception.Result.Message);

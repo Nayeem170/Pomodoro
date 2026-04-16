@@ -22,7 +22,7 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
 
     public bool IsSupported { get; private set; }
     public bool IsOpen { get; private set; }
-    
+
     public event Action? OnPipOpened;
     public event Action? OnPipClosed;
 
@@ -43,18 +43,18 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
     public async Task InitializeAsync()
     {
         if (_isInitialized) return;
-        
+
         try
         {
             // Check if PiP API is supported
             IsSupported = await _jsRuntime.InvokeAsync<bool>(Constants.PipJsFunctions.IsSupported);
-            
+
             // Create .NET reference for JS callbacks
             _dotNetRef = DotNetObjectReference.Create(this);
             await _jsRuntime.InvokeVoidAsync(Constants.PipJsFunctions.RegisterDotNetRef, _dotNetRef);
-            
+
             _isInitialized = true;
-            
+
             _logger.LogDebug(Constants.Messages.LogPipInitialized, IsSupported);
         }
         catch (Exception ex)
@@ -66,18 +66,18 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
     public async Task<bool> OpenAsync()
     {
         if (_isDisposed) return false;
-        
+
         try
         {
             var timerState = GetTimerState();
             var success = await _jsRuntime.InvokeAsync<bool>(Constants.PipJsFunctions.Open, timerState);
-            
+
             if (success)
             {
                 IsOpen = true;
                 OnPipOpened?.Invoke();
             }
-            
+
             return success;
         }
         catch (Exception ex)
@@ -90,7 +90,7 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
     public async Task CloseAsync()
     {
         if (_isDisposed) return;
-        
+
         try
         {
             await _jsRuntime.InvokeVoidAsync(Constants.PipJsFunctions.Close);
@@ -106,7 +106,7 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
     public async Task UpdateTimerAsync()
     {
         if (_isDisposed || !IsOpen) return;
-        
+
         try
         {
             var timerState = GetTimerState();
@@ -150,7 +150,7 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
     {
         var isRunning = _timerService.IsRunning;
         var isStarted = _timerService.IsStarted;
-        
+
         return new
         {
             remainingSeconds = _timerService.RemainingSeconds,
@@ -175,7 +175,7 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
             // Capture the operation type for logging
             var operation = _timerService.IsRunning ? "pause" :
                            _timerService.IsPaused ? "resume" : "start";
-            
+
             if (_timerService.IsRunning)
             {
                 await _timerService.PauseAsync();
@@ -188,13 +188,13 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
             {
                 await StartCurrentSessionAsync();
             }
-            
+
             // Force immediate update with fresh state to ensure UI consistency.
             // This is critical because the event-based update via OnTimerStateChanged
             // uses SafeTaskRunner.RunAndForget which may complete before state is fully propagated.
             // We explicitly await here to ensure the PiP window receives the correct state.
             await UpdateTimerAsync();
-            
+
             _logger.LogDebug("PiP toggle operation '{Operation}' completed. IsRunning: {IsRunning}, IsStarted: {IsStarted}",
                 operation, _timerService.IsRunning, _timerService.IsStarted);
         }
@@ -271,7 +271,7 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
     {
         if (_isDisposed) return;
         _isDisposed = true;
-        
+
         try
         {
             await _jsRuntime.InvokeVoidAsync(Constants.PipJsFunctions.UnregisterDotNetRef);
@@ -281,7 +281,7 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
         {
             // Ignore errors during disposal
         }
-        
+
         _dotNetRef?.Dispose();
     }
 }

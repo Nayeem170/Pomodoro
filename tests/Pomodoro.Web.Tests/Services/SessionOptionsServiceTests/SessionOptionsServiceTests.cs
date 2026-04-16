@@ -35,10 +35,10 @@ public class SessionOptionsServiceTests
     {
         // Arrange
         var service = CreateService();
-        
+
         // Act
         var options = service.GetOptionsForSessionType(sessionType);
-        
+
         // Assert
         Assert.Equal(expectedCount, options.Count);
     }
@@ -55,10 +55,10 @@ public class SessionOptionsServiceTests
     {
         // Arrange
         var service = CreateService();
-        
+
         // Act
         var options = service.GetOptionsForSessionType(completedType);
-        
+
         // Assert
         Assert.Contains(options, o => o.SessionType == expectedOption);
     }
@@ -76,10 +76,10 @@ public class SessionOptionsServiceTests
     {
         // Arrange
         var service = CreateService();
-        
+
         // Act
         var options = service.GetOptionsForSessionType(completedType);
-        
+
         // Assert
         var option = Assert.Single(options, o => o.SessionType == optionType);
         Assert.Equal(shouldBeDefault, option.IsDefault);
@@ -96,10 +96,10 @@ public class SessionOptionsServiceTests
             LongBreakMinutes = 20
         };
         var service = CreateService(settings);
-        
+
         // Act
         var options = service.GetOptionsForSessionType(SessionType.Pomodoro);
-        
+
         // Assert
         Assert.Contains(options, o => o.Duration.Contains("30"));
         Assert.Contains(options, o => o.Duration.Contains("10"));
@@ -111,10 +111,10 @@ public class SessionOptionsServiceTests
     {
         // Arrange
         var service = CreateService();
-        
+
         // Act
         var options = service.GetOptionsForSessionType((SessionType)999);
-        
+
         // Assert
         Assert.Empty(options);
     }
@@ -127,10 +127,10 @@ public class SessionOptionsServiceTests
     {
         // Arrange
         var service = CreateService();
-        
+
         // Act
         var defaultOption = service.GetDefaultOption(completedType);
-        
+
         // Assert
         Assert.Equal(expectedDefault, defaultOption);
     }
@@ -140,10 +140,10 @@ public class SessionOptionsServiceTests
     {
         // Arrange
         var service = CreateService();
-        
+
         // Act
         var defaultOption = service.GetDefaultOption((SessionType)999);
-        
+
         // Assert
         Assert.Equal(SessionType.Pomodoro, defaultOption);
     }

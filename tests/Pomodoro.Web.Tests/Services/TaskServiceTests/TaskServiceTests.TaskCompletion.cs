@@ -21,18 +21,18 @@ public partial class TaskServiceTests
         // Arrange
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: false);
-        
+
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
         MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         // Act
         await service.CompleteTaskAsync(taskId);
-        
+
         // Assert
         Assert.True(service.AllTasks[0].IsCompleted);
     }
@@ -43,18 +43,18 @@ public partial class TaskServiceTests
         // Arrange
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: false);
-        
+
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
         MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         // Act
         await service.CompleteTaskAsync(taskId);
-        
+
         // Assert
         MockTaskRepository.Verify(r => r.SaveAsync(It.IsAny<TaskItem>()), Times.Once);
     }
@@ -69,18 +69,18 @@ public partial class TaskServiceTests
         // Arrange
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: true);
-        
+
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
         MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         // Act
         await service.UncompleteTaskAsync(taskId);
-        
+
         // Assert
         Assert.False(service.AllTasks[0].IsCompleted);
     }
@@ -91,18 +91,18 @@ public partial class TaskServiceTests
         // Arrange
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: true);
-        
+
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
         MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         // Act
         await service.UncompleteTaskAsync(taskId);
-        
+
         // Assert
         MockTaskRepository.Verify(r => r.SaveAsync(It.IsAny<TaskItem>()), Times.Once);
     }
@@ -113,21 +113,21 @@ public partial class TaskServiceTests
         // Arrange
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: true);
-        
+
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
         MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         var eventFired = false;
         service.OnChange += () => eventFired = true;
-        
+
         // Act
         await service.UncompleteTaskAsync(taskId);
-        
+
         // Assert
         Assert.True(eventFired);
     }
@@ -138,21 +138,21 @@ public partial class TaskServiceTests
         // Arrange
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: false);
-        
+
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
         MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         var eventFired = false;
         service.OnChange += () => eventFired = true;
-        
+
         // Act
         await service.CompleteTaskAsync(taskId);
-        
+
         // Assert
         Assert.True(eventFired);
     }

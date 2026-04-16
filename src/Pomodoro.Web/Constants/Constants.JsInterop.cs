@@ -15,7 +15,7 @@ public static partial class Constants
         public const string GetUrlParameter = "getUrlParameter";
         public const string RemoveUrlParameter = "removeUrlParameter";
     }
-    
+
     /// <summary>
     /// JSInvokable method names
     /// </summary>
@@ -28,7 +28,7 @@ public static partial class Constants
         public const string OnPipClosed = "OnPipClosed";
         public const string OnNotificationActionClick = "OnNotificationActionClick";
     }
-    
+
     /// <summary>
     /// IndexedDB JavaScript function names
     /// </summary>
@@ -46,7 +46,7 @@ public static partial class Constants
         public const string GetCount = "indexedDbInterop.getCount";
         public const string PomodoroConstantsInitialize = "pomodoroConstants.initialize";
     }
-    
+
     /// <summary>
     /// PiP JavaScript function names
     /// </summary>
@@ -59,7 +59,7 @@ public static partial class Constants
         public const string Close = "pipTimer.close";
         public const string Update = "pipTimer.update";
     }
-    
+
     /// <summary>
     /// Notification JavaScript function names
     /// </summary>
@@ -73,7 +73,7 @@ public static partial class Constants
         public const string PlayBreakCompleteSound = "notificationFunctions.playBreakCompleteSound";
         public const string UnlockAudio = "notificationFunctions.unlockAudio";
     }
-    
+
     /// <summary>
     /// Local date/time JavaScript function names
     /// </summary>
@@ -111,7 +111,7 @@ public static partial class Constants
     {
         public const string Granted = "granted";
     }
-    
+
     /// <summary>
     /// URL parameter names
     /// </summary>
@@ -119,6 +119,6 @@ public static partial class Constants
     {
         public const string NotificationAction = "notification_action";
     }
-    
+
 
 }

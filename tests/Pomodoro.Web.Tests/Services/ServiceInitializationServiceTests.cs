@@ -464,7 +464,7 @@ public class ServiceInitializationServiceTests
         // Arrange - ensure environment variables are not set
         var originalEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
         var originalPlaywright = Environment.GetEnvironmentVariable("PLAYWRIGHT_TEST");
-        
+
         try
         {
             Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", null);
@@ -490,7 +490,7 @@ public class ServiceInitializationServiceTests
         // Arrange
         var originalEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
         var originalPlaywright = Environment.GetEnvironmentVariable("PLAYWRIGHT_TEST");
-        
+
         try
         {
             Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
@@ -516,7 +516,7 @@ public class ServiceInitializationServiceTests
         // Arrange
         var originalEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
         var originalPlaywright = Environment.GetEnvironmentVariable("PLAYWRIGHT_TEST");
-        
+
         try
         {
             Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
@@ -542,7 +542,7 @@ public class ServiceInitializationServiceTests
         // Arrange
         var originalEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
         var originalPlaywright = Environment.GetEnvironmentVariable("PLAYWRIGHT_TEST");
-        
+
         try
         {
             Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Production");

@@ -26,20 +26,20 @@ public partial class TaskServiceTests
             CreateSampleTask(),
             CreateSampleTask()
         };
-        
+
         MockTaskRepository.SetupSequence(r => r.GetAllIncludingDeletedAsync())
             .ReturnsAsync(initialTasks)
             .ReturnsAsync(reloadedTasks);
-        
+
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         // Act
         await service.ReloadAsync();
-        
+
         // Assert
         Assert.Equal(3, service.Tasks.Count);
     }
@@ -51,20 +51,20 @@ public partial class TaskServiceTests
         var taskId = Guid.NewGuid();
         var initialTasks = new List<TaskItem> { CreateSampleTask(id: taskId) };
         var reloadedTasks = new List<TaskItem> { CreateSampleTask() }; // Different task
-        
+
         MockTaskRepository.SetupSequence(r => r.GetAllIncludingDeletedAsync())
             .ReturnsAsync(initialTasks)
             .ReturnsAsync(reloadedTasks);
-        
+
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(new AppStateRecord { CurrentTaskId = taskId });
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         // Act
         await service.ReloadAsync();
-        
+
         // Assert
         Assert.Null(service.CurrentTaskId);
     }
@@ -74,20 +74,20 @@ public partial class TaskServiceTests
     {
         // Arrange
         var initialTasks = new List<TaskItem> { CreateSampleTask() };
-        
+
         MockTaskRepository.SetupSequence(r => r.GetAllIncludingDeletedAsync())
             .ReturnsAsync(initialTasks)
             .ReturnsAsync((List<TaskItem>?)null);
-        
+
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         // Act
         await service.ReloadAsync();
-        
+
         // Assert
         Assert.Empty(service.Tasks);
     }
@@ -98,23 +98,23 @@ public partial class TaskServiceTests
         // Arrange
         var initialTasks = new List<TaskItem> { CreateSampleTask() };
         var reloadedTasks = new List<TaskItem> { CreateSampleTask(), CreateSampleTask() };
-        
+
         MockTaskRepository.SetupSequence(r => r.GetAllIncludingDeletedAsync())
             .ReturnsAsync(initialTasks)
             .ReturnsAsync(reloadedTasks);
-        
+
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         var eventFired = false;
         service.OnChange += () => eventFired = true;
-        
+
         // Act
         await service.ReloadAsync();
-        
+
         // Assert
         Assert.True(eventFired);
     }
@@ -129,18 +129,18 @@ public partial class TaskServiceTests
         // Arrange
         var task1 = CreateSampleTask();
         var task2 = CreateSampleTask();
-        
+
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task1, task2 });
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
         MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>())).ReturnsAsync(true);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         // Act
         await service.SaveAsync();
-        
+
         // Assert
         MockIndexedDb.Verify(d => d.PutAllAsync(Constants.Storage.TasksStore, It.IsAny<List<TaskItem>>()), Times.Once);
     }

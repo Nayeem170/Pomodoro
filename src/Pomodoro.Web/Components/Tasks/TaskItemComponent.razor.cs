@@ -11,7 +11,7 @@ namespace Pomodoro.Web.Components.Tasks;
 public class TaskItemBase : ComponentBase
 {
     #region Parameters (Model)
-    
+
     [Parameter]
     public TaskItem Item { get; set; } = default!;
 
@@ -29,7 +29,7 @@ public class TaskItemBase : ComponentBase
 
     [Parameter]
     public EventCallback<Guid> OnUncomplete { get; set; }
-    
+
     #endregion
 
     #region Business Logic Methods
@@ -109,6 +109,6 @@ public class TaskItemBase : ComponentBase
             await HandleSelect();
         }
     }
-    
+
     #endregion
 }

@@ -15,7 +15,7 @@ public class HistoryStatsService : IHistoryStatsService
     public virtual DailyStatsSummary CalculateStats(List<ActivityRecord> activities)
     {
         var pomodoros = activities.Where(a => a.Type == SessionType.Pomodoro).ToList();
-        
+
         return new DailyStatsSummary
         {
             PomodoroCount = pomodoros.Count,

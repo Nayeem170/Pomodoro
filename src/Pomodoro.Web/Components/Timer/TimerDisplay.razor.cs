@@ -12,17 +12,17 @@ namespace Pomodoro.Web.Components.Timer;
 public class TimerDisplayBase : ComponentBase, IDisposable
 {
     #region Dependencies
-    
+
     [Inject]
     protected ITimerService TimerService { get; set; } = default!;
 
     [Inject]
     protected ILogger<TimerDisplayBase> Logger { get; set; } = default!;
-    
+
     #endregion
 
     #region Parameters (for initial/override values only)
-    
+
     [Parameter]
     public TimeSpan? RemainingTime { get; set; }
 
@@ -31,37 +31,37 @@ public class TimerDisplayBase : ComponentBase, IDisposable
 
     [Parameter]
     public bool? IsRunning { get; set; }
-    
+
     #endregion
 
     #region Private Fields
-    
+
     #endregion
 
     #region Properties - Always read from service for real-time updates
-    
+
     protected TimeSpan CurrentRemainingTime => TimerService.RemainingTime;
     protected SessionType CurrentSessionType => TimerService.CurrentSessionType;
     protected bool CurrentIsRunning => TimerService.IsRunning;
-    
+
     #endregion
 
     #region Lifecycle Methods
-    
+
     protected override void OnInitialized()
     {
         // Subscribe to timer service events
         TimerService.OnTick += OnTimerTick;
         TimerService.OnStateChanged += OnTimerStateChanged;
     }
-    
+
     internal virtual void UpdateDisplay()
     {
         StateHasChanged();
     }
 
     internal virtual void HandleStateChangeError() { }
-    
+
     internal async void OnTimerTick()
     {
         try
@@ -73,7 +73,7 @@ public class TimerDisplayBase : ComponentBase, IDisposable
             Logger.LogError(ex, "Error in OnTimerTick");
         }
     }
-    
+
     internal async void OnTimerStateChanged()
     {
         try
@@ -85,13 +85,13 @@ public class TimerDisplayBase : ComponentBase, IDisposable
             Logger.LogError(ex, "Error in OnTimerStateChanged");
         }
     }
-    
+
     public void Dispose()
     {
         TimerService.OnTick -= OnTimerTick;
         TimerService.OnStateChanged -= OnTimerStateChanged;
     }
-    
+
     #endregion
 
     #region Business Logic Methods
@@ -133,15 +133,15 @@ public class TimerDisplayBase : ComponentBase, IDisposable
             Models.SessionType.LongBreak => Constants.SessionTypes.LongBreakClass,
             _ => Constants.SessionTypes.PomodoroClass
         };
-        
+
         // Add paused class if not running (allows session color + reduced opacity)
         if (!CurrentIsRunning)
         {
             return $"{sessionClass} {Constants.SessionTypes.PausedState}";
         }
-        
+
         return sessionClass;
     }
-    
+
     #endregion
 }

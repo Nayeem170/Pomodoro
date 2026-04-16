@@ -13,7 +13,7 @@ public interface IJSInteropService
     /// <param name="identifier">The identifier of the function to invoke</param>
     /// <param name="args">Arguments to pass to the function</param>
     Task InvokeVoidAsync(string identifier, params object[] args);
-    
+
     /// <summary>
     /// Invokes a JavaScript function that returns a value
     /// </summary>

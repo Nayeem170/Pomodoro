@@ -107,7 +107,7 @@ public class IndexKeyboardShortcutTests : TestHelper
         KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut(
             "space",
             It.IsAny<Action>(),
-            It.IsAny<string>()), Times.Once, 
+            It.IsAny<string>()), Times.Once,
             "Play/Pause shortcut should be registered");
     }
 

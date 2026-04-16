@@ -63,7 +63,7 @@ public class LocalDateTimeService : ILocalDateTimeService
             // Get the client's local date and time via JavaScript interop
             var localDateTime = await _jsRuntime.InvokeAsync<DateTime>(Constants.LocalDateTimeJsFunctions.GetLocalDateTime);
             var offset = await _jsRuntime.InvokeAsync<int>(Constants.LocalDateTimeJsFunctions.GetTimezoneOffset);
-            
+
             // Create a DateTimeOffset with the local time and timezone offset
             var localDateTimeOffset = new DateTimeOffset(
                 localDateTime.Year,
@@ -73,7 +73,7 @@ public class LocalDateTimeService : ILocalDateTimeService
                 localDateTime.Minute,
                 localDateTime.Second,
                 TimeSpan.FromMinutes(-offset)); // JavaScript returns offset in minutes with opposite sign
-            
+
             _cachedLocalDateTimeOffset = localDateTimeOffset;
             return localDateTimeOffset;
         }

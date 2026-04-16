@@ -20,11 +20,11 @@ public class ChartDataFormatter
         DateTime weekStartDate)
     {
         var weekStart = weekStartDate.Date;
-        
+
         var labels = new string[Constants.Charts.DaysPerWeek];
         var focusData = new int[Constants.Charts.DaysPerWeek];
         var breakData = new int[Constants.Charts.DaysPerWeek];
-        
+
         for (int i = 0; i < Constants.Charts.DaysPerWeek; i++)
         {
             var date = weekStart.AddDays(i);
@@ -32,7 +32,7 @@ public class ChartDataFormatter
             focusData[i] = dailyFocusMinutes.TryGetValue(date, out var minutes) ? minutes : 0;
             breakData[i] = breakDailyMinutes.TryGetValue(date, out var breakMinutes) ? breakMinutes : 0;
         }
-        
+
         return (labels, focusData, breakData);
     }
 }

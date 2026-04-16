@@ -70,7 +70,7 @@ namespace Pomodoro.Web.Services
 
             if (match == NavLinkMatch.All)
             {
-                return currentUri.AbsolutePath == href || 
+                return currentUri.AbsolutePath == href ||
                        (currentUri.AbsolutePath == "/" && href == "");
             }
 

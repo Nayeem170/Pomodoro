@@ -701,7 +701,7 @@ public class AppStateTests
         // Arrange
         var eventCalled = false;
         _appState.OnStateChanged += () => eventCalled = true;
-        
+
         // Set up initial state
         _appState.TodayTotalFocusMinutes = 100;
         _appState.TodayPomodoroCount = 5;
@@ -854,32 +854,32 @@ public class AppStateTests
         Assert.Equal(10, _appState.TodayTasksWorkedOn);
     }
 
-        [Fact]
-        public void Tasks_Setter_WithListDirectly_CopiesList()
-        {
-            var tasks = new List<TaskItem>
+    [Fact]
+    public void Tasks_Setter_WithListDirectly_CopiesList()
+    {
+        var tasks = new List<TaskItem>
             {
                 new() { Id = Guid.NewGuid(), Name = "Task1" }
             };
 
-            _appState.Tasks = tasks;
+        _appState.Tasks = tasks;
 
-            Assert.Single(_appState.Tasks);
-            Assert.Equal(tasks[0].Id, _appState.Tasks[0].Id);
-        }
+        Assert.Single(_appState.Tasks);
+        Assert.Equal(tasks[0].Id, _appState.Tasks[0].Id);
+    }
 
-        [Fact]
-        public void Tasks_Setter_WithIEnumerable_CopiesToList()
-        {
-            var tasks = new List<TaskItem>
+    [Fact]
+    public void Tasks_Setter_WithIEnumerable_CopiesToList()
+    {
+        var tasks = new List<TaskItem>
             {
                 new() { Id = Guid.NewGuid(), Name = "Task1" }
             };
 
-            _appState.Tasks = tasks;
+        _appState.Tasks = tasks;
 
-            Assert.Single(_appState.Tasks);
-        }
+        Assert.Single(_appState.Tasks);
+    }
 
     [Fact]
     public void Tasks_Setter_WithNull_SetsEmptyList()

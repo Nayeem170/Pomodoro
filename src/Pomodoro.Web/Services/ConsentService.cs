@@ -17,12 +17,12 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
     private bool _isDisposed;
     private bool _isInitialized;
     private readonly object _initLock = new();
-    
+
     // PeriodicTimer-based countdown for thread-safe async handling
     private PeriodicTimer? _countdownTimer;
     private CancellationTokenSource? _countdownCts;
     private readonly object _timerLock = new();
-    
+
     private readonly ITimerService _timerService;
     private readonly ITaskService _taskService;
     private readonly INotificationService _notificationService;
@@ -52,7 +52,7 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
         _sessionOptionsService = sessionOptionsService;
         _logger = logger;
     }
-    
+
     /// <summary>
     /// Initializes the service - called after all services are created
     /// Uses lock to prevent duplicate event subscriptions from multiple Initialize calls
@@ -71,9 +71,9 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
         try
         {
             await PlayCompletionSoundAndNotifyAsync(args.SessionType);
-            
+
             var settings = _appState?.Settings;
-            
+
             if (settings?.AutoStartEnabled == true)
             {
                 ShowConsentModal(args.SessionType);
@@ -91,12 +91,12 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
     private async Task PlayCompletionSoundAndNotifyAsync(SessionType sessionType)
     {
         if (!TryGetNotificationSettings(out var settings)) return;
-        
+
         if (settings.SoundEnabled)
         {
             await PlaySoundAsync(sessionType);
         }
-        
+
         if (settings.NotificationsEnabled)
         {
             await ShowNotificationAsync(sessionType);
@@ -142,14 +142,14 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
     public void ShowConsentModal(SessionType completedSessionType)
     {
         CompletedSessionType = completedSessionType;
-        
+
         // Get the countdown seconds from user settings
         var settings = _appState?.Settings;
         CountdownSeconds = settings?.AutoStartDelaySeconds ?? Constants.UI.DefaultConsentCountdownSeconds;
-        
+
         AvailableOptions = _sessionOptionsService.GetOptionsForSessionType(completedSessionType);
         IsModalVisible = true;
-        
+
         StartCountdown();
         OnConsentRequired?.Invoke();
     }
@@ -172,7 +172,7 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
         IsModalVisible = false;
         OnConsentHandled?.Invoke();
     }
-    
+
     public void RefreshOptions()
     {
         if (IsModalVisible)
@@ -225,19 +225,19 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
     {
         // Stop any existing countdown first
         StopCountdown();
-        
+
         lock (_timerLock)
         {
             if (_isDisposed) return;
-            
+
             _countdownCts = new CancellationTokenSource();
             _countdownTimer = new PeriodicTimer(TimeSpan.FromSeconds(Constants.Notifications.CountdownIntervalSeconds));
-            
+
             // Run countdown in background - fire-and-forget with proper error handling
             _ = RunCountdownAsync(_countdownCts.Token);
         }
     }
-    
+
     /// <summary>
     /// Stops the countdown timer and cleans up resources
     /// </summary>
@@ -248,12 +248,12 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
             _countdownCts?.Cancel();
             _countdownCts?.Dispose();
             _countdownCts = null;
-            
+
             _countdownTimer?.Dispose();
             _countdownTimer = null;
         }
     }
-    
+
     /// <summary>
     /// Async countdown loop using PeriodicTimer
     /// This runs on the synchronization context when awaited, ensuring thread-safe UI updates
@@ -267,9 +267,9 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
             {
                 timer = _countdownTimer;
             }
-            
+
             if (timer == null) return;
-            
+
             while (await timer.WaitForNextTickAsync(cancellationToken))
             {
                 if (await ProcessCountdownTickAsync())
@@ -296,26 +296,26 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
                 return true;
             }
         }
-        
+
         if (_isDisposed || !IsModalVisible)
         {
             return true;
         }
-        
+
         CountdownSeconds--;
         OnCountdownTick?.Invoke();
-        
+
         if (CountdownSeconds <= 0)
         {
             StopCountdown();
-            
+
             if (!_isDisposed)
             {
                 await HandleTimeoutAsync();
             }
             return true;
         }
-        
+
         return false;
     }
 
@@ -328,7 +328,7 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
         _isDisposed = true;
         StopCountdown();
         IsModalVisible = false;
-        
+
         await ValueTask.CompletedTask;
     }
 

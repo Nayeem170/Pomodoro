@@ -16,7 +16,7 @@ public class DateNavigatorTests : TestContext
     public DateNavigatorTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        
+
         // Register services
         var commonServices = TestBase.CreateCommonServiceCollection();
         foreach (var service in commonServices)

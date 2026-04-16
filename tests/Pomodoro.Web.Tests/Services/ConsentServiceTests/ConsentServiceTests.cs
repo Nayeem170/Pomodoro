@@ -31,7 +31,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -40,11 +40,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -52,14 +52,14 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         service.Initialize();
-        
+
         // Assert - Initialize no longer subscribes to OnTimerComplete; it sets the initialized flag
         timerServiceMock.VerifyAdd(x => x.OnTimerComplete += It.IsAny<Action<SessionType>>(), Times.Never);
     }
-    
+
     [Fact]
     public void Initialize_WhenCalledMultipleTimes_IsIdempotent()
     {
@@ -79,7 +79,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -88,11 +88,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -100,18 +100,18 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         service.Initialize();
         service.Initialize();
         service.Initialize();
-        
+
         // Assert - Initialize no longer subscribes; calling it multiple times should be safe
         timerServiceMock.VerifyAdd(
             x => x.OnTimerComplete += It.IsAny<Action<SessionType>>(),
             Times.Never());
     }
-    
+
     [Fact]
     public async Task DisposeAsync_SetsIsDisposedFlag()
     {
@@ -131,7 +131,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -140,11 +140,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -153,15 +153,15 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
         service.Initialize();
-        
+
         // Act
         await service.DisposeAsync();
-        
+
         // Assert - DisposeAsync no longer unsubscribes from OnTimerComplete
         timerServiceMock.VerifyRemove(x => x.OnTimerComplete -= It.IsAny<Action<SessionType>>(), Times.Never());
         Assert.False(service.IsModalVisible);
     }
-    
+
     [Fact]
     public async Task DisposeAsync_WhenCalledMultipleTimes_DoesNotThrow()
     {
@@ -181,7 +181,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -190,11 +190,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -203,12 +203,12 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
         service.Initialize();
-        
+
         // Act & Assert
         await service.DisposeAsync();
         await service.DisposeAsync();
     }
-    
+
     [Fact]
     public void ShowConsentModal_SetsIsModalVisibleToTrue()
     {
@@ -228,7 +228,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -237,11 +237,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -249,14 +249,14 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         service.ShowConsentModal(SessionType.Pomodoro);
-        
+
         // Assert
         Assert.True(service.IsModalVisible);
     }
-    
+
     [Fact]
     public void ShowConsentModal_SetsCompletedSessionType()
     {
@@ -276,7 +276,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -285,11 +285,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -297,14 +297,14 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         service.ShowConsentModal(SessionType.Pomodoro);
-        
+
         // Assert
         Assert.Equal(SessionType.Pomodoro, service.CompletedSessionType);
     }
-    
+
     [Fact]
     public void ShowConsentModal_SetsCountdownSecondsFromSettings()
     {
@@ -324,7 +324,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -333,11 +333,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -345,14 +345,14 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         service.ShowConsentModal(SessionType.Pomodoro);
-        
+
         // Assert
         Assert.Equal(10, service.CountdownSeconds);
     }
-    
+
     [Fact]
     public void ShowConsentModal_WhenSettingsNull_UsesDefaultCountdown()
     {
@@ -366,7 +366,7 @@ public partial class ConsentServiceTests
         {
             Settings = null!
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -375,11 +375,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -387,14 +387,14 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         service.ShowConsentModal(SessionType.Pomodoro);
-        
+
         // Assert
         Assert.Equal(Pomodoro.Web.Constants.UI.DefaultConsentCountdownSeconds, service.CountdownSeconds);
     }
-    
+
     [Fact]
     public void ShowConsentModal_GetsOptionsFromSessionOptionsService()
     {
@@ -414,7 +414,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -423,11 +423,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -435,14 +435,14 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         service.ShowConsentModal(SessionType.Pomodoro);
-        
+
         // Assert
         sessionOptionsServiceMock.Verify(x => x.GetOptionsForSessionType(SessionType.Pomodoro), Times.Once);
     }
-    
+
     [Fact]
     public void ShowConsentModal_SetsAvailableOptions()
     {
@@ -462,7 +462,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         var expectedOptions = new List<ConsentOption>
         {
             new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = true }
@@ -470,11 +470,11 @@ public partial class ConsentServiceTests
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(expectedOptions);
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -482,14 +482,14 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         service.ShowConsentModal(SessionType.Pomodoro);
-        
+
         // Assert
         Assert.Equal(expectedOptions, service.AvailableOptions);
     }
-    
+
     [Fact]
     public void ShowConsentModal_FiresOnConsentRequiredEvent()
     {
@@ -509,7 +509,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -518,11 +518,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -532,14 +532,14 @@ public partial class ConsentServiceTests
             loggerMock.Object);
         var eventFired = false;
         service.OnConsentRequired += () => eventFired = true;
-        
+
         // Act
         service.ShowConsentModal(SessionType.Pomodoro);
-        
+
         // Assert
         Assert.True(eventFired);
     }
-    
+
     [Fact]
     public void HideConsentModal_SetsIsModalVisibleToFalse()
     {
@@ -559,7 +559,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -568,11 +568,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -581,14 +581,14 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
         service.ShowConsentModal(SessionType.Pomodoro);
-        
+
         // Act
         service.HideConsentModal();
-        
+
         // Assert
         Assert.False(service.IsModalVisible);
     }
-    
+
     [Fact]
     public void HideConsentModal_FiresOnConsentHandledEvent()
     {
@@ -608,7 +608,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -617,11 +617,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -632,14 +632,14 @@ public partial class ConsentServiceTests
         service.ShowConsentModal(SessionType.Pomodoro);
         var eventFired = false;
         service.OnConsentHandled += () => eventFired = true;
-        
+
         // Act
         service.HideConsentModal();
-        
+
         // Assert
         Assert.True(eventFired);
     }
-    
+
     [Fact]
     public void RefreshOptions_WhenModalVisible_UpdatesOptions()
     {
@@ -659,7 +659,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -668,11 +668,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -688,14 +688,14 @@ public partial class ConsentServiceTests
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(newOptions);
-        
+
         // Act
         service.RefreshOptions();
-        
+
         // Assert
         Assert.Equal(newOptions, service.AvailableOptions);
     }
-    
+
     [Fact]
     public void RefreshOptions_WhenModalNotVisible_DoesNotUpdateOptions()
     {
@@ -715,7 +715,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -724,11 +724,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -737,16 +737,16 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
         // Don't show modal - IsModalVisible is false
-        
+
         // Act
         service.RefreshOptions();
-        
+
         // Assert
         sessionOptionsServiceMock.Verify(
-            x => x.GetOptionsForSessionType(It.IsAny<SessionType>()), 
+            x => x.GetOptionsForSessionType(It.IsAny<SessionType>()),
             Times.Never);
     }
-    
+
     [Fact]
     public void RefreshOptions_WhenModalVisible_FiresOnConsentRequiredEvent()
     {
@@ -766,7 +766,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -775,11 +775,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -790,14 +790,14 @@ public partial class ConsentServiceTests
         service.ShowConsentModal(SessionType.Pomodoro);
         var eventFired = false;
         service.OnConsentRequired += () => eventFired = true;
-        
+
         // Act
         service.RefreshOptions();
-        
+
         // Assert
         Assert.True(eventFired);
     }
-    
+
     [Fact]
     public async Task SelectOptionAsync_WithPomodoroAndCurrentTask_StartsPomodoro()
     {
@@ -817,7 +817,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -826,11 +826,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -841,14 +841,14 @@ public partial class ConsentServiceTests
         var taskId = Guid.NewGuid();
         taskServiceMock.Setup(x => x.CurrentTaskId).Returns(taskId);
         service.ShowConsentModal(SessionType.ShortBreak);
-        
+
         // Act
         await service.SelectOptionAsync(SessionType.Pomodoro);
-        
+
         // Assert
         timerServiceMock.Verify(x => x.StartPomodoroAsync(taskId), Times.Once);
     }
-    
+
     [Fact]
     public async Task SelectOptionAsync_WithPomodoroNoCurrentTask_DoesNotStartPomodoro()
     {
@@ -868,7 +868,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -877,11 +877,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -891,14 +891,14 @@ public partial class ConsentServiceTests
             loggerMock.Object);
         taskServiceMock.Setup(x => x.CurrentTaskId).Returns((Guid?)null);
         service.ShowConsentModal(SessionType.ShortBreak);
-        
+
         // Act
         await service.SelectOptionAsync(SessionType.Pomodoro);
-        
+
         // Assert
         timerServiceMock.Verify(x => x.StartPomodoroAsync(It.IsAny<Guid>()), Times.Never);
     }
-    
+
     [Fact]
     public async Task SelectOptionAsync_WithShortBreak_StartsShortBreak()
     {
@@ -918,7 +918,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -927,11 +927,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -940,14 +940,14 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
         service.ShowConsentModal(SessionType.Pomodoro);
-        
+
         // Act
         await service.SelectOptionAsync(SessionType.ShortBreak);
-        
+
         // Assert
         timerServiceMock.Verify(x => x.StartShortBreakAsync(), Times.Once);
     }
-    
+
     [Fact]
     public async Task SelectOptionAsync_WithLongBreak_StartsLongBreak()
     {
@@ -967,7 +967,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -976,11 +976,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -989,14 +989,14 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
         service.ShowConsentModal(SessionType.Pomodoro);
-        
+
         // Act
         await service.SelectOptionAsync(SessionType.LongBreak);
-        
+
         // Assert
         timerServiceMock.Verify(x => x.StartLongBreakAsync(), Times.Once);
     }
-    
+
     [Fact]
     public async Task SelectOptionAsync_HidesModal()
     {
@@ -1016,7 +1016,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -1025,11 +1025,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -1038,14 +1038,14 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
         service.ShowConsentModal(SessionType.Pomodoro);
-        
+
         // Act
         await service.SelectOptionAsync(SessionType.ShortBreak);
-        
+
         // Assert
         Assert.False(service.IsModalVisible);
     }
-    
+
     [Fact]
     public async Task SelectOptionAsync_FiresOnConsentHandledEvent()
     {
@@ -1065,7 +1065,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -1074,11 +1074,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -1089,14 +1089,14 @@ public partial class ConsentServiceTests
         service.ShowConsentModal(SessionType.Pomodoro);
         var eventFired = false;
         service.OnConsentHandled += () => eventFired = true;
-        
+
         // Act
         await service.SelectOptionAsync(SessionType.ShortBreak);
-        
+
         // Assert
         Assert.True(eventFired);
     }
-    
+
     [Fact]
     public async Task HandleTimeoutAsync_GetsDefaultOptionFromService()
     {
@@ -1116,7 +1116,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -1125,11 +1125,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(SessionType.Pomodoro))
             .Returns(SessionType.ShortBreak);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -1138,14 +1138,14 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
         service.ShowConsentModal(SessionType.Pomodoro);
-        
+
         // Act
         await service.HandleTimeoutAsync();
-        
+
         // Assert
         sessionOptionsServiceMock.Verify(x => x.GetDefaultOption(SessionType.Pomodoro), Times.Once);
     }
-    
+
     [Fact]
     public async Task HandleTimeoutAsync_StartsDefaultSession()
     {
@@ -1165,7 +1165,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -1174,11 +1174,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.ShortBreak);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -1187,14 +1187,14 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
         service.ShowConsentModal(SessionType.Pomodoro);
-        
+
         // Act
         await service.HandleTimeoutAsync();
-        
+
         // Assert
         timerServiceMock.Verify(x => x.StartShortBreakAsync(), Times.Once);
     }
-    
+
     [Fact]
     public async Task HandleTimeoutAsync_HidesModal()
     {
@@ -1214,7 +1214,7 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
@@ -1223,11 +1223,11 @@ public partial class ConsentServiceTests
                 new() { SessionType = SessionType.LongBreak, Label = "Long Break", Duration = "15 min", IsDefault = false },
                 new() { SessionType = SessionType.Pomodoro, Label = "Another Pomodoro", Duration = "25 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.Pomodoro);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -1236,10 +1236,10 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
         service.ShowConsentModal(SessionType.Pomodoro);
-        
+
         // Act
         await service.HandleTimeoutAsync();
-        
+
         // Assert
         Assert.False(service.IsModalVisible);
     }

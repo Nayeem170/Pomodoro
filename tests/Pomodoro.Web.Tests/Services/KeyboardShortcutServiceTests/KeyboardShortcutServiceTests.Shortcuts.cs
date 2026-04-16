@@ -15,10 +15,10 @@ public partial class KeyboardShortcutServiceTests
             // Arrange
             var service = CreateService();
             var actionCalled = false;
-            
+
             // Act
             service.RegisterShortcut("A", () => actionCalled = true, "Test shortcut");
-            
+
             // Assert - verify by checking HandleShortcut works with lowercase
             service.HandleShortcut("a");
             Assert.True(actionCalled);
@@ -29,10 +29,10 @@ public partial class KeyboardShortcutServiceTests
         {
             // Arrange
             var service = CreateService();
-            
+
             // Act
             service.RegisterShortcut("s", () => { }, "Save action");
-            
+
             // Assert
             var shortcuts = service.GetRegisteredShortcuts();
             Assert.Contains("s", shortcuts.Keys);
@@ -44,10 +44,10 @@ public partial class KeyboardShortcutServiceTests
         {
             // Arrange
             var service = CreateService();
-            
+
             // Act
             service.RegisterShortcut("x", () => { });
-            
+
             // Assert
             var shortcuts = service.GetRegisteredShortcuts();
             Assert.DoesNotContain("x", shortcuts.Keys);
@@ -60,11 +60,11 @@ public partial class KeyboardShortcutServiceTests
             var service = CreateService();
             var firstCalled = false;
             var secondCalled = false;
-            
+
             // Act
             service.RegisterShortcut("a", () => firstCalled = true);
             service.RegisterShortcut("A", () => secondCalled = true); // Same key normalized
-            
+
             // Assert
             service.HandleShortcut("a");
             Assert.False(firstCalled);
@@ -82,10 +82,10 @@ public partial class KeyboardShortcutServiceTests
             var service = CreateService();
             var actionCalled = false;
             service.RegisterShortcut("d", () => actionCalled = true, "Delete");
-            
+
             // Act
             service.UnregisterShortcut("d");
-            
+
             // Assert
             service.HandleShortcut("d");
             Assert.False(actionCalled);
@@ -98,10 +98,10 @@ public partial class KeyboardShortcutServiceTests
             var service = CreateService();
             var actionCalled = false;
             service.RegisterShortcut("d", () => actionCalled = true, "Delete");
-            
+
             // Act
             service.UnregisterShortcut("D"); // Uppercase
-            
+
             // Assert
             service.HandleShortcut("d");
             Assert.False(actionCalled);
@@ -113,10 +113,10 @@ public partial class KeyboardShortcutServiceTests
             // Arrange
             var service = CreateService();
             service.RegisterShortcut("d", () => { }, "Delete");
-            
+
             // Act
             service.UnregisterShortcut("d");
-            
+
             // Assert
             var shortcuts = service.GetRegisteredShortcuts();
             Assert.DoesNotContain("d", shortcuts.Keys);
@@ -127,7 +127,7 @@ public partial class KeyboardShortcutServiceTests
         {
             // Arrange
             var service = CreateService();
-            
+
             // Act & Assert - should not throw
             service.UnregisterShortcut("nonexistent");
         }
@@ -142,12 +142,12 @@ public partial class KeyboardShortcutServiceTests
             // Arrange
             var service = CreateService();
             service.RegisterShortcut("a", () => { }, "Action A");
-            
+
             // Act
             var shortcuts1 = service.GetRegisteredShortcuts();
             service.RegisterShortcut("b", () => { }, "Action B");
             var shortcuts2 = service.GetRegisteredShortcuts();
-            
+
             // Assert
             Assert.Single(shortcuts1);
             Assert.Equal(2, shortcuts2.Count);
@@ -158,10 +158,10 @@ public partial class KeyboardShortcutServiceTests
         {
             // Arrange
             var service = CreateService();
-            
+
             // Act
             var shortcuts = service.GetRegisteredShortcuts();
-            
+
             // Assert
             Assert.Empty(shortcuts);
         }
@@ -177,10 +177,10 @@ public partial class KeyboardShortcutServiceTests
             var service = CreateService();
             var actionCalled = false;
             service.RegisterShortcut("space", () => actionCalled = true);
-            
+
             // Act
             service.HandleShortcut("space");
-            
+
             // Assert
             Assert.True(actionCalled);
         }
@@ -192,10 +192,10 @@ public partial class KeyboardShortcutServiceTests
             var service = CreateService();
             var actionCalled = false;
             service.RegisterShortcut("SPACE", () => actionCalled = true);
-            
+
             // Act
             service.HandleShortcut("space");
-            
+
             // Assert
             Assert.True(actionCalled);
         }
@@ -205,7 +205,7 @@ public partial class KeyboardShortcutServiceTests
         {
             // Arrange
             var service = CreateService();
-            
+
             // Act & Assert - should not throw
             service.HandleShortcut("unknown");
         }
@@ -216,7 +216,7 @@ public partial class KeyboardShortcutServiceTests
             // Arrange
             var service = CreateService();
             service.RegisterShortcut("crash", () => throw new InvalidOperationException("Test exception"));
-            
+
             // Act & Assert - should not throw
             service.HandleShortcut("crash");
         }
@@ -230,10 +230,10 @@ public partial class KeyboardShortcutServiceTests
         {
             // Arrange
             var service = CreateService();
-            
+
             // Act
             await service.InitializeAsync();
-            
+
             // Assert - verify JS interop was called
             _mockJsRuntime.Verify(js => js.InvokeAsync<object>(
                 "keyboardShortcuts.initialize",
@@ -246,11 +246,11 @@ public partial class KeyboardShortcutServiceTests
         {
             // Arrange
             var service = CreateService();
-            
+
             // Act - call twice
             await service.InitializeAsync();
             await service.InitializeAsync();
-            
+
             // Assert - verify JS interop was called twice
             _mockJsRuntime.Verify(js => js.InvokeAsync<object>(
                 "keyboardShortcuts.initialize",
@@ -268,10 +268,10 @@ public partial class KeyboardShortcutServiceTests
             // Arrange
             var service = CreateService();
             // Don't call InitializeAsync, so _dotNetRef is null
-            
+
             // Act
             await service.DisposeAsync();
-            
+
             // Assert - JS dispose should not be called since _dotNetRef is null
             _mockJsRuntime.Verify(js => js.InvokeAsync<object>(
                 "keyboardShortcuts.dispose",
@@ -285,10 +285,10 @@ public partial class KeyboardShortcutServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             await service.DisposeAsync();
-            
+
             // Assert - JS dispose should be called
             _mockJsRuntime.Verify(js => js.InvokeAsync<object>(
                 "keyboardShortcuts.dispose",
@@ -306,7 +306,7 @@ public partial class KeyboardShortcutServiceTests
                     "keyboardShortcuts.dispose",
                     It.IsAny<object[]>()))
                 .ThrowsAsync(new InvalidOperationException("JS error"));
-            
+
             // Act & Assert - should not throw
             await service.DisposeAsync();
         }
@@ -317,11 +317,11 @@ public partial class KeyboardShortcutServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act - dispose twice
             await service.DisposeAsync();
             await service.DisposeAsync();
-            
+
             // Assert - JS dispose should only be called once (second time _dotNetRef is null)
             _mockJsRuntime.Verify(js => js.InvokeAsync<object>(
                 "keyboardShortcuts.dispose",

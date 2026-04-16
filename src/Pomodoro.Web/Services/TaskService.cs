@@ -15,7 +15,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     private readonly AppState _appState;
 
     public event Action? OnChange;
-    
+
     public List<TaskItem> Tasks => _appState.Tasks.Where(t => !t.IsDeleted).ToList();
     public IReadOnlyList<TaskItem> AllTasks => _appState.Tasks; // Includes soft-deleted tasks for history
     public Guid? CurrentTaskId => _appState.CurrentTaskId;
@@ -36,7 +36,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         {
             _appState.Tasks = tasks;
         }
-        
+
         // Load current task from app state store
         var appState = await _indexedDb.GetAsync<AppStateRecord>(Constants.Storage.AppStateStore, Constants.Storage.DefaultSettingsId);
         if (appState?.CurrentTaskId.HasValue == true)
@@ -48,10 +48,10 @@ public class TaskService : ITaskService, ITimerEventSubscriber
                 _appState.CurrentTaskId = taskId;
             }
         }
-        
+
         NotifyStateChanged();
     }
-    
+
     /// <summary>
     /// Reloads all task data from storage, refreshing the in-memory cache.
     /// Call this after import operations to reflect changes.
@@ -61,7 +61,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         // Reload tasks from repository
         var tasks = await _taskRepository.GetAllIncludingDeletedAsync();
         _appState.Tasks = tasks ?? new List<TaskItem>();
-        
+
         // Clear current task selection if the task no longer exists
         if (_appState.CurrentTaskId.HasValue)
         {
@@ -70,20 +70,20 @@ public class TaskService : ITaskService, ITimerEventSubscriber
                 _appState.CurrentTaskId = null;
             }
         }
-        
+
         NotifyStateChanged();
     }
 
     public async Task AddTaskAsync(string name)
     {
         var sanitized = SanitizeTaskName(name);
-        
+
         // Validate that the task name is not empty after sanitization and within length limit
         if (string.IsNullOrEmpty(sanitized) || sanitized.Length > Constants.UI.MaxTaskNameLength)
         {
             return;
         }
-        
+
         var task = new TaskItem
         {
             Id = Guid.NewGuid(),
@@ -93,10 +93,10 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             TotalFocusMinutes = Constants.Tasks.InitialFocusMinutes,
             PomodoroCount = Constants.Tasks.InitialPomodoroCount
         };
-        
+
         // Persist first to ensure cache and storage stay consistent
         await SaveTaskAsync(task);
-        
+
         // Update in-memory state only after successful persistence
         _appState.InsertTask(task, Constants.Tasks.InsertAtBeginning);
         _appState.CurrentTaskId = task.Id;
@@ -107,16 +107,16 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     public async Task UpdateTaskAsync(TaskItem task)
     {
         var sanitized = SanitizeTaskName(task.Name ?? string.Empty);
-        
+
         // Validate that the task name is not empty after sanitization and within length limit
         if (string.IsNullOrEmpty(sanitized) || sanitized.Length > Constants.UI.MaxTaskNameLength)
         {
             return;
         }
-        
+
         var existingTask = _appState.FindTaskById(task.Id);
         if (existingTask == null) return;
-        
+
         // Persist first to ensure cache and storage stay consistent
         var taskToSave = new TaskItem
         {
@@ -131,7 +131,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             DeletedAt = existingTask.DeletedAt
         };
         await SaveTaskAsync(taskToSave);
-        
+
         // Update in-memory state only after successful persistence
         _appState.UpdateTask(task.Id, t => t.Name = sanitized);
         NotifyStateChanged();
@@ -141,7 +141,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     {
         var existingTask = _appState.FindTaskById(taskId);
         if (existingTask == null) return;
-        
+
         // Persist first to ensure cache and storage stay consistent
         var taskToSave = new TaskItem
         {
@@ -156,7 +156,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             DeletedAt = DateTime.UtcNow
         };
         await SaveTaskAsync(taskToSave);
-        
+
         // Update in-memory state only after successful persistence
         _appState.UpdateTask(taskId, t =>
         {
@@ -164,13 +164,13 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             t.IsDeleted = true;
             t.DeletedAt = DateTime.UtcNow;
         });
-        
+
         if (_appState.CurrentTaskId == taskId)
         {
             _appState.CurrentTaskId = null;
             await SaveCurrentTaskIdAsync();
         }
-        
+
         NotifyStateChanged();
     }
 
@@ -178,7 +178,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     {
         var existingTask = _appState.FindTaskById(taskId);
         if (existingTask == null) return;
-        
+
         // Persist first to ensure cache and storage stay consistent
         var taskToSave = new TaskItem
         {
@@ -193,7 +193,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             DeletedAt = existingTask.DeletedAt
         };
         await SaveTaskAsync(taskToSave);
-        
+
         // Update in-memory state only after successful persistence
         _appState.UpdateTask(taskId, t => t.IsCompleted = true);
         NotifyStateChanged();
@@ -203,7 +203,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     {
         var existingTask = _appState.FindTaskById(taskId);
         if (existingTask == null) return;
-        
+
         // Persist first to ensure cache and storage stay consistent
         var taskToSave = new TaskItem
         {
@@ -218,7 +218,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             DeletedAt = existingTask.DeletedAt
         };
         await SaveTaskAsync(taskToSave);
-        
+
         // Update in-memory state only after successful persistence
         _appState.UpdateTask(taskId, t => t.IsCompleted = false);
         NotifyStateChanged();
@@ -227,7 +227,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     public async Task SelectTaskAsync(Guid taskId)
     {
         var task = _appState.FindTaskById(taskId);
-        
+
         if (task != null && !task.IsCompleted)
         {
             _appState.CurrentTaskId = taskId;
@@ -243,14 +243,14 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         {
             return;
         }
-        
+
         var updated = _appState.UpdateTask(taskId, t =>
         {
             t.TotalFocusMinutes += minutes;
             t.PomodoroCount++;
             t.LastWorkedOn = DateTime.UtcNow;
         });
-        
+
         if (updated)
         {
             var task = _appState.FindTaskById(taskId);
@@ -293,7 +293,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         // Only process completed pomodoro sessions with a task
         if (args.SessionType != SessionType.Pomodoro || !args.TaskId.HasValue)
             return;
-        
+
         await AddTimeToTaskAsync(args.TaskId.Value, args.DurationMinutes);
     }
 
@@ -304,10 +304,10 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     private static string SanitizeTaskName(string name)
     {
         if (string.IsNullOrEmpty(name)) return string.Empty;
-        
+
         // Trim whitespace
         var trimmed = name.Trim();
-        
+
         // HTML encode to prevent XSS (defense-in-depth, Blazor escapes automatically)
         return HttpUtility.HtmlEncode(trimmed);
     }

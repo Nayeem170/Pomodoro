@@ -32,7 +32,7 @@ public partial class WeeklyMiniChartTests : TestContext
     {
         // Arrange & Act
         var cut = RenderComponent<WeeklyMiniChart>();
-        
+
         // Assert
         Assert.NotNull(cut.Markup);
     }
@@ -443,7 +443,7 @@ public partial class WeeklyMiniChartTests : TestContext
     }
 
     #region Tests for uncovered line coverage (lines 45, 53, 55, 62, 73, 75, 79-82)
-    
+
     private void WeeklyMiniChart_OnParametersSetAsync_WithNullChartService_DoesNotThrow()
     {
         // Arrange - Create component without ChartService
@@ -465,7 +465,7 @@ public partial class WeeklyMiniChartTests : TestContext
         Services.AddSingleton(new ChartDataFormatter());
 
         var weekStart = DateTime.Today;
-        
+
         // Act - Render with initial data
         var cut = RenderComponent<WeeklyMiniChart>(parameters => parameters
             .Add(p => p.DailyFocusMinutes, new Dictionary<DateTime, int> { { weekStart, 30 } })

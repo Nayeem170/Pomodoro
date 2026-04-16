@@ -56,7 +56,7 @@ namespace Pomodoro.Web.Tests.Pages
             Services.AddSingleton(_mockNavigationManager.Object);
             Services.AddSingleton(_mockLogger.Object);
             Services.AddSingleton(_mockPresenterLogger.Object);
-             
+
             // Register SettingsPresenterService
             Services.AddSingleton(new SettingsPresenterService(_mockPresenterLogger.Object));
         }
@@ -184,7 +184,7 @@ namespace Pomodoro.Web.Tests.Pages
             // Act & Assert
             var exception = await Assert.ThrowsAsync<Exception>(
                 () => renderedComponent.InvokeAsync(async () => await component.TestHandleSave()));
-            
+
             Assert.Equal("Test error", exception.Message);
             // Note: HandleSave doesn't catch exceptions in current implementation
         }
@@ -222,7 +222,7 @@ namespace Pomodoro.Web.Tests.Pages
 
             // Assert
             _mockExportService.Verify(x => x.ExportToJsonAsync(), Times.Once);
-            _mockJSInteropService.Verify(x => x.InvokeVoidAsync("fileInterop.downloadFile", 
+            _mockJSInteropService.Verify(x => x.InvokeVoidAsync("fileInterop.downloadFile",
                 It.IsAny<object[]>()), Times.Once);
             Assert.False(component.TestIsExporting);
         }
@@ -319,7 +319,7 @@ namespace Pomodoro.Web.Tests.Pages
             await component.TestDownloadFileAsync(fileName, testData, mimeType);
 
             // Assert
-            _mockJSInteropService.Verify(x => x.InvokeVoidAsync("fileInterop.downloadFile", 
+            _mockJSInteropService.Verify(x => x.InvokeVoidAsync("fileInterop.downloadFile",
                 fileName, It.IsAny<string>(), mimeType), Times.Once);
         }
     }
@@ -327,58 +327,58 @@ namespace Pomodoro.Web.Tests.Pages
     // Testable class that exposes protected members
     public class TestableSettingsPageBase : SettingsPageBase
     {
-        public TimerSettings TestSettings 
-        { 
-            get => Settings; 
-            set => Settings = value; 
+        public TimerSettings TestSettings
+        {
+            get => Settings;
+            set => Settings = value;
         }
-        
-        public TimerSettings TestOriginalSettings 
-        { 
-            get => OriginalSettings; 
-            set => OriginalSettings = value; 
+
+        public TimerSettings TestOriginalSettings
+        {
+            get => OriginalSettings;
+            set => OriginalSettings = value;
         }
-        
-        public bool TestShowToast 
-        { 
-            get => ShowToast; 
-            set => ShowToast = value; 
+
+        public bool TestShowToast
+        {
+            get => ShowToast;
+            set => ShowToast = value;
         }
-        
-        public string? TestToastMessage 
-        { 
-            get => ToastMessage; 
-            set => ToastMessage = value; 
+
+        public string? TestToastMessage
+        {
+            get => ToastMessage;
+            set => ToastMessage = value;
         }
-        
-        public bool TestIsExporting 
-        { 
-            get => IsExporting; 
-            set => IsExporting = value; 
+
+        public bool TestIsExporting
+        {
+            get => IsExporting;
+            set => IsExporting = value;
         }
-        
-        public bool TestIsImporting 
-        { 
-            get => IsImporting; 
-            set => IsImporting = value; 
+
+        public bool TestIsImporting
+        {
+            get => IsImporting;
+            set => IsImporting = value;
         }
-        
-        public bool TestIsClearing 
-        { 
-            get => IsClearing; 
-            set => IsClearing = value; 
+
+        public bool TestIsClearing
+        {
+            get => IsClearing;
+            set => IsClearing = value;
         }
-        
-        public bool TestShowClearConfirmation 
-        { 
-            get => ShowClearConfirmation; 
-            set => ShowClearConfirmation = value; 
+
+        public bool TestShowClearConfirmation
+        {
+            get => ShowClearConfirmation;
+            set => ShowClearConfirmation = value;
         }
-        
-        public string? TestImportResult 
-        { 
-            get => ImportResult; 
-            set => ImportResult = value; 
+
+        public string? TestImportResult
+        {
+            get => ImportResult;
+            set => ImportResult = value;
         }
 
         public bool TestHasChanges => HasChanges;

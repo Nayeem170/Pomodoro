@@ -760,7 +760,7 @@ namespace Pomodoro.Web.Tests.Pages
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
             cut.Instance.SafeAsync(
-                new Func<Task>(() => throw new InvalidOperationException("Test exception")), 
+                new Func<Task>(() => throw new InvalidOperationException("Test exception")),
                 "TestHandler");
 
             Assert.True(true);

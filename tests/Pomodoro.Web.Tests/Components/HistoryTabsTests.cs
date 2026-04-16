@@ -210,10 +210,10 @@ public class HistoryTabsTests : TestContext
         // Assert
         var tabList = cut.Find(".history-tabs");
         Assert.Equal("tablist", tabList.GetAttribute("role"));
-        
+
         var dailyTab = cut.Find("#daily-tab");
         Assert.Equal("tab", dailyTab.GetAttribute("role"));
-        
+
         var weeklyTab = cut.Find("#weekly-tab");
         Assert.Equal("tab", weeklyTab.GetAttribute("role"));
     }
@@ -228,7 +228,7 @@ public class HistoryTabsTests : TestContext
         // Assert
         var dailyTab = cut.Find("#daily-tab");
         Assert.Equal("0", dailyTab.GetAttribute("tabindex"));
-        
+
         var weeklyTab = cut.Find("#weekly-tab");
         Assert.Equal("-1", weeklyTab.GetAttribute("tabindex"));
     }

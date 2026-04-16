@@ -54,7 +54,7 @@ public class ExportServiceTests
         Assert.Contains("\"settings\"", result);
         Assert.Contains("\"activities\"", result);
         Assert.Contains("\"tasks\"", result);
-        
+
         // Verify it's valid JSON
         var jsonDoc = JsonDocument.Parse(result);
         Assert.True(jsonDoc.RootElement.TryGetProperty("version", out _));
@@ -108,13 +108,13 @@ public class ExportServiceTests
         // Assert
         Assert.NotNull(result);
         var jsonDoc = JsonDocument.Parse(result);
-        
+
         var activitiesArray = jsonDoc.RootElement.GetProperty("activities");
         Assert.Equal(1, activitiesArray.GetArrayLength());
-        
+
         var tasksArray = jsonDoc.RootElement.GetProperty("tasks");
         Assert.Equal(1, tasksArray.GetArrayLength());
-        
+
         var settingsElement = jsonDoc.RootElement.GetProperty("settings");
         Assert.Equal(25, settingsElement.GetProperty("pomodoroMinutes").GetInt32());
         Assert.Equal(5, settingsElement.GetProperty("shortBreakMinutes").GetInt32());

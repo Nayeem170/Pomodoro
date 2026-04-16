@@ -21,7 +21,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
             var task = new TaskItem { Id = taskId, Name = "Test Task" };
             AppState.Tasks = new List<TaskItem> { task };
@@ -45,7 +45,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             await service.StartPomodoroAsync(); // No task
             AppState.CurrentSession!.RemainingSeconds = 1;
 
@@ -65,7 +65,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
@@ -84,7 +84,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
@@ -104,7 +104,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
@@ -123,7 +123,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
             var task = new TaskItem { Id = taskId, Name = "Test Task" };
             AppState.Tasks = new List<TaskItem> { task };
@@ -157,7 +157,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
             var task = new TaskItem { Id = taskId, Name = "Test Task" };
             AppState.Tasks = new List<TaskItem> { task };
@@ -182,7 +182,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             await service.StartShortBreakAsync();
             AppState.CurrentSession!.RemainingSeconds = 1;
 
@@ -201,7 +201,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             await service.StartLongBreakAsync();
             AppState.CurrentSession!.RemainingSeconds = 1;
 
@@ -220,7 +220,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
 
             // First pomodoro
@@ -246,7 +246,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var task1Id = Guid.NewGuid();
             var task2Id = Guid.NewGuid();
 
@@ -274,7 +274,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
 
             // First pomodoro
@@ -300,7 +300,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
@@ -320,7 +320,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
@@ -342,13 +342,13 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
             var task = new TaskItem { Id = taskId, Name = "Test Task" };
             AppState.Tasks = new List<TaskItem> { task };
-            
+
             var secondHandlerCalled = false;
-            
+
             // First handler throws
             service.OnTimerCompleted += args => throw new InvalidOperationException("Test exception");
             // Second handler should still be called
@@ -357,14 +357,14 @@ public partial class TimerServiceTests
                 secondHandlerCalled = true;
                 return Task.CompletedTask;
             };
-            
+
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
-            
+
             // Act
             service.OnTimerTickJs();
             await WaitForCompletionAsync();
-            
+
             // Assert - second handler should still be called despite first handler exception
             Assert.True(secondHandlerCalled);
         }
@@ -375,7 +375,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // No session started - verify default session exists
             var initialSession = AppState.CurrentSession;
             var initialIsRunning = initialSession?.IsRunning ?? false;
@@ -402,7 +402,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
@@ -427,7 +427,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
@@ -450,7 +450,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
@@ -473,7 +473,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
             var task = new TaskItem { Id = taskId, Name = "Test Task" };
             AppState.Tasks = new List<TaskItem> { task };
@@ -499,7 +499,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
@@ -555,7 +555,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var taskId = Guid.NewGuid();
             var task = new TaskItem { Id = taskId, Name = "Test Task" };
             AppState.Tasks = new List<TaskItem> { task };

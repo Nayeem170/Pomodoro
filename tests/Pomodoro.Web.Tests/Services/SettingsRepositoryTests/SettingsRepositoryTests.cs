@@ -14,12 +14,12 @@ using Xunit;
 public partial class SettingsRepositoryTests
 {
     protected readonly Mock<IIndexedDbService> MockIndexedDb;
-    
+
     public SettingsRepositoryTests()
     {
         MockIndexedDb = new Mock<IIndexedDbService>(MockBehavior.Loose);
     }
-    
+
     /// <summary>
     /// Creates a SettingsRepository instance with mocked dependencies.
     /// </summary>
@@ -27,7 +27,7 @@ public partial class SettingsRepositoryTests
     {
         return new SettingsRepository(MockIndexedDb.Object);
     }
-    
+
     /// <summary>
     /// Creates test settings with custom values.
     /// </summary>
@@ -51,7 +51,7 @@ public partial class SettingsRepositoryTests
             AutoStartDelaySeconds = autoStartDelaySeconds
         };
     }
-    
+
     /// <summary>
     /// TimerSettingsRecord is internal, so we use a dynamic object for mocking.
     /// This helper creates a record-like object for testing.

@@ -23,7 +23,7 @@ public partial class SettingsRepositoryTests
                     Constants.Storage.SettingsStore,
                     Constants.Storage.DefaultSettingsId))
                 .ReturnsAsync((TimerSettingsRecord?)null);
-            
+
             var repository = CreateRepository();
 
             // Act
@@ -47,7 +47,7 @@ public partial class SettingsRepositoryTests
                 AutoStartEnabled = false,
                 AutoStartDelaySeconds = 15
             };
-            
+
             var record = new TimerSettingsRecord
             {
                 Id = Constants.Storage.DefaultSettingsId,
@@ -59,13 +59,13 @@ public partial class SettingsRepositoryTests
                 AutoStartEnabled = expectedSettings.AutoStartEnabled,
                 AutoStartDelaySeconds = expectedSettings.AutoStartDelaySeconds
             };
-            
+
             MockIndexedDb
                 .Setup(x => x.GetAsync<TimerSettingsRecord>(
                     Constants.Storage.SettingsStore,
                     Constants.Storage.DefaultSettingsId))
                 .ReturnsAsync(record);
-            
+
             var repository = CreateRepository();
 
             // Act
@@ -97,13 +97,13 @@ public partial class SettingsRepositoryTests
                 AutoStartEnabled = false,
                 AutoStartDelaySeconds = 15
             };
-            
+
             MockIndexedDb
                 .Setup(x => x.GetAsync<TimerSettingsRecord>(
                     Constants.Storage.SettingsStore,
                     Constants.Storage.DefaultSettingsId))
                 .ReturnsAsync(record);
-            
+
             var repository = CreateRepository();
 
             // Act
@@ -135,13 +135,13 @@ public partial class SettingsRepositoryTests
                 AutoStartEnabled = false,
                 AutoStartDelaySeconds = 0
             };
-            
+
             MockIndexedDb
                 .Setup(x => x.GetAsync<TimerSettingsRecord>(
                     Constants.Storage.SettingsStore,
                     Constants.Storage.DefaultSettingsId))
                 .ReturnsAsync(record);
-            
+
             var repository = CreateRepository();
 
             // Act
@@ -173,13 +173,13 @@ public partial class SettingsRepositoryTests
                 AutoStartEnabled = true,
                 AutoStartDelaySeconds = 30
             };
-            
+
             MockIndexedDb
                 .Setup(x => x.GetAsync<TimerSettingsRecord>(
                     Constants.Storage.SettingsStore,
                     Constants.Storage.DefaultSettingsId))
                 .ReturnsAsync(record);
-            
+
             var repository = CreateRepository();
 
             // Act
@@ -205,7 +205,7 @@ public partial class SettingsRepositoryTests
                     Constants.Storage.SettingsStore,
                     Constants.Storage.DefaultSettingsId))
                 .ThrowsAsync(new Exception("Storage error"));
-            
+
             var repository = CreateRepository();
 
             // Act & Assert
@@ -221,9 +221,9 @@ public partial class SettingsRepositoryTests
                     Constants.Storage.SettingsStore,
                     Constants.Storage.DefaultSettingsId))
                 .ThrowsAsync(new Exception("Storage error"));
-            
+
             var repository = CreateRepository();
-            
+
             // Act & Assert
             await Assert.ThrowsAsync<Exception>(() => repository.GetAsync());
         }
@@ -243,20 +243,20 @@ public partial class SettingsRepositoryTests
                 AutoStartEnabled = false,
                 AutoStartDelaySeconds = 10
             };
-            
+
             MockIndexedDb
                 .Setup(x => x.GetAsync<TimerSettingsRecord>(
                     Constants.Storage.SettingsStore,
                     Constants.Storage.DefaultSettingsId))
                 .ReturnsAsync(record);
-            
+
             var repository = CreateRepository();
 
             // Act - Call GetAsync multiple times concurrently
             var tasks = Enumerable.Range(0, 10)
                 .Select(_ => repository.GetAsync())
                 .ToArray();
-            
+
             var results = await Task.WhenAll(tasks);
 
             // Assert - All should succeed

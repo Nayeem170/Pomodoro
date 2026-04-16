@@ -69,7 +69,7 @@ namespace Pomodoro.Web.Tests.Layout
                 new NavLinkData { Href = "/history", Icon = "oi-calendar", Title = "History", Match = Microsoft.AspNetCore.Components.Routing.NavLinkMatch.Prefix },
                 new NavLinkData { Href = "/settings", Icon = "oi-cog", Title = "Settings", Match = Microsoft.AspNetCore.Components.Routing.NavLinkMatch.Prefix }
             };
-            
+
             _mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(navLinks);
             _mockLayoutPresenter.Setup(x => x.GetCurrentYear()).Returns(2023);
 
@@ -163,10 +163,10 @@ namespace Pomodoro.Web.Tests.Layout
             // Assert - Verify complete header structure is rendered (covers lines9,12,22)
             var headerTitle = component.Find(".header-title");
             Assert.NotNull(headerTitle);
-            
+
             var headerNav = component.Find(".header-nav");
             Assert.NotNull(headerNav);
-            
+
             // Verify the header-title contains both icon and text spans
             var headerTitleSpans = headerTitle.QuerySelectorAll("span");
             Assert.True(headerTitleSpans.Length >= 2);
@@ -185,10 +185,10 @@ namespace Pomodoro.Web.Tests.Layout
             // Assert - Verify complete footer structure is rendered (covers lines33-37)
             var footer = component.Find(".app-footer");
             Assert.NotNull(footer);
-            
+
             var footerContent = component.Find(".footer-content");
             Assert.NotNull(footerContent);
-            
+
             // Verify year is rendered
             Assert.Contains("2024", component.Markup);
         }
@@ -206,7 +206,7 @@ namespace Pomodoro.Web.Tests.Layout
             // Assert - Verify main content area with ErrorBoundary (covers lines25-37)
             var mainContent = component.Find(".app-content");
             Assert.NotNull(mainContent);
-            
+
             // Verify the ErrorBoundary wrapper exists
             Assert.Contains("app-content", component.Markup);
         }
@@ -225,15 +225,15 @@ namespace Pomodoro.Web.Tests.Layout
             // App wrapper
             var appWrapper = component.Find(".app-wrapper");
             Assert.NotNull(appWrapper);
-            
+
             // Header section
             var header = component.Find(".app-header");
             Assert.NotNull(header);
-            
+
             // Main section
             var main = component.Find(".app-content");
             Assert.NotNull(main);
-            
+
             // Footer section
             var footer = component.Find(".app-footer");
             Assert.NotNull(footer);
@@ -269,7 +269,7 @@ namespace Pomodoro.Web.Tests.Layout
             // Use actual icon from Constants (🍅)
             var headerIcon = component.Find(".header-icon");
             var headerText = component.Find(".header-text");
-            
+
             Assert.NotNull(headerIcon);
             Assert.NotNull(headerText);
             Assert.Contains("🍅", headerIcon.TextContent);
@@ -294,7 +294,7 @@ namespace Pomodoro.Web.Tests.Layout
             // Assert - Verify all nav links are rendered (covers line22)
             var navContainer = component.Find(".header-nav");
             Assert.NotNull(navContainer);
-            
+
             // Check that the navigation contains links
             var navLinks = navContainer.QuerySelectorAll("a");
             Assert.True(navLinks.Length >= 3);

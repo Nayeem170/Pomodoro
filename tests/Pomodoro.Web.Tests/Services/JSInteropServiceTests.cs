@@ -60,7 +60,7 @@ public class JSInteropServiceTests
         var identifier = "testFunction";
         var args = new object[] { "arg1", "arg2" };
         var expectedValue = "test result";
-        
+
         // Create a mock JSRuntime that returns the expected value
         var mockRuntime = new Mock<IJSRuntime>();
         mockRuntime
@@ -84,7 +84,7 @@ public class JSInteropServiceTests
         var identifier = "testFunction";
         var args = new object[] { "arg1", "arg2" };
         var expectedValue = 42;
-        
+
         // Create a mock JSRuntime that returns the expected value
         var mockRuntime = new Mock<IJSRuntime>();
         mockRuntime
@@ -108,7 +108,7 @@ public class JSInteropServiceTests
         var identifier = "testFunction";
         var args = new object[] { "arg1", "arg2" };
         var expectedValue = true;
-        
+
         // Create a mock JSRuntime that returns the expected value
         var mockRuntime = new Mock<IJSRuntime>();
         mockRuntime
@@ -132,7 +132,7 @@ public class JSInteropServiceTests
         var identifier = "testFunction";
         var args = Array.Empty<object>();
         var expectedValue = "test result";
-        
+
         // Create a mock JSRuntime that returns the expected value
         var mockRuntime = new Mock<IJSRuntime>();
         mockRuntime
@@ -156,7 +156,7 @@ public class JSInteropServiceTests
         var identifier = "testFunction";
         var args = new object[] { new { Name = "test" }, 123 };
         var expectedValue = "test result";
-        
+
         // Create a mock JSRuntime that returns the expected value
         var mockRuntime = new Mock<IJSRuntime>();
         mockRuntime
@@ -179,10 +179,10 @@ public class JSInteropServiceTests
         // Arrange
         var identifier = "testFunction";
         var args = new object[] { "arg1", "arg2" };
-        
+
         // Create a mock JSRuntime that doesn't throw exceptions
         var mockRuntime = new Mock<IJSRuntime>();
-        
+
         var service = new JSInteropService(mockRuntime.Object);
 
         // Act & Assert
@@ -196,10 +196,10 @@ public class JSInteropServiceTests
         // Arrange
         var identifier = "testFunction";
         var args = Array.Empty<object>();
-        
+
         // Create a mock JSRuntime that doesn't throw exceptions
         var mockRuntime = new Mock<IJSRuntime>();
-        
+
         var service = new JSInteropService(mockRuntime.Object);
 
         // Act & Assert

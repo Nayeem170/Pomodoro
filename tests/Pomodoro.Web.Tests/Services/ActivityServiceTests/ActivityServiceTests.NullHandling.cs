@@ -21,22 +21,22 @@ public partial class ActivityServiceTests
             // Arrange
             var date1 = new DateTime(2024, 6, 15);
             var date2 = new DateTime(2024, 6, 16);
-            
+
             var activities = new List<ActivityRecord>
             {
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date1, DurationMinutes = 25, TaskName = null },
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date1, DurationMinutes = 25, TaskName = "Valid Task" },
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date2, DurationMinutes = 25, TaskName = "" }
             };
-            
+
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             var result = service.GetTaskPomodoroCounts(date1, date2);
-            
+
             // Assert - Should only include "Valid Task", exclude null and empty
             Assert.Single(result);
             Assert.True(result.ContainsKey("Valid Task"));
@@ -48,22 +48,22 @@ public partial class ActivityServiceTests
         {
             // Arrange
             var date = new DateTime(2024, 6, 15);
-            
+
             var activities = new List<ActivityRecord>
             {
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = "" },
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = "   " },
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = "Valid Task" }
             };
-            
+
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             var result = service.GetTaskPomodoroCounts(date, date);
-            
+
             // Assert - Should exclude both empty and whitespace-only task names
             Assert.Single(result);
             Assert.True(result.ContainsKey("Valid Task"));
@@ -75,22 +75,22 @@ public partial class ActivityServiceTests
         {
             // Arrange
             var date = new DateTime(2024, 6, 15);
-            
+
             var activities = new List<ActivityRecord>
             {
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = null },
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = null },
                 new() { Id = Guid.NewGuid(), Type = SessionType.ShortBreak, CompletedAt = date, DurationMinutes = 5 }
             };
-            
+
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             var result = service.GetTimeDistribution(date);
-            
+
             // Assert - Should use FocusTimeLabel for null task names
             Assert.Equal(2, result.Count);
             Assert.True(result.ContainsKey(Constants.Activity.FocusTimeLabel));
@@ -103,22 +103,22 @@ public partial class ActivityServiceTests
         {
             // Arrange
             var date = new DateTime(2024, 6, 15);
-            
+
             var activities = new List<ActivityRecord>
             {
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = "   " },
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = "\t" },
                 new() { Id = Guid.NewGuid(), Type = SessionType.LongBreak, CompletedAt = date, DurationMinutes = 15 }
             };
-            
+
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             var result = service.GetTimeDistribution(date);
-            
+
             // Assert - Whitespace task names are kept as separate keys, not grouped under FocusTimeLabel
             Assert.Equal(3, result.Count);
             Assert.Equal(25, result["   "]);
@@ -131,7 +131,7 @@ public partial class ActivityServiceTests
         {
             // Arrange
             var date = new DateTime(2024, 6, 15);
-            
+
             var activities = new List<ActivityRecord>
             {
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = null },
@@ -140,15 +140,15 @@ public partial class ActivityServiceTests
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = "Task A" },
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = "Task B" }
             };
-            
+
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             var result = service.GetTimeDistribution(date);
-            
+
             // Assert - Should group null under FocusTimeLabel, and valid tasks separately
             Assert.Equal(3, result.Count);
             Assert.Equal(50, result[Constants.Activity.FocusTimeLabel]); // 25 + 25 minutes (null values)
@@ -161,22 +161,22 @@ public partial class ActivityServiceTests
         {
             // Arrange
             var date = new DateTime(2024, 6, 15);
-            
+
             var activities = new List<ActivityRecord>
             {
                 new() { Id = Guid.NewGuid(), Type = SessionType.ShortBreak, CompletedAt = date, DurationMinutes = 5 },
                 new() { Id = Guid.NewGuid(), Type = SessionType.ShortBreak, CompletedAt = date, DurationMinutes = 5 },
                 new() { Id = Guid.NewGuid(), Type = SessionType.LongBreak, CompletedAt = date, DurationMinutes = 15 }
             };
-            
+
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             var result = service.GetTimeDistribution(date);
-            
+
             // Assert - Should only have break labels
             Assert.Equal(2, result.Count);
             Assert.Equal(10, result[Constants.Activity.ShortBreaksLabel]); // 5 + 5 minutes
@@ -188,16 +188,16 @@ public partial class ActivityServiceTests
         {
             // Arrange
             var date = new DateTime(2024, 6, 15);
-            
+
             var activities = new List<ActivityRecord>();
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             var result = service.GetTimeDistribution(date);
-            
+
             // Assert
             Assert.Empty(result);
         }
@@ -209,21 +209,21 @@ public partial class ActivityServiceTests
             var date = new DateTime(2024, 6, 15);
             var startDate = date.AddDays(-1);
             var endDate = date.AddDays(1);
-            
+
             var activities = new List<ActivityRecord>
             {
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = null },
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = "Valid Task" }
             };
-            
+
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             var result = service.GetDailyPomodoroCounts(startDate, endDate);
-            
+
             // Assert - GetDailyPomodoroCounts counts ALL pomodoro activities regardless of task name
             Assert.NotNull(result);
             Assert.Single(result);
@@ -238,21 +238,21 @@ public partial class ActivityServiceTests
             var date = new DateTime(2024, 6, 15);
             var startDate = date.AddDays(-1);
             var endDate = date.AddDays(1);
-            
+
             var activities = new List<ActivityRecord>
             {
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = null },
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = null }
             };
-            
+
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             var result = service.GetDailyPomodoroCounts(startDate, endDate);
-            
+
             // Assert - GetDailyPomodoroCounts counts ALL pomodoro activities regardless of task name
             Assert.NotNull(result);
             Assert.Single(result);
@@ -267,21 +267,21 @@ public partial class ActivityServiceTests
             var date = new DateTime(2024, 6, 15);
             var startDate = date.AddDays(-1);
             var endDate = date.AddDays(1);
-            
+
             var activities = new List<ActivityRecord>
             {
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = null },
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = "Valid Task" }
             };
-            
+
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             var result = service.GetDailyFocusMinutes(startDate, endDate);
-            
+
             // Assert - GetDailyFocusMinutes counts ALL pomodoro focus time regardless of task name
             Assert.NotNull(result);
             Assert.Single(result);
@@ -296,21 +296,21 @@ public partial class ActivityServiceTests
             var date = new DateTime(2024, 6, 15);
             var startDate = date.AddDays(-1);
             var endDate = date.AddDays(1);
-            
+
             var activities = new List<ActivityRecord>
             {
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = null },
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = null }
             };
-            
+
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             var result = service.GetDailyFocusMinutes(startDate, endDate);
-            
+
             // Assert - GetDailyFocusMinutes counts ALL pomodoro focus time regardless of task name
             Assert.NotNull(result);
             Assert.Single(result);
@@ -325,22 +325,22 @@ public partial class ActivityServiceTests
             var date = new DateTime(2024, 6, 15);
             var startDate = date.AddDays(-1);
             var endDate = date.AddDays(1);
-            
+
             var activities = new List<ActivityRecord>
             {
                 new() { Id = Guid.NewGuid(), Type = SessionType.ShortBreak, CompletedAt = date, DurationMinutes = 5, TaskName = null },
                 new() { Id = Guid.NewGuid(), Type = SessionType.ShortBreak, CompletedAt = date, DurationMinutes = 5, TaskName = "Valid Task" },
                 new() { Id = Guid.NewGuid(), Type = SessionType.LongBreak, CompletedAt = date, DurationMinutes = 15, TaskName = null }
             };
-            
+
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             var result = service.GetDailyBreakMinutes(startDate, endDate);
-            
+
             // Assert - Should include all breaks regardless of task name
             Assert.NotNull(result);
             Assert.Single(result);
@@ -355,22 +355,22 @@ public partial class ActivityServiceTests
             var date = new DateTime(2024, 6, 15);
             var startDate = date.AddDays(-1);
             var endDate = date.AddDays(1);
-            
+
             var activities = new List<ActivityRecord>
             {
                 new() { Id = Guid.NewGuid(), Type = SessionType.ShortBreak, CompletedAt = date, DurationMinutes = 5, TaskName = null },
                 new() { Id = Guid.NewGuid(), Type = SessionType.ShortBreak, CompletedAt = date, DurationMinutes = 5, TaskName = null },
                 new() { Id = Guid.NewGuid(), Type = SessionType.LongBreak, CompletedAt = date, DurationMinutes = 15, TaskName = null }
             };
-            
+
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             var result = service.GetDailyBreakMinutes(startDate, endDate);
-            
+
             // Assert - Should return break minutes even with null task names
             Assert.NotNull(result);
             Assert.Single(result);
@@ -385,7 +385,7 @@ public partial class ActivityServiceTests
             var date = new DateTime(2024, 6, 15);
             var startDate = date.AddDays(-1);
             var endDate = date.AddDays(1);
-            
+
             var activities = new List<ActivityRecord>
             {
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = null },
@@ -394,15 +394,15 @@ public partial class ActivityServiceTests
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = "Task A" },
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = "Task B" }
             };
-            
+
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             var result = service.GetTaskPomodoroCounts(startDate, endDate);
-            
+
             // Assert - Should count only valid task names
             Assert.NotNull(result);
             Assert.Equal(2, result.Count);
@@ -417,21 +417,21 @@ public partial class ActivityServiceTests
             var date = new DateTime(2024, 6, 15);
             var startDate = date.AddDays(-1);
             var endDate = date.AddDays(1);
-            
+
             var activities = new List<ActivityRecord>
             {
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = null },
                 new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = date, DurationMinutes = 25, TaskName = null }
             };
-            
+
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act
             var result = service.GetTaskPomodoroCounts(startDate, endDate);
-            
+
             // Assert - Should return empty dictionary when all task names are null
             Assert.NotNull(result);
             Assert.Empty(result);

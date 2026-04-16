@@ -55,7 +55,7 @@ namespace Pomodoro.Web.Tests.Pages
             // Configure InfiniteScrollInterop mock
             infiniteScrollInteropMock.Setup(x => x.IsSupportedAsync())
                 .ReturnsAsync(false);
-                
+
             // Configure HistoryStatsService mock to return a valid DailyStatsSummary
             historyStatsServiceMock.Setup(x => x.CalculateStats(It.IsAny<List<ActivityRecord>>()))
                 .Returns(new DailyStatsSummary());
@@ -66,7 +66,7 @@ namespace Pomodoro.Web.Tests.Pages
             {
                 Services.Add(service);
             }
-            
+
             // Override with test-specific mocks
             Services.AddSingleton(activityServiceMock.Object);
             Services.AddSingleton(statisticsServiceMock.Object);
@@ -86,7 +86,7 @@ namespace Pomodoro.Web.Tests.Pages
             Services.AddSingleton(loggerPresenterMock.Object);
             Services.AddSingleton(timeFormatterMock.Object);
             Services.AddSingleton(activityTimelineFormatterMock.Object);
-            
+
             // Add missing services for child components (WeeklyMiniChart, ActivityItem)
             var chartServiceMock = new Mock<IChartService>();
             var activityItemFormatterMock = new Mock<ActivityItemFormatter>();
@@ -95,13 +95,13 @@ namespace Pomodoro.Web.Tests.Pages
             Services.AddSingleton(activityItemFormatterMock.Object);
             Services.AddSingleton(chartDataFormatterMock.Object);
         }
-        
+
         [Fact]
         public void HistoryPage_ShouldRenderCorrectly()
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             Assert.NotNull(cut);
             // Verify the component renders without throwing exceptions
@@ -112,7 +112,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             var title = cut.Find("h1");
             Assert.Equal("📊 History", title.TextContent);
@@ -123,7 +123,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             var tabs = cut.FindComponents<HistoryTabs>();
             Assert.Single(tabs);
@@ -134,7 +134,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             // Check if weekly-summary-section exists (which contains the summary cards)
             var weeklySummarySection = cut.Find(".weekly-summary-section");
@@ -146,7 +146,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             var activityTimeline = cut.FindComponents<ActivityTimeline>();
             Assert.Single(activityTimeline);
@@ -157,7 +157,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             var timeDistributionChart = cut.FindComponents<TimeDistributionChart>();
             Assert.Single(timeDistributionChart);
@@ -168,7 +168,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             var dateNavigator = cut.FindComponents<DateNavigator>();
             Assert.Single(dateNavigator);
@@ -179,7 +179,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             // WeekNavigator is only visible in the weekly view, which is not the default tab
             // So we should check that it's not initially visible
@@ -192,11 +192,11 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             var historyPage = cut.Find(".history-page");
             Assert.NotNull(historyPage);
-            
+
             var classes = historyPage.GetAttribute("class");
             Assert.Contains("history-page", classes);
         }
@@ -206,7 +206,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             var historyPage = cut.Find(".history-page");
             Assert.NotNull(historyPage);
@@ -217,7 +217,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             // Check if HistoryTabs component is rendered (which provides navigation within the History page)
             var historyTabs = cut.FindComponent<HistoryTabs>();
@@ -229,15 +229,15 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             // Check for main sections
             var historyPage = cut.Find(".history-page");
             Assert.NotNull(historyPage);
-            
+
             var dailyView = cut.Find(".daily-view");
             Assert.NotNull(dailyView);
-            
+
             var timeDistributionSection = cut.Find(".time-distribution-section");
             Assert.NotNull(timeDistributionSection);
         }
@@ -247,11 +247,11 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             var page = cut.Find(".history-page");
             Assert.NotNull(page);
-            
+
             var content = cut.Find(".history-content");
             Assert.NotNull(content);
         }
@@ -261,7 +261,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             // Check if timeline section exists
             var timelineSection = cut.Find(".timeline-section");
@@ -273,7 +273,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             // Check if timeline-section exists (this is a key section that should always be present)
             var timelineSection = cut.Find(".timeline-section");
@@ -285,7 +285,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             // Check if empty state message exists
             var emptyState = cut.Find(".empty-state");
@@ -298,14 +298,14 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.History>();
-            
+
             // Assert
             var historyPage = cut.Find(".history-page");
             Assert.NotNull(historyPage);
-            
+
             var historyTabs = cut.FindComponent<HistoryTabs>();
             Assert.NotNull(historyTabs);
-            
+
             var activityTimeline = cut.FindComponent<ActivityTimeline>();
             Assert.NotNull(activityTimeline);
         }
@@ -451,7 +451,7 @@ namespace Pomodoro.Web.Tests.Pages
             // Assert - When HasMoreActivities is true, sentinel should exist
             var sentinel = cut.Find(".scroll-sentinel");
             Assert.NotNull(sentinel);
-            
+
             // End-of-list should not exist when HasMoreActivities is true
             var endOfListElements = cut.FindAll(".end-of-list");
             Assert.Empty(endOfListElements);
@@ -638,7 +638,7 @@ namespace Pomodoro.Web.Tests.Pages
             // Assert - The daily summary section should exist
             var summarySection = cut.Find(".weekly-summary-section");
             Assert.NotNull(summarySection);
-            
+
             // Verify stats are displayed (default DailyStatsSummary has 0 for all values)
             var statsValues = cut.FindAll(".stat-value");
             Assert.NotEmpty(statsValues);

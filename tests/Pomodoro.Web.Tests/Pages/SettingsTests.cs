@@ -58,7 +58,7 @@ namespace Pomodoro.Web.Tests.Pages
             Services.AddSingleton(_mockNavigationManager.Object);
             Services.AddSingleton(_mockLogger.Object);
             Services.AddSingleton(_mockPresenterLogger.Object);
-            
+
             // Register SettingsPresenterService
             Services.AddSingleton(new SettingsPresenterService(_mockPresenterLogger.Object));
 
@@ -175,10 +175,10 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Find export button
             var exportButton = cut.Find("button.btn-export");
-            
+
             // Assert - Should not be disabled initially
             Assert.False(exportButton.HasAttribute("disabled"));
         }
@@ -188,10 +188,10 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Find clear button
             var clearButton = cut.Find("button.btn-clear");
-            
+
             // Assert - Should not be disabled initially
             Assert.False(clearButton.HasAttribute("disabled"));
         }
@@ -201,10 +201,10 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Click clear button to trigger confirmation
             cut.Find("button.btn-clear").Click();
-            
+
             // Assert - Modal should be visible
             cut.WaitForAssertion(() => cut.Markup.Contains("Clear All Data?"));
         }
@@ -214,14 +214,14 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Click clear button to trigger confirmation
             cut.Find("button.btn-clear").Click();
             cut.WaitForAssertion(() => cut.Markup.Contains("Clear All Data?"));
-            
+
             // Click cancel button
             cut.Find("button.btn-cancel").Click();
-            
+
             // Assert - Modal should be hidden
             cut.WaitForAssertion(() => Assert.DoesNotContain("Clear All Data?", cut.Markup));
         }
@@ -232,11 +232,11 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings();
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var saveButton = cut.Find("button.btn-save");
-            
+
             // Assert - Save button should be disabled when no changes
             Assert.True(saveButton.HasAttribute("disabled"));
         }
@@ -247,11 +247,11 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings();
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var resetButton = cut.Find("button.btn-reset-defaults");
-            
+
             // Assert - Reset button should be disabled when at defaults
             Assert.True(resetButton.HasAttribute("disabled"));
         }
@@ -261,15 +261,15 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Trigger save to show toast
             // First, make a change to enable save button
             var input = cut.Find("input[type='number']");
             input.Change(30);
-            
+
             // Click save button
             cut.Find("button.btn-save").Click();
-            
+
             // Assert - Toast should be visible
             cut.WaitForAssertion(() => cut.Markup.Contains("Settings saved successfully!"));
         }
@@ -280,12 +280,12 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings { PomodoroMinutes = 25 };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var inputs = cut.FindAll("input[type='number']");
             var pomodoroInput = inputs[0];
-            
+
             // Assert
             Assert.Equal("25", pomodoroInput.GetAttribute("value"));
         }
@@ -296,12 +296,12 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings { ShortBreakMinutes = 5 };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var inputs = cut.FindAll("input[type='number']");
             var shortBreakInput = inputs[1];
-            
+
             // Assert
             Assert.Equal("5", shortBreakInput.GetAttribute("value"));
         }
@@ -312,12 +312,12 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings { LongBreakMinutes = 15 };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var inputs = cut.FindAll("input[type='number']");
             var longBreakInput = inputs[2];
-            
+
             // Assert
             Assert.Equal("15", longBreakInput.GetAttribute("value"));
         }
@@ -328,12 +328,12 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings { SoundEnabled = true };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var checkboxes = cut.FindAll("input[type='checkbox']");
             var soundCheckbox = checkboxes[0];
-            
+
             // Assert
             Assert.True(soundCheckbox.HasAttribute("checked"));
         }
@@ -344,12 +344,12 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings { NotificationsEnabled = true };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var checkboxes = cut.FindAll("input[type='checkbox']");
             var notificationsCheckbox = checkboxes[1];
-            
+
             // Assert
             Assert.True(notificationsCheckbox.HasAttribute("checked"));
         }
@@ -360,12 +360,12 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings { AutoStartEnabled = true };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var checkboxes = cut.FindAll("input[type='checkbox']");
             var autoStartCheckbox = checkboxes[2];
-            
+
             // Assert
             Assert.True(autoStartCheckbox.HasAttribute("checked"));
         }
@@ -374,20 +374,20 @@ namespace Pomodoro.Web.Tests.Pages
         public void SettingsPage_BindsAutoStartDelaySeconds()
         {
             // Arrange
-            var settings = new TimerSettings 
-            { 
+            var settings = new TimerSettings
+            {
                 AutoStartEnabled = true,
-                AutoStartDelaySeconds = 10 
+                AutoStartDelaySeconds = 10
             };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var inputs = cut.FindAll("input[type='number']");
-            
+
             // Find auto-start delay input (should be 4th number input)
             var autoStartDelayInput = inputs[3];
-            
+
             // Assert
             Assert.Equal("10", autoStartDelayInput.GetAttribute("value"));
         }
@@ -412,11 +412,11 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Click clear button to show confirmation
             cut.Find("button.btn-clear").Click();
             cut.WaitForAssertion(() => cut.Markup.Contains("Clear All Data?"));
-            
+
             // Act - Click confirm button
             cut.Find("button.btn-confirm-danger").Click();
 
@@ -429,7 +429,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange - This test verifies import result display branch
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // The import result is shown after import, which requires InputFile component
             // This tests that markup contains container for import result
             cut.Markup.Contains("import-container");
@@ -440,10 +440,10 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Find import button
             var importLabel = cut.Find("label.btn-import");
-            
+
             // Assert - Should not have disabled class initially
             Assert.False(importLabel.ClassList.Contains("disabled"));
         }
@@ -453,7 +453,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert - Page should have title
             cut.Markup.Contains("⚙️ Settings");
         }
@@ -463,7 +463,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             cut.Markup.Contains("Customize your pomodoro experience");
         }
@@ -473,7 +473,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert - Check for section icons
             cut.Markup.Contains("🍅"); // Pomodoro
             cut.Markup.Contains("☕"); // Short Break
@@ -492,10 +492,10 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Click clear button to show confirmation
             cut.Find("button.btn-clear").Click();
-            
+
             // Assert
             cut.WaitForAssertion(() => cut.Markup.Contains("⚠️"));
         }
@@ -505,12 +505,12 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Click clear button to show confirmation
             cut.Find("button.btn-clear").Click();
-            
+
             // Assert
-            cut.WaitForAssertion(() => 
+            cut.WaitForAssertion(() =>
             {
                 cut.Markup.Contains("This will permanently delete all your activities, tasks, and reset settings to defaults.");
                 cut.Markup.Contains("This action cannot be undone.");
@@ -522,12 +522,12 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Click clear button to show confirmation
             cut.Find("button.btn-clear").Click();
-            
+
             // Assert
-            cut.WaitForAssertion(() => 
+            cut.WaitForAssertion(() =>
             {
                 cut.Markup.Contains("Yes, Clear All");
                 cut.Markup.Contains("Cancel");
@@ -540,12 +540,12 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings { AutoStartEnabled = true };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var inputs = cut.FindAll("input[type='number']");
             var autoStartDelayInput = inputs[3];
-            
+
             // Assert
             Assert.Equal("0", autoStartDelayInput.GetAttribute("min"));
             Assert.Equal("60", autoStartDelayInput.GetAttribute("max"));
@@ -557,15 +557,15 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var inputs = cut.FindAll("input[type='number']");
-            
+
             // Assert - Pomodoro input
             Assert.Equal("1", inputs[0].GetAttribute("min"));
             Assert.Equal("60", inputs[0].GetAttribute("max"));
-            
+
             // Assert - Short Break input
             Assert.Equal("1", inputs[1].GetAttribute("min"));
             Assert.Equal("30", inputs[1].GetAttribute("max"));
-            
+
             // Assert - Long Break input
             Assert.Equal("1", inputs[2].GetAttribute("min"));
             Assert.Equal("60", inputs[2].GetAttribute("max"));
@@ -576,7 +576,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             cut.Markup.Contains("✓");
         }
@@ -586,7 +586,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             cut.Markup.Contains("↺");
         }
@@ -597,17 +597,17 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings { PomodoroMinutes = 30 };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Make a change to enable save button
             var input = cut.Find("input[type='number']");
             input.Change(30);
-            
+
             // Click save button
             cut.Find("button.btn-save").Click();
-            
+
             // Assert - Toast should be visible with custom message
             cut.WaitForAssertion(() => cut.Markup.Contains("Settings saved successfully!"));
         }
@@ -618,12 +618,12 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings { SoundEnabled = false };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var checkboxes = cut.FindAll("input[type='checkbox']");
             var soundCheckbox = checkboxes[0];
-            
+
             // Assert
             Assert.False(soundCheckbox.HasAttribute("checked"));
         }
@@ -634,12 +634,12 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings { NotificationsEnabled = false };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var checkboxes = cut.FindAll("input[type='checkbox']");
             var notificationsCheckbox = checkboxes[1];
-            
+
             // Assert
             Assert.False(notificationsCheckbox.HasAttribute("checked"));
         }
@@ -650,12 +650,12 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings { AutoStartEnabled = false };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var checkboxes = cut.FindAll("input[type='checkbox']");
             var autoStartCheckbox = checkboxes[2];
-            
+
             // Assert
             Assert.False(autoStartCheckbox.HasAttribute("checked"));
         }
@@ -666,11 +666,11 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings { PomodoroMinutes = 30 };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var saveButton = cut.Find("button.btn-save");
-            
+
             // Assert - Save button should be disabled when no changes have been made
             Assert.True(saveButton.HasAttribute("disabled"));
         }
@@ -681,11 +681,11 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings { PomodoroMinutes = 30 };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
             var resetButton = cut.Find("button.btn-reset-defaults");
-            
+
             // Assert - Reset button should be enabled when not at defaults
             Assert.False(resetButton.HasAttribute("disabled"));
         }
@@ -695,7 +695,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("settings-page", cut.Markup);
         }
@@ -705,7 +705,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("settings-header", cut.Markup);
         }
@@ -715,7 +715,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert - Should have multiple settings sections
             Assert.Contains("settings-section", cut.Markup);
         }
@@ -725,7 +725,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert - Should have multiple setting items
             Assert.Contains("setting-item", cut.Markup);
         }
@@ -735,7 +735,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("setting-label", cut.Markup);
         }
@@ -745,7 +745,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("setting-icon", cut.Markup);
         }
@@ -755,7 +755,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("setting-name", cut.Markup);
         }
@@ -765,7 +765,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("setting-input", cut.Markup);
         }
@@ -775,7 +775,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("setting-toggle", cut.Markup);
         }
@@ -785,7 +785,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("toggle-control", cut.Markup);
         }
@@ -795,7 +795,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("toggle-input", cut.Markup);
         }
@@ -805,7 +805,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("toggle-label", cut.Markup);
         }
@@ -815,7 +815,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("toggle-inner", cut.Markup);
         }
@@ -825,7 +825,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("toggle-switch", cut.Markup);
         }
@@ -835,7 +835,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("settings-actions", cut.Markup);
         }
@@ -845,7 +845,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("btn-save", cut.Markup);
         }
@@ -855,7 +855,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("btn-reset-defaults", cut.Markup);
         }
@@ -865,7 +865,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("btn-export", cut.Markup);
         }
@@ -875,7 +875,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("btn-import", cut.Markup);
         }
@@ -885,7 +885,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("btn-clear", cut.Markup);
         }
@@ -895,10 +895,10 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Click clear button to show confirmation
             cut.Find("button.btn-clear").Click();
-            
+
             // Assert
             cut.WaitForAssertion(() => Assert.Contains("btn-confirm-danger", cut.Markup));
         }
@@ -908,10 +908,10 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Click clear button to show confirmation
             cut.Find("button.btn-clear").Click();
-            
+
             // Assert
             cut.WaitForAssertion(() => Assert.Contains("btn-cancel", cut.Markup));
         }
@@ -921,12 +921,12 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Trigger save to show toast
             var input = cut.Find("input[type='number']");
             input.Change(30);
             cut.Find("button.btn-save").Click();
-            
+
             // Assert
             cut.WaitForAssertion(() => Assert.Contains("settings-toast", cut.Markup));
         }
@@ -936,10 +936,10 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Click clear button to show confirmation
             cut.Find("button.btn-clear").Click();
-            
+
             // Assert
             cut.WaitForAssertion(() => Assert.Contains("confirmation-modal", cut.Markup));
         }
@@ -949,10 +949,10 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Click clear button to show confirmation
             cut.Find("button.btn-clear").Click();
-            
+
             // Assert
             cut.WaitForAssertion(() => Assert.Contains("confirmation-content", cut.Markup));
         }
@@ -962,10 +962,10 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Click clear button to show confirmation
             cut.Find("button.btn-clear").Click();
-            
+
             // Assert
             cut.WaitForAssertion(() => Assert.Contains("confirmation-buttons", cut.Markup));
         }
@@ -975,7 +975,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("import-container", cut.Markup);
         }
@@ -985,7 +985,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("file-input", cut.Markup);
         }
@@ -995,7 +995,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("setting-danger", cut.Markup);
         }
@@ -1005,7 +1005,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("btn-export-json", cut.Markup);
         }
@@ -1015,7 +1015,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("settings-tagline", cut.Markup);
         }
@@ -1025,7 +1025,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert - All sections should be present
             Assert.Contains("Timer Durations", cut.Markup);
             Assert.Contains("Preferences", cut.Markup);
@@ -1038,7 +1038,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert - All timer duration inputs should be present
             Assert.Contains("Pomodoro", cut.Markup);
             Assert.Contains("Short Break", cut.Markup);
@@ -1050,7 +1050,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert - All preference toggles should be present
             Assert.Contains("Sound", cut.Markup);
             Assert.Contains("Notifications", cut.Markup);
@@ -1061,7 +1061,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert - All data management buttons should be present
             Assert.Contains("Export Backup", cut.Markup);
             Assert.Contains("Import Backup", cut.Markup);
@@ -1073,7 +1073,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert - All action buttons should be present
             Assert.Contains("btn-save", cut.Markup);
             Assert.Contains("btn-reset-defaults", cut.Markup);
@@ -1085,10 +1085,10 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings { AutoStartEnabled = true };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("Auto-start Delay (seconds)", cut.Markup);
         }
@@ -1098,7 +1098,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("Export all data as JSON backup", cut.Markup);
         }
@@ -1108,7 +1108,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("Delete all data", cut.Markup);
         }
@@ -1118,7 +1118,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("Save Settings", cut.Markup);
         }
@@ -1128,7 +1128,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("Reset to Defaults", cut.Markup);
         }
@@ -1138,7 +1138,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("Import JSON", cut.Markup);
         }
@@ -1148,7 +1148,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("Export JSON", cut.Markup);
         }
@@ -1158,7 +1158,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert
             Assert.Contains("Clear", cut.Markup);
         }
@@ -1168,10 +1168,10 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Click clear button to show confirmation
             cut.Find("button.btn-clear").Click();
-            
+
             // Assert
             cut.WaitForAssertion(() => cut.Markup.Contains("Clear All Data?"));
         }
@@ -1181,12 +1181,12 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Click clear button to show confirmation
             cut.Find("button.btn-clear").Click();
-            
+
             // Assert
-            cut.WaitForAssertion(() => 
+            cut.WaitForAssertion(() =>
             {
                 cut.Markup.Contains("This will permanently delete all your activities, tasks, and reset settings to defaults.");
                 cut.Markup.Contains("This action cannot be undone.");
@@ -1198,10 +1198,10 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Act - Click clear button to show confirmation
             cut.Find("button.btn-clear").Click();
-            
+
             // Assert
             cut.WaitForAssertion(() => cut.Markup.Contains("<strong>This action cannot be undone.</strong>"));
         }
@@ -1212,17 +1212,17 @@ namespace Pomodoro.Web.Tests.Pages
             // Arrange
             var settings = new TimerSettings { PomodoroMinutes = 30 };
             _mockTimerService.Setup(x => x.Settings).Returns(settings);
-            
+
             // Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Make a change to enable save button
             var input = cut.Find("input[type='number']");
             input.Change(30);
-            
+
             // Click save button
             cut.Find("button.btn-save").Click();
-            
+
             // Assert - Toast should have default message
             cut.WaitForAssertion(() => cut.Markup.Contains("Settings saved successfully!"));
         }
@@ -1232,7 +1232,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert - Page should have correct structure
             Assert.Contains("settings-page", cut.Markup);
             Assert.Contains("settings-header", cut.Markup);
@@ -1245,7 +1245,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert - Header should have correct structure
             Assert.Contains("settings-header", cut.Markup);
             Assert.Contains("⚙️ Settings", cut.Markup);
@@ -1257,7 +1257,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             // Arrange & Act
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            
+
             // Assert - Actions should have correct structure
             Assert.Contains("settings-actions", cut.Markup);
             Assert.Contains("btn-save", cut.Markup);

@@ -15,10 +15,10 @@ public class TimeFormatter
     public virtual string FormatTime(int minutes)
     {
         if (minutes == 0) return string.Format(Constants.TimeFormats.MinutesFormat, 0);
-        
+
         var hours = minutes / Constants.TimeConversion.MinutesPerHour;
         var mins = minutes % Constants.TimeConversion.MinutesPerHour;
-        
+
         if (hours > 0 && mins > 0)
         {
             return string.Format(Constants.TimeFormats.HoursMinutesFormat, hours, mins);
@@ -32,7 +32,7 @@ public class TimeFormatter
             return string.Format(Constants.TimeFormats.MinutesFormat, mins);
         }
     }
-    
+
     /// <summary>
     /// Formats minutes into a simple time string (hours and minutes only)
     /// </summary>
@@ -42,7 +42,7 @@ public class TimeFormatter
     {
         if (minutes < Constants.TimeConversion.MinutesPerHour)
             return string.Format(Constants.TimeFormats.MinutesFormat, minutes);
-        
+
         var hours = minutes / Constants.TimeConversion.MinutesPerHour;
         var mins = minutes % Constants.TimeConversion.MinutesPerHour;
         return string.Format(Constants.TimeFormats.HoursMinutesFormat, hours, mins);

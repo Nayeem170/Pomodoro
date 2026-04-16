@@ -15,9 +15,9 @@ public class NotificationService : INotificationService, IAsyncDisposable
     private DotNetObjectReference<NotificationService>? _dotNetRef;
     private Task? _initializationTask;
     private readonly SemaphoreSlim _initSemaphore = new(1, 1);
-    
+
     public bool IsNotificationPermitted { get; private set; }
-    
+
     public event Action<string>? OnNotificationAction;
 
     public NotificationService(IJSRuntime jsRuntime, AppState appState, ILogger<NotificationService> logger)
@@ -39,7 +39,7 @@ public class NotificationService : INotificationService, IAsyncDisposable
             {
                 return;
             }
-            
+
             // Start initialization and store the task
             _initializationTask = InitializeCoreAsync();
             await _initializationTask;
@@ -49,18 +49,18 @@ public class NotificationService : INotificationService, IAsyncDisposable
             _initSemaphore.Release();
         }
     }
-    
+
     private async Task InitializeCoreAsync()
     {
         try
         {
             // Dispose existing reference if any (shouldn't happen, but safety check)
             _dotNetRef?.Dispose();
-            
+
             // Create dotnet reference for JS callbacks
             _dotNetRef = DotNetObjectReference.Create(this);
             await _jsRuntime.InvokeVoidAsync(Constants.NotificationJsFunctions.RegisterDotNetRef, _dotNetRef);
-            
+
             await RequestPermissionAsync();
         }
         catch (Exception ex)
@@ -85,7 +85,7 @@ public class NotificationService : INotificationService, IAsyncDisposable
             return false;
         }
     }
-    
+
     /// <summary>
     /// Refreshes the notification permission state from the browser.
     /// Call this when settings page opens to ensure UI shows current permission status.
@@ -108,7 +108,7 @@ public class NotificationService : INotificationService, IAsyncDisposable
     {
         // Fast-fail if we know permission isn't granted (avoids unnecessary JS interop)
         if (!IsNotificationPermitted) return;
-        
+
         try
         {
             // Pass session type as int (0 = Pomodoro, 1 = ShortBreak, 2 = LongBreak)
@@ -119,7 +119,7 @@ public class NotificationService : INotificationService, IAsyncDisposable
             _logger.LogError(ex, Constants.Messages.ErrorShowingNotification);
         }
     }
-    
+
     // Called from JavaScript when notification action is clicked
     [JSInvokable(Constants.JsInvokableMethods.OnNotificationActionClick)]
     public void OnNotificationActionClick(string action)
@@ -162,7 +162,7 @@ public class NotificationService : INotificationService, IAsyncDisposable
         {
             // Ignore errors during disposal
         }
-        
+
         _dotNetRef?.Dispose();
         _initSemaphore.Dispose();
     }

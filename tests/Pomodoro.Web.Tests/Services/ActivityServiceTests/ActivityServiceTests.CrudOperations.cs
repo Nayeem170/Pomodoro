@@ -21,15 +21,15 @@ public partial class ActivityServiceTests
         var activities = new List<ActivityRecord>();
         MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
         MockActivityRepository.Setup(r => r.SaveAsync(It.IsAny<ActivityRecord>())).ReturnsAsync(true);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         var newActivity = CreateSampleActivity();
-        
+
         // Act
         await service.AddActivityAsync(newActivity);
-        
+
         // Assert
         var allActivities = service.GetAllActivities();
         Assert.Single(allActivities);
@@ -43,15 +43,15 @@ public partial class ActivityServiceTests
         var activities = new List<ActivityRecord>();
         MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
         MockActivityRepository.Setup(r => r.SaveAsync(It.IsAny<ActivityRecord>())).ReturnsAsync(true);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         var newActivity = CreateSampleActivity();
-        
+
         // Act
         await service.AddActivityAsync(newActivity);
-        
+
         // Assert
         MockActivityRepository.Verify(r => r.SaveAsync(newActivity), Times.Once);
     }
@@ -63,18 +63,18 @@ public partial class ActivityServiceTests
         var activities = new List<ActivityRecord>();
         MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
         MockActivityRepository.Setup(r => r.SaveAsync(It.IsAny<ActivityRecord>())).ReturnsAsync(true);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         var eventFired = false;
         service.OnActivityChanged += () => eventFired = true;
-        
+
         var newActivity = CreateSampleActivity();
-        
+
         // Act
         await service.AddActivityAsync(newActivity);
-        
+
         // Assert
         Assert.True(eventFired);
     }
@@ -86,18 +86,18 @@ public partial class ActivityServiceTests
         var existingActivities = Enumerable.Range(0, 500)
             .Select(i => CreateSampleActivity(completedAt: DateTime.UtcNow.AddMinutes(-i)))
             .ToList();
-        
+
         MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(existingActivities);
         MockActivityRepository.Setup(r => r.SaveAsync(It.IsAny<ActivityRecord>())).ReturnsAsync(true);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         var newActivity = CreateSampleActivity(completedAt: DateTime.UtcNow);
-        
+
         // Act
         await service.AddActivityAsync(newActivity);
-        
+
         // Assert
         var allActivities = service.GetAllActivities();
         Assert.Equal(500, allActivities.Count); // Max cache size
@@ -110,18 +110,18 @@ public partial class ActivityServiceTests
         // Arrange
         var existingActivity = CreateSampleActivity(completedAt: DateTime.UtcNow.AddMinutes(-1));
         var activities = new List<ActivityRecord> { existingActivity };
-        
+
         MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
         MockActivityRepository.Setup(r => r.SaveAsync(It.IsAny<ActivityRecord>())).ReturnsAsync(true);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         var newActivity = CreateSampleActivity(completedAt: DateTime.UtcNow);
-        
+
         // Act
         await service.AddActivityAsync(newActivity);
-        
+
         // Assert
         var allActivities = service.GetAllActivities();
         Assert.Equal(2, allActivities.Count);
@@ -143,16 +143,16 @@ public partial class ActivityServiceTests
             CreateSampleActivity(),
             CreateSampleActivity()
         };
-        
+
         MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
         MockActivityRepository.Setup(r => r.ClearAllAsync()).ReturnsAsync(true);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         // Act
         await service.ClearAllActivitiesAsync();
-        
+
         // Assert
         var allActivities = service.GetAllActivities();
         Assert.Empty(allActivities);
@@ -164,13 +164,13 @@ public partial class ActivityServiceTests
         // Arrange
         MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<ActivityRecord>());
         MockActivityRepository.Setup(r => r.ClearAllAsync()).ReturnsAsync(true);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         // Act
         await service.ClearAllActivitiesAsync();
-        
+
         // Assert
         MockActivityRepository.Verify(r => r.ClearAllAsync(), Times.Once);
     }
@@ -181,16 +181,16 @@ public partial class ActivityServiceTests
         // Arrange
         MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<ActivityRecord>());
         MockActivityRepository.Setup(r => r.ClearAllAsync()).ReturnsAsync(true);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         var eventFired = false;
         service.OnActivityChanged += () => eventFired = true;
-        
+
         // Act
         await service.ClearAllActivitiesAsync();
-        
+
         // Assert
         Assert.True(eventFired);
     }
@@ -208,14 +208,14 @@ public partial class ActivityServiceTests
             CreateSampleActivity(),
             CreateSampleActivity()
         };
-        
+
         MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-        
+
         var service = CreateService();
-        
+
         // Act
         await service.InitializeAsync();
-        
+
         // Assert
         var allActivities = service.GetAllActivities();
         Assert.Equal(2, allActivities.Count);
@@ -226,15 +226,15 @@ public partial class ActivityServiceTests
     {
         // Arrange
         var activities = new List<ActivityRecord> { CreateSampleActivity() };
-        
+
         MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-        
+
         var service = CreateService();
-        
+
         // Act
         await service.InitializeAsync();
         await service.InitializeAsync();
-        
+
         // Assert
         MockActivityRepository.Verify(r => r.GetAllAsync(), Times.Once);
     }
@@ -244,12 +244,12 @@ public partial class ActivityServiceTests
     {
         // Arrange
         MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<ActivityRecord>());
-        
+
         var service = CreateService();
-        
+
         // Act
         await service.InitializeAsync();
-        
+
         // Assert
         var allActivities = service.GetAllActivities();
         Assert.Empty(allActivities);
@@ -267,24 +267,24 @@ public partial class ActivityServiceTests
         {
             CreateSampleActivity()
         };
-        
+
         var reloadedActivities = new List<ActivityRecord>
         {
             CreateSampleActivity(),
             CreateSampleActivity(),
             CreateSampleActivity()
         };
-        
+
         MockActivityRepository.SetupSequence(r => r.GetAllAsync())
             .ReturnsAsync(initialActivities)
             .ReturnsAsync(reloadedActivities);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         // Act
         await service.ReloadAsync();
-        
+
         // Assert
         var allActivities = service.GetAllActivities();
         Assert.Equal(3, allActivities.Count);
@@ -295,16 +295,16 @@ public partial class ActivityServiceTests
     {
         // Arrange
         MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<ActivityRecord>());
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         var eventFired = false;
         service.OnActivityChanged += () => eventFired = true;
-        
+
         // Act
         await service.ReloadAsync();
-        
+
         // Assert
         Assert.True(eventFired);
     }
@@ -319,10 +319,10 @@ public partial class ActivityServiceTests
         // Arrange
         MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<ActivityRecord>());
         MockActivityRepository.Setup(r => r.SaveAsync(It.IsAny<ActivityRecord>())).ReturnsAsync(true);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         var args = new TimerCompletedEventArgs(
             SessionType.Pomodoro,
             Guid.NewGuid(),
@@ -331,14 +331,14 @@ public partial class ActivityServiceTests
             true,
             DateTime.UtcNow
         );
-        
+
         // Act
         await service.HandleTimerCompletedAsync(args);
-        
+
         // Assert
         var allActivities = service.GetAllActivities();
         Assert.Single(allActivities);
-        
+
         var activity = allActivities[0];
         Assert.Equal(SessionType.Pomodoro, activity.Type);
         Assert.Equal(args.TaskId, activity.TaskId);
@@ -353,10 +353,10 @@ public partial class ActivityServiceTests
         // Arrange
         MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<ActivityRecord>());
         MockActivityRepository.Setup(r => r.SaveAsync(It.IsAny<ActivityRecord>())).ReturnsAsync(true);
-        
+
         var service = CreateService();
         await service.InitializeAsync();
-        
+
         var args = new TimerCompletedEventArgs(
             SessionType.ShortBreak,
             null,
@@ -365,10 +365,10 @@ public partial class ActivityServiceTests
             true,
             DateTime.UtcNow
         );
-        
+
         // Act
         await service.HandleTimerCompletedAsync(args);
-        
+
         // Assert
         MockActivityRepository.Verify(r => r.SaveAsync(It.IsAny<ActivityRecord>()), Times.Once);
     }
@@ -387,15 +387,15 @@ public partial class ActivityServiceTests
         {
             CreateSampleActivity(completedAt: DateTime.UtcNow.AddDays(-3))
         };
-        
+
         MockActivityRepository.Setup(r => r.GetByDateRangeAsync(from, to))
             .ReturnsAsync(expectedActivities);
-        
+
         var service = CreateService();
-        
+
         // Act
         var result = await service.GetActivitiesByDateRangeAsync(from, to);
-        
+
         // Assert
         Assert.Single(result);
         MockActivityRepository.Verify(r => r.GetByDateRangeAsync(from, to), Times.Once);
@@ -416,15 +416,15 @@ public partial class ActivityServiceTests
             CreateSampleActivity(completedAt: DateTime.UtcNow.AddDays(-1)),
             CreateSampleActivity(completedAt: DateTime.UtcNow.AddDays(-2))
         };
-        
+
         MockActivityRepository.Setup(r => r.GetPagedAsync(from, to, 0, 20))
             .ReturnsAsync(expectedActivities);
-        
+
         var service = CreateService();
-        
+
         // Act
         var result = await service.GetActivitiesPagedAsync(from, to, 0, 20);
-        
+
         // Assert
         Assert.Equal(2, result.Count);
         MockActivityRepository.Verify(r => r.GetPagedAsync(from, to, 0, 20), Times.Once);
@@ -440,15 +440,15 @@ public partial class ActivityServiceTests
         {
             CreateSampleActivity(completedAt: DateTime.UtcNow.AddDays(-3))
         };
-        
+
         MockActivityRepository.Setup(r => r.GetPagedAsync(from, to, 10, 5))
             .ReturnsAsync(expectedActivities);
-        
+
         var service = CreateService();
-        
+
         // Act
         var result = await service.GetActivitiesPagedAsync(from, to, 10, 5);
-        
+
         // Assert
         MockActivityRepository.Verify(r => r.GetPagedAsync(from, to, 10, 5), Times.Once);
     }
@@ -463,12 +463,12 @@ public partial class ActivityServiceTests
         // Arrange
         MockActivityRepository.Setup(r => r.GetCountAsync(null, null))
             .ReturnsAsync(42);
-        
+
         var service = CreateService();
-        
+
         // Act
         var count = await service.GetActivityCountAsync();
-        
+
         // Assert
         Assert.Equal(42, count);
     }
@@ -479,15 +479,15 @@ public partial class ActivityServiceTests
         // Arrange
         var from = DateTime.UtcNow.AddDays(-7);
         var to = DateTime.UtcNow;
-        
+
         MockActivityRepository.Setup(r => r.GetCountAsync(from, to))
             .ReturnsAsync(10);
-        
+
         var service = CreateService();
-        
+
         // Act
         var count = await service.GetActivityCountAsync(from, to);
-        
+
         // Assert
         Assert.Equal(10, count);
         MockActivityRepository.Verify(r => r.GetCountAsync(from, to), Times.Once);

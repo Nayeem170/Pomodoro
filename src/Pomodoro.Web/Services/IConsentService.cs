@@ -10,12 +10,12 @@ public interface IConsentService
     event Action? OnConsentRequired;
     event Action? OnCountdownTick;
     event Action? OnConsentHandled;
-    
+
     bool IsModalVisible { get; }
     SessionType CompletedSessionType { get; }
     int CountdownSeconds { get; }
     List<ConsentOption> AvailableOptions { get; }
-    
+
     void Initialize();
     void ShowConsentModal(SessionType completedSessionType);
     void HideConsentModal();

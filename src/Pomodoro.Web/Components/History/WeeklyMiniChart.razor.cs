@@ -12,32 +12,32 @@ namespace Pomodoro.Web.Components.History;
 public class WeeklyMiniChartBase : ComponentBase, IAsyncDisposable
 {
     #region Services (Dependency Injection)
-    
+
     [Inject]
     protected IChartService ChartService { get; set; } = default!;
-    
+
     [Inject]
     protected ChartDataFormatter ChartDataFormatter { get; set; } = default!;
-    
+
     #endregion
 
     #region Parameters
-    
+
     [Parameter]
     public Dictionary<DateTime, int> DailyFocusMinutes { get; set; } = new();
-    
+
     [Parameter]
     public Dictionary<DateTime, int> BreakDailyMinutes { get; set; } = new();
-    
+
     [Parameter]
     public DateTime WeekStartDate { get; set; }
-    
+
     #endregion
 
     #region Properties
-    
+
     protected string CanvasId { get; } = $"{Constants.Charts.WeeklyChartPrefix}{Guid.NewGuid().ToString(Constants.DateFormats.GuidNoDashesFormat)}";
-    
+
     #endregion
 
     private bool _isRendered;
@@ -46,7 +46,7 @@ public class WeeklyMiniChartBase : ComponentBase, IAsyncDisposable
     private DateTime _previousWeekStart;
 
     #region Lifecycle Methods
-    
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -55,7 +55,7 @@ public class WeeklyMiniChartBase : ComponentBase, IAsyncDisposable
             await RenderChartAsync();
         }
     }
-    
+
     protected override async Task OnParametersSetAsync()
     {
         if (!_isRendered) return;
@@ -85,7 +85,7 @@ public class WeeklyMiniChartBase : ComponentBase, IAsyncDisposable
         }
         return true;
     }
-    
+
     private async Task RenderChartAsync()
     {
         var (labels, focusData, breakData) = ChartDataFormatter.PrepareWeeklyChartData(
@@ -95,11 +95,11 @@ public class WeeklyMiniChartBase : ComponentBase, IAsyncDisposable
         _previousWeekStart = WeekStartDate;
         await ChartService.CreateGroupedBarChartAsync(CanvasId, labels, focusData, breakData, null);
     }
-    
+
     #endregion
 
     #region IDisposable
-    
+
     public async ValueTask DisposeAsync()
     {
         try
@@ -111,6 +111,6 @@ public class WeeklyMiniChartBase : ComponentBase, IAsyncDisposable
             // Ignore disposal errors
         }
     }
-    
+
     #endregion
 }

@@ -12,7 +12,7 @@ namespace Pomodoro.Web.Components.Shared;
 public class ConsentModalBase : ComponentBase
 {
     #region Parameters (Model)
-    
+
     [Parameter]
     public bool IsVisible { get; set; }
 
@@ -27,18 +27,18 @@ public class ConsentModalBase : ComponentBase
 
     [Parameter]
     public EventCallback<SessionType> OnOptionSelected { get; set; }
-    
+
     #endregion
 
     #region Constants
-    
+
     /// <summary>Maximum countdown seconds for the consent modal (used for progress bar calculation)</summary>
     private int _initialCountdownSeconds;
-    
+
     #endregion
 
     #region Lifecycle Methods
-    
+
     protected override void OnParametersSet()
     {
         // Track the initial countdown value for progress bar calculation
@@ -47,14 +47,14 @@ public class ConsentModalBase : ComponentBase
         {
             _initialCountdownSeconds = CountdownSeconds;
         }
-        
+
         // If countdown is 0, reset for next time
         if (CountdownSeconds <= 0)
         {
             _initialCountdownSeconds = 0;
         }
     }
-    
+
     #endregion
 
     #region Business Logic Methods
@@ -108,7 +108,7 @@ public class ConsentModalBase : ComponentBase
     {
         if (_initialCountdownSeconds <= 0)
             return 0;
-        
+
         return ((double)CountdownSeconds / _initialCountdownSeconds) * Constants.UI.PercentageMultiplier;
     }
 
@@ -143,6 +143,6 @@ public class ConsentModalBase : ComponentBase
             builder.CloseElement();
         }
     };
-    
+
     #endregion
 }

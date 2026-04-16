@@ -34,18 +34,18 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = false
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.ShortBreak);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -53,14 +53,14 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
-        
+
         // Assert
         Assert.True(service.IsModalVisible);
     }
-    
+
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenAutoStartDisabled_DoesNotShowConsentModal()
     {
@@ -80,14 +80,14 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = false
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = true }
             });
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -95,14 +95,14 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
-        
+
         // Assert
         Assert.False(service.IsModalVisible);
     }
-    
+
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenSoundEnabled_PlaysTimerCompleteSound()
     {
@@ -121,11 +121,11 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = false
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>());
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -133,14 +133,14 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
-        
+
         // Assert
         notificationServiceMock.Verify(x => x.PlayTimerCompleteSoundAsync(), Times.Once);
     }
-    
+
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenSoundEnabled_PlaysBreakCompleteSound()
     {
@@ -159,11 +159,11 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = false
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>());
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -171,14 +171,14 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.ShortBreak));
-        
+
         // Assert
         notificationServiceMock.Verify(x => x.PlayBreakCompleteSoundAsync(), Times.Once);
     }
-    
+
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenNotificationsEnabled_ShowsPomodoroNotification()
     {
@@ -197,11 +197,11 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>());
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -209,10 +209,10 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
-        
+
         // Assert
         notificationServiceMock.Verify(
             x => x.ShowNotificationAsync(
@@ -222,7 +222,7 @@ public partial class ConsentServiceTests
                 It.IsAny<string?>()),
             Times.Once);
     }
-    
+
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenNotificationsEnabled_ShowsBreakNotification()
     {
@@ -241,11 +241,11 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>());
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -253,10 +253,10 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.ShortBreak));
-        
+
         // Assert
         notificationServiceMock.Verify(
             x => x.ShowNotificationAsync(
@@ -266,7 +266,7 @@ public partial class ConsentServiceTests
                 It.IsAny<string?>()),
             Times.Once);
     }
-    
+
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenSoundDisabled_DoesNotPlaySound()
     {
@@ -285,11 +285,11 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = false
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>());
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -297,15 +297,15 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
-        
+
         // Assert
         notificationServiceMock.Verify(x => x.PlayTimerCompleteSoundAsync(), Times.Never);
         notificationServiceMock.Verify(x => x.PlayBreakCompleteSoundAsync(), Times.Never);
     }
-    
+
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenNotificationsDisabled_DoesNotShowNotification()
     {
@@ -324,11 +324,11 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = false
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>());
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -336,16 +336,16 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
-        
+
         // Assert
         notificationServiceMock.Verify(
             x => x.ShowNotificationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SessionType>(), It.IsAny<string?>()),
             Times.Never);
     }
-    
+
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenSettingsNull_DoesNotThrow()
     {
@@ -359,7 +359,7 @@ public partial class ConsentServiceTests
         {
             Settings = null!
         };
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -367,11 +367,11 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act & Assert - Should not throw
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
     }
-    
+
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenNotificationServiceNull_DoesNotThrow()
     {
@@ -389,11 +389,11 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = true
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>());
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -401,11 +401,11 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         // Act & Assert - Should not throw
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
     }
-    
+
     [Fact]
     public void OnCountdownTick_FiresWhenCountdownDecrements()
     {
@@ -425,18 +425,18 @@ public partial class ConsentServiceTests
                 NotificationsEnabled = false
             }
         };
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = true }
             });
-        
+
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
             .Returns(SessionType.ShortBreak);
-        
+
         var service = new ConsentService(
             timerServiceMock.Object,
             taskServiceMock.Object,
@@ -444,16 +444,16 @@ public partial class ConsentServiceTests
             appState,
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
-        
+
         var countdownTicks = new List<int>();
         service.OnCountdownTick += () => countdownTicks.Add(service.CountdownSeconds);
-        
+
         // Act
         service.ShowConsentModal(SessionType.Pomodoro);
-        
+
         // Wait for countdown to tick
         Thread.Sleep(1500);
-        
+
         // Assert - Countdown should have decreased
         Assert.Contains(countdownTicks, t => t < 3);
     }

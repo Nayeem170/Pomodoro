@@ -23,7 +23,7 @@ public class SettingsPageTests : TestHelper
         TimerServiceMock
             .SetupGet(x => x.Settings)
             .Returns(defaultSettings);
-        
+
         // Set up UpdateSettingsAsync to return completed task
         TimerServiceMock
             .Setup(x => x.UpdateSettingsAsync(It.IsAny<TimerSettings>()))
@@ -35,7 +35,7 @@ public class SettingsPageTests : TestHelper
     {
         // Act
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-        
+
         // Assert
         cut.Should().NotBeNull();
         cut.Markup.Should().NotBeNullOrEmpty();
@@ -46,7 +46,7 @@ public class SettingsPageTests : TestHelper
     {
         // Act
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-        
+
         // Assert - Settings page should have sections for Timer Durations, Preferences, Auto-Start, and Data Management
         var headers = cut.FindAll("h2");
         headers.Should().NotBeEmpty();
@@ -58,7 +58,7 @@ public class SettingsPageTests : TestHelper
     {
         // Act
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-        
+
         // Assert - Settings page should have number inputs for timer durations
         var inputs = cut.FindAll(".setting-input[type='number']");
         inputs.Should().NotBeEmpty();
@@ -70,7 +70,7 @@ public class SettingsPageTests : TestHelper
     {
         // Act
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-        
+
         // Assert - Settings page should have toggle switches for preferences
         var toggles = cut.FindAll(".toggle-input[type='checkbox']");
         toggles.Should().NotBeEmpty();
@@ -82,12 +82,12 @@ public class SettingsPageTests : TestHelper
     {
         // Act
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-        
+
         // Assert - Settings page should have buttons for data management
         var exportButton = cut.Find(".btn-export");
         var importLabel = cut.Find(".btn-import");
         var clearButton = cut.Find(".btn-clear");
-        
+
         exportButton.Should().NotBeNull();
         importLabel.Should().NotBeNull();
         clearButton.Should().NotBeNull();

@@ -29,13 +29,13 @@ public class ActivityRepository : IActivityRepository
         var toUtc = end.Kind != DateTimeKind.Utc ? DateTime.SpecifyKind(end, DateTimeKind.Local).ToUniversalTime() : end;
         var fromDate = fromUtc.ToString(Constants.DateFormats.IsoFormat);
         var toDate = toUtc.ToString(Constants.DateFormats.IsoFormat);
-        
+
         var activities = await _indexedDb.QueryByDateRangeAsync<ActivityRecord>(
             Constants.Storage.ActivitiesStore,
             Constants.Storage.CompletedAtIndex,
             fromDate,
             toDate);
-        
+
         return activities?.OrderByDescending(a => a.CompletedAt).ToList() ?? new List<ActivityRecord>();
     }
 
@@ -67,7 +67,7 @@ public class ActivityRepository : IActivityRepository
             var activities = await GetByDateRangeAsync(start.Value, end.Value);
             return activities.Count;
         }
-        
+
         var all = await GetAllAsync();
         return all.Count;
     }

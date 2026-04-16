@@ -24,7 +24,7 @@ public class IndexPagePresenterServiceTests
         // Arrange
         var taskServiceMock = new Mock<ITaskService>();
         var timerServiceMock = new Mock<ITimerService>();
-        
+
         var tasks = new List<TaskItem>
         {
             new TaskItem { Id = Guid.NewGuid(), Name = "Task 1" },
@@ -33,7 +33,7 @@ public class IndexPagePresenterServiceTests
         var currentTaskId = tasks[0].Id;
         var remainingTime = TimeSpan.FromMinutes(25);
         var sessionType = SessionType.Pomodoro;
-        
+
         taskServiceMock.Setup(s => s.Tasks).Returns(tasks);
         taskServiceMock.Setup(s => s.CurrentTaskId).Returns(currentTaskId);
         timerServiceMock.Setup(s => s.RemainingTime).Returns(remainingTime);
@@ -61,7 +61,7 @@ public class IndexPagePresenterServiceTests
         // Arrange
         var taskServiceMock = new Mock<ITaskService>();
         var timerServiceMock = new Mock<ITimerService>();
-        
+
         taskServiceMock.Setup(s => s.Tasks).Returns((List<TaskItem>)null!);
         timerServiceMock.Setup(s => s.RemainingTime).Returns(TimeSpan.FromMinutes(25));
         timerServiceMock.Setup(s => s.CurrentSessionType).Returns(SessionType.Pomodoro);
@@ -83,7 +83,7 @@ public class IndexPagePresenterServiceTests
         // Arrange
         var taskServiceMock = new Mock<ITaskService>();
         var timerServiceMock = new Mock<ITimerService>();
-        
+
         taskServiceMock.Setup(s => s.Tasks).Throws(new Exception("Test exception"));
 
         // Act
@@ -102,7 +102,7 @@ public class IndexPagePresenterServiceTests
         // Arrange
         var taskServiceMock = new Mock<ITaskService>();
         var timerServiceMock = new Mock<ITimerService>();
-        
+
         taskServiceMock.Setup(s => s.Tasks).Returns(new List<TaskItem>());
         timerServiceMock.Setup(s => s.RemainingTime).Returns(TimeSpan.FromMinutes(5));
         timerServiceMock.Setup(s => s.CurrentSessionType).Returns(SessionType.ShortBreak);

@@ -13,7 +13,7 @@ public interface IInfiniteScrollInterop
     /// </summary>
     /// <returns>True if Intersection Observer is supported, false otherwise.</returns>
     Task<bool> IsSupportedAsync();
-    
+
     /// <summary>
     /// Creates an Intersection Observer for the infinite scroll sentinel element.
     /// </summary>
@@ -29,13 +29,13 @@ public interface IInfiniteScrollInterop
         string containerId,
         string rootMargin,
         int timeoutMs);
-    
+
     /// <summary>
     /// Destroys the Intersection Observer for a specific sentinel element.
     /// </summary>
     /// <param name="sentinelId">ID of the sentinel element to destroy observer for.</param>
     Task DestroyObserverAsync(string sentinelId);
-    
+
     /// <summary>
     /// Destroys all Intersection Observers (fallback cleanup).
     /// </summary>

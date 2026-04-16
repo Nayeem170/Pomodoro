@@ -47,16 +47,16 @@ public class SettingsBaseTests : TestContext
         JSInteropServiceMock = new Mock<IJSInteropService>();
         LoggerMock = new Mock<ILogger<SettingsPageBase>>();
         SettingsPresenterLoggerMock = new Mock<ILogger<SettingsPresenterService>>();
-        
+
         // Create real SettingsPresenterService instance
         SettingsPresenterService = new SettingsPresenterService(SettingsPresenterLoggerMock.Object);
-        
+
         // Setup TimerService mock with default settings
         var defaultSettings = new TimerSettings();
         TimerServiceMock.Setup(x => x.Settings).Returns(defaultSettings);
         TimerServiceMock.Setup(x => x.UpdateSettingsAsync(It.IsAny<TimerSettings>()))
             .Returns(Task.CompletedTask);
-        
+
         // Setup ExportService mock
         ExportServiceMock.Setup(x => x.ExportToJsonAsync())
             .ReturnsAsync("{}");
@@ -64,19 +64,19 @@ public class SettingsBaseTests : TestContext
             .ReturnsAsync(new ImportResult { Success = true, ActivitiesImported = 5, TasksImported = 5, ActivitiesSkipped = 0, TasksSkipped = 0 });
         ExportServiceMock.Setup(x => x.ClearAllDataAsync())
             .Returns(Task.CompletedTask);
-        
+
         // Setup TaskService mock
         TaskServiceMock.Setup(x => x.ReloadAsync())
             .Returns(Task.CompletedTask);
-        
+
         // Setup ActivityService mock
         ActivityServiceMock.Setup(x => x.ReloadAsync())
             .Returns(Task.CompletedTask);
-        
+
         // Setup JSInteropService mock
         JSInteropServiceMock.Setup(x => x.InvokeVoidAsync(It.IsAny<string>(), It.IsAny<object[]>()))
             .Returns(Task.CompletedTask);
-        
+
         // Register all required services
         Services.AddSingleton(TimerServiceMock.Object);
         Services.AddSingleton(ExportServiceMock.Object);
@@ -120,7 +120,7 @@ public class SettingsBaseTests : TestContext
     {
         // Act
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-        
+
         // Assert
         Assert.NotNull(cut);
     }
@@ -140,10 +140,10 @@ public class SettingsBaseTests : TestContext
             LongBreakMinutes = 15
         };
         TimerServiceMock.Setup(x => x.Settings).Returns(testSettings);
-        
+
         // Act
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-        
+
         // Assert
         var instance = cut.Instance;
         var settings = GetProtectedProperty<TimerSettings>(instance, "Settings");
@@ -163,10 +163,10 @@ public class SettingsBaseTests : TestContext
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
-        
+
         // Act - Use InvokeAsync to run within component's dispatcher context
         await cut.InvokeAsync(() => instance.HandleSave());
-        
+
         // Assert
         TimerServiceMock.Verify(x => x.UpdateSettingsAsync(It.IsAny<TimerSettings>()), Times.Once);
         var showToast = GetProtectedProperty<bool>(instance, "ShowToast");
@@ -183,7 +183,7 @@ public class SettingsBaseTests : TestContext
             .ThrowsAsync(new Exception("Update failed"));
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
-        
+
         // Act & Assert
         await Assert.ThrowsAsync<Exception>(() => instance.HandleSave());
     }
@@ -200,10 +200,10 @@ public class SettingsBaseTests : TestContext
         var instance = cut.Instance;
         var settings = GetProtectedProperty<TimerSettings>(instance, "Settings");
         SetProtectedProperty(instance, "Settings", new TimerSettings { PomodoroMinutes = 50 });
-        
+
         // Act
         instance.ResetToDefaults();
-        
+
         // Assert
         var updatedSettings = GetProtectedProperty<TimerSettings>(instance, "Settings");
         Assert.NotNull(updatedSettings);
@@ -223,10 +223,10 @@ public class SettingsBaseTests : TestContext
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
-        
+
         // Act - Use InvokeAsync to run within component's dispatcher context
         await cut.InvokeAsync(() => instance.ExportJson());
-        
+
         // Assert
         ExportServiceMock.Verify(x => x.ExportToJsonAsync(), Times.Once);
         JSInteropServiceMock.Verify(x => x.InvokeVoidAsync(It.IsAny<string>(),
@@ -243,10 +243,10 @@ public class SettingsBaseTests : TestContext
             .ThrowsAsync(new Exception("Export failed"));
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
-        
+
         // Act - Use InvokeAsync to run within component's dispatcher context
         await cut.InvokeAsync(() => instance.ExportJson());
-        
+
         // Assert
         var isExporting = GetProtectedProperty<bool>(instance, "IsExporting");
         var showToast = GetProtectedProperty<bool>(instance, "ShowToast");
@@ -266,10 +266,10 @@ public class SettingsBaseTests : TestContext
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
-        
+
         // Act
         instance.ConfirmClearData();
-        
+
         // Assert
         var showClearConfirmation = GetProtectedProperty<bool>(instance, "ShowClearConfirmation");
         Assert.True(showClearConfirmation);
@@ -281,10 +281,10 @@ public class SettingsBaseTests : TestContext
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
-        
+
         // Act - Use InvokeAsync to run within component's dispatcher context
         await cut.InvokeAsync(() => instance.ClearData());
-        
+
         // Assert
         ExportServiceMock.Verify(x => x.ClearAllDataAsync(), Times.Once);
     }
@@ -295,10 +295,10 @@ public class SettingsBaseTests : TestContext
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
-        
+
         // Act - Use InvokeAsync to run within component's dispatcher context
         await cut.InvokeAsync(() => instance.ClearData());
-        
+
         // Assert
         TaskServiceMock.Verify(x => x.ReloadAsync(), Times.Once);
         ActivityServiceMock.Verify(x => x.ReloadAsync(), Times.Once);
@@ -312,10 +312,10 @@ public class SettingsBaseTests : TestContext
             .ThrowsAsync(new Exception("Clear failed"));
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
-        
+
         // Act - Use InvokeAsync to run within component's dispatcher context
         await cut.InvokeAsync(() => instance.ClearData());
-        
+
         // Assert - ClearData only sets IsClearing to false on exception, doesn't show toast
         var isClearing = GetProtectedProperty<bool>(instance, "IsClearing");
         Assert.False(isClearing);
@@ -334,10 +334,10 @@ public class SettingsBaseTests : TestContext
         var fileName = "test.json";
         var content = "test content";
         var mimeType = "application/json";
-        
+
         // Act
         await SettingsPresenterService.DownloadFileAsync(JSInteropServiceMock.Object, fileName, content, mimeType);
-        
+
         // Assert - Verify the actual method name used in Settings.razor.cs
         JSInteropServiceMock.Verify(x => x.InvokeVoidAsync("fileInterop.downloadFile",
             It.Is<object[]>(args => args != null && args.Length >= 3)), Times.Once);
@@ -353,10 +353,10 @@ public class SettingsBaseTests : TestContext
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
-        
+
         // Act
         var hasChanges = GetProtectedProperty<bool>(instance, "HasChanges");
-        
+
         // Assert
         Assert.False(hasChanges);
     }
@@ -369,10 +369,10 @@ public class SettingsBaseTests : TestContext
         var instance = cut.Instance;
         var settings = GetProtectedProperty<TimerSettings>(instance, "Settings");
         SetProtectedProperty(instance, "Settings", new TimerSettings { PomodoroMinutes = 50 });
-        
+
         // Act
         var hasChanges = GetProtectedProperty<bool>(instance, "HasChanges");
-        
+
         // Assert
         Assert.True(hasChanges);
     }
@@ -387,10 +387,10 @@ public class SettingsBaseTests : TestContext
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
         var instance = cut.Instance;
-        
+
         // Act
         var isAtDefaults = GetProtectedProperty<bool>(instance, "IsAtDefaults");
-        
+
         // Assert
         Assert.True(isAtDefaults);
     }
@@ -403,10 +403,10 @@ public class SettingsBaseTests : TestContext
         var instance = cut.Instance;
         var settings = GetProtectedProperty<TimerSettings>(instance, "Settings");
         SetProtectedProperty(instance, "Settings", new TimerSettings { PomodoroMinutes = 50 });
-        
+
         // Act
         var isAtDefaults = GetProtectedProperty<bool>(instance, "IsAtDefaults");
-        
+
         // Assert
         Assert.False(isAtDefaults);
     }
@@ -426,10 +426,10 @@ public class SettingsBaseTests : TestContext
         mockFile.Setup(x => x.Name).Returns("test.json");
         var args = new Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs(
             new[] { mockFile.Object });
-        
+
         // Act
         await cut.InvokeAsync(() => instance.HandleImport(args));
-        
+
         // Assert
         var importResult = GetProtectedProperty<string>(instance, "ImportResult");
         Assert.Equal("No file selected", importResult);
@@ -447,10 +447,10 @@ public class SettingsBaseTests : TestContext
         var args = new Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs(
             new Microsoft.AspNetCore.Components.Forms.IBrowserFile[] { null });
 #pragma warning restore CS8625
-        
+
         // Act
         await cut.InvokeAsync(() => instance.HandleImport(args));
-        
+
         // Assert
         var importResult = GetProtectedProperty<string>(instance, "ImportResult");
         Assert.Equal("No file selected", importResult);
@@ -467,10 +467,10 @@ public class SettingsBaseTests : TestContext
         mockFile.Setup(x => x.Name).Returns("large.json");
         var args = new Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs(
             new[] { mockFile.Object });
-        
+
         // Act
         await cut.InvokeAsync(() => instance.HandleImport(args));
-        
+
         // Assert
         var importResult = GetProtectedProperty<string>(instance, "ImportResult");
         Assert.Contains("File too large", importResult);
@@ -491,10 +491,10 @@ public class SettingsBaseTests : TestContext
             .Returns(new MemoryStream(System.Text.Encoding.UTF8.GetBytes("{}")));
         var args = new Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs(
             new[] { mockFile.Object });
-        
+
         // Act
         await cut.InvokeAsync(() => instance.HandleImport(args));
-        
+
         // Assert
         var importResult = GetProtectedProperty<string>(instance, "ImportResult");
         Assert.Equal("Invalid format", importResult);
@@ -515,10 +515,10 @@ public class SettingsBaseTests : TestContext
             .Returns(new MemoryStream(System.Text.Encoding.UTF8.GetBytes("{}")));
         var args = new Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs(
             new[] { mockFile.Object });
-        
+
         // Act
         await cut.InvokeAsync(() => instance.HandleImport(args));
-        
+
         // Assert
         var importResult = GetProtectedProperty<string>(instance, "ImportResult");
         Assert.Equal("Import failed. Please check the file format.", importResult);
@@ -539,10 +539,10 @@ public class SettingsBaseTests : TestContext
             .Returns(new MemoryStream(System.Text.Encoding.UTF8.GetBytes("{}")));
         var args = new Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs(
             new[] { mockFile.Object });
-        
+
         // Act
         await cut.InvokeAsync(() => instance.HandleImport(args));
-        
+
         // Assert
         var importResult = GetProtectedProperty<string>(instance, "ImportResult");
         Assert.Equal("Import failed. Please check the file format.", importResult);
@@ -565,10 +565,10 @@ public class SettingsBaseTests : TestContext
             .Returns(new MemoryStream(System.Text.Encoding.UTF8.GetBytes("{}")));
         var args = new Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs(
             new[] { mockFile.Object });
-        
+
         // Act
         await cut.InvokeAsync(() => instance.HandleImport(args));
-        
+
         // Assert
         var showToast = GetProtectedProperty<bool>(instance, "ShowToast");
         var toastMessage = GetProtectedProperty<string>(instance, "ToastMessage");
@@ -593,14 +593,14 @@ public class SettingsBaseTests : TestContext
             .Returns(new MemoryStream(System.Text.Encoding.UTF8.GetBytes("{}")));
         var args = new Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs(
             new[] { mockFile.Object });
-        
+
         // Act
         await cut.InvokeAsync(() => instance.HandleImport(args));
         Assert.True(GetProtectedProperty<bool>(instance, "ShowToast"));
-        
+
         // Wait for auto-hide (ToastDurationMs = 2000ms + buffer)
         await Task.Delay(2500);
-        
+
         // Assert - toast should be hidden
         var showToast = GetProtectedProperty<bool>(instance, "ShowToast");
         var toastMessage = GetProtectedProperty<string>(instance, "ToastMessage");

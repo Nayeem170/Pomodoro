@@ -18,7 +18,7 @@ public partial class SettingsRepositoryTests
         // Arrange
         var settings = CreateTestSettings();
         string? capturedStoreName = null;
-        
+
         MockIndexedDb
             .Setup(x => x.PutAsync(
                 It.IsAny<string>(),
@@ -28,12 +28,12 @@ public partial class SettingsRepositoryTests
                 capturedStoreName = store;
             })
             .ReturnsAsync(true);
-        
+
         var repository = CreateRepository();
-        
+
         // Act
         await repository.SaveAsync(settings);
-        
+
         // Assert
         Assert.Equal(Constants.Storage.SettingsStore, capturedStoreName);
     }
@@ -43,18 +43,18 @@ public partial class SettingsRepositoryTests
     {
         // Arrange
         var settings = CreateTestSettings();
-        
+
         MockIndexedDb
             .Setup(x => x.PutAsync(
                 It.IsAny<string>(),
                 It.IsAny<object>()))
             .ReturnsAsync(true);
-        
+
         var repository = CreateRepository();
-        
+
         // Act
         var result = await repository.SaveAsync(settings);
-        
+
         // Assert
         Assert.True(result);
     }
@@ -64,18 +64,18 @@ public partial class SettingsRepositoryTests
     {
         // Arrange
         var settings = CreateTestSettings();
-        
+
         MockIndexedDb
             .Setup(x => x.PutAsync(
                 It.IsAny<string>(),
                 It.IsAny<object>()))
             .ReturnsAsync(false);
-        
+
         var repository = CreateRepository();
-        
+
         // Act
         var result = await repository.SaveAsync(settings);
-        
+
         // Assert
         Assert.False(result);
     }
@@ -92,9 +92,9 @@ public partial class SettingsRepositoryTests
             notificationsEnabled: false,
             autoStartEnabled: false,
             autoStartDelaySeconds: 30);
-        
+
         object? capturedRecord = null;
-        
+
         MockIndexedDb
             .Setup(x => x.PutAsync(
                 It.IsAny<string>(),
@@ -104,28 +104,28 @@ public partial class SettingsRepositoryTests
                 capturedRecord = record;
             })
             .ReturnsAsync(true);
-        
+
         var repository = CreateRepository();
-        
+
         // Act
         await repository.SaveAsync(settings);
-        
+
         // Assert
         Assert.NotNull(capturedRecord);
         var recordType = capturedRecord!.GetType();
-        
-        Assert.Equal(Constants.Storage.DefaultSettingsId, 
+
+        Assert.Equal(Constants.Storage.DefaultSettingsId,
             recordType.GetProperty("Id")?.GetValue(capturedRecord));
-        Assert.Equal(45, 
+        Assert.Equal(45,
             recordType.GetProperty("PomodoroMinutes")?.GetValue(capturedRecord));
-        Assert.Equal(12, 
+        Assert.Equal(12,
             recordType.GetProperty("ShortBreakMinutes")?.GetValue(capturedRecord));
-        Assert.Equal(25, 
+        Assert.Equal(25,
             recordType.GetProperty("LongBreakMinutes")?.GetValue(capturedRecord));
         Assert.False((bool?)recordType.GetProperty("SoundEnabled")?.GetValue(capturedRecord)!);
         Assert.False((bool?)recordType.GetProperty("NotificationsEnabled")?.GetValue(capturedRecord)!);
         Assert.False((bool?)recordType.GetProperty("AutoStartEnabled")?.GetValue(capturedRecord)!);
-        Assert.Equal(30, 
+        Assert.Equal(30,
             recordType.GetProperty("AutoStartDelaySeconds")?.GetValue(capturedRecord));
     }
 
@@ -135,7 +135,7 @@ public partial class SettingsRepositoryTests
         // Arrange
         var settings = CreateTestSettings();
         object? capturedRecord = null;
-        
+
         MockIndexedDb
             .Setup(x => x.PutAsync(
                 It.IsAny<string>(),
@@ -145,12 +145,12 @@ public partial class SettingsRepositoryTests
                 capturedRecord = record;
             })
             .ReturnsAsync(true);
-        
+
         var repository = CreateRepository();
-        
+
         // Act
         await repository.SaveAsync(settings);
-        
+
         // Assert
         Assert.NotNull(capturedRecord);
         var recordType = capturedRecord!.GetType();
@@ -164,7 +164,7 @@ public partial class SettingsRepositoryTests
         // Arrange
         var settings = new Pomodoro.Web.Models.TimerSettings();
         object? capturedRecord = null;
-        
+
         MockIndexedDb
             .Setup(x => x.PutAsync(
                 It.IsAny<string>(),
@@ -174,21 +174,21 @@ public partial class SettingsRepositoryTests
                 capturedRecord = record;
             })
             .ReturnsAsync(true);
-        
+
         var repository = CreateRepository();
-        
+
         // Act
         await repository.SaveAsync(settings);
-        
+
         // Assert
         Assert.NotNull(capturedRecord);
         var recordType = capturedRecord!.GetType();
-        
-        Assert.Equal(Constants.Timer.DefaultPomodoroMinutes, 
+
+        Assert.Equal(Constants.Timer.DefaultPomodoroMinutes,
             recordType.GetProperty("PomodoroMinutes")?.GetValue(capturedRecord));
-        Assert.Equal(Constants.Timer.DefaultShortBreakMinutes, 
+        Assert.Equal(Constants.Timer.DefaultShortBreakMinutes,
             recordType.GetProperty("ShortBreakMinutes")?.GetValue(capturedRecord));
-        Assert.Equal(Constants.Timer.DefaultLongBreakMinutes, 
+        Assert.Equal(Constants.Timer.DefaultLongBreakMinutes,
             recordType.GetProperty("LongBreakMinutes")?.GetValue(capturedRecord));
     }
 

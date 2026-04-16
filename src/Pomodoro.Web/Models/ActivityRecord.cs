@@ -14,7 +14,7 @@ public class ActivityRecord
     public DateTime CompletedAt { get; set; }
     public int DurationMinutes { get; set; }
     public bool WasCompleted { get; set; }
-    
+
     // For display purposes
     [JsonIgnore]
     public string DisplayText => Type switch
@@ -24,7 +24,7 @@ public class ActivityRecord
         SessionType.LongBreak => Constants.SessionTypes.LongBreakActivity,
         _ => Constants.SessionTypes.UnknownActivity
     };
-    
+
     [JsonIgnore]
     public string Icon => Type switch
     {
@@ -33,6 +33,6 @@ public class ActivityRecord
         SessionType.LongBreak => Constants.SessionTypes.LongBreakEmoji,
         _ => Constants.SessionTypes.TimerEmoji
     };
-    
+
 
 }

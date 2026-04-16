@@ -15,30 +15,30 @@ namespace Pomodoro.Web.Pages;
 public class HistoryBase : ComponentBase, IAsyncDisposable
 {
     #region Services (Dependency Injection)
-    
+
     [Inject]
     protected IActivityService ActivityService { get; set; } = default!;
     [Inject]
     protected IStatisticsService StatisticsService { get; set; } = default!;
-    
+
     [Inject]
     protected IJSRuntime JSRuntime { get; set; } = default!;
-    
+
     [Inject]
     protected IInfiniteScrollInterop InfiniteScrollInterop { get; set; } = default!;
-    
+
     [Inject]
     protected ILogger<HistoryBase> Logger { get; set; } = default!;
-    
+
     [Inject]
     protected IHistoryStatsService HistoryStatsService { get; set; } = default!;
-    
+
     [Inject]
     protected HistoryPagePresenterService HistoryPagePresenterService { get; set; } = default!;
-    
+
     [Inject]
     protected ILocalDateTimeService LocalDateTimeService { get; set; } = default!;
-    
+
     #endregion
 
     #region State
@@ -104,14 +104,14 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
     /// </summary>
     [Parameter]
     public DateTime? InitialSelectedWeekStart { get; set; }
-    
+
     // Infinite scroll state
     private DotNetObjectReference<HistoryBase>? _dotNetRef;
     private bool _observerInitialized;
     private bool _isDisposed;
     private bool _isCallbackInProgress;
     private SemaphoreSlim _observerSetupLock = new SemaphoreSlim(1, 1);
-    
+
     #endregion
 
     #region Lifecycle Methods
@@ -173,7 +173,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
             IsLoading = false;
         }
     }
-    
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // Always recreate DotNetObjectReference if it's null, not just on first render
@@ -182,7 +182,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         {
             _dotNetRef = DotNetObjectReference.Create(this);
         }
-        
+
         // Set up intersection observer when conditions are met
         if (ShouldSetupInfiniteScrollObserver())
         {
@@ -191,7 +191,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
             await SetupInfiniteScrollObserverAsync(retryCount: 0);
         }
     }
-    
+
     /// <summary>
     /// Determines if the infinite scroll observer should be set up
     /// </summary>
@@ -204,13 +204,13 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         // 3. Observer is not already initialized
         // 4. DotNet reference is available
         // 5. Currently in Daily view (which has timeline)
-        return !_isDisposed && 
-               HasMoreActivities && 
-               !_observerInitialized && 
-               _dotNetRef != null && 
+        return !_isDisposed &&
+               HasMoreActivities &&
+               !_observerInitialized &&
+               _dotNetRef != null &&
                ActiveTab == HistoryTab.Daily;
     }
-    
+
     /// <summary>
     /// Sets up the Intersection Observer for infinite scroll
     /// </summary>
@@ -221,10 +221,10 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         {
             return;
         }
-        
+
         await ExecuteObserverSetupWithLockAsync(retryCount);
     }
-    
+
     /// <summary>
     /// Determines if observer setup can proceed
     /// </summary>
@@ -233,7 +233,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
     {
         return await AcquireObserverLockAsync();
     }
-    
+
     /// <summary>
     /// Executes the observer setup with proper lock management
     /// </summary>
@@ -243,7 +243,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         try
         {
             var setupResult = await TryCreateObserverAsync(retryCount);
-            
+
             if (ShouldRetryObserverSetup(setupResult))
             {
                 await HandleRetryAsync(setupResult);
@@ -255,7 +255,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
             ReleaseObserverLockIfHeld();
         }
     }
-    
+
     /// <summary>
     /// Determines if observer setup should be retried
     /// </summary>
@@ -265,7 +265,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
     {
         return setupResult.ShouldRetry && !_isDisposed && !_observerInitialized;
     }
-    
+
     /// <summary>
     /// Acquires the observer setup lock
     /// </summary>
@@ -278,10 +278,10 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
             Logger.LogDebug("Infinite scroll observer setup already in progress, skipping");
             return false;
         }
-        
+
         return true;
     }
-    
+
     /// <summary>
     /// Handles the retry logic for observer setup
     /// </summary>
@@ -292,7 +292,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         _observerSetupLock.Release();
         await ExecuteRetryAsync(setupResult.NextRetryCount, setupResult.BackoffDelay);
     }
-    
+
     /// <summary>
     /// Releases the observer lock if it's still held
     /// </summary>
@@ -304,7 +304,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
             _observerSetupLock.Release();
         }
     }
-    
+
     /// <summary>
     /// Attempts to create the infinite scroll observer
     /// </summary>
@@ -313,26 +313,26 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
     private async Task<ObserverSetupResult> TryCreateObserverAsync(int retryCount)
     {
         var result = new ObserverSetupResult();
-        
+
         try
         {
             if (!await IsIntersectionObserverSupportedAsync())
             {
                 return result;
             }
-            
+
             var success = await CreateObserverWithInteropAsync();
-            
+
             HandleObserverCreationResult(success, retryCount, result);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Failed to initialize infinite scroll observer");
         }
-        
+
         return result;
     }
-    
+
     /// <summary>
     /// Checks if Intersection Observer API is supported
     /// </summary>
@@ -346,7 +346,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         }
         return supported;
     }
-    
+
     /// <summary>
     /// Creates the observer using interop
     /// </summary>
@@ -360,7 +360,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
             Constants.UI.InfiniteScrollRootMargin,
             Constants.UI.InfiniteScrollTimeoutMs);
     }
-    
+
     /// <summary>
     /// Handles the result of observer creation
     /// </summary>
@@ -379,7 +379,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
             HandleObserverCreationFailure(retryCount, result);
         }
     }
-    
+
     /// <summary>
     /// Handles failure of observer creation
     /// </summary>
@@ -390,7 +390,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         if (retryCount < 2)
         {
             SetupRetryParameters(retryCount, result);
-            Logger.LogDebug("Observer setup failed, retrying in {Delay}ms (attempt {Attempt}/3)", 
+            Logger.LogDebug("Observer setup failed, retrying in {Delay}ms (attempt {Attempt}/3)",
                 result.BackoffDelay, result.NextRetryCount + 1);
         }
         else
@@ -398,7 +398,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
             Logger.LogWarning("Infinite scroll observer setup failed after 3 attempts");
         }
     }
-    
+
     /// <summary>
     /// Sets up retry parameters
     /// </summary>
@@ -410,7 +410,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         result.NextRetryCount = retryCount + 1;
         result.BackoffDelay = 100 * (retryCount + 1);
     }
-    
+
     /// <summary>
     /// Executes retry attempt with proper locking
     /// </summary>
@@ -419,14 +419,14 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
     private async Task ExecuteRetryAsync(int nextRetryCount, int backoffDelay)
     {
         await Task.Delay(backoffDelay);
-        
+
         // Re-acquire lock for retry attempt
         if (!await _observerSetupLock.WaitAsync(0))
         {
             Logger.LogDebug("Observer retry skipped - another setup is already in progress");
             return;
         }
-        
+
         try
         {
             // Check again if observer is still not initialized before retrying
@@ -441,7 +441,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
             _observerSetupLock.Release();
         }
     }
-    
+
     /// <summary>
     /// Result of observer setup attempt
     /// </summary>
@@ -451,7 +451,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         public int NextRetryCount { get; set; }
         public int BackoffDelay { get; set; }
     }
-    
+
     /// <summary>
     /// Callback from JavaScript when sentinel element is visible
     /// </summary>
@@ -462,7 +462,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         {
             return;
         }
-        
+
         _isCallbackInProgress = true;
         try
         {
@@ -480,7 +480,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
             _isCallbackInProgress = false;
         }
     }
-    
+
     private void OnActivityChanged()
     {
         SafeTaskRunner.RunAndForget(async () =>
@@ -492,59 +492,59 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
             });
         }, Logger, "OnActivityChanged");
     }
-    
+
     private async Task LoadDataAsync()
     {
         var today = AppState.GetCurrentDayKey();
         var selectedDate = SelectedDate.Date;
-        
+
         // Reset pagination state when loading new date
         CurrentSkip = 0;
-        
+
         // Reset observer state when loading new date
         _observerInitialized = false;
-        
+
         // Load activities for selected date (Daily view) - initial page only using async pagination
         CurrentActivities = await ActivityService.GetActivitiesPagedAsync(
             selectedDate, selectedDate.AddDays(1), 0, PageSize);
-        
+
         // Update skip to reflect loaded count
         CurrentSkip = CurrentActivities.Count;
-        
+
         // Calculate stats for selected date (use all activities for accurate stats)
         var allActivitiesForDate = ActivityService.GetActivitiesForDate(selectedDate);
         CurrentStats = CalculateStats(allActivitiesForDate);
-        
+
         // Check if there are more activities to load
         var totalCount = await ActivityService.GetActivityCountAsync(selectedDate, selectedDate.AddDays(1));
         HasMoreActivities = CurrentSkip < totalCount;
-        
+
         // Log for debugging
         Logger.LogDebug(Constants.Messages.LogHistoryLoadDataFormat,
             selectedDate, today, selectedDate == today);
         Logger.LogDebug(Constants.Messages.LogHistoryStatsFormat,
             CurrentActivities.Count, CurrentStats.PomodoroCount, CurrentStats.FocusMinutes);
-        
+
         // Use SelectedWeekStart for weekly data (independent from daily view)
         var weekStart = SelectedWeekStart;
         var weekEnd = weekStart.AddDays(6); // Friday
-        
+
         // Load weekly data for chart (Saturday to Friday week)
         WeeklyFocusMinutes = ActivityService.GetDailyFocusMinutes(weekStart, weekEnd);
         WeeklyBreakMinutes = ActivityService.GetDailyBreakMinutes(weekStart, weekEnd);
-        
+
         // Load weekly statistics
         WeeklyStats = await StatisticsService.GetWeeklyStatsAsync(weekStart);
-        
+
         // Observer will be set up in OnAfterRenderAsync after DOM is fully updated
         // This ensures sentinel element exists before observer is created
     }
-    
+
     private DailyStatsSummary CalculateStats(List<ActivityRecord> activities)
     {
         return HistoryStatsService.CalculateStats(activities);
     }
-    
+
     /// <summary>
     /// Format focus time for display
     /// </summary>
@@ -552,16 +552,16 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
     {
         return HistoryPagePresenterService.FormatFocusTime(minutes);
     }
-    
+
     #endregion
 
     #region Event Handlers
-    
+
     protected async Task HandleDateChanged(DateTime newDate)
     {
         SelectedDate = newDate;
         CurrentSkip = 0;
-        
+
         // Explicitly destroy observer before resetting state
         if (_observerInitialized)
         {
@@ -574,16 +574,16 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
                 Logger.LogWarning(ex, "Failed to destroy observer on date change");
             }
         }
-        
+
         _observerInitialized = false;
         await LoadDataAsync();
         StateHasChanged();
     }
-    
+
     protected async Task HandleTabChanged(HistoryTab newTab)
     {
         ActiveTab = newTab;
-        
+
         // Clean up observer when leaving Daily view
         if (newTab != HistoryTab.Daily && _observerInitialized)
         {
@@ -597,46 +597,46 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
             }
             _observerInitialized = false;
         }
-        
+
         StateHasChanged();
     }
-    
+
     protected async Task HandleWeekChanged(DateTime newWeekStart)
     {
         SelectedWeekStart = newWeekStart;
         await LoadDataAsync();
         StateHasChanged();
     }
-    
+
     /// <summary>
     /// Loads more activities with lazy loading
     /// </summary>
     protected async Task LoadMoreActivitiesAsync()
     {
         if (IsLoadingMore || !HasMoreActivities) return;
-        
+
         try
         {
             IsLoadingMore = true;
             StateHasChanged();
-            
+
             var newActivities = await ActivityService.GetActivitiesPagedAsync(
                 SelectedDate,
                 SelectedDate.AddDays(1),
                 CurrentSkip,
                 PageSize);
-            
+
             CurrentActivities.AddRange(newActivities);
             CurrentSkip += newActivities.Count;
-            
+
             // Check if there are more activities
             var totalCount = await ActivityService.GetActivityCountAsync(SelectedDate, SelectedDate.AddDays(1));
             HasMoreActivities = CurrentSkip < totalCount;
-            
+
             // Note: Observer doesn't need re-initialization here because the sentinel element
             // remains in the DOM. As new activities are added above it, it moves further down
             // the page and will trigger again when scrolled into view.
-            
+
             // After loading more items, the sentinel moves down the page.
             // The observer will automatically detect when it comes back into view.
         }
@@ -646,18 +646,18 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
             StateHasChanged();
         }
     }
-    
+
     #endregion
 
     #region IAsyncDisposable
-    
+
     public async ValueTask DisposeAsync()
     {
         _isDisposed = true;
         _observerSetupLock?.Dispose();
-        
+
         ActivityService.OnActivityChanged -= OnActivityChanged;
-        
+
         // Clean up JavaScript observer
         if (_dotNetRef != null)
         {
@@ -677,10 +677,10 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
                     Logger.LogWarning(fallbackEx, "Failed to destroy all observers during disposal");
                 }
             }
-            
+
             _dotNetRef.Dispose();
         }
     }
-    
+
     #endregion
 }

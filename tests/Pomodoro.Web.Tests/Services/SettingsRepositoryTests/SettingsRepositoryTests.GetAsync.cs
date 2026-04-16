@@ -14,7 +14,7 @@ namespace Pomodoro.Web.Tests.Services.SettingsRepositoryTests;
 public partial class SettingsRepositoryTests
 {
     #region GetAsync Tests (Integration-focused)
- 
+
     [Fact]
     public async Task GetAsync_AfterSave_RoundTripsSettings()
     {
@@ -29,22 +29,22 @@ public partial class SettingsRepositoryTests
             AutoStartEnabled = false,
             AutoStartDelaySeconds = 20
         };
-        
+
         // Setup SaveAsync to succeed
         MockIndexedDb
             .Setup(x => x.PutAsync(
                 Constants.Storage.SettingsStore,
                 It.IsAny<object>()))
             .ReturnsAsync(true);
-        
+
         var repository = CreateRepository();
-        
+
         // Act - Save settings
         var saveResult = await repository.SaveAsync(settings);
-        
+
         // Assert - Save should succeed
         Assert.True(saveResult);
-        
+
         // Verify PutAsync was called with correct store
         MockIndexedDb.Verify(
             x => x.PutAsync(
@@ -52,7 +52,7 @@ public partial class SettingsRepositoryTests
                 It.IsAny<object>()),
             Times.Once);
     }
- 
+
     #endregion
 }
 

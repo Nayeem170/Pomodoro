@@ -18,7 +18,7 @@ public class IndexPageTests : TestHelper
     {
         // Arrange & Act
         var cut = RenderComponent<IndexPage>();
-        
+
         // Assert
         cut.Should().NotBeNull();
         cut.Markup.Should().NotBeNullOrEmpty();
@@ -29,7 +29,7 @@ public class IndexPageTests : TestHelper
     {
         // Arrange & Act
         var cut = RenderComponent<IndexPage>();
-        
+
         // Assert
         cut.Markup.Should().Contain("timer");
     }
@@ -39,7 +39,7 @@ public class IndexPageTests : TestHelper
     {
         // Arrange & Act
         var cut = RenderComponent<IndexPage>();
-        
+
         // Assert
         cut.Markup.Should().Contain("task");
     }

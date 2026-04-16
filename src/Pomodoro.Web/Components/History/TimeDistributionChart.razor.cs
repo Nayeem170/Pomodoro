@@ -14,15 +14,15 @@ public partial class TimeDistributionChart : IDisposable
     [Inject] private IActivityService ActivityService { get; set; } = default!;
     [Inject] private ILogger<TimeDistributionChart> Logger { get; set; } = default!;
     [Inject] private TimeFormatter TimeFormatter { get; set; } = default!;
-    
+
     [Parameter]
     public DateTime SelectedDate { get; set; }
-    
+
     /// <summary>
     /// Static canvas ID for the chart (single instance)
     /// </summary>
     private static readonly string CanvasId = Constants.Charts.TimeDistributionCanvasId;
-    
+
     private DateTime _lastRenderedDate;
     private List<string>? _previousLabels;
     private List<int>? _previousData;
@@ -55,15 +55,15 @@ public partial class TimeDistributionChart : IDisposable
     /// Whether there is data to display
     /// </summary>
     public bool HasData { get; private set; }
-    
+
     private bool _isRendered;
     private bool _isDisposed;
-    
+
     protected override void OnInitialized()
     {
         ActivityService.OnActivityChanged += OnActivityChanged;
     }
-    
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -72,7 +72,7 @@ public partial class TimeDistributionChart : IDisposable
             await UpdateChartAsync();
         }
     }
-    
+
     protected override async Task OnParametersSetAsync()
     {
         if (!_isRendered) return;
@@ -93,7 +93,7 @@ public partial class TimeDistributionChart : IDisposable
 
         await UpdateChartAsync();
     }
-    
+
     private void OnActivityChanged()
     {
         if (_isRendered && !_isDisposed)
@@ -108,56 +108,56 @@ public partial class TimeDistributionChart : IDisposable
             }, Logger, "OnActivityChanged");
         }
     }
-    
+
     private async Task UpdateChartAsync()
     {
         if (_isDisposed) return;
-        
+
         try
         {
             var distribution = ActivityService.GetTimeDistribution(SelectedDate);
             _lastRenderedDate = SelectedDate.Date;
-            
+
             if (distribution.Count == 0)
             {
                 TotalMinutes = 0;
-                    HasData = false;
-                    // Destroy existing chart when no data
-                    await JS.InvokeVoidAsync(Constants.ChartJsFunctions.DestroyChart, CanvasId);
-                    StateHasChanged();
-                    return;
-                }
-                
-                var labels = distribution.Keys.ToList();
-                var data = distribution.Values.ToList();
-                _previousLabels = labels;
-                _previousData = data;
-                TotalMinutes = data.Sum();
-                HasData = true;
-                
-                var centerText = TimeFormatter.FormatTime(TotalMinutes);
-                
-                await JS.InvokeVoidAsync(Constants.ChartJsFunctions.CreateDoughnutChart,
-                    CanvasId,
-                    labels,
-                    data,
-                    centerText);
-                
+                HasData = false;
+                // Destroy existing chart when no data
+                await JS.InvokeVoidAsync(Constants.ChartJsFunctions.DestroyChart, CanvasId);
                 StateHasChanged();
+                return;
             }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, Constants.Messages.ErrorUpdatingTimeDistributionChart);
-            }
+
+            var labels = distribution.Keys.ToList();
+            var data = distribution.Values.ToList();
+            _previousLabels = labels;
+            _previousData = data;
+            TotalMinutes = data.Sum();
+            HasData = true;
+
+            var centerText = TimeFormatter.FormatTime(TotalMinutes);
+
+            await JS.InvokeVoidAsync(Constants.ChartJsFunctions.CreateDoughnutChart,
+                CanvasId,
+                labels,
+                data,
+                centerText);
+
+            StateHasChanged();
         }
-    
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, Constants.Messages.ErrorUpdatingTimeDistributionChart);
+        }
+    }
+
     public void Dispose()
     {
         if (_isDisposed) return;
         _isDisposed = true;
-        
+
         ActivityService.OnActivityChanged -= OnActivityChanged;
-        
+
         SafeTaskRunner.RunAndForget(
             async () => { await JS.InvokeVoidAsync(Constants.ChartJsFunctions.DestroyChart, CanvasId); },
             Logger,

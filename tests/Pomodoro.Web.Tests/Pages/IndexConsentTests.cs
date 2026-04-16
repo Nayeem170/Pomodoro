@@ -29,11 +29,11 @@ public class IndexConsentTests : TestHelper
     {
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        
+
         // Act - Call method directly and await completion
         var task = cut.Instance.HandleConsentOptionSelect(SessionType.Pomodoro);
         await task;
-        
+
         // Assert
         ConsentServiceMock.Verify(x => x.SelectOptionAsync(SessionType.Pomodoro), Times.Once);
     }
@@ -43,11 +43,11 @@ public class IndexConsentTests : TestHelper
     {
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        
+
         // Act - Call method directly and await completion
         var task = cut.Instance.HandleConsentOptionSelect(SessionType.ShortBreak);
         await task;
-        
+
         // Assert
         ConsentServiceMock.Verify(x => x.SelectOptionAsync(SessionType.ShortBreak), Times.Once);
     }
@@ -57,11 +57,11 @@ public class IndexConsentTests : TestHelper
     {
         // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        
+
         // Act - Call method directly and await completion
         var task = cut.Instance.HandleConsentOptionSelect(SessionType.LongBreak);
         await task;
-        
+
         // Assert
         ConsentServiceMock.Verify(x => x.SelectOptionAsync(SessionType.LongBreak), Times.Once);
     }
@@ -75,11 +75,11 @@ public class IndexConsentTests : TestHelper
         ConsentServiceMock
             .Setup(x => x.SelectOptionAsync(It.IsAny<SessionType>()))
             .ThrowsAsync(expectedException);
-        
+
         // Act - Call method directly and await completion
         var task = cut.Instance.HandleConsentOptionSelect(SessionType.Pomodoro);
         await task;
-        
+
         // Assert
         Assert.Contains("Error selecting consent option", cut.Instance.ErrorMessage);
         Assert.Contains("Test exception", cut.Instance.ErrorMessage);

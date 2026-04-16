@@ -150,7 +150,7 @@ public abstract class TestBase
     public static ServiceCollection CreateCommonServiceCollection()
     {
         var services = new ServiceCollection();
-        
+
         // Register common mocks
         services.AddSingleton(CreateMockLayoutPresenterService().Object);
         services.AddSingleton(CreateMockTaskService().Object);
@@ -170,32 +170,32 @@ public abstract class TestBase
         var mockLocalDateTimeService = CreateMockLocalDateTimeService();
         services.AddSingleton<ILocalDateTimeService>(mockLocalDateTimeService.Object);
         // Register the mock as the concrete implementation as well
-        services.AddSingleton<LocalDateTimeService>(sp => 
+        services.AddSingleton<LocalDateTimeService>(sp =>
         {
             // Create a mock of the concrete class
             var jsRuntime = sp.GetRequiredService<IJSRuntime>();
             var mock = new Mock<LocalDateTimeService>(jsRuntime) { CallBase = false };
-            
+
             // Set up the mock to return the same values as the interface mock
             var currentDate = DateTime.Now.Date;
             mock.Setup(s => s.GetLocalDateAsync()).ReturnsAsync(currentDate);
             mock.Setup(s => s.GetLocalDateTimeAsync()).ReturnsAsync(currentDate);
             mock.Setup(s => s.GetTimezoneOffsetAsync()).ReturnsAsync(0);
-            
+
             return mock.Object;
         });
         // Note: AppState is not included here as it's not overridable
         // Tests that need AppState should create their own instances
-        
+
         // Register logger mocks
         services.AddSingleton(new Mock<ILogger<App>>().Object);
         services.AddSingleton(new Mock<ILogger<LayoutPresenterService>>().Object);
         services.AddSingleton(new Mock<ILogger<ErrorDisplay>>().Object);
-        
+
         // Register concrete service
-        services.AddSingleton<ITodayStatsService>(sp => 
+        services.AddSingleton<ITodayStatsService>(sp =>
             CreateTodayStatsService(sp.GetRequiredService<IActivityService>()));
-        
+
         return services;
     }
 

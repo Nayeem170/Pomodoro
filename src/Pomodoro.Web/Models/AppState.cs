@@ -10,12 +10,12 @@ public class AppState
 {
     private readonly object _tasksLock = new();
     private List<TaskItem> _tasks = new();
-    
+
     /// <summary>
     /// Event raised when state properties change
     /// </summary>
     public event Action? OnStateChanged;
-    
+
     /// <summary>
     /// Thread-safe access to tasks list
     /// Returns a copy to prevent external modifications
@@ -38,7 +38,7 @@ public class AppState
             NotifyStateChanged();
         }
     }
-    
+
     /// <summary>
     /// Inserts a task at the specified position (thread-safe)
     /// </summary>
@@ -50,7 +50,7 @@ public class AppState
         }
         NotifyStateChanged();
     }
-    
+
     /// <summary>
     /// Finds a task by ID and performs an update action (thread-safe)
     /// Returns true if the task was found and updated
@@ -68,7 +68,7 @@ public class AppState
             return false;
         }
     }
-    
+
     /// <summary>
     /// Finds a task by ID (thread-safe, returns a copy)
     /// </summary>
@@ -79,7 +79,7 @@ public class AppState
             return _tasks.FirstOrDefault(t => t.Id == taskId);
         }
     }
-    
+
     private Guid? _currentTaskId;
     public Guid? CurrentTaskId
     {
@@ -93,7 +93,7 @@ public class AppState
             }
         }
     }
-    
+
     private TimerSettings _settings = new();
     public TimerSettings Settings
     {
@@ -107,7 +107,7 @@ public class AppState
             }
         }
     }
-    
+
     private TimerSession? _currentSession;
     public TimerSession? CurrentSession
     {
@@ -121,7 +121,7 @@ public class AppState
             }
         }
     }
-    
+
     // Today's statistics
     private int _todayTotalFocusMinutes;
     public int TodayTotalFocusMinutes
@@ -136,7 +136,7 @@ public class AppState
             }
         }
     }
-    
+
     private int _todayPomodoroCount;
     public int TodayPomodoroCount
     {
@@ -150,10 +150,10 @@ public class AppState
             }
         }
     }
-    
+
     private readonly object _todayTaskIdsLock = new();
     private List<Guid> _todayTaskIdsWorkedOn = new();
-    
+
     /// <summary>
     /// Thread-safe access to today's task IDs
     /// </summary>
@@ -175,7 +175,7 @@ public class AppState
             NotifyStateChanged();
         }
     }
-    
+
     private DateTime? _lastResetDate;
     public DateTime? LastResetDate
     {
@@ -189,7 +189,7 @@ public class AppState
             }
         }
     }
-    
+
     /// <summary>
     /// Gets the currently selected task (thread-safe)
     /// </summary>
@@ -205,7 +205,7 @@ public class AppState
             }
         }
     }
-    
+
     /// <summary>
     /// Gets the count of unique tasks worked on today (thread-safe)
     /// </summary>
@@ -219,7 +219,7 @@ public class AppState
             }
         }
     }
-    
+
     /// <summary>
     /// Adds a task ID to today's worked-on list (thread-safe)
     /// </summary>
@@ -234,7 +234,7 @@ public class AppState
         }
         NotifyStateChanged();
     }
-    
+
     /// <summary>
     /// Gets the current "day" key for daily stats.
     /// Uses local midnight for daily reset (e.g., midnight in the user's timezone).
@@ -245,7 +245,7 @@ public class AppState
         // Use local midnight for daily reset
         return DateTime.Now.Date;
     }
-    
+
     /// <summary>
     /// Checks if today's stats need to be reset.
     /// Returns true when the local date has changed (crossed local midnight).
@@ -254,11 +254,11 @@ public class AppState
     {
         if (LastResetDate == null)
             return true;
-        
+
         // Reset when the local date changes (at local midnight)
         return LastResetDate.Value < GetCurrentDayKey();
     }
-    
+
     /// <summary>
     /// Resets daily statistics (thread-safe)
     /// </summary>
@@ -273,7 +273,7 @@ public class AppState
         LastResetDate = GetCurrentDayKey();
         NotifyStateChanged();
     }
-    
+
     /// <summary>
     /// Raises the OnStateChanged event
     /// </summary>

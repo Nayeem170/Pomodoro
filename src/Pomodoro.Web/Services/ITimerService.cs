@@ -24,7 +24,7 @@ public interface ITimerService
     /// Subscribe to this event to update UI elements that display the remaining time.
     /// </remarks>
     event Action? OnTick;
-    
+
     /// <summary>
     /// Event raised when a timer session completes.
     /// </summary>
@@ -33,7 +33,7 @@ public interface ITimerService
     /// Use this to trigger notifications and consent modals.
     /// </remarks>
     event Action<SessionType>? OnTimerComplete;
-    
+
     /// <summary>
     /// Event raised when the timer state changes (started, paused, resumed, reset).
     /// </summary>
@@ -41,7 +41,7 @@ public interface ITimerService
     /// Subscribe to this event to update UI state indicators and control buttons.
     /// </remarks>
     event Action? OnStateChanged;
-    
+
     /// <summary>
     /// Gets the current timer session information, or null if no session is active.
     /// </summary>
@@ -49,7 +49,7 @@ public interface ITimerService
     /// A <see cref="TimerSession"/> containing session details, or <c>null</c>.
     /// </value>
     TimerSession? CurrentSession { get; }
-    
+
     /// <summary>
     /// Gets the current timer settings.
     /// </summary>
@@ -57,7 +57,7 @@ public interface ITimerService
     /// A <see cref="TimerSettings"/> instance with duration and behavior settings.
     /// </value>
     TimerSettings Settings { get; }
-    
+
     /// <summary>
     /// Gets a value indicating whether the timer is currently running.
     /// </summary>
@@ -65,7 +65,7 @@ public interface ITimerService
     /// <c>true</c> if the timer is actively counting down; otherwise, <c>false</c>.
     /// </value>
     bool IsRunning { get; }
-    
+
     /// <summary>
     /// Gets a value indicating whether the timer is paused.
     /// </summary>
@@ -73,7 +73,7 @@ public interface ITimerService
     /// <c>true</c> if the timer is paused (started but not running); otherwise, <c>false</c>.
     /// </value>
     bool IsPaused { get; }
-    
+
     /// <summary>
     /// Gets a value indicating whether the timer has been started.
     /// </summary>
@@ -81,7 +81,7 @@ public interface ITimerService
     /// <c>true</c> if the timer has been started at least once; otherwise, <c>false</c>.
     /// </value>
     bool IsStarted { get; }
-    
+
     /// <summary>
     /// Gets the type of the current session.
     /// </summary>
@@ -89,7 +89,7 @@ public interface ITimerService
     /// A <see cref="SessionType"/> value indicating Pomodoro, ShortBreak, or LongBreak.
     /// </value>
     SessionType CurrentSessionType { get; }
-    
+
     /// <summary>
     /// Gets the remaining time as a <see cref="TimeSpan"/>.
     /// </summary>
@@ -97,7 +97,7 @@ public interface ITimerService
     /// The remaining time in the current session.
     /// </value>
     TimeSpan RemainingTime { get; }
-    
+
     /// <summary>
     /// Gets the remaining time in seconds.
     /// </summary>
@@ -105,7 +105,7 @@ public interface ITimerService
     /// The number of seconds remaining in the current session.
     /// </value>
     int RemainingSeconds { get; }
-    
+
     /// <summary>
     /// Initializes the timer service asynchronously.
     /// </summary>
@@ -115,7 +115,7 @@ public interface ITimerService
     /// and prepare the JavaScript interop for timer operations.
     /// </remarks>
     Task InitializeAsync();
-    
+
     /// <summary>
     /// Starts a Pomodoro (work) session.
     /// </summary>
@@ -128,19 +128,19 @@ public interface ITimerService
     /// Thrown if no task is selected and task tracking is required.
     /// </exception>
     Task StartPomodoroAsync(Guid? taskId = null);
-    
+
     /// <summary>
     /// Starts a short break session.
     /// </summary>
     /// <returns>A task that completes when the session has started.</returns>
     Task StartShortBreakAsync();
-    
+
     /// <summary>
     /// Starts a long break session.
     /// </summary>
     /// <returns>A task that completes when the session has started.</returns>
     Task StartLongBreakAsync();
-    
+
     /// <summary>
     /// Switches to a different session type.
     /// </summary>
@@ -150,7 +150,7 @@ public interface ITimerService
     /// This method will stop any running timer and start a new session of the specified type.
     /// </remarks>
     Task SwitchSessionTypeAsync(SessionType sessionType);
-    
+
     /// <summary>
     /// Pauses the running timer.
     /// </summary>
@@ -159,7 +159,7 @@ public interface ITimerService
     /// If the timer is not running, this method has no effect.
     /// </remarks>
     Task PauseAsync();
-    
+
     /// <summary>
     /// Resumes a paused timer.
     /// </summary>
@@ -168,7 +168,7 @@ public interface ITimerService
     /// If the timer is not paused, this method has no effect.
     /// </remarks>
     Task ResumeAsync();
-    
+
     /// <summary>
     /// Resets the timer to the initial state for the current session type.
     /// </summary>
@@ -178,7 +178,7 @@ public interface ITimerService
     /// for the current session type.
     /// </remarks>
     Task ResetAsync();
-    
+
     /// <summary>
     /// Updates the timer settings with new values.
     /// </summary>
@@ -188,7 +188,7 @@ public interface ITimerService
     /// Settings are applied immediately but not persisted until <see cref="SaveSettingsAsync"/> is called.
     /// </remarks>
     Task UpdateSettingsAsync(TimerSettings settings);
-    
+
     /// <summary>
     /// Persists the current settings to storage.
     /// </summary>

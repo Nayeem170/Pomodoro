@@ -16,12 +16,12 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
     private readonly object _cacheLock = new();
     private List<ActivityRecord> _cachedActivities = new();
     private bool _isCacheLoaded;
-    
+
     /// <summary>
     /// Date-based cache for activities grouped by local date
     /// </summary>
     private Dictionary<DateTime, List<ActivityRecord>> _activitiesByDate = new();
-    
+
     /// <summary>
     /// Cache for daily statistics (pomodoro count, focus minutes, break minutes)
     /// </summary>
@@ -32,25 +32,25 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         public int BreakMinutes { get; init; }
     }
     private Dictionary<DateTime, DailyStatsCache> _dailyStatsCache = new();
-    
+
     /// <summary>
     /// Cache for time distribution data by date
     /// </summary>
     private Dictionary<DateTime, Dictionary<string, int>> _timeDistributionCache = new();
-    
+
     public event Action? OnActivityChanged;
-    
+
     public ActivityService(IActivityRepository activityRepository, ILogger<ActivityService> logger)
     {
         _activityRepository = activityRepository;
         _logger = logger;
     }
-    
+
     public async Task InitializeAsync()
     {
         await LoadCacheAsync();
     }
-    
+
     /// <summary>
     /// Reloads all activity data from storage, clearing and rebuilding caches.
     /// Called after import operations to refresh in-memory data.
@@ -58,45 +58,45 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
     public async Task ReloadAsync()
     {
         var activities = await _activityRepository.GetAllAsync();
-        
+
         lock (_cacheLock)
         {
             _cachedActivities = activities.Take(Constants.Cache.MaxActivityCacheSize).ToList();
             _isCacheLoaded = true;
             ClearAllDerivedCaches();
         }
-        
+
         _logger.LogInformation("Reloaded {Count} activities from storage", _cachedActivities.Count);
         OnActivityChanged?.Invoke();
     }
-    
+
     private async Task LoadCacheAsync()
     {
         if (_isCacheLoaded) return;
-        
+
         var activities = await _activityRepository.GetAllAsync();
-        
+
         // Apply cache size limit - only keep most recent activities in memory
         lock (_cacheLock)
         {
             _cachedActivities = (activities ?? Enumerable.Empty<ActivityRecord>()).Take(Constants.Cache.MaxActivityCacheSize).ToList();
             _isCacheLoaded = true;
         }
-        
+
         _logger.LogDebug(Constants.Messages.LogActivitiesLoadedFormat, _cachedActivities.Count, Constants.Cache.MaxActivityCacheSize);
         foreach (var a in _cachedActivities.Take(5))
         {
             _logger.LogDebug(Constants.Messages.LogActivityDebugFormat, a.Type, a.CompletedAt, a.TaskName);
         }
     }
-    
+
     public List<ActivityRecord> GetTodayActivities()
     {
         // Use local time for consistent date comparison (matches GetActivitiesForDate behavior)
         var todayLocal = DateTime.Now.Date;
         return GetActivitiesForDate(todayLocal);
     }
-    
+
     /// <summary>
     /// Gets paged activities for a date range
     /// </summary>
@@ -104,7 +104,7 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
     {
         return await _activityRepository.GetPagedAsync(startDate, endDate, skip, take);
     }
-    
+
     /// <summary>
     /// Gets the total count of activities for a date range
     /// </summary>
@@ -112,7 +112,7 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
     {
         return await _activityRepository.GetCountAsync(startDate, endDate);
     }
-    
+
     public List<ActivityRecord> GetAllActivities()
     {
         lock (_cacheLock)
@@ -120,7 +120,7 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
             return _cachedActivities.ToList();
         }
     }
-    
+
     /// <summary>
     /// Gets all activities for a specific date (in local time)
     /// Uses date-based cache for O(1) lookup on repeated access
@@ -128,7 +128,7 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
     public List<ActivityRecord> GetActivitiesForDate(DateTime date)
     {
         var targetDate = date.Date;
-        
+
         lock (_cacheLock)
         {
             // Check cache first
@@ -137,19 +137,19 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
                 _logger.LogDebug("Cache hit for GetActivitiesForDate: {Date}", targetDate);
                 return cached;
             }
-            
+
             // Compute and cache
             var result = _cachedActivities
                 .Where(a => a.CompletedAt.ToLocalTime().Date == targetDate)
                 .OrderByDescending(a => a.CompletedAt)
                 .ToList();
-            
+
             _activitiesByDate[targetDate] = result;
             _logger.LogDebug("Cache miss for GetActivitiesForDate: {Date}, cached {Count} activities", targetDate, result.Count);
             return result;
         }
     }
-    
+
     /// <summary>
     /// Gets daily break minutes for a date range (in local time)
     /// Returns total minutes of both short and long breaks per day
@@ -167,15 +167,15 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         {
             statsByDate[date.Date] = (0, 0, 0);
         }
-        
+
         // Single pass through all activities
         foreach (var a in _cachedActivities)
         {
             var activityDate = a.CompletedAt.ToLocalTime().Date;
-            
+
             // Only process if this date is in our target list
             if (!statsByDate.ContainsKey(activityDate)) continue;
-            
+
             var stats = statsByDate[activityDate];
             if (a.Type == SessionType.Pomodoro)
             {
@@ -186,7 +186,7 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
                 statsByDate[activityDate] = (stats.PomodoroCount, stats.FocusMinutes, stats.BreakMinutes + a.DurationMinutes);
             }
         }
-        
+
         // Store in cache
         foreach (var kvp in statsByDate)
         {
@@ -197,11 +197,11 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
                 BreakMinutes = kvp.Value.BreakMinutes
             };
         }
-        
+
         _logger.LogDebug("Computed stats for {Count} dates in single pass", dates.Count);
     }
-    
-    
+
+
     /// <summary>
     /// Gets task pomodoro counts for a date range (in local time)
     /// </summary>
@@ -209,7 +209,7 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
     {
         var fromDate = from.Date;
         var toDate = to.Date;
-        
+
         lock (_cacheLock)
         {
             return _cachedActivities
@@ -224,7 +224,7 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
                 );
         }
     }
-    
+
     /// <summary>
     /// Gets time distribution data for a specific date (in local time)
     /// Returns a dictionary with labels (task names or break types) as keys and minutes as values
@@ -233,7 +233,7 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
     public Dictionary<string, int> GetTimeDistribution(DateTime date)
     {
         var targetDate = date.Date;
-        
+
         lock (_cacheLock)
         {
             // Check cache first
@@ -242,14 +242,14 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
                 _logger.LogDebug("Cache hit for GetTimeDistribution: {Date}", targetDate);
                 return cached;
             }
-            
+
             // Compute and cache
             var dayActivities = _cachedActivities
                 .Where(a => a.CompletedAt.ToLocalTime().Date == targetDate)
                 .ToList();
-            
+
             var result = new Dictionary<string, int>();
-            
+
             // Group pomodoro sessions by task name
             var pomodoroByTask = dayActivities
                 .Where(a => a.Type == SessionType.Pomodoro)
@@ -258,39 +258,39 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
                     g => g.Key,
                     g => g.Sum(a => a.DurationMinutes)
                 );
-            
+
             // Add task times to result
             foreach (var kvp in pomodoroByTask)
             {
                 result[kvp.Key] = kvp.Value;
             }
-            
+
             // Aggregate short breaks
             var shortBreakMinutes = dayActivities
                 .Where(a => a.Type == SessionType.ShortBreak)
                 .Sum(a => a.DurationMinutes);
-            
+
             if (shortBreakMinutes > 0)
             {
                 result[Constants.Activity.ShortBreaksLabel] = shortBreakMinutes;
             }
-            
+
             // Aggregate long breaks
             var longBreakMinutes = dayActivities
                 .Where(a => a.Type == SessionType.LongBreak)
                 .Sum(a => a.DurationMinutes);
-            
+
             if (longBreakMinutes > 0)
             {
                 result[Constants.Activity.LongBreaksLabel] = longBreakMinutes;
             }
-            
+
             _timeDistributionCache[targetDate] = result;
             _logger.LogDebug("Cache miss for GetTimeDistribution: {Date}, cached {Count} entries", targetDate, result.Count);
             return result;
         }
     }
-    
+
     /// <summary>
     /// Gets weekly statistics for a given week start date
     /// </summary>
@@ -298,52 +298,52 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
     {
         // Persist first to ensure cache and storage stay consistent
         await _activityRepository.SaveAsync(activity);
-        
+
         // Add to cache only after successful persistence
         lock (_cacheLock)
         {
             _cachedActivities.Insert(0, activity);
-            
+
             // Trim cache if it exceeds max size (remove oldest entries from end)
             // Track dates of removed activities to invalidate their caches
             var datesToInvalidate = new HashSet<DateTime>();
-            
+
             while (_cachedActivities.Count > Constants.Cache.MaxActivityCacheSize)
             {
                 var removed = _cachedActivities[^1];
                 datesToInvalidate.Add(removed.CompletedAt.ToLocalTime().Date);
                 _cachedActivities.RemoveAt(_cachedActivities.Count - 1);
             }
-            
+
             // Invalidate caches for all affected dates (removed activities + new activity)
             foreach (var date in datesToInvalidate)
             {
                 InvalidateDateCache(date);
             }
-            
+
             // Also invalidate the new activity's date
             InvalidateDateCache(activity.CompletedAt.ToLocalTime().Date);
         }
-        
+
         _logger.LogDebug(Constants.Messages.LogAddedActivityFormat, activity.Type, activity.CompletedAt, _cachedActivities.Count);
-        
+
         OnActivityChanged?.Invoke();
     }
-    
+
     public async Task ClearAllActivitiesAsync()
     {
         // Persist first to ensure cache and storage stay consistent
         await _activityRepository.ClearAllAsync();
-        
+
         lock (_cacheLock)
         {
             _cachedActivities.Clear();
             ClearAllDerivedCaches();
         }
-        
+
         OnActivityChanged?.Invoke();
     }
-    
+
     /// <summary>
     /// Gets activities for a date range directly from IndexedDB
     /// Useful for large datasets where caching everything isn't practical
@@ -369,12 +369,12 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
             DurationMinutes = args.DurationMinutes,
             WasCompleted = args.WasCompleted
         };
-        
+
         await AddActivityAsync(activity);
     }
-    
+
     #region Cache Management
-    
+
     /// <summary>
     /// Invalidates all cached data for a specific date
     /// </summary>
@@ -386,7 +386,7 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         _timeDistributionCache.Remove(localDate);
         _logger.LogDebug("Invalidated cache for date: {Date}", localDate);
     }
-    
+
     /// <summary>
     /// Clears all derived caches (called when primary cache is cleared)
     /// </summary>
@@ -397,7 +397,7 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         _timeDistributionCache.Clear();
         _logger.LogDebug("Cleared all derived caches");
     }
-    
+
     /// <summary>
     /// Gets cache statistics for debugging/monitoring
     /// </summary>
@@ -413,7 +413,7 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
             );
         }
     }
-    
-    
+
+
     #endregion
 }

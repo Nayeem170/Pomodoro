@@ -11,7 +11,7 @@ public interface ISessionOptionsService
     /// Gets the available options for the completed session type
     /// </summary>
     List<ConsentOption> GetOptionsForSessionType(SessionType sessionType);
-    
+
     /// <summary>
     /// Gets the default option for the completed session type
     /// </summary>
@@ -34,7 +34,7 @@ public class SessionOptionsService : ISessionOptionsService
     public List<ConsentOption> GetOptionsForSessionType(SessionType sessionType)
     {
         var settings = _appState.Settings;
-        
+
         return sessionType switch
         {
             SessionType.Pomodoro => new List<ConsentOption>

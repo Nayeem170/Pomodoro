@@ -24,7 +24,7 @@ public partial class IndexedDbServiceTests
             var service = new IndexedDbService(_mockJsRuntime.Object, _mockLogger.Object);
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => 
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 service.GetAllAsync<TestItem>("testStore"));
         }
 
@@ -35,7 +35,7 @@ public partial class IndexedDbServiceTests
             await SetupInitialization();
             var jsonDoc = JsonDocument.Parse("null");
             _mockJsRuntime.Setup(x => x.InvokeAsync<JsonElement>(
-                Constants.IndexedDbJsFunctions.GetAllItems, 
+                Constants.IndexedDbJsFunctions.GetAllItems,
                 It.IsAny<object[]>()))
                 .ReturnsAsync(jsonDoc.RootElement);
 
@@ -54,7 +54,7 @@ public partial class IndexedDbServiceTests
             await SetupInitialization();
             var jsonDoc = JsonDocument.Parse("[{\"Id\":\"1\",\"Name\":\"Test1\"},{\"Id\":\"2\",\"Name\":\"Test2\"}]");
             _mockJsRuntime.Setup(x => x.InvokeAsync<JsonElement>(
-                Constants.IndexedDbJsFunctions.GetAllItems, 
+                Constants.IndexedDbJsFunctions.GetAllItems,
                 It.IsAny<object[]>()))
                 .ReturnsAsync(jsonDoc.RootElement);
 
@@ -75,7 +75,7 @@ public partial class IndexedDbServiceTests
             await SetupInitialization();
             var ex = new InvalidOperationException("Test error");
             _mockJsRuntime.Setup(x => x.InvokeAsync<JsonElement>(
-                Constants.IndexedDbJsFunctions.GetAllItems, 
+                Constants.IndexedDbJsFunctions.GetAllItems,
                 It.IsAny<object[]>()))
                 .ThrowsAsync(ex);
 

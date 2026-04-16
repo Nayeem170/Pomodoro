@@ -27,7 +27,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -49,7 +49,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -70,7 +70,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -91,7 +91,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -112,7 +112,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -134,7 +134,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -156,7 +156,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -177,7 +177,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters
                 .Add(p => p.Item, task)
                 .Add(p => p.IsSelected, true));
@@ -200,7 +200,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters
                 .Add(p => p.Item, task)
                 .Add(p => p.IsSelected, false));
@@ -223,7 +223,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters
                 .Add(p => p.Item, task)
                 .Add(p => p.IsSelected, true));
@@ -246,7 +246,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters
                 .Add(p => p.Item, task)
                 .Add(p => p.IsSelected, false));
@@ -269,7 +269,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -290,7 +290,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -311,7 +311,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -332,7 +332,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -356,7 +356,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -378,7 +378,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -400,7 +400,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -422,7 +422,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -443,7 +443,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert
@@ -464,7 +464,7 @@ public class TaskItemComponentTests : TestContext
         };
 
         // Act
-        var cut = RenderComponent<TaskItemComponent>(parameters => 
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
         // Assert

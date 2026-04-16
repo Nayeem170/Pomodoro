@@ -49,7 +49,7 @@ public class IndexedDbService : IIndexedDbService, IAsyncDisposable
             throw;
         }
     }
-    
+
     /// <summary>
     /// Initializes JavaScript constants with user settings for consistency across JS interop
     /// </summary>
@@ -75,13 +75,13 @@ public class IndexedDbService : IIndexedDbService, IAsyncDisposable
     public async Task<T?> GetAsync<T>(string storeName, string key)
     {
         EnsureInitialized();
-        
+
         try
         {
             var result = await _jsRuntime.InvokeAsync<JsonElement>(Constants.IndexedDbJsFunctions.GetItem, storeName, key);
             if (result.ValueKind == JsonValueKind.Null || result.ValueKind == JsonValueKind.Undefined)
                 return default;
-            
+
             return DeserializeItem<T>(result, storeName, key);
         }
         catch (Exception ex)
@@ -97,13 +97,13 @@ public class IndexedDbService : IIndexedDbService, IAsyncDisposable
     public async Task<List<T>> GetAllAsync<T>(string storeName)
     {
         EnsureInitialized();
-        
+
         try
         {
             var result = await _jsRuntime.InvokeAsync<JsonElement>(Constants.IndexedDbJsFunctions.GetAllItems, storeName);
             if (result.ValueKind == JsonValueKind.Null || result.ValueKind == JsonValueKind.Undefined)
                 return new List<T>();
-            
+
             return DeserializeList<T>(result, storeName, "all");
         }
         catch (Exception ex)
@@ -119,13 +119,13 @@ public class IndexedDbService : IIndexedDbService, IAsyncDisposable
     public async Task<List<T>> QueryByIndexAsync<T>(string storeName, string indexName, object value)
     {
         EnsureInitialized();
-        
+
         try
         {
             var result = await _jsRuntime.InvokeAsync<JsonElement>(Constants.IndexedDbJsFunctions.GetItemsByIndex, storeName, indexName, value);
             if (result.ValueKind == JsonValueKind.Null || result.ValueKind == JsonValueKind.Undefined)
                 return new List<T>();
-            
+
             return DeserializeList<T>(result, storeName, indexName);
         }
         catch (Exception ex)
@@ -138,13 +138,13 @@ public class IndexedDbService : IIndexedDbService, IAsyncDisposable
     public async Task<List<T>> QueryByDateRangeAsync<T>(string storeName, string indexName, string startDate, string endDate)
     {
         EnsureInitialized();
-        
+
         try
         {
             var result = await _jsRuntime.InvokeAsync<JsonElement>(Constants.IndexedDbJsFunctions.GetItemsByDateRange, storeName, indexName, startDate, endDate);
             if (result.ValueKind == JsonValueKind.Null || result.ValueKind == JsonValueKind.Undefined)
                 return new List<T>();
-            
+
             return DeserializeList<T>(result, storeName, indexName);
         }
         catch (Exception ex)
@@ -157,7 +157,7 @@ public class IndexedDbService : IIndexedDbService, IAsyncDisposable
     public async Task<bool> PutAsync<T>(string storeName, T item)
     {
         EnsureInitialized();
-        
+
         try
         {
             await _jsRuntime.InvokeVoidAsync(Constants.IndexedDbJsFunctions.PutItem, storeName, item);
@@ -177,10 +177,10 @@ public class IndexedDbService : IIndexedDbService, IAsyncDisposable
     public async Task<bool> PutAllAsync<T>(string storeName, List<T> items)
     {
         EnsureInitialized();
-        
+
         if (items == null || items.Count == 0)
             return true;
-        
+
         try
         {
             await _jsRuntime.InvokeVoidAsync(Constants.IndexedDbJsFunctions.PutAllItems, storeName, items);
@@ -196,7 +196,7 @@ public class IndexedDbService : IIndexedDbService, IAsyncDisposable
     public async Task<bool> DeleteAsync(string storeName, string key)
     {
         EnsureInitialized();
-        
+
         try
         {
             await _jsRuntime.InvokeVoidAsync(Constants.IndexedDbJsFunctions.DeleteItem, storeName, key);
@@ -212,7 +212,7 @@ public class IndexedDbService : IIndexedDbService, IAsyncDisposable
     public async Task<bool> ClearAsync(string storeName)
     {
         EnsureInitialized();
-        
+
         try
         {
             await _jsRuntime.InvokeVoidAsync(Constants.IndexedDbJsFunctions.ClearStore, storeName);
@@ -228,7 +228,7 @@ public class IndexedDbService : IIndexedDbService, IAsyncDisposable
     public async Task<int> GetCountAsync(string storeName)
     {
         EnsureInitialized();
-        
+
         try
         {
             return await _jsRuntime.InvokeAsync<int>(Constants.IndexedDbJsFunctions.GetCount, storeName);
@@ -253,7 +253,7 @@ public class IndexedDbService : IIndexedDbService, IAsyncDisposable
             throw new InvalidOperationException(Constants.Messages.IndexedDbNotInitialized);
         }
     }
-    
+
     /// <summary>
     /// Notifies subscribers of storage errors
     /// </summary>

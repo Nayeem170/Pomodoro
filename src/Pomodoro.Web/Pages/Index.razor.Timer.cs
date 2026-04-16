@@ -11,9 +11,9 @@ namespace Pomodoro.Web.Pages;
 public partial class IndexBase
 {
     [Inject] protected TimerThemeFormatter TimerThemeFormatter { get; set; } = default!;
-    
+
     #region Timer Actions
- 
+
     /// <summary>
     /// Handles starting of timer based on current session type
     /// </summary>
@@ -48,8 +48,8 @@ public partial class IndexBase
         {
             ErrorMessage = $"{Constants.Messages.ErrorStartingTimer}: {ex.Message}";
         }
-    } 
- 
+    }
+
     /// <summary>
     /// Handles pausing of timer
     /// </summary>
@@ -66,7 +66,7 @@ public partial class IndexBase
             ErrorMessage = $"{Constants.Messages.ErrorPausingTimer}: {ex.Message}";
         }
     }
- 
+
     /// <summary>
     /// Handles resuming of timer
     /// </summary>
@@ -83,7 +83,7 @@ public partial class IndexBase
             ErrorMessage = $"{Constants.Messages.ErrorResumingTimer}: {ex.Message}";
         }
     }
- 
+
     /// <summary>
     /// Handles resetting of timer
     /// </summary>
@@ -100,7 +100,7 @@ public partial class IndexBase
             ErrorMessage = $"{Constants.Messages.ErrorResettingTimer}: {ex.Message}";
         }
     }
- 
+
     /// <summary>
     /// Handles switching to a different session type
     /// </summary>
@@ -117,7 +117,7 @@ public partial class IndexBase
             ErrorMessage = $"{Constants.Messages.ErrorSwitchingSession}: {ex.Message}";
         }
     }
- 
+
     /// <summary>
     /// Handles toggling of Picture-in-Picture timer window
     /// </summary>
@@ -146,11 +146,11 @@ public partial class IndexBase
             ErrorMessage = $"{Constants.Messages.ErrorTogglingFloatingTimer}: {ex.Message}";
         }
     }
- 
+
     #endregion
- 
+
     #region Timer Theme
- 
+
     /// <summary>
     /// Gets the CSS class for the current timer theme based on session type
     /// </summary>
@@ -158,6 +158,6 @@ public partial class IndexBase
     {
         return TimerThemeFormatter.GetTimerThemeClass(CurrentSessionType);
     }
- 
+
     #endregion
 }

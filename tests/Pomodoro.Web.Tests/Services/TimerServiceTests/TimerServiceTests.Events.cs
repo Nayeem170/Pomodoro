@@ -20,10 +20,10 @@ public partial class TimerServiceTests
             var service = CreateService();
             var eventFired = false;
             service.OnStateChanged += () => eventFired = true;
-            
+
             // Act
             await service.StartPomodoroAsync();
-            
+
             // Assert
             Assert.True(eventFired);
         }
@@ -34,13 +34,13 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.StartPomodoroAsync();
-            
+
             var eventFired = false;
             service.OnStateChanged += () => eventFired = true;
-            
+
             // Act
             await service.PauseAsync();
-            
+
             // Assert
             Assert.True(eventFired);
         }
@@ -52,13 +52,13 @@ public partial class TimerServiceTests
             var service = CreateService();
             await service.StartPomodoroAsync();
             await service.PauseAsync();
-            
+
             var eventFired = false;
             service.OnStateChanged += () => eventFired = true;
-            
+
             // Act
             await service.ResumeAsync();
-            
+
             // Assert
             Assert.True(eventFired);
         }
@@ -69,13 +69,13 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.StartPomodoroAsync();
-            
+
             var eventFired = false;
             service.OnStateChanged += () => eventFired = true;
-            
+
             // Act
             await service.ResetAsync();
-            
+
             // Assert
             Assert.True(eventFired);
         }
@@ -86,13 +86,13 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.StartPomodoroAsync();
-            
+
             var eventFired = false;
             service.OnStateChanged += () => eventFired = true;
-            
+
             // Act
             await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
-            
+
             // Assert
             Assert.True(eventFired);
         }
@@ -103,14 +103,14 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             var eventFired = false;
             service.OnStateChanged += () => eventFired = true;
-            
+
             // Act
             var newSettings = new TimerSettings();
             await service.UpdateSettingsAsync(newSettings);
-            
+
             // Assert
             Assert.True(eventFired);
         }
@@ -120,18 +120,18 @@ public partial class TimerServiceTests
         {
             // Arrange
             var service = CreateService();
-            
+
             var handler1Fired = false;
             var handler2Fired = false;
             var handler3Fired = false;
-            
+
             service.OnStateChanged += () => handler1Fired = true;
             service.OnStateChanged += () => handler2Fired = true;
             service.OnStateChanged += () => handler3Fired = true;
-            
+
             // Act
             await service.StartPomodoroAsync();
-            
+
             // Assert
             Assert.True(handler1Fired);
             Assert.True(handler2Fired);
@@ -145,10 +145,10 @@ public partial class TimerServiceTests
             var service = CreateService();
             var eventFired = false;
             service.OnStateChanged += () => eventFired = true;
-            
+
             // Act
             await service.StartShortBreakAsync();
-            
+
             // Assert
             Assert.True(eventFired);
         }
@@ -160,10 +160,10 @@ public partial class TimerServiceTests
             var service = CreateService();
             var eventFired = false;
             service.OnStateChanged += () => eventFired = true;
-            
+
             // Act
             await service.StartLongBreakAsync();
-            
+
             // Assert
             Assert.True(eventFired);
         }
@@ -173,11 +173,11 @@ public partial class TimerServiceTests
         {
             // Arrange
             var service = CreateService();
-            
+
             // Act
             // Verify event can be subscribed to (no exception means success)
             service.OnTick += () => { };
-            
+
             // Assert
             // Event subscription succeeded if no exception was thrown
             Assert.True(true);
@@ -188,11 +188,11 @@ public partial class TimerServiceTests
         {
             // Arrange
             var service = CreateService();
-            
+
             // Act
             // Verify event can be subscribed to (no exception means success)
             service.OnTimerCompleted += (args) => Task.CompletedTask;
-            
+
             // Assert
             // Event subscription succeeded if no exception was thrown
             Assert.True(true);
@@ -203,11 +203,11 @@ public partial class TimerServiceTests
         {
             // Arrange
             var service = CreateService();
-            
+
             // Act
             // Verify event can be subscribed to (no exception means success)
             service.OnTimerComplete += (type) => { };
-            
+
             // Assert
             // Event subscription succeeded if no exception was thrown
             Assert.True(true);
@@ -218,21 +218,21 @@ public partial class TimerServiceTests
         {
             // Arrange
             var service = CreateService();
-            
+
             var eventFired = false;
             Action handler = () => eventFired = true;
             service.OnStateChanged += handler;
-            
+
             // Act
             await service.StartPomodoroAsync();
             var firstFireCount = eventFired ? 1 : 0;
-            
+
             // Unsubscribe
             service.OnStateChanged -= handler;
-            
+
             // Trigger another state change
             await service.ResetAsync();
-            
+
             // Assert
             // Event should have fired once (on start) but not after unsubscribe
             Assert.Equal(1, firstFireCount);

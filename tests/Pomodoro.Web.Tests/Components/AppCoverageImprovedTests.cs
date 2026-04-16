@@ -33,7 +33,7 @@ namespace Pomodoro.Web.Tests
             mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(new List<Pomodoro.Web.Services.NavLinkData>());
             mockLayoutPresenter.Setup(x => x.ToggleNavMenu());
             Services.AddSingleton<LayoutPresenterService>(mockLayoutPresenter.Object);
-             
+
             // Register all of the services that Index.razor requires
             Services.AddSingleton(new Mock<ITaskService>().Object);
             Services.AddSingleton(new Mock<IActivityService>().Object);
@@ -243,7 +243,7 @@ namespace Pomodoro.Web.Tests
             // Act & Assert - Verify _errorBoundary field exists
             var errorBoundaryField = type.GetField("_errorBoundary", BindingFlags.NonPublic | BindingFlags.Instance);
             Assert.NotNull(errorBoundaryField);
-            
+
             // The field should be nullable (ErrorBoundary?)
             // In C# 9+, nullable reference types are a compile-time feature
             // and don't show up as Nullable<> in reflection

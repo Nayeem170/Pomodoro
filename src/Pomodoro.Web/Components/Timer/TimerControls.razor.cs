@@ -10,7 +10,7 @@ namespace Pomodoro.Web.Components.Timer;
 public class TimerControlsBase : ComponentBase
 {
     #region Parameters (Model)
-    
+
     [Parameter]
     public bool IsRunning { get; set; }
 
@@ -37,7 +37,7 @@ public class TimerControlsBase : ComponentBase
 
     [Parameter]
     public EventCallback OnReset { get; set; }
-    
+
     #endregion
 
     #region Computed Properties
@@ -46,7 +46,7 @@ public class TimerControlsBase : ComponentBase
     /// Determines if the Start button should be disabled
     /// </summary>
     protected bool IsStartDisabled => !CanStart;
-    
+
     #endregion
 
     #region Business Logic Methods
@@ -79,6 +79,6 @@ public class TimerControlsBase : ComponentBase
             _ => Constants.SessionTypes.PomodoroClass
         };
     }
-    
+
     #endregion
 }

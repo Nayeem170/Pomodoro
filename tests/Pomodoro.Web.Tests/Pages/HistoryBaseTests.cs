@@ -152,7 +152,7 @@ public partial class HistoryBaseTests : TestContext
         {
             Services.Add(service);
         }
-        
+
         // Override with test-specific mocks
         Services.AddSingleton(_mockActivityService.Object);
         Services.AddSingleton(_mockStatisticsService.Object);
@@ -612,7 +612,7 @@ public partial class HistoryBaseTests : TestContext
             var cut = RenderComponent<TestableHistoryBase>();
             cut.Instance.HasMoreActivities = true;
             cut.Instance.IsLoadingMore = false;
-            
+
             _mockActivityService.Setup(x => x.GetActivitiesPagedAsync(
                 It.IsAny<DateTime>(),
                 It.IsAny<DateTime>(),
@@ -641,7 +641,7 @@ public partial class HistoryBaseTests : TestContext
             var cut = RenderComponent<TestableHistoryBase>();
             cut.Instance.HasMoreActivities = true;
             cut.Instance.IsLoadingMore = false;
-            
+
             _mockActivityService.Setup(x => x.GetActivitiesPagedAsync(
                 It.IsAny<DateTime>(),
                 It.IsAny<DateTime>(),
@@ -670,7 +670,7 @@ public partial class HistoryBaseTests : TestContext
             // Arrange
             var cut = RenderComponent<TestableHistoryBase>();
             cut.Instance.HasMoreActivities = true;
-            
+
             // First set up the observer
             _mockInfiniteScrollInterop.Setup(x => x.IsSupportedAsync())
                 .ReturnsAsync(true);
@@ -681,9 +681,9 @@ public partial class HistoryBaseTests : TestContext
                 It.IsAny<string>(),
                 It.IsAny<int>()))
                 .ReturnsAsync(true);
-            
+
             await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-            
+
             // Now make destroy throw
             _mockInfiniteScrollInterop.Setup(x => x.DestroyObserverAsync(It.IsAny<string>()))
                 .ThrowsAsync(new InvalidOperationException("Destroy failed"));
@@ -713,7 +713,7 @@ public partial class HistoryBaseTests : TestContext
             var cut = RenderComponent<TestableHistoryBase>();
             cut.Instance.ActiveTab = HistoryTab.Daily;
             cut.Instance.HasMoreActivities = true;
-            
+
             // Set up the observer
             _mockInfiniteScrollInterop.Setup(x => x.IsSupportedAsync())
                 .ReturnsAsync(true);
@@ -724,7 +724,7 @@ public partial class HistoryBaseTests : TestContext
                 It.IsAny<string>(),
                 It.IsAny<int>()))
                 .ReturnsAsync(true);
-            
+
             await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
 
             // Act
@@ -743,7 +743,7 @@ public partial class HistoryBaseTests : TestContext
             var cut = RenderComponent<TestableHistoryBase>();
             cut.Instance.ActiveTab = HistoryTab.Daily;
             cut.Instance.HasMoreActivities = true;
-            
+
             // Set up the observer
             _mockInfiniteScrollInterop.Setup(x => x.IsSupportedAsync())
                 .ReturnsAsync(true);
@@ -754,9 +754,9 @@ public partial class HistoryBaseTests : TestContext
                 It.IsAny<string>(),
                 It.IsAny<int>()))
                 .ReturnsAsync(true);
-            
+
             await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-            
+
             // Now make destroy throw
             _mockInfiniteScrollInterop.Setup(x => x.DestroyObserverAsync(It.IsAny<string>()))
                 .ThrowsAsync(new InvalidOperationException("Destroy failed"));
@@ -785,7 +785,7 @@ public partial class HistoryBaseTests : TestContext
             // Arrange
             var cut = RenderComponent<TestableHistoryBase>();
             cut.Instance.HasMoreActivities = true;
-            
+
             // Set up the observer
             _mockInfiniteScrollInterop.Setup(x => x.IsSupportedAsync())
                 .ReturnsAsync(true);
@@ -796,9 +796,9 @@ public partial class HistoryBaseTests : TestContext
                 It.IsAny<string>(),
                 It.IsAny<int>()))
                 .ReturnsAsync(true);
-            
+
             await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-            
+
             // Now make destroy throw
             _mockInfiniteScrollInterop.Setup(x => x.DestroyObserverAsync(It.IsAny<string>()))
                 .ThrowsAsync(new InvalidOperationException("Destroy failed"));
@@ -818,7 +818,7 @@ public partial class HistoryBaseTests : TestContext
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.AtLeast(2));
         }
-    
+
         [Trait("Category", "Page")]
         public class SetupInfiniteScrollObserverRetryTests : HistoryBaseTests
         {
@@ -828,7 +828,7 @@ public partial class HistoryBaseTests : TestContext
                 // Arrange
                 _mockInfiniteScrollInterop.Setup(x => x.IsSupportedAsync())
                     .ReturnsAsync(true);
-                
+
                 // Use SetupSequence to simulate retry behavior
                 _mockInfiniteScrollInterop.SetupSequence(x => x.CreateObserverAsync(
                         It.IsAny<string>(),
@@ -838,18 +838,18 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<int>()))
                     .ReturnsAsync(false)  // First attempt fails
                     .ReturnsAsync(true);  // Second attempt succeeds
-    
+
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
                 cut.Instance.ActiveTab = HistoryTab.Daily;
-    
+
                 // Act
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-                
+
                 // Wait for retry to complete (100ms backoff + margin)
                 // The retry happens asynchronously, so we need to wait longer
                 await Task.Delay(1000);
-    
+
                 // Assert - Verify that CreateObserverAsync was called at least once
                 // Note: Due to fire-and-forget retry pattern, exact timing is difficult to test
                 _mockInfiniteScrollInterop.Verify(
@@ -861,7 +861,7 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<int>()),
                     Times.AtLeastOnce());
             }
-    
+
             [Fact]
             public async Task SetupInfiniteScrollObserverAsync_FailsAfterMaxRetries()
             {
@@ -875,17 +875,17 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<string>(),
                         It.IsAny<int>()))
                     .ReturnsAsync(false);  // Always fails
-    
+
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
                 cut.Instance.ActiveTab = HistoryTab.Daily;
-    
+
                 // Act
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-    
+
                 // Wait for all retry attempts to complete (100ms + 200ms delays)
                 await Task.Delay(400);
-    
+
                 // Assert - Verify that CreateObserverAsync was called at least once
                 _mockInfiniteScrollInterop.Verify(
                     x => x.CreateObserverAsync(
@@ -896,21 +896,21 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<int>()),
                     Times.AtLeastOnce);
             }
-    
+
             [Fact]
             public async Task SetupInfiniteScrollObserverAsync_HandlesUnsupportedApi()
             {
                 // Arrange
                 _mockInfiniteScrollInterop.Setup(x => x.IsSupportedAsync())
                     .ReturnsAsync(false);
-    
+
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
                 cut.Instance.ActiveTab = HistoryTab.Daily;
-    
+
                 // Act
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-    
+
                 // Assert
                 _mockInfiniteScrollInterop.Verify(
                     x => x.CreateObserverAsync(
@@ -929,7 +929,7 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                     Times.Once);
             }
-    
+
             [Fact]
             public async Task SetupInfiniteScrollObserverAsync_HandlesExceptions()
             {
@@ -943,14 +943,14 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<string>(),
                         It.IsAny<int>()))
                     .ThrowsAsync(new InvalidOperationException("Test exception"));
-    
+
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
                 cut.Instance.ActiveTab = HistoryTab.Daily;
-    
+
                 // Act
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-    
+
                 // Assert
                 _mockLogger.Verify(
                     x => x.Log(
@@ -968,22 +968,22 @@ public partial class HistoryBaseTests : TestContext
                 // Arrange
                 _mockInfiniteScrollInterop.Setup(x => x.IsSupportedAsync())
                     .ReturnsAsync(true);
-                
+
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
                 cut.Instance.ActiveTab = HistoryTab.Daily;
-                
+
                 // Acquire the lock first to prevent the setup from proceeding
                 var observerSetupLockField = typeof(HistoryBase).GetField("_observerSetupLock",
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 var observerSetupLock = observerSetupLockField?.GetValue(cut.Instance) as SemaphoreSlim;
                 await (observerSetupLock?.WaitAsync() ?? Task.CompletedTask);
-                
+
                 try
                 {
                     // Act
                     await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-                    
+
                     // Assert - Verify that CreateObserverAsync was not called because lock was not acquired
                     _mockInfiniteScrollInterop.Verify(
                         x => x.CreateObserverAsync(
@@ -993,7 +993,7 @@ public partial class HistoryBaseTests : TestContext
                             It.IsAny<string>(),
                             It.IsAny<int>()),
                         Times.Never);
-                    
+
                     // Verify that at least one debug log was written (there might be more due to other operations)
                     _mockLogger.Verify(
                         x => x.Log(
@@ -1017,11 +1017,11 @@ public partial class HistoryBaseTests : TestContext
                 // Arrange
                 _mockInfiniteScrollInterop.Setup(x => x.IsSupportedAsync())
                     .ReturnsAsync(true);
-                
+
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
                 cut.Instance.ActiveTab = HistoryTab.Daily;
-                
+
                 // Set up to fail first time, succeed second time
                 _mockInfiniteScrollInterop.SetupSequence(x => x.CreateObserverAsync(
                         It.IsAny<string>(),
@@ -1031,26 +1031,26 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<int>()))
                     .ReturnsAsync(false)  // First attempt fails
                     .ReturnsAsync(true);  // Second attempt succeeds
-                
+
                 // Acquire the lock during the retry attempt
                 var observerSetupLockField = typeof(HistoryBase).GetField("_observerSetupLock",
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 var observerSetupLock = observerSetupLockField?.GetValue(cut.Instance) as SemaphoreSlim;
-                
+
                 // First call - will fail and trigger retry
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-                
+
                 // Wait a bit for the retry to be scheduled
                 await Task.Delay(50);
-                
+
                 // Now acquire the lock to prevent the retry
                 await (observerSetupLock?.WaitAsync() ?? Task.CompletedTask);
-                
+
                 try
                 {
                     // Wait for the retry to complete (or be skipped)
                     await Task.Delay(200);
-                    
+
                     // Assert - Verify debug log was written when retry was skipped
                     _mockLogger.Verify(
                         x => x.Log(
@@ -1074,11 +1074,11 @@ public partial class HistoryBaseTests : TestContext
                 // Arrange
                 _mockInfiniteScrollInterop.Setup(x => x.IsSupportedAsync())
                     .ReturnsAsync(true);
-                
+
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
                 cut.Instance.ActiveTab = HistoryTab.Daily;
-                
+
                 // Set up to fail first time to trigger retry
                 _mockInfiniteScrollInterop.Setup(x => x.CreateObserverAsync(
                         It.IsAny<string>(),
@@ -1087,21 +1087,21 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<string>(),
                         It.IsAny<int>()))
                     .ReturnsAsync(false);  // Always fails
-                
+
                 // First call - will fail and trigger retry
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-                
+
                 // Wait a bit for the retry to be scheduled
                 await Task.Delay(50);
-                
+
                 // Now manually set _observerInitialized to true to abort retry
                 var observerInitializedField = typeof(HistoryBase).GetField("_observerInitialized",
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 observerInitializedField?.SetValue(cut.Instance, true);
-                
+
                 // Wait for the retry to complete (or be aborted)
                 await Task.Delay(200);
-                
+
                 // Assert - Verify that the retry was aborted due to observer already being initialized
                 _mockInfiniteScrollInterop.Verify(
                     x => x.CreateObserverAsync(
@@ -1119,11 +1119,11 @@ public partial class HistoryBaseTests : TestContext
                 // Arrange
                 _mockInfiniteScrollInterop.Setup(x => x.IsSupportedAsync())
                     .ReturnsAsync(true);
-                
+
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
                 cut.Instance.ActiveTab = HistoryTab.Daily;
-                
+
                 // Set up to fail first time to trigger retry
                 _mockInfiniteScrollInterop.Setup(x => x.CreateObserverAsync(
                         It.IsAny<string>(),
@@ -1132,19 +1132,19 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<string>(),
                         It.IsAny<int>()))
                     .ReturnsAsync(false);  // Always fails
-                
+
                 // First call - will fail and trigger retry
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-                
+
                 // Wait a bit for the retry to be scheduled
                 await Task.Delay(50);
-                
+
                 // Now dispose the component to abort retry
                 await cut.Instance.DisposeAsync();
-                
+
                 // Wait for the retry to complete (or be aborted)
                 await Task.Delay(200);
-                
+
                 // Assert - Verify that the retry was aborted due to component being disposed
                 _mockInfiniteScrollInterop.Verify(
                     x => x.CreateObserverAsync(
@@ -1162,7 +1162,7 @@ public partial class HistoryBaseTests : TestContext
                 // Arrange
                 _mockInfiniteScrollInterop.Setup(x => x.IsSupportedAsync())
                     .ReturnsAsync(true);
-                
+
                 // Set up to fail first time, succeed second time
                 _mockInfiniteScrollInterop.SetupSequence(x => x.CreateObserverAsync(
                         It.IsAny<string>(),
@@ -1172,17 +1172,17 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<int>()))
                     .ReturnsAsync(false)  // First attempt fails
                     .ReturnsAsync(true);  // Second attempt succeeds
-                
+
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
                 cut.Instance.ActiveTab = HistoryTab.Daily;
-                
+
                 // Act
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-                
+
                 // Wait for retry to complete
                 await Task.Delay(300);
-                
+
                 // Assert - Verify debug log was written for retry attempt
                 _mockLogger.Verify(
                     x => x.Log(
@@ -1207,17 +1207,17 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<string>(),
                         It.IsAny<int>()))
                     .ReturnsAsync(false);  // Always fails
-                
+
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
                 cut.Instance.ActiveTab = HistoryTab.Daily;
-                
+
                 // Act
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-                
+
                 // Wait for all retry attempts to complete (100ms + 200ms + buffer)
                 await Task.Delay(500);
-                
+
                 // Assert - Verify that CreateObserverAsync was called at least once
                 _mockInfiniteScrollInterop.Verify(
                     x => x.CreateObserverAsync(
@@ -1227,13 +1227,13 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<string>(),
                         It.IsAny<int>()),
                     Times.AtLeastOnce);
-                    
+
                 // The warning log might not be captured in tests due to the fire-and-forget nature
                 // of the retry mechanism, but we can verify that the method was called
                 Assert.True(true);
             }
         }
-    
+
         [Trait("Category", "Page")]
         public class OnAfterRenderAsyncEdgeCasesTests : HistoryBaseTests
         {
@@ -1243,10 +1243,10 @@ public partial class HistoryBaseTests : TestContext
                 // Arrange
                 var cut = RenderComponent<TestableHistoryBase>(parameters =>
                     parameters.Add(p => p.InitialHasMoreActivities, false));
-    
+
                 // Act
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-    
+
                 // Assert
                 _mockInfiniteScrollInterop.Verify(
                     x => x.CreateObserverAsync(
@@ -1257,17 +1257,17 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<int>()),
                     Times.Never);
             }
-    
+
             [Fact]
             public async Task OnAfterRenderAsync_DoesNotInitializeObserver_WhenTabIsWeekly()
             {
                 // Arrange
                 var cut = RenderComponent<TestableHistoryBase>(parameters =>
                     parameters.Add(p => p.InitialActiveTab, HistoryTab.Weekly));
-    
+
                 // Act
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-    
+
                 // Assert
                 _mockInfiniteScrollInterop.Verify(
                     x => x.CreateObserverAsync(
@@ -1278,18 +1278,18 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<int>()),
                     Times.Never);
             }
-    
+
             [Fact]
             public async Task OnAfterRenderAsync_DoesNotInitializeObserver_WhenAlreadyDisposed()
             {
                 // Arrange
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
-    
+
                 // Act - Dispose first, then try to render
                 await cut.Instance.DisposeAsync();
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-    
+
                 // Assert
                 _mockInfiniteScrollInterop.Verify(
                     x => x.CreateObserverAsync(
@@ -1300,7 +1300,7 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<int>()),
                     Times.Never);
             }
-    
+
             [Fact]
             public async Task OnAfterRenderAsync_RecreatesDotNetRef_WhenNull()
             {
@@ -1314,13 +1314,13 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<string>(),
                         It.IsAny<int>()))
                     .ReturnsAsync(true);
-    
+
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
-    
+
                 // Act
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-    
+
                 // Assert
                 _mockInfiniteScrollInterop.Verify(
                     x => x.CreateObserverAsync(
@@ -1332,7 +1332,7 @@ public partial class HistoryBaseTests : TestContext
                     Times.Once);
             }
         }
-    
+
         [Trait("Category", "Page")]
         public class HandleTabChangedAdditionalTests : HistoryBaseTests
         {
@@ -1349,20 +1349,20 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<string>(),
                         It.IsAny<int>()))
                     .ReturnsAsync(true);
-    
+
                 var cut = RenderComponent<TestableHistoryBase>(parameters =>
                     parameters.Add(p => p.InitialActiveTab, HistoryTab.Weekly));
                 cut.Instance.HasMoreActivities = true;
-    
+
                 // Act
                 await cut.InvokeAsync(async () => await cut.Instance.HandleTabChangedProtected(HistoryTab.Daily));
-    
+
                 // Assert
                 Assert.Equal(HistoryTab.Daily, cut.Instance.ActiveTab);
                 _mockActivityService.Verify(x => x.GetActivitiesPagedAsync(
                     It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>()), Times.AtLeastOnce);
             }
-    
+
             [Fact]
             public async Task HandleTabChanged_ToWeekly_RefreshesStatsAndCleansUpObserver()
             {
@@ -1376,24 +1376,24 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<string>(),
                         It.IsAny<int>()))
                     .ReturnsAsync(true);
-    
+
                 var cut = RenderComponent<TestableHistoryBase>(parameters =>
                     parameters.Add(p => p.InitialActiveTab, HistoryTab.Daily));
                 cut.Instance.HasMoreActivities = true;
-    
+
                 // First, set up the observer
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-    
+
                 // Act
                 await cut.InvokeAsync(async () => await cut.Instance.HandleTabChangedProtected(HistoryTab.Weekly));
-    
+
                 // Assert
                 Assert.Equal(HistoryTab.Weekly, cut.Instance.ActiveTab);
                 _mockInfiniteScrollInterop.Verify(
                     x => x.DestroyObserverAsync(It.IsAny<string>()),
                     Times.Once);
             }
-    
+
             [Fact]
             public async Task HandleTabChanged_WhenObserverDestroyFails_LogsWarning()
             {
@@ -1409,17 +1409,17 @@ public partial class HistoryBaseTests : TestContext
                     .ReturnsAsync(true);
                 _mockInfiniteScrollInterop.Setup(x => x.DestroyObserverAsync(It.IsAny<string>()))
                     .ThrowsAsync(new InvalidOperationException("Destroy failed"));
-    
+
                 var cut = RenderComponent<TestableHistoryBase>(parameters =>
                     parameters.Add(p => p.InitialActiveTab, HistoryTab.Daily));
                 cut.Instance.HasMoreActivities = true;
-    
+
                 // First, set up the observer
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-    
+
                 // Act
                 await cut.InvokeAsync(async () => await cut.Instance.HandleTabChangedProtected(HistoryTab.Weekly));
-    
+
                 // Assert
                 _mockLogger.Verify(
                     x => x.Log(
@@ -1431,7 +1431,7 @@ public partial class HistoryBaseTests : TestContext
                     Times.Once);
             }
         }
-    
+
         [Trait("Category", "Page")]
         public class HandleDateChangedAdditionalTests : HistoryBaseTests
         {
@@ -1442,33 +1442,33 @@ public partial class HistoryBaseTests : TestContext
                 var cut = RenderComponent<TestableHistoryBase>();
                 var newDate = DateTime.Now.AddDays(1);
                 var initialCount = cut.Instance.CurrentActivities.Count;
-                
+
                 // Reset mock to clear previous invocations from initialization
                 _mockActivityService.Invocations.Clear();
-    
+
                 // Act
                 await cut.InvokeAsync(async () => await cut.Instance.HandleDateChangedProtected(newDate));
-    
+
                 // Assert
                 Assert.Equal(newDate, cut.Instance.SelectedDate);
                 Assert.Equal(0, cut.Instance.CurrentSkip);
                 _mockActivityService.Verify(x => x.GetActivitiesPagedAsync(
                     newDate.Date, It.IsAny<DateTime>(), 0, It.IsAny<int>()), Times.Once);
             }
-    
+
             [Fact]
             public async Task HandleDateChanged_WhenObserverNotInitialized_DoesNotCallDestroy()
             {
                 // Arrange
                 var cut = RenderComponent<TestableHistoryBase>();
                 var newDate = DateTime.Now.AddDays(1);
-                
+
                 // Reset mock to clear previous invocations from initialization
                 _mockActivityService.Invocations.Clear();
-    
+
                 // Act
                 await cut.InvokeAsync(async () => await cut.Instance.HandleDateChangedProtected(newDate));
-    
+
                 // Assert
                 _mockInfiniteScrollInterop.Verify(
                     x => x.DestroyObserverAsync(It.IsAny<string>()),
@@ -1476,7 +1476,7 @@ public partial class HistoryBaseTests : TestContext
                 _mockActivityService.Verify(x => x.GetActivitiesPagedAsync(
                     It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>()), Times.Once);
             }
-    
+
             [Fact]
             public async Task HandleDateChanged_WhenObserverDestroyFails_LogsWarning()
             {
@@ -1492,16 +1492,16 @@ public partial class HistoryBaseTests : TestContext
                     .ReturnsAsync(true);
                 _mockInfiniteScrollInterop.Setup(x => x.DestroyObserverAsync(It.IsAny<string>()))
                     .ThrowsAsync(new InvalidOperationException("Destroy failed"));
-    
+
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
-    
+
                 // First, set up the observer
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-    
+
                 // Act
                 await cut.InvokeAsync(async () => await cut.Instance.HandleDateChangedProtected(DateTime.Now.AddDays(1)));
-    
+
                 // Assert
                 _mockLogger.Verify(
                     x => x.Log(
@@ -1513,202 +1513,202 @@ public partial class HistoryBaseTests : TestContext
                     Times.Once);
             }
         }
-    
-    [Trait("Category", "Page")]
-    public class OnSentinelIntersectingAdditionalTests : HistoryBaseTests
-    {
-        [Fact]
-        public async Task OnSentinelIntersecting_BailsOut_WhenNoMoreActivities()
+
+        [Trait("Category", "Page")]
+        public class OnSentinelIntersectingAdditionalTests : HistoryBaseTests
         {
-            // Arrange
-            var cut = RenderComponent<TestableHistoryBase>();
-            cut.Instance.HasMoreActivities = false;
-            var initialCallCount = _mockActivityService.Invocations.Count;
+            [Fact]
+            public async Task OnSentinelIntersecting_BailsOut_WhenNoMoreActivities()
+            {
+                // Arrange
+                var cut = RenderComponent<TestableHistoryBase>();
+                cut.Instance.HasMoreActivities = false;
+                var initialCallCount = _mockActivityService.Invocations.Count;
 
-            // Act
-            await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
+                // Act
+                await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
 
-            // Assert
-            Assert.Equal(initialCallCount, _mockActivityService.Invocations.Count);
+                // Assert
+                Assert.Equal(initialCallCount, _mockActivityService.Invocations.Count);
+            }
+
+            [Fact]
+            public async Task OnSentinelIntersecting_BailsOut_WhenIsDisposed()
+            {
+                // Arrange
+                var cut = RenderComponent<TestableHistoryBase>();
+                await cut.Instance.DisposeAsync();
+                var initialCallCount = _mockActivityService.Invocations.Count;
+
+                // Act
+                await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
+
+                // Assert
+                Assert.Equal(initialCallCount, _mockActivityService.Invocations.Count);
+            }
+
+            [Fact]
+            public async Task OnSentinelIntersecting_BailsOut_WhenCallbackInProgress()
+            {
+                // Arrange
+                var cut = RenderComponent<TestableHistoryBase>();
+                var isCallbackInProgressField = typeof(HistoryBase).GetField("_isCallbackInProgress",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                isCallbackInProgressField?.SetValue(cut.Instance, true);
+                var initialCallCount = _mockActivityService.Invocations.Count;
+
+                // Act
+                await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
+
+                // Assert
+                Assert.Equal(initialCallCount, _mockActivityService.Invocations.Count);
+            }
+
+            [Fact]
+            public async Task OnSentinelIntersecting_BailsOut_WhenDotNetRefIsNull()
+            {
+                // Arrange
+                var cut = RenderComponent<TestableHistoryBase>();
+                var dotNetRefField = typeof(HistoryBase).GetField("_dotNetRef",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                dotNetRefField?.SetValue(cut.Instance, null);
+                var initialCallCount = _mockActivityService.Invocations.Count;
+
+                // Act
+                await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
+
+                // Assert
+                Assert.Equal(initialCallCount, _mockActivityService.Invocations.Count);
+            }
+
+            [Fact]
+            public async Task OnSentinelIntersecting_SuccessfullyLoadsMoreActivities()
+            {
+                // Arrange
+                var newActivities = new List<ActivityRecord> { new ActivityRecord() };
+                _mockActivityService.Setup(x => x.GetActivitiesPagedAsync(
+                    It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>()))
+                    .ReturnsAsync(newActivities);
+                _mockActivityService.Setup(x => x.GetActivityCountAsync(
+                    It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+                    .ReturnsAsync(25); // More than current count to trigger HasMoreActivities
+
+                var cut = RenderComponent<TestableHistoryBase>();
+                cut.Instance.HasMoreActivities = true;
+                cut.Instance.IsLoadingMore = false;
+
+                // Clear the current activities to start fresh
+                cut.Instance.CurrentActivities.Clear();
+                var initialCount = cut.Instance.CurrentActivities.Count;
+
+                // Act
+                await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
+
+                // Assert
+                Assert.Equal(initialCount + newActivities.Count, cut.Instance.CurrentActivities.Count);
+                Assert.False(cut.Instance.IsLoadingMore);
+            }
+
+            [Fact]
+            public async Task OnSentinelIntersecting_SetsHasMoreActivitiesToFalse_WhenAllLoaded()
+            {
+                // Arrange
+                var newActivities = new List<ActivityRecord> { new ActivityRecord() };
+                _mockActivityService.Setup(x => x.GetActivitiesPagedAsync(
+                    It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>()))
+                    .ReturnsAsync(newActivities);
+                _mockActivityService.Setup(x => x.GetActivityCountAsync(
+                    It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+                    .ReturnsAsync(1); // Same as current count to set HasMoreActivities to false
+
+                var cut = RenderComponent<TestableHistoryBase>();
+                cut.Instance.HasMoreActivities = true;
+                cut.Instance.IsLoadingMore = false;
+                cut.Instance.CurrentActivities.Clear(); // Start with empty list
+
+                // Act
+                await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
+
+                // Assert
+                Assert.False(cut.Instance.HasMoreActivities);
+            }
+
+            [Fact]
+            public async Task OnSentinelIntersecting_WhenExceptionOccurs_LogsErrorAndAddsDelay()
+            {
+                // Arrange
+                var cut = RenderComponent<TestableHistoryBase>();
+                cut.Instance.HasMoreActivities = true;
+                cut.Instance.IsLoadingMore = false;
+
+                _mockActivityService.Setup(x => x.GetActivitiesPagedAsync(
+                    It.IsAny<DateTime>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>()))
+                    .ThrowsAsync(new InvalidOperationException("Test exception"));
+
+                // Act
+                await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
+
+                // Assert
+                _mockLogger.Verify(
+                    x => x.Log(
+                        LogLevel.Error,
+                        It.IsAny<EventId>(),
+                        It.IsAny<It.IsAnyType>(),
+                        It.IsAny<Exception>(),
+                        It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                    Times.Once);
+
+                // We can't reliably test the exact delay in unit tests due to timing variations,
+                // but we can verify that the error was logged and the method completed
+                Assert.True(true);
+            }
+
+            [Fact]
+            public async Task OnSentinelIntersecting_ResetsCallbackInProgress_WhenExceptionOccurs()
+            {
+                // Arrange
+                var cut = RenderComponent<TestableHistoryBase>();
+                cut.Instance.HasMoreActivities = true;
+                cut.Instance.IsLoadingMore = false;
+
+                _mockActivityService.Setup(x => x.GetActivitiesPagedAsync(
+                    It.IsAny<DateTime>(),
+                    It.IsAny<DateTime>(),
+                    It.IsAny<int>(),
+                    It.IsAny<int>()))
+                    .ThrowsAsync(new InvalidOperationException("Test exception"));
+
+                // Act
+                await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
+
+                // Assert - Use reflection to access private _isCallbackInProgress field
+                var isCallbackInProgressField = typeof(HistoryBase).GetField("_isCallbackInProgress",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                Assert.NotNull(isCallbackInProgressField);
+                var isCallbackInProgress = (bool?)isCallbackInProgressField.GetValue(cut.Instance);
+                Assert.False(isCallbackInProgress ?? false);
+            }
+
+            [Fact]
+            public async Task OnSentinelIntersecting_DoesNotProceed_WhenLoadingMore()
+            {
+                // Arrange
+                var cut = RenderComponent<TestableHistoryBase>();
+                cut.Instance.HasMoreActivities = true;
+                cut.Instance.IsLoadingMore = true;
+                var initialCallCount = _mockActivityService.Invocations.Count;
+
+                // Act
+                await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
+
+                // Assert
+                Assert.Equal(initialCallCount, _mockActivityService.Invocations.Count);
+            }
         }
 
-        [Fact]
-        public async Task OnSentinelIntersecting_BailsOut_WhenIsDisposed()
-        {
-            // Arrange
-            var cut = RenderComponent<TestableHistoryBase>();
-            await cut.Instance.DisposeAsync();
-            var initialCallCount = _mockActivityService.Invocations.Count;
-
-            // Act
-            await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
-
-            // Assert
-            Assert.Equal(initialCallCount, _mockActivityService.Invocations.Count);
-        }
-
-        [Fact]
-        public async Task OnSentinelIntersecting_BailsOut_WhenCallbackInProgress()
-        {
-            // Arrange
-            var cut = RenderComponent<TestableHistoryBase>();
-            var isCallbackInProgressField = typeof(HistoryBase).GetField("_isCallbackInProgress",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            isCallbackInProgressField?.SetValue(cut.Instance, true);
-            var initialCallCount = _mockActivityService.Invocations.Count;
-
-            // Act
-            await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
-
-            // Assert
-            Assert.Equal(initialCallCount, _mockActivityService.Invocations.Count);
-        }
-
-        [Fact]
-        public async Task OnSentinelIntersecting_BailsOut_WhenDotNetRefIsNull()
-        {
-            // Arrange
-            var cut = RenderComponent<TestableHistoryBase>();
-            var dotNetRefField = typeof(HistoryBase).GetField("_dotNetRef",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            dotNetRefField?.SetValue(cut.Instance, null);
-            var initialCallCount = _mockActivityService.Invocations.Count;
-
-            // Act
-            await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
-
-            // Assert
-            Assert.Equal(initialCallCount, _mockActivityService.Invocations.Count);
-        }
-
-        [Fact]
-        public async Task OnSentinelIntersecting_SuccessfullyLoadsMoreActivities()
-        {
-            // Arrange
-            var newActivities = new List<ActivityRecord> { new ActivityRecord() };
-            _mockActivityService.Setup(x => x.GetActivitiesPagedAsync(
-                It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>()))
-                .ReturnsAsync(newActivities);
-            _mockActivityService.Setup(x => x.GetActivityCountAsync(
-                It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-                .ReturnsAsync(25); // More than current count to trigger HasMoreActivities
-
-            var cut = RenderComponent<TestableHistoryBase>();
-            cut.Instance.HasMoreActivities = true;
-            cut.Instance.IsLoadingMore = false;
-            
-            // Clear the current activities to start fresh
-            cut.Instance.CurrentActivities.Clear();
-            var initialCount = cut.Instance.CurrentActivities.Count;
-
-            // Act
-            await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
-
-            // Assert
-            Assert.Equal(initialCount + newActivities.Count, cut.Instance.CurrentActivities.Count);
-            Assert.False(cut.Instance.IsLoadingMore);
-        }
-
-        [Fact]
-        public async Task OnSentinelIntersecting_SetsHasMoreActivitiesToFalse_WhenAllLoaded()
-        {
-            // Arrange
-            var newActivities = new List<ActivityRecord> { new ActivityRecord() };
-            _mockActivityService.Setup(x => x.GetActivitiesPagedAsync(
-                It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>()))
-                .ReturnsAsync(newActivities);
-            _mockActivityService.Setup(x => x.GetActivityCountAsync(
-                It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-                .ReturnsAsync(1); // Same as current count to set HasMoreActivities to false
-
-            var cut = RenderComponent<TestableHistoryBase>();
-            cut.Instance.HasMoreActivities = true;
-            cut.Instance.IsLoadingMore = false;
-            cut.Instance.CurrentActivities.Clear(); // Start with empty list
-
-            // Act
-            await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
-
-            // Assert
-            Assert.False(cut.Instance.HasMoreActivities);
-        }
-
-        [Fact]
-        public async Task OnSentinelIntersecting_WhenExceptionOccurs_LogsErrorAndAddsDelay()
-        {
-            // Arrange
-            var cut = RenderComponent<TestableHistoryBase>();
-            cut.Instance.HasMoreActivities = true;
-            cut.Instance.IsLoadingMore = false;
-            
-            _mockActivityService.Setup(x => x.GetActivitiesPagedAsync(
-                It.IsAny<DateTime>(),
-                It.IsAny<DateTime>(),
-                It.IsAny<int>(),
-                It.IsAny<int>()))
-                .ThrowsAsync(new InvalidOperationException("Test exception"));
-
-            // Act
-            await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
-
-            // Assert
-            _mockLogger.Verify(
-                x => x.Log(
-                    LogLevel.Error,
-                    It.IsAny<EventId>(),
-                    It.IsAny<It.IsAnyType>(),
-                    It.IsAny<Exception>(),
-                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
-
-            // We can't reliably test the exact delay in unit tests due to timing variations,
-            // but we can verify that the error was logged and the method completed
-            Assert.True(true);
-        }
-
-        [Fact]
-        public async Task OnSentinelIntersecting_ResetsCallbackInProgress_WhenExceptionOccurs()
-        {
-            // Arrange
-            var cut = RenderComponent<TestableHistoryBase>();
-            cut.Instance.HasMoreActivities = true;
-            cut.Instance.IsLoadingMore = false;
-            
-            _mockActivityService.Setup(x => x.GetActivitiesPagedAsync(
-                It.IsAny<DateTime>(),
-                It.IsAny<DateTime>(),
-                It.IsAny<int>(),
-                It.IsAny<int>()))
-                .ThrowsAsync(new InvalidOperationException("Test exception"));
-
-            // Act
-            await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
-
-            // Assert - Use reflection to access private _isCallbackInProgress field
-            var isCallbackInProgressField = typeof(HistoryBase).GetField("_isCallbackInProgress",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            Assert.NotNull(isCallbackInProgressField);
-            var isCallbackInProgress = (bool?)isCallbackInProgressField.GetValue(cut.Instance);
-            Assert.False(isCallbackInProgress ?? false);
-        }
-
-        [Fact]
-        public async Task OnSentinelIntersecting_DoesNotProceed_WhenLoadingMore()
-        {
-            // Arrange
-            var cut = RenderComponent<TestableHistoryBase>();
-            cut.Instance.HasMoreActivities = true;
-            cut.Instance.IsLoadingMore = true;
-            var initialCallCount = _mockActivityService.Invocations.Count;
-
-            // Act
-            await cut.InvokeAsync(async () => await cut.Instance.OnSentinelIntersecting());
-
-            // Assert
-            Assert.Equal(initialCallCount, _mockActivityService.Invocations.Count);
-        }
-    }
-    
         [Trait("Category", "Page")]
         public class DisposeAsyncAdditionalTests : HistoryBaseTests
         {
@@ -1725,36 +1725,36 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<string>(),
                         It.IsAny<int>()))
                     .ReturnsAsync(true);
-    
+
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
-    
+
                 // Set up the observer
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-    
+
                 // Act
                 await cut.Instance.DisposeAsync();
-    
+
                 // Assert
                 _mockInfiniteScrollInterop.Verify(
                     x => x.DestroyObserverAsync(It.IsAny<string>()),
                     Times.Once);
                 _mockActivityService.VerifyRemove(x => x.OnActivityChanged -= It.IsAny<Action>(), Times.Once);
             }
-    
+
             [Fact]
             public async Task DisposeAsync_SafeToCallMultipleTimes()
             {
                 // Arrange
                 var cut = RenderComponent<TestableHistoryBase>();
-    
+
                 // Act & Assert - Multiple disposes should not throw
                 await cut.Instance.DisposeAsync();
                 await cut.Instance.DisposeAsync();
                 await cut.Instance.DisposeAsync();
                 Assert.True(true);
             }
-    
+
             [Fact]
             public async Task DisposeAsync_WhenDotNetRefIsNull_DoesNotThrow()
             {
@@ -1763,12 +1763,12 @@ public partial class HistoryBaseTests : TestContext
                 var dotNetRefField = typeof(HistoryBase).GetField("_dotNetRef",
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 dotNetRefField?.SetValue(cut.Instance, null);
-    
+
                 // Act & Assert - Should not throw
                 await cut.Instance.DisposeAsync();
                 Assert.True(true);
             }
-    
+
             [Fact]
             public async Task DisposeAsync_WhenDestroyObserverFails_LogsWarningAndAttemptsDestroyAll()
             {
@@ -1786,16 +1786,16 @@ public partial class HistoryBaseTests : TestContext
                     .ThrowsAsync(new InvalidOperationException("Destroy failed"));
                 _mockInfiniteScrollInterop.Setup(x => x.DestroyAllObserversAsync())
                     .Returns(Task.CompletedTask);
-    
+
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
-    
+
                 // Set up the observer
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-    
+
                 // Act
                 await cut.Instance.DisposeAsync();
-    
+
                 // Assert
                 _mockInfiniteScrollInterop.Verify(
                     x => x.DestroyObserverAsync(It.IsAny<string>()),
@@ -1812,7 +1812,7 @@ public partial class HistoryBaseTests : TestContext
                         It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                     Times.Once);
             }
-    
+
             [Fact]
             public async Task DisposeAsync_WhenBothDestroyMethodsFail_LogsWarningsAndContinues()
             {
@@ -1830,16 +1830,16 @@ public partial class HistoryBaseTests : TestContext
                     .ThrowsAsync(new InvalidOperationException("Destroy failed"));
                 _mockInfiniteScrollInterop.Setup(x => x.DestroyAllObserversAsync())
                     .ThrowsAsync(new InvalidOperationException("Destroy all failed"));
-    
+
                 var cut = RenderComponent<TestableHistoryBase>();
                 cut.Instance.HasMoreActivities = true;
-    
+
                 // Set up the observer
                 await cut.InvokeAsync(async () => await cut.Instance.OnAfterRenderAsyncProtected(true));
-    
+
                 // Act
                 await cut.Instance.DisposeAsync();
-    
+
                 // Assert
                 _mockLogger.Verify(
                     x => x.Log(

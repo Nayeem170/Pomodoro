@@ -16,10 +16,10 @@ public partial class NotificationServiceTests
             // Arrange
             SetupJsInvokeAsync(Constants.NotificationJsFunctions.RequestPermission, Constants.NotificationPermissions.Granted);
             var service = CreateService();
-            
+
             // Act
             var result = await service.RequestPermissionAsync();
-            
+
             // Assert
             Assert.True(result);
             Assert.True(service.IsNotificationPermitted);
@@ -31,10 +31,10 @@ public partial class NotificationServiceTests
             // Arrange
             SetupJsInvokeAsync(Constants.NotificationJsFunctions.RequestPermission, "denied");
             var service = CreateService();
-            
+
             // Act
             var result = await service.RequestPermissionAsync();
-            
+
             // Assert
             Assert.False(result);
             Assert.False(service.IsNotificationPermitted);
@@ -46,10 +46,10 @@ public partial class NotificationServiceTests
             // Arrange
             SetupJsInvokeAsync(Constants.NotificationJsFunctions.RequestPermission, "default");
             var service = CreateService();
-            
+
             // Act
             var result = await service.RequestPermissionAsync();
-            
+
             // Assert
             Assert.False(result);
             Assert.False(service.IsNotificationPermitted);
@@ -61,10 +61,10 @@ public partial class NotificationServiceTests
             // Arrange
             SetupJsInvokeAsyncException<string>(Constants.NotificationJsFunctions.RequestPermission, new InvalidOperationException("JS error"));
             var service = CreateService();
-            
+
             // Act
             var result = await service.RequestPermissionAsync();
-            
+
             // Assert
             Assert.False(result);
             Assert.False(service.IsNotificationPermitted);
@@ -76,10 +76,10 @@ public partial class NotificationServiceTests
             // Arrange
             SetupJsInvokeAsync(Constants.NotificationJsFunctions.RequestPermission, Constants.NotificationPermissions.Granted);
             var service = CreateService();
-            
+
             // Act
             await service.RefreshPermissionStateAsync();
-            
+
             // Assert
             Assert.True(service.IsNotificationPermitted);
         }
@@ -90,10 +90,10 @@ public partial class NotificationServiceTests
             // Arrange
             SetupJsInvokeAsync(Constants.NotificationJsFunctions.RequestPermission, "denied");
             var service = CreateService();
-            
+
             // Act
             await service.RefreshPermissionStateAsync();
-            
+
             // Assert
             Assert.False(service.IsNotificationPermitted);
         }
@@ -104,10 +104,10 @@ public partial class NotificationServiceTests
             // Arrange
             SetupJsInvokeAsyncException<string>(Constants.NotificationJsFunctions.RequestPermission, new InvalidOperationException("JS error"));
             var service = CreateService();
-            
+
             // Act
             await service.RefreshPermissionStateAsync();
-            
+
             // Assert - Permission should remain false (default)
             Assert.False(service.IsNotificationPermitted);
         }

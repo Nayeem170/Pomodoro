@@ -24,6 +24,7 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - run: dotnet restore Pomodoro.sln
+      - run: dotnet format Pomodoro.sln --verify-no-changes
       - run: dotnet build Pomodoro.sln --configuration Release --no-restore
       - run: dotnet test Pomodoro.sln --configuration Release --no-restore --verbosity normal
 

@@ -25,7 +25,7 @@ public interface IActivityService
     /// Subscribe to this event to refresh UI components that display activity history.
     /// </remarks>
     event Action? OnActivityChanged;
-    
+
     /// <summary>
     /// Gets all activities recorded today (local time).
     /// </summary>
@@ -35,7 +35,7 @@ public interface IActivityService
     /// in the user's local time zone.
     /// </remarks>
     List<ActivityRecord> GetTodayActivities();
-    
+
     /// <summary>
     /// Gets all activities from the cache.
     /// </summary>
@@ -45,14 +45,14 @@ public interface IActivityService
     /// older activities that have been evicted due to cache size limits.
     /// </remarks>
     List<ActivityRecord> GetAllActivities();
-    
+
     /// <summary>
     /// Gets all activities for a specific date.
     /// </summary>
     /// <param name="date">The date to filter activities by (in local time).</param>
     /// <returns>A list of <see cref="ActivityRecord"/> instances for the specified date.</returns>
     List<ActivityRecord> GetActivitiesForDate(DateTime date);
-    
+
     /// <summary>
     /// Gets activities within a date range with pagination support.
     /// </summary>
@@ -66,7 +66,7 @@ public interface IActivityService
     /// Results are ordered by completion date in descending order (newest first).
     /// </remarks>
     Task<List<ActivityRecord>> GetActivitiesPagedAsync(DateTime startDate, DateTime endDate, int skip = 0, int take = 20);
-    
+
     /// <summary>
     /// Gets the count of activities within an optional date range.
     /// </summary>
@@ -74,7 +74,7 @@ public interface IActivityService
     /// <param name="endDate">Optional end date (inclusive). If null, counts to the end.</param>
     /// <returns>A task that resolves to the count of matching activities.</returns>
     Task<int> GetActivityCountAsync(DateTime? startDate = null, DateTime? endDate = null);
-    
+
     /// <summary>
     /// Gets daily Pomodoro completion counts for a date range.
     /// </summary>
@@ -85,7 +85,7 @@ public interface IActivityService
     /// Only counts completed Pomodoro sessions, not breaks or other activities.
     /// </remarks>
     Dictionary<DateTime, int> GetDailyPomodoroCounts(DateTime from, DateTime to);
-    
+
     /// <summary>
     /// Gets daily focus minutes for a date range.
     /// </summary>
@@ -96,7 +96,7 @@ public interface IActivityService
     /// Focus minutes represent actual work time from completed Pomodoro sessions.
     /// </remarks>
     Dictionary<DateTime, int> GetDailyFocusMinutes(DateTime from, DateTime to);
-    
+
     /// <summary>
     /// Gets Pomodoro counts grouped by task name for a date range.
     /// </summary>
@@ -104,7 +104,7 @@ public interface IActivityService
     /// <param name="to">End date of the range.</param>
     /// <returns>A dictionary mapping task names to Pomodoro counts.</returns>
     Dictionary<string, int> GetTaskPomodoroCounts(DateTime from, DateTime to);
-    
+
     /// <summary>
     /// Gets time distribution data for a specific date.
     /// </summary>
@@ -115,7 +115,7 @@ public interface IActivityService
     /// Useful for displaying pie charts or time breakdown visualizations.
     /// </remarks>
     Dictionary<string, int> GetTimeDistribution(DateTime date);
-    
+
     /// <summary>
     /// Gets daily break minutes for a date range (in local time).
     /// </summary>
@@ -126,7 +126,7 @@ public interface IActivityService
     /// Returns total minutes of both short and long breaks per day.
     /// </remarks>
     Dictionary<DateTime, int> GetDailyBreakMinutes(DateTime from, DateTime to);
-    
+
     /// <summary>
     /// Adds a new activity record to the history.
     /// </summary>
@@ -137,7 +137,7 @@ public interface IActivityService
     /// Triggers the <see cref="OnActivityChanged"/> event.
     /// </remarks>
     Task AddActivityAsync(ActivityRecord activity);
-    
+
     /// <summary>
     /// Clears all activity history from both cache and storage.
     /// </summary>
@@ -147,7 +147,7 @@ public interface IActivityService
     /// Triggers the <see cref="OnActivityChanged"/> event.
     /// </remarks>
     Task ClearAllActivitiesAsync();
-    
+
     /// <summary>
     /// Initializes the activity service by loading cached activities from storage.
     /// </summary>
@@ -157,7 +157,7 @@ public interface IActivityService
     /// the in-memory cache from IndexedDB.
     /// </remarks>
     Task InitializeAsync();
-    
+
     /// <summary>
     /// Reloads all activity data from storage, clearing and rebuilding the cache.
     /// </summary>

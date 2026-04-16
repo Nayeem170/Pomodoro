@@ -15,12 +15,12 @@ public static partial class Constants
         public const string BreakCompleteTitle = "Break Complete!";
         public const string LongBreakCompleteTitle = "Long Break Complete!";
         public const string SessionCompleteTitle = "Session Complete!";
-        
+
         // Consent Modal Messages
         public const string PomodoroCompleteMessage = "Great work! What would you like to do next?";
         public const string BreakCompleteMessage = "Ready to get back to work?";
         public const string SessionCompleteMessage = "What would you like to do next?";
-        
+
         // Log Messages
         public const string ServiceInitializationFailed = "Service initialization failed. The app will continue with limited functionality.";
         public const string TimerStartFailed = "Timer start failed, retrying after delay";
@@ -30,11 +30,11 @@ public static partial class Constants
         public const string TimerHandleCompleteError = "Error handling timer complete";
         public const string TimerCompletionHandlerError = "Error in timer completion handler";
         public const string AudioUnlockFailed = "Audio context unlock failed - this is expected on some browsers";
-        
+
         // Repository log messages
         public const string LogFailedToSaveActivity = "Failed to save activity {ActivityId}";
         public const string LogFailedToSaveTask = "Failed to save task {TaskId}";
-        
+
         // PipTimer Log Messages
         public const string LogPipInitialized = "Initialized. Supported: {IsSupported}";
         public const string LogPipInitializationFailed = "Initialization failed";
@@ -48,7 +48,7 @@ public static partial class Constants
         public const string LogHandlerErrorFormat = "Error in {HandlerName}";
         public const string LogTimerCompleteError = "Error in OnTimerComplete";
         public const string ErrorInOnTimerComplete = "Error in OnTimerComplete";
-        
+
         // ConsentService Log Messages
         public const string LogHandleTimerCompleteError = "HandleTimerComplete error";
         public const string LogConsentHandleCompleteError = "Error in HandleTimerComplete";
@@ -58,19 +58,19 @@ public static partial class Constants
         public const string LogFailedToResolveTaskService = "Failed to resolve ITaskService from service provider";
         public const string LogFailedToResolveNotificationService = "Failed to resolve INotificationService from service provider";
         public const string LogErrorCaughtByBoundary = "Unhandled error caught by ErrorBoundary";
-        
+
         // History page log messages
         public const string LogHistoryLoadDataFormat = "LoadDataAsync: SelectedDate={SelectedDate}, Today={Today}, IsToday={IsToday}";
         public const string LogHistoryStatsFormat = "Activities count: {Count}, Stats: {PomodoroCount} pomodoros, {FocusMinutes} min";
         public const string ErrorUpdatingTimeDistributionChart = "Error updating time distribution chart";
         public const string ErrorLoadingMoreActivities = "Error loading more activities";
-        
+
         // ActivityService log messages
         public const string LogActivitiesLoadedFormat = "Loaded {Count} activities from IndexedDB (cache limit: {MaxCacheSize})";
         public const string LogActivityDebugFormat = "Activity: {Type}, CompletedAt={CompletedAt}, TaskName={TaskName}";
         public const string LogGetTodayActivitiesFormat = "GetTodayActivities: Today={Today}, CacheCount={CacheCount}, ResultCount={ResultCount}";
         public const string LogAddedActivityFormat = "Added activity: {Type}, CompletedAt={CompletedAt}, CacheCount={CacheCount}";
-        
+
         // IndexedDbService Log Messages
         public const string LogInitializedSuccessfully = "Initialized successfully";
         public const string LogFailedToInitialize = "Failed to initialize";
@@ -108,24 +108,24 @@ public static partial class Constants
         public const string ErrorInUpdateState = "Error in UpdateState";
         public const string ErrorInDispose = "Error in Dispose";
         public const string SelectTaskBeforePomodoro = "Please select a task before starting a pomodoro.";
-        
+
         // NotificationService Log Messages
         public const string ErrorInitializingNotificationService = "Failed to initialize notification service";
         public const string ErrorRequestingNotificationPermission = "Failed to request notification permission";
         public const string ErrorShowingNotification = "Failed to show notification";
         public const string ErrorPlayingTimerCompleteSound = "Failed to play timer complete sound";
         public const string ErrorPlayingBreakCompleteSound = "Failed to play break complete sound";
-        
+
         // Error Message Formatting
         public const string ErrorSeparator = ": ";
         public const string ErrorFormat = "{0}" + ErrorSeparator + "{1}";
-        
+
         // Notification Messages
         public const string PomodoroNotificationTitle = "Pomodoro Complete!";
         public const string PomodoroNotificationMessage = "Time for a break. Choose your next session.";
         public const string BreakNotificationTitle = "Break Complete!";
         public const string BreakNotificationMessage = "Ready to focus again? Start your next Pomodoro.";
-        
+
         // Export/Import Log Messages
         public const string LogExportCsvFormat = "Exported {Count} activities to CSV from {StartDate} to {EndDate}";
         public const string LogExportCsvFailed = "Failed to export activities to CSV";
@@ -137,7 +137,7 @@ public static partial class Constants
         public const string LogImportJsonSuccess = "Imported {Count} records from backup dated {ExportDate}";
         public const string LogClearDataSuccess = "Cleared {ActivityCount} activities and {TaskCount} tasks";
         public const string LogClearDataFailed = "Failed to clear all data";
-        
+
         // Import Error Messages (User-facing)
         public const string ImportErrorEmptyFile = "The import file is empty. Please select a valid backup file.";
         public const string ImportErrorInvalidJson = "Invalid JSON format. Please select a valid backup file.";

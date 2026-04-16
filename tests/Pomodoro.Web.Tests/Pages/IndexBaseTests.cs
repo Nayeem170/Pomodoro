@@ -353,7 +353,7 @@ public class IndexBaseTests : TestHelper
         // Component should still render without throwing
         cut.Should().NotBeNull();
         cut.Markup.Should().NotBeNullOrEmpty();
-        
+
         // Should attempt to initialize the failing service
         NotificationServiceMock.Verify(x => x.InitializeAsync(), Times.Once);
     }

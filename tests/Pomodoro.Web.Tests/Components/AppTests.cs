@@ -25,7 +25,7 @@ namespace Pomodoro.Web.Tests
         {
             // Register AppState - required for Index page
             Services.AddSingleton(new AppState());
-            
+
             // Register mock services
             Services.AddSingleton<ITimerService>(new Mock<ITimerService>().Object);
             Services.AddSingleton<ISettingsRepository>(new Mock<ISettingsRepository>().Object);
@@ -46,177 +46,177 @@ namespace Pomodoro.Web.Tests
             Services.AddSingleton<IIndexedDbService>(new Mock<IIndexedDbService>().Object);
             Services.AddSingleton<IJSInteropService>(new Mock<IJSInteropService>().Object);
             Services.AddSingleton<IInfiniteScrollInterop>(new Mock<IInfiniteScrollInterop>().Object);
-            
+
             // Register concrete services (not mocked as they have no interface)
             Services.AddSingleton<LayoutPresenterService>();
             Services.AddSingleton<IndexPagePresenterService>();
             Services.AddSingleton<TimerThemeFormatter>();
-            
+
             // Register logger mocks
             Services.AddSingleton(new Mock<ILogger<App>>().Object);
             Services.AddSingleton(new Mock<ILogger<IndexPagePresenterService>>().Object);
-            
+
             JSInterop.Mode = JSRuntimeMode.Loose;
             JSInterop.SetupVoid("swipeNavigation.init", _ => true);
             JSInterop.SetupVoid("swipeNavigation.dispose");
         }
-         
+
         #region Basic Rendering Tests
-         
+
         [Fact]
         public void Render_ShouldRenderRouter()
         {
             // Arrange & Act
             var cut = RenderComponent<App>();
-             
+
             // Assert
             Assert.NotNull(cut);
         }
-         
+
         [Fact]
         public void Render_ShouldRenderErrorBoundary()
         {
             // Arrange & Act
             var cut = RenderComponent<App>();
-             
+
             // Assert
             Assert.NotNull(cut.FindComponents<ErrorBoundary>());
         }
-         
+
         [Fact]
         public void Render_ShouldRenderNotFoundContent()
         {
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
             var component = RenderComponent<App>();
-             
+
             // Act - Navigate to a non-existent route
             navigationManager.NavigateTo("/non-existent-route");
-             
+
             // Assert
             Assert.NotNull(component);
         }
-         
+
         #endregion
-         
+
         #region Routing Tests
-         
+
         [Fact]
         public void Router_ShouldHandleValidRoutes()
         {
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
             var component = RenderComponent<App>();
-             
+
             // Act - Navigate to valid routes
             navigationManager.NavigateTo("/");
             navigationManager.NavigateTo("/about");
             navigationManager.NavigateTo("/history");
-             
+
             // Assert
             Assert.NotNull(component);
         }
-         
+
         [Fact]
         public void Router_ShouldHandleInvalidRoutes()
         {
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
             var component = RenderComponent<App>();
-             
+
             // Act - Navigate to invalid routes
             navigationManager.NavigateTo("/invalid-route-1");
             navigationManager.NavigateTo("/invalid-route-2");
-             
+
             // Assert
             Assert.NotNull(component);
         }
-         
+
         #endregion
-         
+
         #region ErrorBoundary Tests
-         
+
         [Fact]
         public void ErrorBoundary_ShouldRenderNotFoundContent()
         {
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
             var component = RenderComponent<App>();
-             
+
             // Act - Navigate to trigger NotFound
             navigationManager.NavigateTo("/this-route-does-not-exist");
-             
+
             // Assert
             Assert.NotNull(component);
         }
-         
+
         [Fact]
         public void ErrorBoundary_ShouldDisplayErrorMessage()
         {
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
             var component = RenderComponent<App>();
-             
+
             // Act - Navigate to trigger NotFound
             navigationManager.NavigateTo("/another-invalid-route");
-             
+
             // Assert
             Assert.NotNull(component);
         }
-         
+
         #endregion
-         
+
         #region NotFound Content Tests
-         
+
         [Fact]
         public void NotFound_ShouldDisplayCorrectTitle()
         {
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
             var component = RenderComponent<App>();
-             
+
             // Act - Navigate to trigger NotFound
             navigationManager.NavigateTo("/trigger-not-found-title-test");
-             
+
             // Assert
             Assert.NotNull(component);
         }
-         
+
         [Fact]
         public void NotFound_ShouldDisplayCorrectMessage()
         {
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
             var component = RenderComponent<App>();
-             
+
             // Act - Navigate to trigger NotFound
             navigationManager.NavigateTo("/trigger-not-found-message-test");
-             
+
             // Assert
             Assert.NotNull(component);
         }
-         
+
         [Fact]
         public void NotFound_ShouldUseConstants()
         {
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
             var component = RenderComponent<App>();
-             
+
             // Act - Navigate to trigger NotFound
             navigationManager.NavigateTo("/verify-constants-usage");
-             
+
             // Assert
             var pageTitle = Constants.Routing.NotFoundPageTitle;
             var errorMessage = Constants.Routing.NotFoundMessage;
-             
+
             // These should match exactly what's in App.razor file
             Assert.Equal("Not found", pageTitle);
             Assert.Equal("Sorry, there's nothing at this address.", errorMessage);
-             
+
             // Verify component is still valid
             Assert.NotNull(component);
-             
+
             // Verify navigation occurred
             Assert.Contains("/verify-constants-usage", navigationManager.Uri);
         }
@@ -312,14 +312,14 @@ namespace Pomodoro.Web.Tests
         {
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
-            
+
             // Act - Navigate to a non-existent route to trigger NotFound
             navigationManager.NavigateTo("/non-existent-page-for-coverage-test");
             var cut = RenderComponent<App>();
 
             // Assert - Verify the component renders without error
             Assert.NotNull(cut);
-            
+
             // Verify we're on the not-found route
             Assert.Contains("/non-existent-page-for-coverage-test", navigationManager.Uri);
         }
@@ -329,14 +329,14 @@ namespace Pomodoro.Web.Tests
         {
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
-            
+
             // Act - Navigate to trigger NotFound
             navigationManager.NavigateTo("/test-not-found-rendering");
             var cut = RenderComponent<App>();
 
             // Assert - Component should render successfully
             Assert.NotNull(cut);
-            
+
             // Verify navigation occurred
             Assert.Contains("/test-not-found-rendering", navigationManager.Uri);
         }
@@ -346,7 +346,7 @@ namespace Pomodoro.Web.Tests
         {
             // Arrange
             var navigationManager = Services.GetRequiredService<NavigationManager>();
-            
+
             // Act - Navigate to trigger NotFound
             navigationManager.NavigateTo("/verify-not-found-constants");
             RenderComponent<App>();
@@ -372,7 +372,7 @@ namespace Pomodoro.Web.Tests
 
             // Act - Navigate to NotFound
             navigationManager.NavigateTo("/test-combined-coverage");
-            
+
             // Call RecoverError
             appInstance.RecoverError();
 

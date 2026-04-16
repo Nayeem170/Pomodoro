@@ -17,14 +17,14 @@ public partial class TaskServiceTests
     protected readonly Mock<ITaskRepository> MockTaskRepository;
     protected readonly Mock<IIndexedDbService> MockIndexedDb;
     protected readonly AppState AppState;
-    
+
     public TaskServiceTests()
     {
         MockTaskRepository = new Mock<ITaskRepository>();
         MockIndexedDb = new Mock<IIndexedDbService>();
         AppState = new AppState();
     }
-    
+
     /// <summary>
     /// Creates a TaskService instance with mocked dependencies.
     /// </summary>
@@ -36,7 +36,7 @@ public partial class TaskServiceTests
             AppState
         );
     }
-    
+
     /// <summary>
     /// Creates a sample task for testing.
     /// </summary>
@@ -52,7 +52,7 @@ public partial class TaskServiceTests
             PomodoroCount = 0
         };
     }
-    
+
     /// <summary>
     /// Adds a task directly to AppState for testing.
     /// </summary>

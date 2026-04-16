@@ -50,7 +50,7 @@ public partial class PipTimerServiceTests
     {
         // IsPaused is true when timer was started but is not running
         var isPaused = isStarted && !isRunning;
-        
+
         MockTimerService.SetupGet(x => x.IsRunning).Returns(isRunning);
         MockTimerService.SetupGet(x => x.IsStarted).Returns(isStarted);
         MockTimerService.SetupGet(x => x.IsPaused).Returns(isPaused);

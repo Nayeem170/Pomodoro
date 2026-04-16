@@ -213,13 +213,13 @@ public class ApplicationStartupServiceTests
             var mockLogger = new Mock<ILogger<ApplicationStartupService>>();
             var service = new TestableApplicationStartupService(mockLogger.Object);
             var services = new ServiceCollection();
-            
+
             var mockServiceInitialization = new Mock<IServiceInitializationService>();
             var mockEventWiring = new Mock<IEventWiringService>();
-            
+
             services.AddScoped(_ => mockServiceInitialization.Object);
             services.AddScoped(_ => mockEventWiring.Object);
-            
+
             var provider = services.BuildServiceProvider();
 
             // Act
@@ -237,14 +237,14 @@ public class ApplicationStartupServiceTests
             var mockLogger = new Mock<ILogger<ApplicationStartupService>>();
             var service = new TestableApplicationStartupService(mockLogger.Object);
             var services = new ServiceCollection();
-            
+
             var mockServiceInitialization = new Mock<IServiceInitializationService>();
             mockServiceInitialization
                 .Setup(s => s.InitializeServicesAsync(It.IsAny<IServiceProvider>()))
                 .ThrowsAsync(new Exception("Test exception"));
-            
+
             services.AddScoped(_ => mockServiceInitialization.Object);
-            
+
             var provider = services.BuildServiceProvider();
 
             // Act
@@ -268,16 +268,16 @@ public class ApplicationStartupServiceTests
             var mockLogger = new Mock<ILogger<ApplicationStartupService>>();
             var service = new TestableApplicationStartupService(mockLogger.Object);
             var services = new ServiceCollection();
-            
+
             var mockServiceInitialization = new Mock<IServiceInitializationService>();
             var mockEventWiring = new Mock<IEventWiringService>();
             mockEventWiring
                 .Setup(e => e.WireEventSubscribers(It.IsAny<IServiceProvider>()))
                 .Throws(new Exception("Event wiring exception"));
-            
+
             services.AddScoped(_ => mockServiceInitialization.Object);
             services.AddScoped(_ => mockEventWiring.Object);
-            
+
             var provider = services.BuildServiceProvider();
 
             // Act

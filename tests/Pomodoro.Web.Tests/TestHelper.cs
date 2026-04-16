@@ -43,7 +43,7 @@ public abstract class TestHelper : TestContext
     protected ActivityTimelineFormatter ActivityTimelineFormatter { get; private set; }
     protected AppState AppState { get; private set; }
     protected IChartService ChartService { get; private set; }
-    
+
     protected TestHelper()
     {
         // Create mocks for all services
@@ -62,12 +62,12 @@ public abstract class TestHelper : TestContext
         JSRuntimeMock = new Mock<IJSRuntime>();
         InfiniteScrollInteropMock = new Mock<IInfiniteScrollInterop>();
         TodayStatsServiceMock = new Mock<ITodayStatsService>();
-        
+
         // Create mock loggers
         var indexPageLoggerMock = new Mock<ILogger<IndexPagePresenterService>>();
         var historyPageLoggerMock = new Mock<ILogger<HistoryPagePresenterService>>();
         var settingsPageLoggerMock = new Mock<ILogger<SettingsPresenterService>>();
-        
+
         // Create concrete service instances (order matters for dependencies)
         AppState = new AppState();
         HistoryStatsServiceMock = new Mock<HistoryStatsService>();
@@ -84,7 +84,7 @@ public abstract class TestHelper : TestContext
         IndexPagePresenterService = new IndexPagePresenterService(indexPageLoggerMock.Object);
         HistoryPagePresenterService = new HistoryPagePresenterService(historyPageLoggerMock.Object);
         SettingsPresenterService = new SettingsPresenterService(settingsPageLoggerMock.Object);
-        
+
         // Register all mocks as singletons in test context
         Services.AddSingleton(TimerServiceMock.Object);
         Services.AddSingleton(TaskServiceMock.Object);
@@ -114,7 +114,7 @@ public abstract class TestHelper : TestContext
         Services.AddSingleton(IndexPagePresenterService);
         Services.AddSingleton(HistoryPagePresenterService);
         Services.AddSingleton(SettingsPresenterService);
-        
+
         // Register LocalDateTimeService
         var mockLocalDateTimeService = new Mock<ILocalDateTimeService>();
         mockLocalDateTimeService.Setup(x => x.GetLocalDateAsync()).ReturnsAsync(new DateTime(2023, 1, 2));

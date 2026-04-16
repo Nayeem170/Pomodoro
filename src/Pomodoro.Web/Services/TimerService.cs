@@ -23,12 +23,12 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     // ITimerEventPublisher events
     public event Func<TimerCompletedEventArgs, Task>? OnTimerCompleted;
     public event Action? OnTimerStateChanged;
-    
+
     // ITimerService events
     public event Action? OnTick;
     public event Action<SessionType>? OnTimerComplete; // Backward compatibility
     public event Action? OnStateChanged;
-    
+
     // Public properties for UI binding
     public int RemainingSeconds => _appState.CurrentSession?.RemainingSeconds ?? 0;
     public int TickCount { get; private set; } // Used to force UI updates
@@ -63,17 +63,17 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     {
         // Capture the synchronization context for UI updates
         _syncContext = SynchronizationContext.Current;
-        
+
         // Load settings from repository
         var settings = await _settingsRepository.GetAsync();
         if (settings != null)
         {
             _appState.Settings = settings;
         }
-        
+
         // Load daily stats from IndexedDB
         await _dailyStatsService.InitializeTodayStatsAsync();
-        
+
         // Initialize with a default Pomodoro session if none exists
         if (_appState.CurrentSession == null)
         {
@@ -90,16 +90,16 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
                 IsCompleted = false
             };
         }
-        
+
         // Create dotnet reference for JS callbacks
         _dotNetRef = DotNetObjectReference.Create<object>(this);
-        
+
         // Initialize JavaScript constants with user settings for chart time calculations
         await _indexedDb.InitializeJsConstantsAsync(
             _appState.Settings.PomodoroMinutes,
             _appState.Settings.ShortBreakMinutes,
             _appState.Settings.LongBreakMinutes);
-        
+
         NotifyStateChanged();
     }
 
@@ -108,7 +108,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     public void OnTimerTickJs()
     {
         _dailyStatsService.CheckAndResetIfNeeded();
-        
+
         // Use lock to ensure thread-safe access to session state
         // This prevents race conditions if JS callback fires during other state modifications
         lock (_timerTickLock)
@@ -162,7 +162,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     private async Task StartSessionAsync(SessionType sessionType, Guid? taskId = null)
     {
         var durationSeconds = _appState.Settings.GetDurationSeconds(sessionType);
-        
+
         _appState.CurrentSession = new TimerSession
         {
             Id = Guid.NewGuid(),
@@ -175,7 +175,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
             IsCompleted = false,
             WasStarted = true
         };
-        
+
         NotifyStateChanged();
         _dotNetRef ??= DotNetObjectReference.Create<object>(this);
         await _jsTimerInterop.StartAsync(_dotNetRef);
@@ -185,10 +185,10 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     {
         // Stop current timer
         await _jsTimerInterop.StopAsync();
-        
+
         // Get duration for the new session type using helper method
         var durationSeconds = _appState.Settings.GetDurationSeconds(sessionType);
-        
+
         // Create new session (not running, just prepared)
         _appState.CurrentSession = new TimerSession
         {
@@ -201,7 +201,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
             IsRunning = false,
             IsCompleted = false
         };
-        
+
         NotifyStateChanged();
     }
 
@@ -229,21 +229,21 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     public async Task ResetAsync()
     {
         await _jsTimerInterop.StopAsync();
-        
+
         // Reset tick count to prevent potential overflow
         TickCount = 0;
-        
+
         if (_appState.CurrentSession != null)
         {
             // Use helper method to get duration for current session type
             var durationSeconds = _appState.Settings.GetDurationSeconds(_appState.CurrentSession.Type);
-            
+
             _appState.CurrentSession.DurationSeconds = durationSeconds;
             _appState.CurrentSession.RemainingSeconds = durationSeconds;
             _appState.CurrentSession.IsRunning = false;
             _appState.CurrentSession.WasStarted = false;
         }
-        
+
         NotifyStateChanged();
     }
 
@@ -251,7 +251,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     {
         _appState.Settings = settings;
         await SaveSettingsAsync();
-        
+
         // Update current session duration if timer hasn't started yet
         if (_appState.CurrentSession != null && !_appState.CurrentSession.WasStarted)
         {
@@ -259,10 +259,10 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
             _appState.CurrentSession.DurationSeconds = durationSeconds;
             _appState.CurrentSession.RemainingSeconds = durationSeconds;
         }
-        
+
         // Initialize JS constants with new settings for chart time calculations
         await _indexedDb.InitializeJsConstantsAsync(settings.PomodoroMinutes, settings.ShortBreakMinutes, settings.LongBreakMinutes);
-        
+
         NotifyStateChanged();
     }
 
@@ -274,13 +274,13 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     private async Task HandleTimerCompleteAsync()
     {
         await _jsTimerInterop.StopAsync();
-        
+
         var session = _appState.CurrentSession;
         if (session == null) return;
 
         session.IsRunning = false;
         session.IsCompleted = true;
-        
+
         // Reset remaining seconds back to full duration for display
         session.RemainingSeconds = session.DurationSeconds;
 
@@ -317,14 +317,14 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
         // Backward compatibility - also raise old event
         OnTimerComplete?.Invoke(session.Type);
-        
+
         NotifyStateChanged();
-        
+
         // Note: Auto-start is handled by ConsentService which shows a consent modal
         // When auto-start is enabled, the modal appears with a countdown
         // When auto-start is disabled, no modal appears and user manually starts next session
     }
-    
+
     /// <summary>
     /// Safe async wrapper for HandleTimerCompleteAsync to avoid fire-and-forget issues
     /// Uses semaphore to prevent concurrent timer completion handling
@@ -332,13 +332,13 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     private async Task HandleTimerCompleteSafeAsync()
     {
         if (_isDisposed) return;
-        
+
         // Try to acquire lock - if another completion is in progress, skip this one
         if (!await _timerCompleteLock.WaitAsync(0))
         {
             return;
         }
-        
+
         try
         {
             await HandleTimerCompleteAsync();
@@ -352,7 +352,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
             try { _timerCompleteLock.Release(); } catch (ObjectDisposedException) { }
         }
     }
-    
+
     private async Task SaveDailyStatsAsync()
     {
         var stats = new DailyStats

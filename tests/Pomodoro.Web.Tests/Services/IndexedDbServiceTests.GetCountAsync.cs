@@ -23,7 +23,7 @@ public partial class IndexedDbServiceTests
             var service = new IndexedDbService(_mockJsRuntime.Object, _mockLogger.Object);
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => 
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 service.GetCountAsync("testStore"));
         }
 
@@ -33,7 +33,7 @@ public partial class IndexedDbServiceTests
             // Arrange
             await SetupInitialization();
             _mockJsRuntime.Setup(x => x.InvokeAsync<int>(
-                Constants.IndexedDbJsFunctions.GetCount, 
+                Constants.IndexedDbJsFunctions.GetCount,
                 It.IsAny<object[]>()))
                 .ReturnsAsync(42);
 
@@ -43,7 +43,7 @@ public partial class IndexedDbServiceTests
             // Assert
             Assert.Equal(42, result);
             _mockJsRuntime.Verify(x => x.InvokeAsync<int>(
-                Constants.IndexedDbJsFunctions.GetCount, 
+                Constants.IndexedDbJsFunctions.GetCount,
                 It.IsAny<object[]>()), Times.Once);
         }
 
@@ -54,7 +54,7 @@ public partial class IndexedDbServiceTests
             await SetupInitialization();
             var ex = new InvalidOperationException("Test error");
             _mockJsRuntime.Setup(x => x.InvokeAsync<int>(
-                Constants.IndexedDbJsFunctions.GetCount, 
+                Constants.IndexedDbJsFunctions.GetCount,
                 It.IsAny<object[]>()))
                 .ThrowsAsync(ex);
 

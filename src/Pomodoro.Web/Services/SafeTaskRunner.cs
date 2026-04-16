@@ -15,8 +15,8 @@ public static class SafeTaskRunner
     /// <param name="logger">The logger to use for exception logging.</param>
     /// <param name="operationName">A descriptive name for the operation for logging purposes.</param>
     public static void RunAndForget(
-        Func<Task> task, 
-        ILogger logger, 
+        Func<Task> task,
+        ILogger logger,
         string operationName = Constants.SafeTaskOperations.UnknownOperation)
     {
         _ = ExecuteSafelyAsync(task, logger, operationName);
@@ -43,8 +43,8 @@ public static class SafeTaskRunner
     /// <param name="operationName">A descriptive name for the operation for logging purposes.</param>
     /// <param name="onSuccess">Optional callback when the task succeeds.</param>
     public static void RunAndForget<T>(
-        Func<Task<T>> task, 
-        ILogger logger, 
+        Func<Task<T>> task,
+        ILogger logger,
         string operationName = Constants.SafeTaskOperations.UnknownOperation,
         Action<T>? onSuccess = null)
     {

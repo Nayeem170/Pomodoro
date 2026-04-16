@@ -57,7 +57,7 @@ public class TimerSettings
     /// </summary>
     /// <param name="sessionType">The type of session</param>
     /// <returns>Duration in seconds for the session type</returns>
-    public int GetDurationSeconds(SessionType sessionType) => 
+    public int GetDurationSeconds(SessionType sessionType) =>
         GetDurationMinutes(sessionType) * Constants.TimeConversion.SecondsPerMinute;
 
     /// <summary>
@@ -76,7 +76,7 @@ public class TimerSettings
     public bool AutoStartEnabled { get; set; } = true;
 
     private int _autoStartDelaySeconds = Constants.Timer.DefaultAutoStartDelaySeconds;
-    
+
     /// <summary>
     /// Delay in seconds before auto-starting. Clamped to valid range (3-60 seconds).
     /// </summary>

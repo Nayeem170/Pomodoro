@@ -13,10 +13,10 @@ namespace Pomodoro.Web.Pages;
 public partial class IndexBase : ComponentBase, IDisposable
 {
     #region Services (Dependency Injection)
-    
+
     [Inject]
     protected ITaskService TaskService { get; set; } = default!;
-    
+
     [Inject]
     internal ILogger<IndexBase> Logger { get; set; } = default!;
 
@@ -37,23 +37,23 @@ public partial class IndexBase : ComponentBase, IDisposable
 
     [Inject]
     protected AppState AppState { get; set; } = default!;
-    
+
     [Inject]
     protected IJSRuntime JSRuntime { get; set; } = default!;
-    
+
     [Inject]
     protected IKeyboardShortcutService KeyboardShortcutService { get; set; } = default!;
-    
+
     [Inject]
     protected ITodayStatsService TodayStatsService { get; set; } = default!;
-    
+
     [Inject]
     internal IndexPagePresenterService IndexPagePresenterService { get; set; } = default!;
-    
+
     #endregion
 
     #region State
-    
+
     protected bool IsLoading { get; set; } = true;
     protected List<TaskItem> Tasks { get; set; } = new();
     protected Guid? CurrentTaskId { get; set; }
@@ -68,20 +68,20 @@ public partial class IndexBase : ComponentBase, IDisposable
     internal bool ShowKeyboardHelp { get; set; }
     public string? ErrorMessage { get; set; }
     public bool IsPipOpen { get; set; }
-    
+
     private (int TotalFocusMinutes, int PomodoroCount, int TasksWorkedOn)? _cachedTodayStats;
-    
+
     private void InvalidateTodayStatsCache() => _cachedTodayStats = null;
-    
+
     protected int TodayTotalFocusMinutes => GetTodayStats().TotalFocusMinutes;
     protected int TodayPomodoroCount => GetTodayStats().PomodoroCount;
     protected int TodayTasksWorkedOn => GetTodayStats().TasksWorkedOn;
-    
+
     private (int TotalFocusMinutes, int PomodoroCount, int TasksWorkedOn) GetTodayStats()
     {
         return _cachedTodayStats ??= TodayStatsService.GetTodayStats();
     }
-    
+
     #endregion
 
     #region Lifecycle Methods
@@ -92,10 +92,10 @@ public partial class IndexBase : ComponentBase, IDisposable
         {
             // Initialize notification service
             await NotificationService.InitializeAsync();
-            
+
             // Initialize PiP timer service
             await PipTimerService.InitializeAsync();
-            
+
             // Subscribe to service events
             TaskService.OnChange += OnTaskServiceChanged;
             TimerService.OnTimerComplete += OnTimerComplete;
@@ -103,17 +103,17 @@ public partial class IndexBase : ComponentBase, IDisposable
             ConsentService.OnConsentRequired += OnConsentRequired;
             ConsentService.OnCountdownTick += OnConsentCountdownTick;
             ConsentService.OnConsentHandled += OnConsentHandled;
-            
+
             // Subscribe to notification action events
             NotificationService.OnNotificationAction += OnNotificationAction;
-            
+
             // Subscribe to activity changes to refresh today's summary
             ActivityService.OnActivityChanged += OnActivityChanged;
-            
+
             // Subscribe to PiP events
             PipTimerService.OnPipOpened += OnPipOpened;
             PipTimerService.OnPipClosed += OnPipClosed;
-            
+
             // Register keyboard shortcuts with proper error handling
             KeyboardShortcutService.RegisterShortcut("space", () =>
             {
@@ -137,7 +137,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                     Constants.SafeTaskOperations.KeyboardShortcutPlayPause
                 );
             }, Constants.KeyboardShortcuts.PlayPauseDescription);
-            
+
             KeyboardShortcutService.RegisterShortcut("r", () =>
             {
                 SafeTaskRunner.RunAndForget(
@@ -146,7 +146,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                     Constants.SafeTaskOperations.KeyboardShortcutReset
                 );
             }, Constants.KeyboardShortcuts.ResetDescription);
-            
+
             // Session switching shortcuts
             KeyboardShortcutService.RegisterShortcut("p", () =>
             {
@@ -156,7 +156,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                     Constants.SafeTaskOperations.KeyboardShortcutPomodoro
                 );
             }, Constants.KeyboardShortcuts.PomodoroDescription);
-            
+
             KeyboardShortcutService.RegisterShortcut("s", () =>
             {
                 SafeTaskRunner.RunAndForget(
@@ -165,7 +165,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                     Constants.SafeTaskOperations.KeyboardShortcutShortBreak
                 );
             }, Constants.KeyboardShortcuts.ShortBreakDescription);
-            
+
             KeyboardShortcutService.RegisterShortcut("l", () =>
             {
                 SafeTaskRunner.RunAndForget(
@@ -174,14 +174,14 @@ public partial class IndexBase : ComponentBase, IDisposable
                     Constants.SafeTaskOperations.KeyboardShortcutLongBreak
                 );
             }, Constants.KeyboardShortcuts.LongBreakDescription);
-            
+
             // Help shortcut
             KeyboardShortcutService.RegisterShortcut("?", () =>
             {
                 ShowKeyboardHelp = true;
                 StateHasChanged();
             }, Constants.KeyboardShortcuts.HelpDescription);
-            
+
             // Escape shortcut - close keyboard help modal
             KeyboardShortcutService.RegisterShortcut("escape", () =>
             {
@@ -191,10 +191,10 @@ public partial class IndexBase : ComponentBase, IDisposable
                     StateHasChanged();
                 }
             }, "Close keyboard shortcuts");
- 
+
             // Load initial state
             UpdateState();
-            
+
             // Check for pending notification action from URL
             // Delay slightly to ensure all services are ready
             // Using SafeTaskRunner for proper exception handling
@@ -217,7 +217,7 @@ public partial class IndexBase : ComponentBase, IDisposable
             IsLoading = false;
         }
     }
-    
+
     /// <summary>
     /// Check for pending notification action from URL parameter
     /// This handles the case when the app is opened from a notification click
@@ -242,7 +242,7 @@ public partial class IndexBase : ComponentBase, IDisposable
             Logger.LogError(ex, Constants.Messages.ErrorCheckingPendingNotificationAction);
         }
     }
-    
+
     #endregion
 
     #region Helper Methods
@@ -250,7 +250,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     private void UpdateState()
     {
         var state = IndexPagePresenterService.UpdateState(TaskService, TimerService);
-        
+
         Tasks = state.Tasks;
         CurrentTaskId = state.CurrentTaskId;
         RemainingTime = state.RemainingTime;
@@ -259,9 +259,9 @@ public partial class IndexBase : ComponentBase, IDisposable
         IsTimerPaused = state.IsTimerPaused;
         IsTimerStarted = state.IsTimerStarted;
     }
-    
+
     #endregion
-    
+
     #region Cleanup
 
     private bool _isDisposed;

@@ -21,10 +21,10 @@ public partial class TimerServiceTests
             var service = CreateService();
             await service.InitializeAsync();
             await service.StartPomodoroAsync();
-            
+
             // Act
             await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
-            
+
             // Assert
             Assert.Equal(SessionType.ShortBreak, service.CurrentSessionType);
             Assert.False(service.IsRunning);
@@ -38,10 +38,10 @@ public partial class TimerServiceTests
             var service = CreateService();
             await service.InitializeAsync();
             await service.StartPomodoroAsync();
-            
+
             // Act
             await service.SwitchSessionTypeAsync(SessionType.LongBreak);
-            
+
             // Assert
             Assert.Equal(SessionType.LongBreak, service.CurrentSessionType);
             Assert.False(service.IsRunning);
@@ -55,10 +55,10 @@ public partial class TimerServiceTests
             var service = CreateService();
             await service.InitializeAsync();
             await service.StartShortBreakAsync();
-            
+
             // Act
             await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
-            
+
             // Assert
             Assert.Equal(SessionType.Pomodoro, service.CurrentSessionType);
             Assert.False(service.IsRunning);
@@ -72,10 +72,10 @@ public partial class TimerServiceTests
             var service = CreateService();
             await service.InitializeAsync();
             await service.StartLongBreakAsync();
-            
+
             // Act
             await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
-            
+
             // Assert
             Assert.Equal(SessionType.Pomodoro, service.CurrentSessionType);
             Assert.False(service.IsRunning);
@@ -89,10 +89,10 @@ public partial class TimerServiceTests
             var service = CreateService();
             await service.InitializeAsync();
             await service.StartShortBreakAsync();
-            
+
             // Act
             await service.SwitchSessionTypeAsync(SessionType.LongBreak);
-            
+
             // Assert
             Assert.Equal(SessionType.LongBreak, service.CurrentSessionType);
             Assert.False(service.IsRunning);
@@ -106,10 +106,10 @@ public partial class TimerServiceTests
             var service = CreateService();
             await service.InitializeAsync();
             await service.StartLongBreakAsync();
-            
+
             // Act
             await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
-            
+
             // Assert
             Assert.Equal(SessionType.ShortBreak, service.CurrentSessionType);
             Assert.False(service.IsRunning);
@@ -124,10 +124,10 @@ public partial class TimerServiceTests
             await service.InitializeAsync();
             await service.StartPomodoroAsync();
             var durationBefore = service.RemainingTime.TotalSeconds;
-            
+
             // Act - Switch to same type
             await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
-            
+
             // Assert - Timer should be reset to duration and not running
             Assert.Equal(SessionType.Pomodoro, service.CurrentSessionType);
             Assert.False(service.IsRunning);
@@ -143,10 +143,10 @@ public partial class TimerServiceTests
             await service.StartPomodoroAsync();
             var eventFired = false;
             service.OnStateChanged += () => eventFired = true;
-            
+
             // Act
             await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
-            
+
             // Assert
             Assert.True(eventFired);
         }
@@ -159,10 +159,10 @@ public partial class TimerServiceTests
             await service.InitializeAsync();
             await service.StartShortBreakAsync();
             await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
-            
+
             // Act
             await service.StartPomodoroAsync();
-            
+
             // Assert
             Assert.Equal(SessionType.Pomodoro, service.CurrentSessionType);
             Assert.True(service.IsRunning);
@@ -176,10 +176,10 @@ public partial class TimerServiceTests
             await service.InitializeAsync();
             await service.StartPomodoroAsync();
             await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
-            
+
             // Act
             await service.StartShortBreakAsync();
-            
+
             // Assert
             Assert.Equal(SessionType.ShortBreak, service.CurrentSessionType);
             Assert.True(service.IsRunning);
@@ -191,22 +191,22 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             await service.InitializeAsync();
-            
+
             // Act & Assert - Start Pomodoro
             await service.StartPomodoroAsync();
             Assert.Equal(SessionType.Pomodoro, service.CurrentSessionType);
             Assert.True(service.IsRunning);
-            
+
             // Switch to Short Break
             await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
             Assert.Equal(SessionType.ShortBreak, service.CurrentSessionType);
             Assert.False(service.IsRunning);
-            
+
             // Start Short Break
             await service.StartShortBreakAsync();
             Assert.Equal(SessionType.ShortBreak, service.CurrentSessionType);
             Assert.True(service.IsRunning);
-            
+
             // Switch back to Pomodoro
             await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
             Assert.Equal(SessionType.Pomodoro, service.CurrentSessionType);

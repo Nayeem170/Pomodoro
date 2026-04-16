@@ -23,38 +23,38 @@ public partial class ActivityServiceTests
             var testDate = new DateTime(2023, 06, 15);
             var activities = new List<ActivityRecord>
             {
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.Pomodoro, 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.Pomodoro,
                     TaskName = "Valid Task",
-                    DurationMinutes = 25, 
-                    CompletedAt = testDate.AddHours(10) 
+                    DurationMinutes = 25,
+                    CompletedAt = testDate.AddHours(10)
                 },
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.Pomodoro, 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.Pomodoro,
                     TaskName = null, // This should be skipped
-                    DurationMinutes = 25, 
-                    CompletedAt = testDate.AddHours(11) 
+                    DurationMinutes = 25,
+                    CompletedAt = testDate.AddHours(11)
                 },
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.Pomodoro, 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.Pomodoro,
                     TaskName = "", // This should also be skipped
-                    DurationMinutes = 25, 
-                    CompletedAt = testDate.AddHours(12) 
+                    DurationMinutes = 25,
+                    CompletedAt = testDate.AddHours(12)
                 },
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.Pomodoro, 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.Pomodoro,
                     TaskName = "Another Valid Task",
-                    DurationMinutes = 25, 
-                    CompletedAt = testDate.AddHours(13) 
+                    DurationMinutes = 25,
+                    CompletedAt = testDate.AddHours(13)
                 }
             };
 
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
 
@@ -78,31 +78,31 @@ public partial class ActivityServiceTests
             var testDate = new DateTime(2023, 06, 15);
             var activities = new List<ActivityRecord>
             {
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.Pomodoro, 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.Pomodoro,
                     TaskName = "Valid Task",
-                    DurationMinutes = 25, 
-                    CompletedAt = testDate.AddHours(10) 
+                    DurationMinutes = 25,
+                    CompletedAt = testDate.AddHours(10)
                 },
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.Pomodoro, 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.Pomodoro,
                     TaskName = "", // This should be skipped
-                    DurationMinutes = 25, 
-                    CompletedAt = testDate.AddHours(11) 
+                    DurationMinutes = 25,
+                    CompletedAt = testDate.AddHours(11)
                 },
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.Pomodoro, 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.Pomodoro,
                     TaskName = "Another Valid Task",
-                    DurationMinutes = 25, 
-                    CompletedAt = testDate.AddHours(12) 
+                    DurationMinutes = 25,
+                    CompletedAt = testDate.AddHours(12)
                 }
             };
 
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
 
@@ -125,32 +125,32 @@ public partial class ActivityServiceTests
             var testDate = new DateTime(2023, 06, 15);
             var activities = new List<ActivityRecord>
             {
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.Pomodoro, 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.Pomodoro,
                     TaskName = "Valid Task",
-                    DurationMinutes = 25, 
-                    CompletedAt = testDate.AddHours(10) 
+                    DurationMinutes = 25,
+                    CompletedAt = testDate.AddHours(10)
                 },
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.Pomodoro, 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.Pomodoro,
                     TaskName = null, // This should use the focus time label
-                    DurationMinutes = 25, 
-                    CompletedAt = testDate.AddHours(11) 
+                    DurationMinutes = 25,
+                    CompletedAt = testDate.AddHours(11)
                 },
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.ShortBreak, 
-                    DurationMinutes = 5, 
-                    CompletedAt = testDate.AddHours(11).AddMinutes(25) 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.ShortBreak,
+                    DurationMinutes = 5,
+                    CompletedAt = testDate.AddHours(11).AddMinutes(25)
                 },
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.Pomodoro, 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.Pomodoro,
                     TaskName = "", // This should also use the focus time label
-                    DurationMinutes = 25, 
-                    CompletedAt = testDate.AddHours(12) 
+                    DurationMinutes = 25,
+                    CompletedAt = testDate.AddHours(12)
                 }
             };
 
@@ -185,36 +185,36 @@ public partial class ActivityServiceTests
             var testDate = new DateTime(2023, 06, 15);
             var activities = new List<ActivityRecord>
             {
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.Pomodoro, 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.Pomodoro,
                     TaskName = "Valid Task",
-                    DurationMinutes = 25, 
-                    CompletedAt = testDate.AddHours(10) 
+                    DurationMinutes = 25,
+                    CompletedAt = testDate.AddHours(10)
                 },
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.Pomodoro, 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.Pomodoro,
                     TaskName = "", // This should use the focus time label
-                    DurationMinutes = 25, 
-                    CompletedAt = testDate.AddHours(11) 
+                    DurationMinutes = 25,
+                    CompletedAt = testDate.AddHours(11)
                 },
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.ShortBreak, 
-                    DurationMinutes = 5, 
-                    CompletedAt = testDate.AddHours(11).AddMinutes(25) 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.ShortBreak,
+                    DurationMinutes = 5,
+                    CompletedAt = testDate.AddHours(11).AddMinutes(25)
                 },
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.LongBreak, 
-                    DurationMinutes = 15, 
-                    CompletedAt = testDate.AddHours(12).AddMinutes(30) 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.LongBreak,
+                    DurationMinutes = 15,
+                    CompletedAt = testDate.AddHours(12).AddMinutes(30)
                 }
             };
 
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
 
@@ -242,30 +242,30 @@ public partial class ActivityServiceTests
             var testDate = new DateTime(2023, 06, 15);
             var activities = new List<ActivityRecord>
             {
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.Pomodoro, 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.Pomodoro,
                     TaskName = null, // This should use the focus time label
-                    DurationMinutes = 25, 
-                    CompletedAt = testDate.AddHours(10) 
+                    DurationMinutes = 25,
+                    CompletedAt = testDate.AddHours(10)
                 },
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.Pomodoro, 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.Pomodoro,
                     TaskName = null, // This should also use the focus time label
-                    DurationMinutes = 25, 
-                    CompletedAt = testDate.AddHours(11) 
+                    DurationMinutes = 25,
+                    CompletedAt = testDate.AddHours(11)
                 },
-                new() { 
-                    Id = Guid.NewGuid(), 
-                    Type = SessionType.ShortBreak, 
-                    DurationMinutes = 5, 
-                    CompletedAt = testDate.AddHours(11).AddMinutes(25) 
+                new() {
+                    Id = Guid.NewGuid(),
+                    Type = SessionType.ShortBreak,
+                    DurationMinutes = 5,
+                    CompletedAt = testDate.AddHours(11).AddMinutes(25)
                 }
             };
 
             MockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(activities);
-            
+
             var service = CreateService();
             await service.InitializeAsync();
 

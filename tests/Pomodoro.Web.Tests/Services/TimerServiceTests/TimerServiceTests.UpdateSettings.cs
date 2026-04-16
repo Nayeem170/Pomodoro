@@ -77,7 +77,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             SetupCurrentSession(isRunning: false, wasStarted: false, remainingSeconds: 1500);
-            
+
             var newSettings = new TimerSettings
             {
                 PomodoroMinutes = 40,
@@ -108,7 +108,7 @@ public partial class TimerServiceTests
             var service = CreateService();
             SetupCurrentSession(isRunning: false, wasStarted: true, remainingSeconds: 300);
             var originalDuration = AppState.CurrentSession!.DurationSeconds;
-            
+
             var newSettings = new TimerSettings
             {
                 PomodoroMinutes = 40,
@@ -139,7 +139,7 @@ public partial class TimerServiceTests
             var service = CreateService();
             SetupCurrentSession(isRunning: true, wasStarted: true, remainingSeconds: 1200);
             var originalDuration = AppState.CurrentSession!.DurationSeconds;
-            
+
             var newSettings = new TimerSettings
             {
                 PomodoroMinutes = 50,
@@ -220,7 +220,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             SetupCurrentSession(isRunning: false, wasStarted: false, remainingSeconds: 300, sessionType: SessionType.ShortBreak);
-            
+
             var newSettings = new TimerSettings
             {
                 PomodoroMinutes = 25,
@@ -250,7 +250,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             SetupCurrentSession(isRunning: false, wasStarted: false, remainingSeconds: 900, sessionType: SessionType.LongBreak);
-            
+
             var newSettings = new TimerSettings
             {
                 PomodoroMinutes = 25,
@@ -280,7 +280,7 @@ public partial class TimerServiceTests
             // Arrange
             var service = CreateService();
             ClearCurrentSession();
-            
+
             var newSettings = new TimerSettings
             {
                 PomodoroMinutes = 30,
@@ -298,7 +298,7 @@ public partial class TimerServiceTests
 
             // Act & Assert - Should not throw
             await service.UpdateSettingsAsync(newSettings);
-            
+
             Assert.Null(AppState.CurrentSession);
             Assert.Equal(30, AppState.Settings.PomodoroMinutes);
         }
