@@ -6,39 +6,42 @@ Four-layer Blazor WASM architecture: UI pages depend on services, services depen
 
 ```mermaid
 graph TB
-    subgraph UI["UI Layer"]
+    subgraph UI["UI Layer — Razor Pages & Components"]
         direction LR
-        Index["🏠 Index"]
+        Index["📄 Index"]
         History["📊 History"]
         Settings["⚙️ Settings"]
         About["ℹ️ About"]
+        TimerDisplay["⏲️ TimerDisplay"]
+        TaskList["✅ TaskList"]
+        Charts["📈 Charts"]
     end
 
-    subgraph Services["Service Layer"]
+    subgraph Services["Service Layer — Business Logic"]
         direction LR
-        Timer["TimerService"]
-        Task["TaskService"]
-        Activity["ActivityService"]
-        Pip["PipTimerService"]
-        Consent["ConsentService"]
-        Chart["ChartService"]
+        Timer["⏱️ Timer"]
+        Task["✅ Tasks"]
+        Activity["📋 Activity"]
+        Consent["🔔 Consent"]
+        Pip["🖼️ PiP"]
+        Stats["📊 Stats"]
     end
 
-    subgraph Repos["Repository Layer"]
+    subgraph Repos["Repository Layer — Data Access"]
         direction LR
-        ActRepo["ActivityRepository"]
-        TaskRepo["TaskRepository"]
-        SettingsRepo["SettingsRepository"]
-        IDB["IndexedDbService"]
+        TaskRepo["TaskRepo"]
+        ActRepo["ActivityRepo"]
+        SettingsRepo["SettingsRepo"]
+        IDB["IndexedDb"]
     end
 
-    subgraph JS["JS Interop Layer"]
+    subgraph JS["JS Interop Layer — Browser API"]
         direction LR
-        TimerJS["timerFunctions"]
-        IDBJS["indexedDbInterop"]
-        PipJS["pipTimer"]
-        NotifJS["notificationFunctions"]
-        ChartJS["chartInterop"]
+        TimerJS["timer"]
+        IDBJS["indexedDb"]
+        PipJS["pip"]
+        NotifJS["notify"]
+        ChartJS["chart"]
     end
 
     UI --> Services
