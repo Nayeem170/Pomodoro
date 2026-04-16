@@ -215,14 +215,6 @@ graph LR
     TimerService -.->|"OnStateChanged<br/><i>legacy</i>"| Index
     TimerService -.->|"OnTick<br/><i>shared backing field</i>"| TimerDisplay
     TimerService -.->|"OnStateChanged<br/><i>legacy</i>"| TimerDisplay
-
-    style TimerService fill:#4a90d9,color:#fff
-    style TaskService fill:#27ae60,color:#fff
-    style ActivityService fill:#27ae60,color:#fff
-    style ConsentService fill:#27ae60,color:#fff
-    style PipTimerService fill:#27ae60,color:#fff
-    style Index fill:#e67e22,color:#fff
-    style TimerDisplay fill:#e67e22,color:#fff
 ```
 
 ---
@@ -275,30 +267,24 @@ sequenceDiagram
     TS->>TS: HandleTimerCompleteAsync()
     TS->>JTI: StopAsync()
 
-    rect rgb(240, 248, 255)
-        Note over TS,DSS: Update Daily Stats
-        TS->>DSS: RecordPomodoroCompletion(min, taskId)
-        DSS->>AS: ++TodayPomodoroCount, +=FocusMinutes
-        TS->>TS: SaveDailyStatsAsync() → IndexedDB
-    end
+    Note over TS,DSS: Update Daily Stats
+    TS->>DSS: RecordPomodoroCompletion(min, taskId)
+    DSS->>AS: ++TodayPomodoroCount, +=FocusMinutes
+    TS->>TS: SaveDailyStatsAsync() → IndexedDB
 
-    rect rgb(255, 248, 240)
-        Note over TS,Consent: Notify Subscribers (ITimerEventPublisher)
-        TS->>TS: NotifyTimerCompletedAsync(args)
-        TS--xTaskSvc: OnTimerCompleted
-        TaskSvc->>TaskSvc: CompleteTaskAsync()
-        TS--xActSvc: OnTimerCompleted
-        ActSvc->>ActSvc: RecordActivityAsync()
-        TS--xConsent: OnTimerCompleted
-        Consent->>Consent: ShowConsentModal()
-    end
+    Note over TS,Consent: Notify Subscribers (ITimerEventPublisher)
+    TS->>TS: NotifyTimerCompletedAsync(args)
+    TS--xTaskSvc: OnTimerCompleted
+    TaskSvc->>TaskSvc: CompleteTaskAsync()
+    TS--xActSvc: OnTimerCompleted
+    ActSvc->>ActSvc: RecordActivityAsync()
+    TS--xConsent: OnTimerCompleted
+    Consent->>Consent: ShowConsentModal()
 
-    rect rgb(255, 240, 240)
-        Note over TS,I: Legacy Events (ITimerService)
-        TS->>TS: OnTimerComplete?.Invoke(type)
-        TS--xI: OnTimerComplete event
-        I->>I: Show consent UI
-    end
+    Note over TS,I: Legacy Events (ITimerService)
+    TS->>TS: OnTimerComplete?.Invoke(type)
+    TS--xI: OnTimerComplete event
+    I->>I: Show consent UI
 
     TS->>TS: NotifyStateChanged()
     TS--xPip: OnTimerStateChanged
@@ -323,34 +309,28 @@ sequenceDiagram
 
     App->>SIS: InitializeServicesAsync()
 
-    rect rgb(240, 248, 255)
-        Note over SIS,IDB: Database Init
-        SIS->>IDB: InitializeAsync()
-        IDB->>JS: indexedDbInterop.initDatabase()
-    end
+    Note over SIS,IDB: Database Init
+    SIS->>IDB: InitializeAsync()
+    IDB->>JS: indexedDbInterop.initDatabase()
 
-    rect rgb(240, 255, 240)
-        Note over SIS,ActSvc: Service Init
-        SIS->>TS: InitializeAsync()
-        TS->>SettingsRepo: GetAsync() → TimerSettings
-        TS->>DSS: InitializeTodayStatsAsync()
-        DSS->>IDB: GetAsync<DailyStats>()
-        DSS->>AppState: Restore daily counters
-        SIS->>TaskSvc: InitializeAsync()
-        TaskSvc->>IDB: GetAllItems<TaskItem>()
-        SIS->>ActSvc: InitializeAsync()
-        ActSvc->>IDB: GetAllItems<ActivityRecord>()
-    end
+    Note over SIS,ActSvc: Service Init
+    SIS->>TS: InitializeAsync()
+    TS->>SettingsRepo: GetAsync() → TimerSettings
+    TS->>DSS: InitializeTodayStatsAsync()
+    DSS->>IDB: GetAsync<DailyStats>()
+    DSS->>AppState: Restore daily counters
+    SIS->>TaskSvc: InitializeAsync()
+    TaskSvc->>IDB: GetAllItems<TaskItem>()
+    SIS->>ActSvc: InitializeAsync()
+    ActSvc->>IDB: GetAllItems<ActivityRecord>()
 
-    rect rgb(255, 248, 240)
-        Note over EWS: Event Wiring
-        SIS->>EWS: WireEventSubscribers()
-        EWS->>TS: OnTimerCompleted += TaskService
-        EWS->>TS: OnTimerCompleted += ActivityService
-        EWS->>TS: OnTimerCompleted += ConsentService
-        EWS->>TS: OnTick += PipTimerService
-        EWS->>TS: OnTimerStateChanged += PipTimerService
-    end
+    Note over EWS: Event Wiring
+    SIS->>EWS: WireEventSubscribers()
+    EWS->>TS: OnTimerCompleted += TaskService
+    EWS->>TS: OnTimerCompleted += ActivityService
+    EWS->>TS: OnTimerCompleted += ConsentService
+    EWS->>TS: OnTick += PipTimerService
+    EWS->>TS: OnTimerStateChanged += PipTimerService
 
     App->>I: Render page
     I->>TS: OnStateChanged += handler
@@ -442,10 +422,7 @@ graph TB
         New["Modern (ITimerEventPublisher)<br/>OnTick, OnTimerStateChanged,<br/>OnTimerCompleted"]
     end
 
-    Old -.->|"⚠️ Fragile dual-fire"| New
-
-    style Old fill:#e67e22,color:#fff
-    style New fill:#27ae60,color:#fff
+    Old -.->|"Fragile dual-fire"| New
 ```
 
 | Notification | Legacy Event | Modern Event |
