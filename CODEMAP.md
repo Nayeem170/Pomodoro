@@ -1,5 +1,7 @@
 # Code Execution Map
 
+Four-layer Blazor WASM architecture: UI pages depend on services, services depend on repositories, repositories depend on JS interop. All timer events flow through a single `ITimerEventPublisher` interface.
+
 ## Architecture Overview
 
 ```mermaid
@@ -48,6 +50,8 @@ graph TB
 ---
 
 ## Service Dependency Graph
+
+All DI-injected dependencies between services. `AppState` is a singleton shared across services. `IJSRuntime` is the gateway to all JavaScript interop.
 
 ```mermaid
 graph TD
@@ -187,6 +191,8 @@ graph TD
 
 ## Event Flow Diagram
 
+All timer events use `ITimerEventPublisher`. `OnTimerCompleted` is async with rich args; `OnTick` and `OnTimerStateChanged` are sync. Wired once at startup by `EventWiringService`.
+
 ```mermaid
 graph LR
     subgraph Publisher["Publisher"]
@@ -217,6 +223,8 @@ graph LR
 
 ## Sequence: Timer Start
 
+User clicks start, session is created, JS timer begins ticking, and `OnTick`/`OnTimerStateChanged` events drive UI updates every second.
+
 ```mermaid
 sequenceDiagram
     actor U as 👤 User
@@ -246,6 +254,8 @@ sequenceDiagram
 ---
 
 ## Sequence: Timer Complete
+
+When remaining seconds hit zero: stats are recorded, subscribers are notified in sequence (task completion, activity recording, consent modal), and PiP window is updated.
 
 ```mermaid
 sequenceDiagram
@@ -287,6 +297,8 @@ sequenceDiagram
 ---
 
 ## Sequence: App Initialization
+
+On startup: IndexedDB is initialized, services load cached data, and `EventWiringService` connects publisher to subscribers before the first render.
 
 ```mermaid
 sequenceDiagram
@@ -334,6 +346,8 @@ sequenceDiagram
 ---
 
 ## JS Interop Map
+
+47 interop points total: 41 .NET-to-JS calls across 9 modules, plus 9 JS-to-.NET callbacks via `[JSInvokable]`.
 
 ### .NET → JS Calls
 
@@ -389,6 +403,8 @@ graph LR
 
 ### JS → .NET Callbacks
 
+9 `[JSInvokable]` methods across 6 classes. Timer tick is the highest-frequency callback (every second).
+
 | Method | Class | Trigger |
 |--------|-------|---------|
 | `OnTimerTickJs` | TimerService | Timer tick (1s interval) |
@@ -404,6 +420,8 @@ graph LR
 ---
 
 ## Data Flow: IndexedDB
+
+4 stores: tasks and activities are read/write from multiple services; settings and daily stats have single-writer patterns.
 
 ```mermaid
 graph LR
@@ -448,6 +466,8 @@ graph LR
 
 ### Index.razor (12 services)
 
+The main page with the most dependencies. It orchestrates timer, tasks, consent, notifications, PiP, keyboard shortcuts, and today's stats display.
+
 | Service | Purpose |
 |---------|---------|
 | `ITaskService` | Task CRUD, selection, completion |
@@ -466,6 +486,8 @@ graph LR
 
 ### History.razor (8 services)
 
+Activity history with infinite scroll, weekly charts, and time distribution. Reads only — no writes to data stores.
+
 | Service | Purpose |
 |---------|---------|
 | `IActivityService` | Activity queries |
@@ -478,6 +500,8 @@ graph LR
 | `ILogger<HistoryBase>` | Logging |
 
 ### Settings.razor (8 services)
+
+App configuration page with export/import, timer settings, and data management. Uses both Export and Import services for backup/restore.
 
 | Service | Purpose |
 |---------|---------|
