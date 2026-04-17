@@ -6,48 +6,41 @@ Four-layer Blazor WASM architecture: UI pages depend on services, services depen
 
 ```mermaid
 graph TB
-    subgraph UI["UI Layer — Razor Pages & Components"]
+    User(["👤 User"])
+
+    subgraph UI["Presentation Layer"]
         direction LR
-        Index["📄 Index"]
-        History["📊 History"]
-        Settings["⚙️ Settings"]
-        About["ℹ️ About"]
-        TimerDisplay["⏲️ TimerDisplay"]
-        TaskList["✅ TaskList"]
-        Charts["📈 Charts"]
+        Pages["Razor Pages<br/><small>Index · History · Settings</small>"]
+        Components["Components<br/><small>TimerDisplay · TaskList · Charts</small>"]
     end
 
-    subgraph Services["Service Layer — Business Logic"]
+    subgraph Logic["Business Logic Layer"]
         direction LR
-        Timer["⏱️ Timer"]
-        Task["✅ Tasks"]
-        Activity["📋 Activity"]
-        Consent["🔔 Consent"]
-        Pip["🖼️ PiP"]
-        Stats["📊 Stats"]
+        Timer["TimerService<br/><small>Timer lifecycle & events</small>"]
+        Tasks["TaskService<br/><small>Task CRUD</small>"]
+        Activity["ActivityService<br/><small>Activity records</small>"]
+        Cross["ConsentService<br/><small>PipTimerService</small>"]
     end
 
-    subgraph Repos["Repository Layer — Data Access"]
+    subgraph Data["Data Layer"]
         direction LR
-        TaskRepo["TaskRepo"]
-        ActRepo["ActivityRepo"]
-        SettingsRepo["SettingsRepo"]
-        IDB["IndexedDb"]
+        Repos["Repositories<br/><small>Task · Activity · Settings</small>"]
+        IDB["IndexedDbService<br/><small>Single gateway to browser</small>"]
     end
 
-    subgraph JS["JS Interop Layer — Browser API"]
+    subgraph Bridge["Interop Layer"]
         direction LR
-        TimerJS["timer"]
-        IDBJS["indexedDb"]
-        PipJS["pip"]
-        NotifJS["notify"]
-        ChartJS["chart"]
+        Modules["JS Modules<br/><small>timer · pip · chart · notify</small>"]
+        Browser["Browser APIs<br/><small>IndexedDB · Notifications · PiP</small>"]
     end
 
-    UI --> Services
-    Services --> Repos
-    Repos --> IDB
-    Services --> JS
+    User --> UI
+    UI --> Logic
+    Logic --> Data
+    Data --> IDB
+    IDB --> Bridge
+    Logic -.->|"direct calls"| Bridge
+    UI -.->|"UI interop"| Bridge
 ```
 
 ---
