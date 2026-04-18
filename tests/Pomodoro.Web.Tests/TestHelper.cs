@@ -38,8 +38,6 @@ public abstract class TestHelper : TestContext
     protected TimerThemeFormatter TimerThemeFormatter { get; private set; }
     protected TimeFormatter TimeFormatter { get; private set; }
     protected ChartDataFormatter ChartDataFormatter { get; private set; }
-    protected SummaryCardsFormatter SummaryCardsFormatter { get; private set; }
-    protected StatCardFormatter StatCardFormatter { get; private set; }
     protected ActivityItemFormatter ActivityItemFormatter { get; private set; }
     protected ActivityTimelineFormatter ActivityTimelineFormatter { get; private set; }
     protected AppState AppState { get; private set; }
@@ -79,10 +77,8 @@ public abstract class TestHelper : TestContext
         TimerThemeFormatter = new TimerThemeFormatter();
         TimeFormatter = new TimeFormatter();
         ChartDataFormatter = new ChartDataFormatter();
-        StatCardFormatter = new StatCardFormatter();
         ActivityItemFormatter = new ActivityItemFormatter();
         ActivityTimelineFormatter = new ActivityTimelineFormatter();
-        SummaryCardsFormatter = new SummaryCardsFormatter(TimeFormatter);
         IndexPagePresenterService = new IndexPagePresenterService(indexPageLoggerMock.Object);
         HistoryPagePresenterService = new HistoryPagePresenterService(historyPageLoggerMock.Object);
         SettingsPresenterService = new SettingsPresenterService(settingsPageLoggerMock.Object);
@@ -110,8 +106,6 @@ public abstract class TestHelper : TestContext
         Services.AddSingleton(TimerThemeFormatter);
         Services.AddSingleton(TimeFormatter);
         Services.AddSingleton(ChartDataFormatter);
-        Services.AddSingleton(SummaryCardsFormatter);
-        Services.AddSingleton(StatCardFormatter);
         Services.AddSingleton(ActivityItemFormatter);
         Services.AddSingleton(ActivityTimelineFormatter);
         Services.AddSingleton(IndexPagePresenterService);

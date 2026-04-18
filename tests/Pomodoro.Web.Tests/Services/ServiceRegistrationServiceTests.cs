@@ -278,13 +278,11 @@ public class ServiceRegistrationServiceTests
         _service.RegisterServices(services);
 
         // Assert - Check that all formatters are registered
-        Assert.NotNull(services.FirstOrDefault(s => s.ServiceType == typeof(StatCardFormatter)));
         Assert.NotNull(services.FirstOrDefault(s => s.ServiceType == typeof(ActivityItemFormatter)));
         Assert.NotNull(services.FirstOrDefault(s => s.ServiceType == typeof(ActivityTimelineFormatter)));
         Assert.NotNull(services.FirstOrDefault(s => s.ServiceType == typeof(TimeFormatter)));
         Assert.NotNull(services.FirstOrDefault(s => s.ServiceType == typeof(ChartDataFormatter)));
         Assert.NotNull(services.FirstOrDefault(s => s.ServiceType == typeof(TimerThemeFormatter)));
-        Assert.NotNull(services.FirstOrDefault(s => s.ServiceType == typeof(SummaryCardsFormatter)));
     }
 
     [Fact]

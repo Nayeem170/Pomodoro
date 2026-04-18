@@ -54,13 +54,11 @@ public class ServiceRegistrationService : IServiceRegistrationService
         services.AddScoped<IStatisticsService, StatisticsService>();
 
         // Register formatter services for components (enables testable code with coverage tracking)
-        services.AddScoped<StatCardFormatter>();
         services.AddScoped<ActivityItemFormatter>();
         services.AddScoped<ActivityTimelineFormatter>();
         services.AddScoped<TimeFormatter>();
         services.AddScoped<ChartDataFormatter>();
         services.AddScoped<TimerThemeFormatter>();
-        services.AddScoped<SummaryCardsFormatter>();
         services.AddScoped<ITodayStatsService, TodayStatsService>();
         services.AddScoped<IHistoryStatsService, HistoryStatsService>();
         services.AddScoped<SettingsPresenterService>();
