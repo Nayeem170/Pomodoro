@@ -62,6 +62,8 @@ The app follows an MVP-like pattern:
 - **Services** — Interface-based application services registered via DI
 - **Repositories** — Data persistence over IndexedDB through JS interop
 
+For detailed dependency graphs, event flows, JS interop maps, and data flow diagrams, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 ## Testing
 
 ### Unit & Component Tests
