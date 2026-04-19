@@ -41,6 +41,7 @@ public class ServiceRegistrationService : IServiceRegistrationService
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<IActivityService, ActivityService>();
         services.AddScoped<ITimerService, TimerService>();
+        services.AddScoped<ITimerEventPublisher>(sp => (ITimerEventPublisher)sp.GetRequiredService<ITimerService>());
         services.AddScoped<ISessionOptionsService, SessionOptionsService>();
         services.AddScoped<IConsentService, ConsentService>();
         services.AddScoped<INotificationService, NotificationService>();
