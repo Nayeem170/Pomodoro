@@ -5,16 +5,8 @@
 (function() {
     'use strict';
     
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js')
-            .then(function(registration) {
-                console.log('[App] Service worker registered:', registration.scope);
-            })
-            .catch(function(err) {
-                console.error('[App] Service worker registration failed:', err);
-            });
-    }
+    // Service worker registration disabled - Cloudflare Pages _redirects catch-all
+    // prevents serving service-worker.js with correct MIME type
     
     // Helper function to get URL parameters
     window.getUrlParameter = function(name) {
