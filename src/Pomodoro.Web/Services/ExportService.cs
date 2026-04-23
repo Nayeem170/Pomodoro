@@ -58,6 +58,39 @@ public class ExportService : IExportService
         }
     }
 
+    public async Task<string> ExportToJsonStringAsync()
+    {
+        try
+        {
+            var activities = await _activityRepository.GetAllAsync();
+            var tasks = await _taskRepository.GetAllAsync();
+            var settings = await _settingsRepository.GetAsync();
+
+            var exportData = new
+            {
+                Version = 1,
+                ExportDate = DateTime.UtcNow,
+                Settings = settings,
+                Activities = activities,
+                Tasks = tasks
+            };
+
+            var json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions
+            {
+                WriteIndented = false,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+
+            _logger.LogInformation(Constants.Messages.LogExportJsonFormat, activities.Count, tasks.Count);
+            return json;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, Constants.Messages.LogExportJsonFailed);
+            throw;
+        }
+    }
+
     public async Task ClearAllDataAsync()
     {
         try

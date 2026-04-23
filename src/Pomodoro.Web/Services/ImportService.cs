@@ -24,6 +24,11 @@ public class ImportService : IImportService
         _logger = logger;
     }
 
+    public async Task<ImportResult> ImportFromStringAsync(string json)
+    {
+        return await ImportFromJsonAsync(json);
+    }
+
     public async Task<ImportResult> ImportFromJsonAsync(string jsonData)
     {
         try
