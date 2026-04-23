@@ -85,6 +85,11 @@ public static partial class Constants
         /// <summary>Keyboard shortcut: start long break</summary>
         public const string KeyboardShortcutLongBreak = "KeyboardShortcut LongBreak";
 
+        public const string CloudSyncPush = "CloudSync Push";
+        public const string CloudSyncPull = "CloudSync Pull";
+        public const string CloudSyncAutoSync = "CloudSync AutoSyncOnStart";
+        public const string CloudSyncPeriodic = "CloudSync PeriodicSync";
+
         /// <summary>Log message format for errors in operations</summary>
         public const string ErrorInOperationLogFormat = "Error in {OperationName}";
     }

@@ -105,6 +105,31 @@ public static partial class Constants
     }
 
     /// <summary>
+    /// Google Drive JavaScript function names
+    /// </summary>
+    public static class GoogleDriveJsFunctions
+    {
+        public const string Init = "googleDrive.init";
+        public const string RequestAuth = "googleDrive.requestAuth";
+        public const string RevokeAuth = "googleDrive.revokeAuth";
+        public const string IsConnected = "googleDrive.isConnected";
+        public const string FindSyncFile = "googleDrive.findSyncFile";
+        public const string ReadFile = "googleDrive.readFile";
+        public const string CreateFile = "googleDrive.createFile";
+        public const string UpdateFile = "googleDrive.updateFile";
+        public const string DeleteFile = "googleDrive.deleteFile";
+    }
+
+    /// <summary>
+    /// Compression JavaScript function names
+    /// </summary>
+    public static class CompressionJsFunctions
+    {
+        public const string GzipCompress = "compressionInterop.gzipCompress";
+        public const string GzipDecompress = "compressionInterop.gzipDecompress";
+    }
+
+    /// <summary>
     /// Notification permission values
     /// </summary>
     public static class NotificationPermissions
