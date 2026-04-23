@@ -57,6 +57,11 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
     protected bool IsLoadingMore { get; set; }
     protected int PageSize { get; } = 20;
 
+    protected string FormattedSelectedDate { get; set; } = string.Empty;
+    protected string FormattedWeekRange { get; set; } = string.Empty;
+    protected bool IsSelectedDateToday { get; set; }
+    protected bool IsSelectedWeekCurrent { get; set; }
+
     /// <summary>
     /// Component parameter for testing: Sets initial active tab
     /// </summary>
@@ -536,6 +541,9 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         // Load weekly statistics
         WeeklyStats = await StatisticsService.GetWeeklyStatsAsync(weekStart);
 
+        UpdateFormattedDate();
+        UpdateFormattedWeekRange();
+
         // Observer will be set up in OnAfterRenderAsync after DOM is fully updated
         // This ensures sentinel element exists before observer is created
     }
@@ -556,6 +564,68 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
     #endregion
 
     #region Event Handlers
+
+    protected async Task GoToPreviousDay()
+    {
+        await HandleDateChanged(SelectedDate.AddDays(-1));
+    }
+
+    protected async Task GoToNextDay()
+    {
+        await HandleDateChanged(SelectedDate.AddDays(1));
+    }
+
+    protected async Task GoToToday()
+    {
+        await HandleDateChanged(DateTime.Now.Date);
+    }
+
+    protected async Task GoToPreviousWeek()
+    {
+        await HandleWeekChanged(SelectedWeekStart.AddDays(-7));
+    }
+
+    protected async Task GoToNextWeek()
+    {
+        await HandleWeekChanged(SelectedWeekStart.AddDays(7));
+    }
+
+    protected async Task GoToThisWeek()
+    {
+        var thisWeekStart = WeekNavigatorBase.GetWeekStart(DateTime.Now.Date);
+        await HandleWeekChanged(thisWeekStart);
+    }
+
+    private void UpdateFormattedDate()
+    {
+        var today = DateTime.Now.Date;
+        var yesterday = today.AddDays(-1);
+
+        if (SelectedDate.Date == today)
+        {
+            FormattedSelectedDate = "Today, " + SelectedDate.ToString("MMM d");
+            IsSelectedDateToday = true;
+        }
+        else if (SelectedDate.Date == yesterday)
+        {
+            FormattedSelectedDate = "Yesterday, " + SelectedDate.ToString("MMM d");
+            IsSelectedDateToday = false;
+        }
+        else
+        {
+            FormattedSelectedDate = SelectedDate.ToString("MMM d");
+            IsSelectedDateToday = false;
+        }
+    }
+
+    private void UpdateFormattedWeekRange()
+    {
+        var weekEnd = SelectedWeekStart.AddDays(6);
+        FormattedWeekRange = $"{SelectedWeekStart:MMM d} – {weekEnd:MMM d}";
+
+        var thisWeekStart = WeekNavigatorBase.GetWeekStart(DateTime.Now.Date);
+        IsSelectedWeekCurrent = SelectedWeekStart.Date == thisWeekStart.Date;
+    }
 
     protected async Task HandleDateChanged(DateTime newDate)
     {

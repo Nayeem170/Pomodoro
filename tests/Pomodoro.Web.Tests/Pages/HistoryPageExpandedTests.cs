@@ -924,7 +924,7 @@ public class HistoryPageExpandedTests : TestHelper
 
         // Assert
         cut.Should().NotBeNull();
-        cut.Markup.Should().Contain("Daily Summary");
+        cut.Markup.Should().Contain("stat-grid");
         ActivityServiceMock.Verify(x => x.GetActivitiesPagedAsync(
             It.IsAny<DateTime>(), It.IsAny<DateTime>(), 0, 20), Times.Once);
     }
@@ -1320,11 +1320,11 @@ public class HistoryPageExpandedTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Pages.History>();
 
         // Click previous day button
-        var prevButton = cut.Find("button.nav-btn[title='Previous day']");
+        var prevButton = cut.Find("button.nav-arr[title='Previous day']");
         prevButton.Click();
 
         // Click next day button (should be disabled)
-        var nextButton = cut.Find("button.nav-btn[title='Next day']");
+        var nextButton = cut.Find("button.nav-arr[title='Next day']");
 
         // Click previous again
         prevButton.Click();

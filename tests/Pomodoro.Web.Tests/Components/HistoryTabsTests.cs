@@ -8,10 +8,6 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests;
 
-/// <summary>
-/// bUnit tests for HistoryTabs component.
-/// Tests tab rendering and switching behavior.
-/// </summary>
 [Trait("Category", "Component")]
 public class HistoryTabsTests : TestContext
 {
@@ -53,7 +49,7 @@ public class HistoryTabsTests : TestContext
 
         // Assert
         var dailyTab = cut.Find("#daily-tab");
-        Assert.Contains("active", dailyTab.GetAttribute("class"));
+        Assert.Contains("act", dailyTab.GetAttribute("class"));
     }
 
     [Fact]
@@ -65,7 +61,7 @@ public class HistoryTabsTests : TestContext
 
         // Assert
         var weeklyTab = cut.Find("#weekly-tab");
-        Assert.Contains("active", weeklyTab.GetAttribute("class"));
+        Assert.Contains("act", weeklyTab.GetAttribute("class"));
     }
 
     [Fact]
@@ -77,7 +73,7 @@ public class HistoryTabsTests : TestContext
 
         // Assert
         var weeklyTab = cut.Find("#weekly-tab");
-        Assert.DoesNotContain("active", weeklyTab.GetAttribute("class"));
+        Assert.DoesNotContain("act", weeklyTab.GetAttribute("class"));
     }
 
     [Fact]
@@ -89,7 +85,7 @@ public class HistoryTabsTests : TestContext
 
         // Assert
         var dailyTab = cut.Find("#daily-tab");
-        Assert.DoesNotContain("active", dailyTab.GetAttribute("class"));
+        Assert.DoesNotContain("act", dailyTab.GetAttribute("class"));
     }
 
     #endregion
@@ -100,7 +96,7 @@ public class HistoryTabsTests : TestContext
     public void HistoryTabs_ClickDailyTab_InvokesOnTabChangedCallback()
     {
         // Arrange
-        var selectedTab = HistoryTab.Weekly; // Start with Weekly
+        var selectedTab = HistoryTab.Weekly;
         var cut = RenderComponent<HistoryTabs>(parameters => parameters
             .Add(p => p.ActiveTab, HistoryTab.Weekly)
             .Add(p => p.OnTabChanged, EventCallback.Factory.Create<HistoryTab>(this, tab => selectedTab = tab)));
@@ -116,7 +112,7 @@ public class HistoryTabsTests : TestContext
     public void HistoryTabs_ClickWeeklyTab_InvokesOnTabChangedCallback()
     {
         // Arrange
-        var selectedTab = HistoryTab.Daily; // Start with Daily
+        var selectedTab = HistoryTab.Daily;
         var cut = RenderComponent<HistoryTabs>(parameters => parameters
             .Add(p => p.ActiveTab, HistoryTab.Daily)
             .Add(p => p.OnTabChanged, EventCallback.Factory.Create<HistoryTab>(this, tab => selectedTab = tab)));
@@ -137,10 +133,10 @@ public class HistoryTabsTests : TestContext
             .Add(p => p.ActiveTab, HistoryTab.Daily)
             .Add(p => p.OnTabChanged, EventCallback.Factory.Create<HistoryTab>(this, _ => callbackCount++)));
 
-        // Act - Click the already active tab
+        // Act
         cut.Find("#daily-tab").Click();
 
-        // Assert - Callback should not be invoked
+        // Assert
         Assert.Equal(0, callbackCount);
     }
 
@@ -157,7 +153,7 @@ public class HistoryTabsTests : TestContext
             .Add(p => p.ActiveTab, HistoryTab.Daily)
             .Add(p => p.OnTabChanged, EventCallback.Factory.Create<HistoryTab>(this, tab => selectedTab = tab)));
 
-        // Act - Use KeyDown instead of KeyPress
+        // Act
         cut.Find("#daily-tab").KeyDown("ArrowRight");
 
         // Assert
@@ -173,7 +169,7 @@ public class HistoryTabsTests : TestContext
             .Add(p => p.ActiveTab, HistoryTab.Weekly)
             .Add(p => p.OnTabChanged, EventCallback.Factory.Create<HistoryTab>(this, tab => selectedTab = tab)));
 
-        // Act - Use KeyDown instead of KeyPress
+        // Act
         cut.Find("#weekly-tab").KeyDown("ArrowLeft");
 
         // Assert
@@ -189,7 +185,7 @@ public class HistoryTabsTests : TestContext
             .Add(p => p.ActiveTab, HistoryTab.Daily)
             .Add(p => p.OnTabChanged, EventCallback.Factory.Create<HistoryTab>(this, _ => callbackCount++)));
 
-        // Act - Use KeyDown instead of KeyPress
+        // Act
         cut.Find("#daily-tab").KeyDown("Enter");
 
         // Assert
@@ -208,7 +204,7 @@ public class HistoryTabsTests : TestContext
             .Add(p => p.ActiveTab, HistoryTab.Daily));
 
         // Assert
-        var tabList = cut.Find(".history-tabs");
+        var tabList = cut.Find(".vtoggle");
         Assert.Equal("tablist", tabList.GetAttribute("role"));
 
         var dailyTab = cut.Find("#daily-tab");
@@ -245,17 +241,16 @@ public class HistoryTabsTests : TestContext
             .Add(p => p.ActiveTab, HistoryTab.Daily));
 
         // Assert - Daily is active
-        Assert.Contains("active", cut.Find("#daily-tab").GetAttribute("class"));
+        Assert.Contains("act", cut.Find("#daily-tab").GetAttribute("class"));
 
         // Act - Change to Weekly
         cut.SetParametersAndRender(parameters => parameters
             .Add(p => p.ActiveTab, HistoryTab.Weekly));
 
         // Assert - Weekly is now active
-        Assert.Contains("active", cut.Find("#weekly-tab").GetAttribute("class"));
-        Assert.DoesNotContain("active", cut.Find("#daily-tab").GetAttribute("class"));
+        Assert.Contains("act", cut.Find("#weekly-tab").GetAttribute("class"));
+        Assert.DoesNotContain("act", cut.Find("#daily-tab").GetAttribute("class"));
     }
 
     #endregion
 }
-
