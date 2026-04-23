@@ -68,6 +68,8 @@ public class ServiceRegistrationService : IServiceRegistrationService
         services.AddScoped<IJSInteropService, JSInteropService>();
         services.AddScoped<IInfiniteScrollInterop, InfiniteScrollInterop>();
         services.AddScoped<ILocalDateTimeService, LocalDateTimeService>();
+        services.AddScoped<IGoogleDriveService, GoogleDriveService>();
+        services.AddScoped<ICloudSyncService, CloudSyncService>();
 
         _logger?.LogInformation("All services registered successfully");
     }

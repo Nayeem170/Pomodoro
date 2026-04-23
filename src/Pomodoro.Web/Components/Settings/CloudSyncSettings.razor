@@ -1,0 +1,205 @@
+@using Pomodoro.Web.Services
+@inject ICloudSyncService CloudSyncService
+@inject ILogger<CloudSyncSettings> Logger
+
+<div class="ss ss-data">
+    <div class="ss-hdr">Cloud Sync</div>
+
+    @if (!CloudSyncService.IsConnected)
+    {
+        <div class="sr">
+            <div>
+                <div class="sr-lbl">Google Drive</div>
+                <div class="sr-sub">Sync data across your devices</div>
+            </div>
+            <button class="sec-btn" @onclick="Connect" disabled="@_isConnecting">
+                @(_isConnecting ? "Connecting..." : "Connect")
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="sr">
+            <div>
+                <div class="sr-lbl">Status</div>
+                <div class="sr-sub sync-status-connected">Connected</div>
+            </div>
+        </div>
+
+        <div class="sr">
+            <div>
+                <div class="sr-lbl">Last synced</div>
+                <div class="sr-sub">@FormatLastSynced</div>
+            </div>
+        </div>
+
+        <div class="sr">
+            <div>
+                <div class="sr-lbl">Device</div>
+                <div class="sr-sub">@CloudSyncService.DeviceId</div>
+            </div>
+        </div>
+
+        <div class="sr">
+            <div>
+                <div class="sr-lbl">Sync now</div>
+                <div class="sr-sub">Push local changes and pull remote</div>
+            </div>
+            <button class="sec-btn" @onclick="SyncNow" disabled="@_isSyncing">
+                @(_isSyncing ? "Syncing..." : "Sync Now")
+            </button>
+        </div>
+
+        <div class="sr">
+            <div>
+                <div class="sr-lbl">Disconnect</div>
+                <div class="sr-sub">Stop syncing with Google Drive</div>
+            </div>
+            <button class="danger-btn" @onclick="Disconnect" disabled="@_isSyncing">
+                Disconnect
+            </button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="sr sync-error">
+            <span>@_errorMessage</span>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_successMessage))
+    {
+        <div class="sr sync-success">
+            <span>@_successMessage</span>
+        </div>
+    }
+</div>
+
+@code {
+    private bool _isConnecting;
+    private bool _isSyncing;
+    private string? _errorMessage;
+    private string? _successMessage;
+
+    protected override void OnInitialized()
+    {
+        CloudSyncService.OnSyncStatusChanged += OnSyncStatusChanged;
+    }
+
+    public void Dispose()
+    {
+        CloudSyncService.OnSyncStatusChanged -= OnSyncStatusChanged;
+    }
+
+    private string FormatLastSynced => CloudSyncService.LastSyncedAt.HasValue
+        ? CloudSyncService.LastSyncedAt.Value.ToLocalTime().ToString("g")
+        : "Never";
+
+    private async Task Connect()
+    {
+        _isConnecting = true;
+        _errorMessage = null;
+        _successMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            var clientId = CloudSyncService.ClientId ?? Constants.Sync.DefaultClientId;
+            var success = await CloudSyncService.ConnectAsync(clientId);
+            if (success)
+            {
+                _successMessage = Constants.SyncMessages.Connected;
+            }
+            else
+            {
+                _errorMessage = Constants.SyncMessages.AuthFailed;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to connect Google Drive");
+            _errorMessage = Constants.SyncMessages.InitFailed;
+        }
+        finally
+        {
+            _isConnecting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SyncNow()
+    {
+        _isSyncing = true;
+        _errorMessage = null;
+        _successMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            var result = await CloudSyncService.SyncNowAsync();
+            if (result.Success)
+            {
+                _successMessage = result.Action switch
+                {
+                    SyncAction.Pushed => Constants.SyncMessages.SyncPushSuccess,
+                    SyncAction.Pulled => string.Format(Constants.SyncMessages.SyncPullSuccess,
+                        result.ActivitiesImported, result.TasksImported),
+                    SyncAction.UpToDate => Constants.SyncMessages.AlreadyUpToDate,
+                    _ => Constants.SyncMessages.SyncComplete
+                };
+            }
+            else
+            {
+                _errorMessage = result.ErrorMessage ?? Constants.SyncMessages.SyncFailed;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Manual sync failed");
+            _errorMessage = Constants.SyncMessages.SyncFailed;
+        }
+        finally
+        {
+            _isSyncing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task Disconnect()
+    {
+        _isSyncing = true;
+        _errorMessage = null;
+        _successMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            await CloudSyncService.DisconnectAsync();
+            _successMessage = Constants.SyncMessages.Disconnected;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to disconnect Google Drive");
+            _errorMessage = Constants.SyncMessages.SyncFailed;
+        }
+        finally
+        {
+            _isSyncing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OnSyncStatusChanged()
+    {
+        _errorMessage = null;
+        _successMessage = null;
+
+        if (!CloudSyncService.IsConnected && CloudSyncService.IsInitialized)
+        {
+            _errorMessage = Constants.SyncMessages.ReconnectRequired;
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
+}
