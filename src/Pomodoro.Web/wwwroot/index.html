@@ -26,7 +26,7 @@
     <meta name="msvalidate.01" content="81D78E7A7E951493A0C03CAD66C20F67" />
     <!-- CSP: localhost wildcards are for Blazor WebAssembly hot reload during development. 
          Consider removing 'http://localhost:* ws://localhost:*' for production deployment. -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob: https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: wss: http://localhost:* ws://localhost:*; worker-src 'self' blob:;" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob: https://static.cloudflareinsights.com https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: wss: http://localhost:* ws://localhost:*; worker-src 'self' blob:;" />
     <title>Pomodoro - Free Online Focus Timer | Boost Productivity</title>
     <base href="/" />
     
@@ -84,6 +84,9 @@
     
     <!-- Chart.js is now lazy-loaded by chartInterop.js when needed (saves ~200KB initial load) -->
     
+    <!-- Google Identity Services for Google Drive sync -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
     <!-- Custom JavaScript modules - must load before Blazor starts -->
     <script src="js/jsConstants.js"></script>
     <script src="js/notifications.js"></script>
@@ -95,6 +98,8 @@
     <script src="js/infiniteScroll.js"></script>
     <script src="js/swipeNavigation.js"></script>
     <script src="js/fileInterop.js"></script>
+    <script src="js/googleDrive.js"></script>
+    <script src="js/compressionInterop.js"></script>
     <!-- App initialization - service worker registration and URL helpers -->
     <script src="js/app-init.js"></script>
     
