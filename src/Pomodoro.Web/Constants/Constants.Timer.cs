@@ -42,6 +42,24 @@ public static partial class Constants
 
         /// <summary>Maximum auto-start delay in seconds</summary>
         public const int MaxAutoStartDelaySeconds = 60;
+
+        /// <summary>Default daily pomodoro goal</summary>
+        public const int DefaultDailyGoal = 8;
+
+        /// <summary>Minimum daily pomodoro goal</summary>
+        public const int MinDailyGoal = 1;
+
+        /// <summary>Maximum daily pomodoro goal</summary>
+        public const int MaxDailyGoal = 20;
+
+        /// <summary>Default long break interval (sessions before long break)</summary>
+        public const int DefaultLongBreakInterval = 4;
+
+        /// <summary>Minimum long break interval</summary>
+        public const int MinLongBreakInterval = 2;
+
+        /// <summary>Maximum long break interval</summary>
+        public const int MaxLongBreakInterval = 10;
     }
 
     /// <summary>

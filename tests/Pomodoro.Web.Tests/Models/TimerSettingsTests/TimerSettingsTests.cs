@@ -24,7 +24,8 @@ public partial class TimerSettingsTests
         int longBreakMinutes = 20,
         bool soundEnabled = true,
         bool notificationsEnabled = true,
-        bool autoStartEnabled = true,
+        bool autoStartPomodoros = true,
+        bool autoStartBreaks = true,
         int autoStartDelaySeconds = 15)
     {
         return new TimerSettings
@@ -34,7 +35,8 @@ public partial class TimerSettingsTests
             LongBreakMinutes = longBreakMinutes,
             SoundEnabled = soundEnabled,
             NotificationsEnabled = notificationsEnabled,
-            AutoStartEnabled = autoStartEnabled,
+            AutoStartPomodoros = autoStartPomodoros,
+            AutoStartBreaks = autoStartBreaks,
             AutoStartDelaySeconds = autoStartDelaySeconds
         };
     }

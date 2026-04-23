@@ -26,8 +26,11 @@ public class SettingsRepository : ISettingsRepository
             LongBreakMinutes = record.LongBreakMinutes,
             SoundEnabled = record.SoundEnabled,
             NotificationsEnabled = record.NotificationsEnabled,
-            AutoStartEnabled = record.AutoStartEnabled,
-            AutoStartDelaySeconds = record.AutoStartDelaySeconds
+            AutoStartPomodoros = record.AutoStartPomodoros,
+            AutoStartBreaks = record.AutoStartBreaks,
+            AutoStartDelaySeconds = record.AutoStartDelaySeconds,
+            LongBreakInterval = record.LongBreakInterval,
+            DailyGoal = record.DailyGoal
         };
     }
 
@@ -43,8 +46,11 @@ public class SettingsRepository : ISettingsRepository
             LongBreakMinutes = settings.LongBreakMinutes,
             SoundEnabled = settings.SoundEnabled,
             NotificationsEnabled = settings.NotificationsEnabled,
-            AutoStartEnabled = settings.AutoStartEnabled,
-            AutoStartDelaySeconds = settings.AutoStartDelaySeconds
+            AutoStartPomodoros = settings.AutoStartPomodoros,
+            AutoStartBreaks = settings.AutoStartBreaks,
+            AutoStartDelaySeconds = settings.AutoStartDelaySeconds,
+            LongBreakInterval = settings.LongBreakInterval,
+            DailyGoal = settings.DailyGoal
         };
         return await _indexedDb.PutAsync(Constants.Storage.SettingsStore, record);
     }
@@ -67,6 +73,9 @@ public class TimerSettingsRecord
     public int LongBreakMinutes { get; set; }
     public bool SoundEnabled { get; set; }
     public bool NotificationsEnabled { get; set; }
-    public bool AutoStartEnabled { get; set; }
+    public bool AutoStartPomodoros { get; set; }
+    public bool AutoStartBreaks { get; set; }
     public int AutoStartDelaySeconds { get; set; }
+    public int LongBreakInterval { get; set; }
+    public int DailyGoal { get; set; }
 }

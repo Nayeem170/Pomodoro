@@ -43,7 +43,7 @@ public partial class SettingsRepositoryTests
                 LongBreakMinutes = 20,
                 SoundEnabled = true,
                 NotificationsEnabled = true,
-                AutoStartEnabled = false,
+                AutoStartPomodoros = false, AutoStartBreaks = false,
                 AutoStartDelaySeconds = 15
             };
 
@@ -55,7 +55,8 @@ public partial class SettingsRepositoryTests
                 LongBreakMinutes = expectedSettings.LongBreakMinutes,
                 SoundEnabled = expectedSettings.SoundEnabled,
                 NotificationsEnabled = expectedSettings.NotificationsEnabled,
-                AutoStartEnabled = expectedSettings.AutoStartEnabled,
+                AutoStartPomodoros = expectedSettings.AutoStartPomodoros,
+                AutoStartBreaks = expectedSettings.AutoStartBreaks,
                 AutoStartDelaySeconds = expectedSettings.AutoStartDelaySeconds
             };
 
@@ -77,7 +78,8 @@ public partial class SettingsRepositoryTests
             Assert.Equal(expectedSettings.LongBreakMinutes, result.LongBreakMinutes);
             Assert.Equal(expectedSettings.SoundEnabled, result.SoundEnabled);
             Assert.Equal(expectedSettings.NotificationsEnabled, result.NotificationsEnabled);
-            Assert.Equal(expectedSettings.AutoStartEnabled, result.AutoStartEnabled);
+            Assert.Equal(expectedSettings.AutoStartPomodoros, result.AutoStartPomodoros);
+            Assert.Equal(expectedSettings.AutoStartBreaks, result.AutoStartBreaks);
             Assert.Equal(expectedSettings.AutoStartDelaySeconds, result.AutoStartDelaySeconds);
         }
 
@@ -93,7 +95,7 @@ public partial class SettingsRepositoryTests
                 LongBreakMinutes = 20,
                 SoundEnabled = true,
                 NotificationsEnabled = true,
-                AutoStartEnabled = false,
+                AutoStartPomodoros = false, AutoStartBreaks = false,
                 AutoStartDelaySeconds = 15
             };
 
@@ -115,7 +117,8 @@ public partial class SettingsRepositoryTests
             Assert.Equal(20, result.LongBreakMinutes);
             Assert.True(result.SoundEnabled);
             Assert.True(result.NotificationsEnabled);
-            Assert.False(result.AutoStartEnabled);
+            Assert.False(result.AutoStartPomodoros);
+            Assert.False(result.AutoStartBreaks);
             Assert.Equal(15, result.AutoStartDelaySeconds);
         }
 
@@ -131,7 +134,7 @@ public partial class SettingsRepositoryTests
                 LongBreakMinutes = 0,
                 SoundEnabled = false,
                 NotificationsEnabled = false,
-                AutoStartEnabled = false,
+                AutoStartPomodoros = false, AutoStartBreaks = false,
                 AutoStartDelaySeconds = 0
             };
 
@@ -153,7 +156,8 @@ public partial class SettingsRepositoryTests
             Assert.Equal(1, result.LongBreakMinutes); // Clamped to MinBreakMinutes
             Assert.False(result.SoundEnabled);
             Assert.False(result.NotificationsEnabled);
-            Assert.False(result.AutoStartEnabled);
+            Assert.False(result.AutoStartPomodoros);
+            Assert.False(result.AutoStartBreaks);
             Assert.Equal(3, result.AutoStartDelaySeconds); // Clamped to MinAutoStartDelaySeconds
         }
 
@@ -169,7 +173,7 @@ public partial class SettingsRepositoryTests
                 LongBreakMinutes = 30,
                 SoundEnabled = true,
                 NotificationsEnabled = true,
-                AutoStartEnabled = true,
+                AutoStartPomodoros = true, AutoStartBreaks = true,
                 AutoStartDelaySeconds = 30
             };
 
@@ -191,7 +195,8 @@ public partial class SettingsRepositoryTests
             Assert.Equal(30, result.LongBreakMinutes);
             Assert.True(result.SoundEnabled);
             Assert.True(result.NotificationsEnabled);
-            Assert.True(result.AutoStartEnabled);
+            Assert.True(result.AutoStartPomodoros);
+            Assert.True(result.AutoStartBreaks);
             Assert.Equal(30, result.AutoStartDelaySeconds);
         }
 
@@ -239,7 +244,7 @@ public partial class SettingsRepositoryTests
                 LongBreakMinutes = 15,
                 SoundEnabled = true,
                 NotificationsEnabled = true,
-                AutoStartEnabled = false,
+                AutoStartPomodoros = false, AutoStartBreaks = false,
                 AutoStartDelaySeconds = 10
             };
 

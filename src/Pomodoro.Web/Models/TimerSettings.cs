@@ -9,6 +9,8 @@ public class TimerSettings
     private int _pomodoroMinutes = Constants.Timer.DefaultPomodoroMinutes;
     private int _shortBreakMinutes = Constants.Timer.DefaultShortBreakMinutes;
     private int _longBreakMinutes = Constants.Timer.DefaultLongBreakMinutes;
+    private int _dailyGoal = Constants.Timer.DefaultDailyGoal;
+    private int _longBreakInterval = Constants.Timer.DefaultLongBreakInterval;
 
     /// <summary>
     /// Pomodoro duration in minutes. Clamped to valid range.
@@ -35,6 +37,24 @@ public class TimerSettings
     {
         get => _longBreakMinutes;
         set => _longBreakMinutes = Math.Clamp(value, Constants.Timer.MinBreakMinutes, Constants.Timer.MaxBreakMinutes);
+    }
+
+    /// <summary>
+    /// Daily pomodoro goal. Clamped to valid range.
+    /// </summary>
+    public int DailyGoal
+    {
+        get => _dailyGoal;
+        set => _dailyGoal = Math.Clamp(value, Constants.Timer.MinDailyGoal, Constants.Timer.MaxDailyGoal);
+    }
+
+    /// <summary>
+    /// Number of pomodoro sessions before a long break. Clamped to valid range.
+    /// </summary>
+    public int LongBreakInterval
+    {
+        get => _longBreakInterval;
+        set => _longBreakInterval = Math.Clamp(value, Constants.Timer.MinLongBreakInterval, Constants.Timer.MaxLongBreakInterval);
     }
 
     /// <summary>
@@ -71,9 +91,14 @@ public class TimerSettings
     public bool NotificationsEnabled { get; set; } = true;
 
     /// <summary>
-    /// Whether to automatically start the next timer (pomodoro or break) after the current one completes
+    /// Whether to automatically start pomodoros after a break completes
     /// </summary>
-    public bool AutoStartEnabled { get; set; } = true;
+    public bool AutoStartPomodoros { get; set; } = true;
+
+    /// <summary>
+    /// Whether to automatically start breaks after a pomodoro completes
+    /// </summary>
+    public bool AutoStartBreaks { get; set; } = true;
 
     private int _autoStartDelaySeconds = Constants.Timer.DefaultAutoStartDelaySeconds;
 
@@ -95,9 +120,12 @@ public class TimerSettings
         return PomodoroMinutes == other.PomodoroMinutes
             && ShortBreakMinutes == other.ShortBreakMinutes
             && LongBreakMinutes == other.LongBreakMinutes
+            && DailyGoal == other.DailyGoal
+            && LongBreakInterval == other.LongBreakInterval
             && SoundEnabled == other.SoundEnabled
             && NotificationsEnabled == other.NotificationsEnabled
-            && AutoStartEnabled == other.AutoStartEnabled
+            && AutoStartPomodoros == other.AutoStartPomodoros
+            && AutoStartBreaks == other.AutoStartBreaks
             && AutoStartDelaySeconds == other.AutoStartDelaySeconds;
     }
 
@@ -126,10 +154,9 @@ public class TimerSettings
         PomodoroMinutes,
         ShortBreakMinutes,
         LongBreakMinutes,
-        SoundEnabled,
-        NotificationsEnabled,
-        AutoStartEnabled,
-        AutoStartDelaySeconds);
+        DailyGoal,
+        LongBreakInterval,
+        HashCode.Combine(SoundEnabled, NotificationsEnabled, AutoStartPomodoros, AutoStartBreaks, AutoStartDelaySeconds));
 
     /// <summary>
     /// Creates a deep copy of this settings instance
@@ -140,9 +167,12 @@ public class TimerSettings
         PomodoroMinutes = PomodoroMinutes,
         ShortBreakMinutes = ShortBreakMinutes,
         LongBreakMinutes = LongBreakMinutes,
+        DailyGoal = DailyGoal,
+        LongBreakInterval = LongBreakInterval,
         SoundEnabled = SoundEnabled,
         NotificationsEnabled = NotificationsEnabled,
-        AutoStartEnabled = AutoStartEnabled,
+        AutoStartPomodoros = AutoStartPomodoros,
+        AutoStartBreaks = AutoStartBreaks,
         AutoStartDelaySeconds = AutoStartDelaySeconds
     };
 }

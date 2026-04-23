@@ -90,7 +90,8 @@ public partial class SettingsRepositoryTests
             longBreakMinutes: 25,
             soundEnabled: false,
             notificationsEnabled: false,
-            autoStartEnabled: false,
+            autoStartPomodoros: false,
+            autoStartBreaks: false,
             autoStartDelaySeconds: 30);
 
         object? capturedRecord = null;
@@ -124,7 +125,8 @@ public partial class SettingsRepositoryTests
             recordType.GetProperty("LongBreakMinutes")?.GetValue(capturedRecord));
         Assert.False((bool?)recordType.GetProperty("SoundEnabled")?.GetValue(capturedRecord)!);
         Assert.False((bool?)recordType.GetProperty("NotificationsEnabled")?.GetValue(capturedRecord)!);
-        Assert.False((bool?)recordType.GetProperty("AutoStartEnabled")?.GetValue(capturedRecord)!);
+        Assert.False((bool?)recordType.GetProperty("AutoStartPomodoros")?.GetValue(capturedRecord)!);
+        Assert.False((bool?)recordType.GetProperty("AutoStartBreaks")?.GetValue(capturedRecord)!);
         Assert.Equal(30,
             recordType.GetProperty("AutoStartDelaySeconds")?.GetValue(capturedRecord));
     }

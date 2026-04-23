@@ -96,7 +96,7 @@ public partial class SettingsRepositoryTests
                 LongBreakMinutes = 20,
                 SoundEnabled = false,
                 NotificationsEnabled = false,
-                AutoStartEnabled = false
+                AutoStartPomodoros = false, AutoStartBreaks = false
             };
 
             MockIndexedDb
