@@ -157,9 +157,9 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
             sessionType = (int)_timerService.CurrentSessionType,
             isRunning = isRunning,
             isStarted = isStarted,
-            // Single source of truth: showReset when timer is running OR was started
             showReset = isRunning || isStarted,
-            taskName = _taskService.CurrentTask?.Name
+            taskName = _taskService.CurrentTask?.Name,
+            totalDurationSeconds = _timerService.Settings.GetDurationSeconds(_timerService.CurrentSessionType)
         };
     }
 

@@ -18,13 +18,12 @@ public class DailyViewTests : TestHelper
     {
         var cut = RenderComponent<Pomodoro.Web.Components.History.DailyView>();
 
-        Assert.Contains("daily-view", cut.Markup);
-        Assert.Contains("date-navigator-container", cut.Markup);
-        Assert.Contains("history-content", cut.Markup);
+        Assert.Contains("stat-grid", cut.Markup);
+        Assert.Contains("card", cut.Markup);
     }
 
     [Fact]
-    public void Render_WithSelectedDate_PassesToDateNavigator()
+    public void Render_WithSelectedDate_RendersDailyView()
     {
         var date = new DateTime(2024, 6, 15);
 
@@ -32,11 +31,11 @@ public class DailyViewTests : TestHelper
             parameters => parameters.Add(p => p.SelectedDate, date)
         );
 
-        Assert.Contains("daily-view", cut.Markup);
+        Assert.Contains("stat-grid", cut.Markup);
     }
 
     [Fact]
-    public void Render_WithActivities_PassesToTimelineSection()
+    public void Render_WithActivities_RendersTimelineSection()
     {
         var activities = new List<ActivityRecord>
         {
@@ -49,7 +48,7 @@ public class DailyViewTests : TestHelper
                 .Add(p => p.HasMoreActivities, false)
         );
 
-        Assert.Contains("history-content", cut.Markup);
+        Assert.Contains("timeline-scroll-container", cut.Markup);
     }
 
     [Fact]
@@ -66,7 +65,8 @@ public class DailyViewTests : TestHelper
             parameters => parameters.Add(p => p.CurrentStats, stats)
         );
 
-        Assert.Contains("daily-view", cut.Markup);
+        Assert.Contains("stat-grid", cut.Markup);
+        Assert.Contains("5", cut.Markup);
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class DailyViewTests : TestHelper
             parameters => parameters.Add(p => p.CurrentStats, (DailyStatsSummary?)null)
         );
 
-        Assert.Contains("daily-view", cut.Markup);
+        Assert.Contains("stat-grid", cut.Markup);
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public class DailyViewTests : TestHelper
                 .Add(p => p.HasMoreActivities, true)
         );
 
-        Assert.Contains("history-content", cut.Markup);
+        Assert.Contains("timeline-scroll-container", cut.Markup);
     }
 
     [Fact]
@@ -100,15 +100,15 @@ public class DailyViewTests : TestHelper
                 .Add(p => p.IsLoadingMore, true)
         );
 
-        Assert.Contains("history-content", cut.Markup);
+        Assert.Contains("timeline-scroll-container", cut.Markup);
     }
 
     [Fact]
-    public void Render_AlwaysRendersTimeDistributionSection()
+    public void Render_AlwaysRendersTimeDistributionChart()
     {
         var cut = RenderComponent<Pomodoro.Web.Components.History.DailyView>();
 
-        Assert.Contains("time-distribution-section", cut.Markup);
+        Assert.Contains("Time distribution", cut.Markup);
     }
 
     [Fact]
@@ -121,7 +121,6 @@ public class DailyViewTests : TestHelper
                 .Add(p => p.IsLoadingMore, false)
         );
 
-        Assert.Contains("history-content", cut.Markup);
+        Assert.Contains("timeline-scroll-container", cut.Markup);
     }
 }
-

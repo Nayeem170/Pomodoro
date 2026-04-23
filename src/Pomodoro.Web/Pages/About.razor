@@ -1,152 +1,180 @@
 @page "/about"
 @using System
 
-<div class="about-page">
-    <div class="about-header">
-        <h1>@Constants.PageTitles.AboutPageTitle</h1>
-        <p class="subtitle">@Constants.AboutPageContent.Subtitle</p>
+<div class="about-body">
+    <div class="about-hero">
+        <div class="about-hero-icon">🍅</div>
+        <p class="about-hero-title">Pomodoro</p>
+        <p class="about-hero-sub">Focus timer · Blazor WASM PWA · v2.0</p>
+        <p class="about-hero-desc">Stay focused, get things done.<br>No sign-up needed — your data stays on your device.</p>
     </div>
 
-    <div class="about-content">
-        <!-- What is it Section -->
-        <section class="info-section">
-            <h2>@Constants.AboutPageContent.WhatIsSectionTitle</h2>
-            <p>
-                @string.Format(Constants.AboutPageContent.WhatIsParagraph, Constants.TimerDisplay.DefaultPomodoroMinutesText)
-            </p>
-        </section>
+    <div class="about-card collapsible">
+        <button class="collapse-toggle" @onclick="ToggleWhatIs">
+            <span>@Constants.AboutPageContent.WhatIsSectionTitle</span>
+            <span class="collapse-arrow @(IsWhatIsOpen ? "open" : "")">▸</span>
+        </button>
+        @if (IsWhatIsOpen)
+        {
+            <div class="collapse-body">
+                <p>@string.Format(Constants.AboutPageContent.WhatIsParagraph, Constants.TimerDisplay.DefaultPomodoroMinutesText)</p>
+            </div>
+        }
+    </div>
 
-        <!-- How it works Section -->
-        <section class="info-section">
-            <h2>@Constants.AboutPageContent.HowItWorksSectionTitle</h2>
-            <div class="steps-container">
-                <div class="step-card">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h3>@Constants.AboutPageContent.Step1Title</h3>
-                        <p>@Constants.AboutPageContent.Step1Description</p>
+    <div class="about-card collapsible">
+        <button class="collapse-toggle" @onclick="ToggleHowItWorks">
+            <span>@Constants.AboutPageContent.HowItWorksSectionTitle</span>
+            <span class="collapse-arrow @(IsHowItWorksOpen ? "open" : "")">▸</span>
+        </button>
+        @if (IsHowItWorksOpen)
+        {
+            <div class="collapse-body">
+                <div class="steps-container">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>@Constants.AboutPageContent.Step1Title</h3>
+                            <p>@Constants.AboutPageContent.Step1Description</p>
+                        </div>
                     </div>
-                </div>
-                <div class="step-card">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h3>@Constants.AboutPageContent.Step2Title</h3>
-                        <p>@string.Format(Constants.AboutPageContent.Step2Description, Constants.TimerDisplay.DefaultPomodoroMinutesText)</p>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>@Constants.AboutPageContent.Step2Title</h3>
+                            <p>@string.Format(Constants.AboutPageContent.Step2Description, Constants.TimerDisplay.DefaultPomodoroMinutesText)</p>
+                        </div>
                     </div>
-                </div>
-                <div class="step-card">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h3>@Constants.AboutPageContent.Step3Title</h3>
-                        <p>@Constants.AboutPageContent.Step3Description</p>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>@Constants.AboutPageContent.Step3Title</h3>
+                            <p>@Constants.AboutPageContent.Step3Description</p>
+                        </div>
                     </div>
-                </div>
-                <div class="step-card">
-                    <div class="step-number">4</div>
-                    <div class="step-content">
-                        <h3>@Constants.AboutPageContent.Step4Title</h3>
-                        <p>@string.Format(Constants.AboutPageContent.Step4Description, Constants.TimerDisplay.DefaultShortBreakMinutesText)</p>
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3>@Constants.AboutPageContent.Step4Title</h3>
+                            <p>@string.Format(Constants.AboutPageContent.Step4Description, Constants.TimerDisplay.DefaultShortBreakMinutesText)</p>
+                        </div>
                     </div>
-                </div>
-                <div class="step-card highlight">
-                    <div class="step-number">5</div>
-                    <div class="step-content">
-                        <h3>@Constants.AboutPageContent.Step5Title</h3>
-                        <p>@string.Format(Constants.AboutPageContent.Step5Description, Constants.TimerDisplay.PomodorosBeforeLongBreak, Constants.TimerDisplay.DefaultLongBreakMinutesRangeText)</p>
+                    <div class="step-card highlight">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h3>@Constants.AboutPageContent.Step5Title</h3>
+                            <p>@string.Format(Constants.AboutPageContent.Step5Description, Constants.TimerDisplay.PomodorosBeforeLongBreak, Constants.TimerDisplay.DefaultLongBreakMinutesRangeText)</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </section>
+        }
+    </div>
 
-        <!-- Benefits Section -->
-        <section class="info-section">
-            <h2>@Constants.AboutPageContent.BenefitsSectionTitle</h2>
-            <div class="benefits-grid">
-                <div class="benefit-card">
-                    <span class="benefit-icon">🎯</span>
-                    <h3>@Constants.AboutPageContent.Benefit1Title</h3>
-                    <p>@Constants.AboutPageContent.Benefit1Description</p>
-                </div>
-                <div class="benefit-card">
-                    <span class="benefit-icon">⚡</span>
-                    <h3>@Constants.AboutPageContent.Benefit2Title</h3>
-                    <p>@Constants.AboutPageContent.Benefit2Description</p>
-                </div>
-                <div class="benefit-card">
-                    <span class="benefit-icon">🧠</span>
-                    <h3>@Constants.AboutPageContent.Benefit3Title</h3>
-                    <p>@Constants.AboutPageContent.Benefit3Description</p>
-                </div>
-                <div class="benefit-card">
-                    <span class="benefit-icon">📊</span>
-                    <h3>@Constants.AboutPageContent.Benefit4Title</h3>
-                    <p>@Constants.AboutPageContent.Benefit4Description</p>
-                </div>
-                <div class="benefit-card">
-                    <span class="benefit-icon">⏰</span>
-                    <h3>@Constants.AboutPageContent.Benefit5Title</h3>
-                    <p>@Constants.AboutPageContent.Benefit5Description</p>
-                </div>
-                <div class="benefit-card">
-                    <span class="benefit-icon">🛡️</span>
-                    <h3>@Constants.AboutPageContent.Benefit6Title</h3>
-                    <p>@Constants.AboutPageContent.Benefit6Description</p>
+    <div class="about-card collapsible">
+        <button class="collapse-toggle" @onclick="ToggleBenefits">
+            <span>@Constants.AboutPageContent.BenefitsSectionTitle</span>
+            <span class="collapse-arrow @(IsBenefitsOpen ? "open" : "")">▸</span>
+        </button>
+        @if (IsBenefitsOpen)
+        {
+            <div class="collapse-body">
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <span class="benefit-icon">🎯</span>
+                        <h3>@Constants.AboutPageContent.Benefit1Title</h3>
+                        <p>@Constants.AboutPageContent.Benefit1Description</p>
+                    </div>
+                    <div class="benefit-card">
+                        <span class="benefit-icon">⚡</span>
+                        <h3>@Constants.AboutPageContent.Benefit2Title</h3>
+                        <p>@Constants.AboutPageContent.Benefit2Description</p>
+                    </div>
+                    <div class="benefit-card">
+                        <span class="benefit-icon">🧠</span>
+                        <h3>@Constants.AboutPageContent.Benefit3Title</h3>
+                        <p>@Constants.AboutPageContent.Benefit3Description</p>
+                    </div>
+                    <div class="benefit-card">
+                        <span class="benefit-icon">📊</span>
+                        <h3>@Constants.AboutPageContent.Benefit4Title</h3>
+                        <p>@Constants.AboutPageContent.Benefit4Description</p>
+                    </div>
+                    <div class="benefit-card">
+                        <span class="benefit-icon">⏰</span>
+                        <h3>@Constants.AboutPageContent.Benefit5Title</h3>
+                        <p>@Constants.AboutPageContent.Benefit5Description</p>
+                    </div>
+                    <div class="benefit-card">
+                        <span class="benefit-icon">🛡️</span>
+                        <h3>@Constants.AboutPageContent.Benefit6Title</h3>
+                        <p>@Constants.AboutPageContent.Benefit6Description</p>
+                    </div>
                 </div>
             </div>
-        </section>
+        }
+    </div>
 
-        <!-- Tips Section -->
-        <section class="info-section">
-            <h2>@Constants.AboutPageContent.TipsSectionTitle</h2>
-            <ul class="tips-list">
-                <li>
-                    <strong>@Constants.AboutPageContent.Tip1Title:</strong> @string.Format(Constants.AboutPageContent.Tip1Description, Constants.TimerDisplay.DefaultPomodoroMinutesText, Constants.TimerDisplay.ShortPomodoroMinutesText)
-                </li>
-                <li>
-                    <strong>@Constants.AboutPageContent.Tip2Title:</strong> @Constants.AboutPageContent.Tip2Description
-                </li>
-                <li>
-                    <strong>@Constants.AboutPageContent.Tip3Title:</strong> @Constants.AboutPageContent.Tip3Description
-                </li>
-                <li>
-                    <strong>@Constants.AboutPageContent.Tip4Title:</strong> @Constants.AboutPageContent.Tip4Description
-                </li>
-                <li>
-                    <strong>@Constants.AboutPageContent.Tip5Title:</strong> @Constants.AboutPageContent.Tip5Description
-                </li>
-                <li>
-                    <strong>@Constants.AboutPageContent.Tip6Title:</strong> @Constants.AboutPageContent.Tip6Description
-                </li>
-            </ul>
-        </section>
-
-        <!-- Default Times Section -->
-        <section class="info-section default-times">
-            <h2>@Constants.AboutPageContent.DefaultTimesSectionTitle</h2>
-            <div class="times-grid">
-                <div class="time-card pomodoro">
-                    <div class="time-value">@Constants.Timer.DefaultPomodoroMinutes</div>
-                    <div class="time-label">@(new MarkupString(Constants.AboutPageContent.MinutesPomodoroLabel))</div>
-                </div>
-                <div class="time-card short-break">
-                    <div class="time-value">@Constants.Timer.DefaultShortBreakMinutes</div>
-                    <div class="time-label">@(new MarkupString(Constants.AboutPageContent.MinutesShortBreakLabel))</div>
-                </div>
-                <div class="time-card long-break">
-                    <div class="time-value">@Constants.Timer.DefaultLongBreakMinutes</div>
-                    <div class="time-label">@(new MarkupString(Constants.AboutPageContent.MinutesLongBreakLabel))</div>
-                </div>
+    <div class="about-card collapsible">
+        <button class="collapse-toggle" @onclick="ToggleTips">
+            <span>@Constants.AboutPageContent.TipsSectionTitle</span>
+            <span class="collapse-arrow @(IsTipsOpen ? "open" : "")">▸</span>
+        </button>
+        @if (IsTipsOpen)
+        {
+            <div class="collapse-body">
+                <ul class="tips-list">
+                    <li><strong>@Constants.AboutPageContent.Tip1Title:</strong> @string.Format(Constants.AboutPageContent.Tip1Description, Constants.TimerDisplay.DefaultPomodoroMinutesText, Constants.TimerDisplay.ShortPomodoroMinutesText)</li>
+                    <li><strong>@Constants.AboutPageContent.Tip2Title:</strong> @Constants.AboutPageContent.Tip2Description</li>
+                    <li><strong>@Constants.AboutPageContent.Tip3Title:</strong> @Constants.AboutPageContent.Tip3Description</li>
+                    <li><strong>@Constants.AboutPageContent.Tip4Title:</strong> @Constants.AboutPageContent.Tip4Description</li>
+                    <li><strong>@Constants.AboutPageContent.Tip5Title:</strong> @Constants.AboutPageContent.Tip5Description</li>
+                    <li><strong>@Constants.AboutPageContent.Tip6Title:</strong> @Constants.AboutPageContent.Tip6Description</li>
+                </ul>
             </div>
-            <p class="times-note">@Constants.AboutPageContent.TimesNote</p>
-        </section>
+        }
+    </div>
 
-        <!-- Call to Action -->
-        <section class="cta-section">
-            <h2>@Constants.AboutPageContent.CtaSectionTitle</h2>
-            <p>@Constants.AboutPageContent.CtaDescription</p>
-            <a href="@Constants.Routing.HomeRoute" class="cta-button">@Constants.AboutPageContent.CtaButtonText</a>
-        </section>
+    <div class="about-card collapsible">
+        <button class="collapse-toggle" @onclick="ToggleDefaultTimes">
+            <span>@Constants.AboutPageContent.DefaultTimesSectionTitle</span>
+            <span class="collapse-arrow @(IsDefaultTimesOpen ? "open" : "")">▸</span>
+        </button>
+        @if (IsDefaultTimesOpen)
+        {
+            <div class="collapse-body">
+                <div class="times-grid">
+                    <div class="time-card pomodoro">
+                        <div class="time-value">@Constants.Timer.DefaultPomodoroMinutes</div>
+                        <div class="time-label">@(new MarkupString(Constants.AboutPageContent.MinutesPomodoroLabel))</div>
+                    </div>
+                    <div class="time-card short-break">
+                        <div class="time-value">@Constants.Timer.DefaultShortBreakMinutes</div>
+                        <div class="time-label">@(new MarkupString(Constants.AboutPageContent.MinutesShortBreakLabel))</div>
+                    </div>
+                    <div class="time-card long-break">
+                        <div class="time-value">@Constants.Timer.DefaultLongBreakMinutes</div>
+                        <div class="time-label">@(new MarkupString(Constants.AboutPageContent.MinutesLongBreakLabel))</div>
+                    </div>
+                </div>
+                <p class="times-note">@Constants.AboutPageContent.TimesNote</p>
+            </div>
+        }
     </div>
 </div>
+
+@code {
+    private bool IsWhatIsOpen;
+    private bool IsHowItWorksOpen;
+    private bool IsBenefitsOpen;
+    private bool IsTipsOpen;
+    private bool IsDefaultTimesOpen;
+
+    private void ToggleWhatIs() => IsWhatIsOpen = !IsWhatIsOpen;
+    private void ToggleHowItWorks() => IsHowItWorksOpen = !IsHowItWorksOpen;
+    private void ToggleBenefits() => IsBenefitsOpen = !IsBenefitsOpen;
+    private void ToggleTips() => IsTipsOpen = !IsTipsOpen;
+    private void ToggleDefaultTimes() => IsDefaultTimesOpen = !IsDefaultTimesOpen;
+}
 
 <link rel="stylesheet" href="@Constants.CssPaths.AboutCss" />

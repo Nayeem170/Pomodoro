@@ -172,7 +172,7 @@ public static partial class Constants
         public const string SettingsNavLinkTitle = "Settings";
 
         /// <summary>About navigation link title</summary>
-        public const string AboutNavLinkTitle = "About Pomodoro";
+        public const string AboutNavLinkTitle = "About";
 
         #region History Page Section Titles
 
@@ -197,7 +197,7 @@ public static partial class Constants
     public static class PageTitles
     {
         /// <summary>About page title</summary>
-        public const string AboutPageTitle = "🍅 The Pomodoro Technique";
+        public const string AboutPageTitle = "About";
     }
 
     /// <summary>

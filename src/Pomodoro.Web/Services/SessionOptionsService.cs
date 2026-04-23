@@ -59,11 +59,19 @@ public class SessionOptionsService : ISessionOptionsService
 
     public SessionType GetDefaultOption(SessionType completedSessionType)
     {
+        if (completedSessionType == SessionType.Pomodoro)
+        {
+            var interval = _appState.Settings.LongBreakInterval;
+            var count = _appState.TodayPomodoroCount;
+            return count > 0 && count % interval == 0
+                ? SessionType.LongBreak
+                : SessionType.Pomodoro;
+        }
+
         return completedSessionType switch
         {
-            SessionType.Pomodoro => SessionType.Pomodoro, // Continue with another pomodoro
-            SessionType.ShortBreak => SessionType.ShortBreak, // Continue short break
-            SessionType.LongBreak => SessionType.LongBreak, // Continue long break
+            SessionType.ShortBreak => SessionType.ShortBreak,
+            SessionType.LongBreak => SessionType.LongBreak,
             _ => SessionType.Pomodoro
         };
     }

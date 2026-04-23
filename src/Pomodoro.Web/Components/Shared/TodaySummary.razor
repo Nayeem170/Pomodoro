@@ -1,22 +1,16 @@
 @inherits TodaySummaryBase
 
-<div class="today-summary">
-    <h3>📊 TODAY'S SUMMARY</h3>
-    <div class="summary-stats">
-        <div class="stat-item">
-            <span class="stat-icon">⏱️</span>
-            <span class="stat-value">@FormatTime(TotalFocusMinutes)</span>
-            <span class="stat-label">focused</span>
-        </div>
-        <div class="stat-item">
-            <span class="stat-icon">🍅</span>
-            <span class="stat-value">@PomodoroCount</span>
-            <span class="stat-label">pomodoros</span>
-        </div>
-        <div class="stat-item">
-            <span class="stat-icon">📋</span>
-            <span class="stat-value">@TasksWorkedOn</span>
-            <span class="stat-label">tasks</span>
-        </div>
+<div class="pomo-row">
+    <div class="pomo-left">
+        <span class="pomo-emoji">@Constants.SessionTypes.PomodoroEmoji</span>
+        <span class="pomo-num">@PomodoroCount</span>
+        <span class="pomo-sub">/ @DailyGoal completed today</span>
     </div>
+    <div class="pomo-right">
+        <span class="pomo-focus-time">@FormatTime(TotalFocusMinutes)</span>
+        <span class="pomo-focus-label">focus time</span>
+    </div>
+</div>
+<div class="progress-bar">
+    <div class="progress-bar-fill" style="width: @GetProgressWidth()"></div>
 </div>

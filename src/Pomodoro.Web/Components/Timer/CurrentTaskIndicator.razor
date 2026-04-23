@@ -1,18 +1,18 @@
 @if (CurrentSessionType == SessionType.Pomodoro)
 {
-    <div class="current-task-indicator">
+    <div class="active-task">
+        <div class="task-dot @GetDotSessionClass()"></div>
         @if (CurrentTaskId.HasValue)
         {
             var currentTask = Tasks.FirstOrDefault(t => t.Id == CurrentTaskId.Value);
             if (currentTask != null)
             {
-                <span class="task-label">@Constants.TaskUI.CurrentTaskLabel</span>
-                <span class="task-name">@currentTask.Name</span>
+                <span>@currentTask.Name</span>
             }
         }
         else
         {
-            <span class="task-label">@Constants.TaskUI.SelectTaskPrompt</span>
+            <span style="color: var(--color-text-tertiary); font-style: italic;">@Constants.TaskUI.SelectTaskPrompt</span>
         }
     </div>
 }
@@ -26,4 +26,14 @@
 
     [Parameter]
     public List<TaskItem> Tasks { get; set; } = new();
+
+    private string GetDotSessionClass()
+    {
+        return CurrentSessionType switch
+        {
+            SessionType.ShortBreak => "short-break",
+            SessionType.LongBreak => "long-break",
+            _ => ""
+        };
+    }
 }

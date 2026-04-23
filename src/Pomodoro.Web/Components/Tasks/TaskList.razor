@@ -1,9 +1,13 @@
 @inherits TaskListBase
 @using Pomodoro.Web.Models
 
-<div class="task-list">
-    <div class="task-list-header">
-        <h3>📋 TASKS</h3>
+<div class="task-card">
+    <div class="task-card-header">
+        <span class="task-card-title">Tasks</span>
+        @if (!IsAddingTask)
+        {
+            <button class="task-add-btn" @onclick="StartAddTask">+ Add</button>
+        }
     </div>
     
     <div class="add-task-section">
@@ -12,24 +16,18 @@
             <div class="add-task-form">
                 <input type="text" 
                        @bind="NewTaskName" 
-                        @bind:event="oninput"
-                        @onkeydown="HandleKeyPress"
-                        placeholder="Enter task name..." 
-                        class="task-input" 
-                        aria-label="New task name" />
+                       @bind:event="oninput"
+                       @onkeydown="HandleKeyPress"
+                       placeholder="Enter task name..." 
+                       class="task-input" 
+                       aria-label="New task name" />
                 <button class="btn-icon-small btn-add" @onclick="HandleAddTask" disabled="@IsAddDisabled" title="Add" aria-label="Add task">
                     +
                 </button>
                 <button class="btn-icon-small btn-cancel" @onclick="CancelAddTask" title="Cancel" aria-label="Cancel">
-                    ✕
+                    x
                 </button>
             </div>
-        }
-        else
-        {
-            <button class="btn-add-task" @onclick="StartAddTask">
-                + Add Task
-            </button>
         }
     </div>
     

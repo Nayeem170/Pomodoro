@@ -1,28 +1,28 @@
 @inherits TaskItemBase
 @using Pomodoro.Web.Models
 
-<div class="task-item @GetTaskClass()" @onclick="HandleSelect" role="button" tabindex="0" @onkeydown="HandleKeyDown">
-    <div class="task-header">
-        <span class="task-status">@GetStatusIcon()</span>
-        <span class="task-name @(Item.IsCompleted ? "completed" : "")">@Item.Name</span>
-        <div class="task-actions">
-            @if (Item.IsCompleted)
-            {
-                <button class="btn-icon" @onclick="HandleUncomplete" @onclick:stopPropagation="true" title="Undo" aria-label="Undo">↩</button>
-            }
-            else
-            {
-                <button class="btn-icon" @onclick="HandleComplete" @onclick:stopPropagation="true" title="Complete" aria-label="Complete">✓</button>
-            }
-            <button class="btn-icon delete" @onclick="HandleDelete" @onclick:stopPropagation="true" title="Delete" aria-label="Delete">🗑</button>
-        </div>
-    </div>
-    <div class="task-stats">
-        <span class="stat">⏱️ @FormatTime(Item.TotalFocusMinutes)</span>
-        <span class="stat">🍅 @Item.PomodoroCount</span>
-        @if (IsSelected)
+<div class="task-row @GetTaskClass()" @onclick="HandleSelect" role="button" tabindex="0" @onkeydown="HandleKeyDown">
+    @if (Item.IsCompleted)
+    {
+        <button class="task-checkbox completed" @onclick="HandleUncomplete" @onclick:stopPropagation="true" aria-label="Undo">
+            <svg width="9" height="9" viewBox="0 0 9 9"><polyline points="1.5,4.5 3.5,6.5 7.5,2.5" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+    }
+    else
+    {
+        <button class="task-checkbox" @onclick="HandleComplete" @onclick:stopPropagation="true" aria-label="Complete"></button>
+    }
+    <span class="task-text @(Item.IsCompleted ? "completed" : "")">@Item.Name</span>
+    <div class="task-actions">
+        @if (Item.IsCompleted)
         {
-            <span class="stat selected-badge">Selected ●</span>
+            <button class="task-action-btn" @onclick="HandleUncomplete" @onclick:stopPropagation="true" title="Undo" aria-label="Undo">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 2l6 4-6 4V2z" fill="currentColor" transform="rotate(180 6 6)"/></svg>
+            </button>
         }
+        <button class="task-action-btn delete" @onclick="HandleDelete" @onclick:stopPropagation="true" title="Delete" aria-label="Delete">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
     </div>
+    <span class="task-pomo-count">@FormatTime(Item.TotalFocusMinutes)</span>
 </div>

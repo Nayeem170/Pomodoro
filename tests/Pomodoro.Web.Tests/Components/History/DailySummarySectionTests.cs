@@ -38,10 +38,9 @@ public class DailySummarySectionTests : TestContext
         var cut = RenderComponent<DailySummarySection>(parameters => parameters
             .Add(p => p.CurrentStats, stats));
 
-        Assert.Contains("Daily Summary", cut.Markup);
-        Assert.Contains("Minutes Focused", cut.Markup);
         Assert.Contains("Pomodoros", cut.Markup);
-        Assert.Contains("Tasks Worked On", cut.Markup);
+        Assert.Contains("Focus time", cut.Markup);
+        Assert.Contains("Tasks done", cut.Markup);
     }
 
     [Fact]
@@ -50,8 +49,8 @@ public class DailySummarySectionTests : TestContext
         var cut = RenderComponent<DailySummarySection>(parameters => parameters
             .Add(p => p.CurrentStats, (DailyStatsSummary?)null));
 
-        var statValues = cut.FindAll(".stat-value");
-        Assert.Equal(3, statValues.Count);
+        var statValues = cut.FindAll(".sv");
+        Assert.Equal(4, statValues.Count);
 
         foreach (var statValue in statValues)
         {
@@ -165,11 +164,12 @@ public class DailySummarySectionTests : TestContext
         var cut = RenderComponent<DailySummarySection>(parameters => parameters
             .Add(p => p.CurrentStats, stats));
 
-        var statValues = cut.FindAll(".stat-value");
-        Assert.Equal(3, statValues.Count);
+        var statValues = cut.FindAll(".sv");
+        Assert.Equal(4, statValues.Count);
         Assert.Contains("0", statValues[0].TextContent);
         Assert.Contains("0", statValues[1].TextContent);
         Assert.Contains("0", statValues[2].TextContent);
+        Assert.Contains("0", statValues[3].TextContent);
     }
 
     [Fact]
@@ -189,6 +189,21 @@ public class DailySummarySectionTests : TestContext
         Assert.Contains("7", cut.Markup);
         Assert.Contains("5", cut.Markup);
     }
+
+    [Fact]
+    public void Renders_WithBreakMinutes_DisplaysBreakTime()
+    {
+        var stats = new DailyStatsSummary
+        {
+            FocusMinutes = 120,
+            PomodoroCount = 7,
+            TasksWorkedOn = 5,
+            BreakMinutes = 30
+        };
+
+        var cut = RenderComponent<DailySummarySection>(parameters => parameters
+            .Add(p => p.CurrentStats, stats));
+
+        Assert.Contains("Break time", cut.Markup);
+    }
 }
-
-

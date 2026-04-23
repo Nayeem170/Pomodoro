@@ -1,24 +1,22 @@
 @using Pomodoro.Web.Models
 @using Pomodoro.Web.Pages
 
-<div class="daily-view">
-    <div class="date-navigator-container">
-        <DateNavigator SelectedDate="SelectedDate" 
-                       OnDateChanged="OnDateChanged" />
+<DailySummarySection CurrentStats="CurrentStats" />
+
+<div class="card">
+    <div class="card-hdr">
+        <span class="card-title">Time distribution</span>
     </div>
-    
-    <DailySummarySection CurrentStats="CurrentStats" />
-    
-    <div class="history-content">
-        <div class="time-distribution-section">
-            <TimeDistributionChart SelectedDate="SelectedDate" />
-        </div>
-        
-        <TimelineSection Activities="Activities" 
-                        HasMoreActivities="HasMoreActivities"
-                        IsLoadingMore="IsLoadingMore"
-                        OnLoadMore="OnLoadMore" />
+    <TimeDistributionChart SelectedDate="SelectedDate" Activities="Activities ?? new()" />
+    <div class="divider"></div>
+    <div class="card-hdr" style="margin-bottom: 10px">
+        <span class="card-title">Timeline</span>
+        <span class="activity-count">@(Activities?.Count ?? 0) activities</span>
     </div>
+    <TimelineSection Activities="Activities" 
+                    HasMoreActivities="HasMoreActivities"
+                    IsLoadingMore="IsLoadingMore"
+                    OnLoadMore="OnLoadMore" />
 </div>
 
 @code {

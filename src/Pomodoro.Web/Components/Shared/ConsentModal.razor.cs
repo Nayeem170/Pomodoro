@@ -125,7 +125,7 @@ public class ConsentModalBase : ComponentBase
         int seq = 0;
         foreach (var option in Options)
         {
-            var cssClass = $"btn btn-option {(option.IsDefault ? "default" : "")}";
+            var cssClass = $"btn-option {(option.IsDefault ? "default" : "")}";
             builder.OpenElement(seq++, "button");
             builder.AddAttribute(seq++, "class", cssClass);
             builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, _ => HandleOptionSelect(option.SessionType)));
@@ -138,6 +138,11 @@ public class ConsentModalBase : ComponentBase
             builder.OpenElement(seq++, "span");
             builder.AddAttribute(seq++, "class", "option-duration");
             builder.AddContent(seq++, option.Duration);
+            builder.CloseElement();
+
+            builder.OpenElement(seq++, "span");
+            builder.AddAttribute(seq++, "class", "option-chevron");
+            builder.AddContent(seq++, "\u203A");
             builder.CloseElement();
 
             builder.CloseElement();

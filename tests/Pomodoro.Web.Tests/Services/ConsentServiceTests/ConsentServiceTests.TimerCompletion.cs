@@ -16,7 +16,7 @@ public partial class ConsentServiceTests
         new(sessionType, null, null, 25, true, DateTime.UtcNow);
 
     [Fact]
-    public async Task HandleTimerCompletedAsync_WhenAutoStartEnabled_ShowsConsentModal()
+    public async Task HandleTimerCompletedAsync_WhenAutoStartBreaksEnabled_ShowsConsentModal()
     {
         // Arrange
         var timerServiceMock = new Mock<ITimerService>();
@@ -28,7 +28,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartEnabled = true,
+                AutoStartPomodoros = true, AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = false,
                 NotificationsEnabled = false
@@ -62,7 +62,7 @@ public partial class ConsentServiceTests
     }
 
     [Fact]
-    public async Task HandleTimerCompletedAsync_WhenAutoStartDisabled_DoesNotShowConsentModal()
+    public async Task HandleTimerCompletedAsync_WhenAutoStartBreaksDisabled_DoesNotShowConsentModal()
     {
         // Arrange
         var timerServiceMock = new Mock<ITimerService>();
@@ -74,7 +74,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartEnabled = false,
+                AutoStartPomodoros = false, AutoStartBreaks = false,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = false,
                 NotificationsEnabled = false
@@ -116,7 +116,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartEnabled = false,
+                AutoStartPomodoros = false, AutoStartBreaks = false,
                 SoundEnabled = true,
                 NotificationsEnabled = false
             }
@@ -154,7 +154,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartEnabled = false,
+                AutoStartPomodoros = false, AutoStartBreaks = false,
                 SoundEnabled = true,
                 NotificationsEnabled = false
             }
@@ -192,7 +192,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartEnabled = false,
+                AutoStartPomodoros = false, AutoStartBreaks = false,
                 SoundEnabled = false,
                 NotificationsEnabled = true
             }
@@ -236,7 +236,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartEnabled = false,
+                AutoStartPomodoros = false, AutoStartBreaks = false,
                 SoundEnabled = false,
                 NotificationsEnabled = true
             }
@@ -280,7 +280,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartEnabled = false,
+                AutoStartPomodoros = false, AutoStartBreaks = false,
                 SoundEnabled = false,
                 NotificationsEnabled = false
             }
@@ -319,7 +319,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartEnabled = false,
+                AutoStartPomodoros = false, AutoStartBreaks = false,
                 SoundEnabled = false,
                 NotificationsEnabled = false
             }
@@ -384,7 +384,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartEnabled = false,
+                AutoStartPomodoros = false, AutoStartBreaks = false,
                 SoundEnabled = true,
                 NotificationsEnabled = true
             }
@@ -419,7 +419,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartEnabled = true,
+                AutoStartPomodoros = true, AutoStartBreaks = true,
                 AutoStartDelaySeconds = 3,
                 SoundEnabled = false,
                 NotificationsEnabled = false

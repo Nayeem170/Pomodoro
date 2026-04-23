@@ -1,0 +1,37 @@
+<div class="ss">
+    <div class="ss-hdr">Sound & notifications</div>
+    
+    <div class="sr">
+        <span class="sr-lbl">Sound on completion</span>
+        <div class="tog @(Settings.SoundEnabled ? "on" : "")" @onclick="ToggleSound">
+            <div class="tog-k"></div>
+        </div>
+    </div>
+    
+    <div class="sr">
+        <span class="sr-lbl">Browser notifications</span>
+        <div class="tog @(Settings.NotificationsEnabled ? "on" : "")" @onclick="ToggleNotifications">
+            <div class="tog-k"></div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public TimerSettings Settings { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnChanged { get; set; }
+
+    private async Task ToggleSound()
+    {
+        Settings.SoundEnabled = !Settings.SoundEnabled;
+        await OnChanged.InvokeAsync();
+    }
+
+    private async Task ToggleNotifications()
+    {
+        Settings.NotificationsEnabled = !Settings.NotificationsEnabled;
+        await OnChanged.InvokeAsync();
+    }
+}

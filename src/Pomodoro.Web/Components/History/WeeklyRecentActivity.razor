@@ -1,0 +1,59 @@
+@using Pomodoro.Web.Services
+@using Pomodoro.Web.Services.Formatters
+@using Pomodoro.Web.Models
+@inject IActivityService ActivityService
+@inject TimeFormatter TimeFormatter
+
+@{
+    var weekEnd = WeekStart.AddDays(7);
+    var allActivities = ActivityService.GetAllActivities()
+        .Where(a => a.CompletedAt.Date >= WeekStart.Date && a.CompletedAt.Date < weekEnd.Date)
+        .OrderByDescending(a => a.CompletedAt)
+        .Take(10)
+        .ToList();
+}
+
+@if (allActivities.Count > 0)
+{
+    @foreach (var activity in allActivities)
+    {
+        var iconBg = activity.Type switch
+        {
+            SessionType.Pomodoro => "#FAECE7",
+            SessionType.ShortBreak => "#E1F5EE",
+            SessionType.LongBreak => "#E6F1FB",
+            _ => "var(--color-background-secondary)"
+        };
+        var name = activity.Type switch
+        {
+            SessionType.Pomodoro => "Pomodoro completed",
+            SessionType.ShortBreak => "Short break",
+            SessionType.LongBreak => "Long break",
+            _ => "Session"
+        };
+        var meta = string.IsNullOrEmpty(activity.TaskName)
+            ? activity.CompletedAt.ToLocalTime().ToString("MMM d, h:mm tt")
+            : $"{activity.TaskName} · {activity.CompletedAt.ToLocalTime().ToString("MMM d, h:mm tt")}";
+
+        <div class="act-row">
+            <div class="act-icon" style="background:@iconBg">@activity.Icon</div>
+            <div class="act-info">
+                <div class="act-name">@name</div>
+                <div class="act-meta">@meta</div>
+            </div>
+            <div class="act-dur">@activity.DurationMinutes min</div>
+        </div>
+    }
+}
+else
+{
+    <div class="empty-chart-state">
+        <span class="empty-icon">📭</span>
+        <p>No activities this week</p>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public DateTime WeekStart { get; set; }
+}

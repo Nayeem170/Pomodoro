@@ -18,13 +18,12 @@ public class WeeklyViewTests : TestHelper
     {
         var cut = RenderComponent<Pomodoro.Web.Components.History.WeeklyView>();
 
-        Assert.Contains("weekly-view", cut.Markup);
-        Assert.Contains("date-navigator-container", cut.Markup);
-        Assert.Contains("weekly-chart-section", cut.Markup);
+        Assert.Contains("card", cut.Markup);
+        Assert.Contains("Sessions per day", cut.Markup);
     }
 
     [Fact]
-    public void Render_WithSelectedWeekStart_PassesToWeekNavigator()
+    public void Render_WithSelectedWeekStart_RendersWeeklyView()
     {
         var weekStart = new DateTime(2024, 1, 6);
 
@@ -32,7 +31,7 @@ public class WeeklyViewTests : TestHelper
             parameters => parameters.Add(p => p.SelectedWeekStart, weekStart)
         );
 
-        Assert.Contains("weekly-view", cut.Markup);
+        Assert.Contains("card", cut.Markup);
     }
 
     [Fact]
@@ -50,7 +49,7 @@ public class WeeklyViewTests : TestHelper
             parameters => parameters.Add(p => p.WeeklyStats, stats)
         );
 
-        Assert.Contains("weekly-summary-section", cut.Markup);
+        Assert.Contains("stat-grid", cut.Markup);
     }
 
     [Fact]
@@ -60,11 +59,11 @@ public class WeeklyViewTests : TestHelper
             parameters => parameters.Add(p => p.WeeklyStats, (WeeklyStats?)null)
         );
 
-        Assert.DoesNotContain("weekly-summary-section", cut.Markup);
+        Assert.DoesNotContain("stat-grid", cut.Markup);
     }
 
     [Fact]
-    public void Render_WithFocusMinutes_PassesToChart()
+    public void Render_WithFocusMinutes_RendersChart()
     {
         var focusMinutes = new Dictionary<DateTime, int>
         {
@@ -84,12 +83,12 @@ public class WeeklyViewTests : TestHelper
                 .Add(p => p.SelectedWeekStart, new DateTime(2024, 1, 6))
         );
 
-        Assert.Contains("weekly-chart-section", cut.Markup);
-        Assert.Contains("Weekly Trend", cut.Find("h2").TextContent);
+        Assert.Contains("Sessions per day", cut.Markup);
+        Assert.Contains("Time distribution", cut.Markup);
     }
 
     [Fact]
-    public void Render_WithEmptyDictionaries_RendersChartSection()
+    public void Render_WithEmptyDictionaries_RendersCard()
     {
         var cut = RenderComponent<Pomodoro.Web.Components.History.WeeklyView>(
             parameters => parameters
@@ -97,17 +96,15 @@ public class WeeklyViewTests : TestHelper
                 .Add(p => p.WeeklyBreakMinutes, new Dictionary<DateTime, int>())
         );
 
-        Assert.Contains("weekly-chart-section", cut.Markup);
+        Assert.Contains("card", cut.Markup);
     }
 
     [Fact]
-    public void Render_AlwaysRendersDateNavigatorAndChartSection()
+    public void Render_AlwaysRendersCards()
     {
         var cut = RenderComponent<Pomodoro.Web.Components.History.WeeklyView>();
 
-        Assert.Contains("date-navigator-container", cut.Markup);
-        Assert.Contains("weekly-chart-section", cut.Markup);
-        Assert.Contains("Weekly Trend", cut.Find("h2").TextContent);
+        Assert.Contains("Sessions per day", cut.Markup);
+        Assert.Contains("Recent activity", cut.Markup);
     }
 }
-

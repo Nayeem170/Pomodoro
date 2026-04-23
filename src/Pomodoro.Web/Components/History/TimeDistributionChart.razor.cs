@@ -1,41 +1,30 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
+using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
 using Pomodoro.Web.Services.Formatters;
 
 namespace Pomodoro.Web.Components.History;
 
-/// <summary>
-/// Displays a doughnut chart showing time distribution across tasks and breaks
-/// </summary>
-public partial class TimeDistributionChart : IDisposable
+public class TimeDistributionChartBase : ComponentBase, IDisposable
 {
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-    [Inject] private IActivityService ActivityService { get; set; } = default!;
-    [Inject] private ILogger<TimeDistributionChart> Logger { get; set; } = default!;
-    [Inject] private TimeFormatter TimeFormatter { get; set; } = default!;
+    [Inject] protected IActivityService ActivityService { get; set; } = default!;
+    [Inject] protected TimeFormatter TimeFormatter { get; set; } = default!;
 
     [Parameter]
     public DateTime SelectedDate { get; set; }
 
-    /// <summary>
-    /// Static canvas ID for the chart (single instance)
-    /// </summary>
-    private static readonly string CanvasId = Constants.Charts.TimeDistributionCanvasId;
+    [Parameter]
+    public List<ActivityRecord> Activities { get; set; } = new();
 
-    private DateTime _lastRenderedDate;
-    private List<string>? _previousLabels;
-    private List<int>? _previousData;
+    private static readonly string ShortBreakColor = "#1D9E75";
+    private static readonly string LongBreakColor = "#378ADD";
+    private static readonly string[] TaskColors = { "#D85A30", "#E8913A", "#C75B9B", "#7B68EE", "#20B2AA", "#CD853F", "#6B8E23", "#DB7093" };
 
-    /// <summary>
-    /// Total minutes displayed in the chart
-    /// </summary>
-    public int TotalMinutes { get; private set; }
+    public List<ChartSegment> Segments { get; set; } = new();
+    public int TotalMinutes { get; set; }
+    private bool _isDisposed;
 
-    /// <summary>
-    /// Formatted total time for display (safe from null reference)
-    /// </summary>
-    public string FormattedTotalMinutes
+    public string FormattedTotal
     {
         get
         {
@@ -43,124 +32,81 @@ public partial class TimeDistributionChart : IDisposable
             {
                 return TimeFormatter?.FormatTime(TotalMinutes) ?? TotalMinutes.ToString();
             }
-            catch (Exception ex)
+            catch
             {
-                Logger?.LogError(ex, "Error formatting total minutes in TimeDistributionChart");
                 return TotalMinutes.ToString();
             }
         }
     }
 
-    /// <summary>
-    /// Whether there is data to display
-    /// </summary>
-    public bool HasData { get; private set; }
-
-    private bool _isRendered;
-    private bool _isDisposed;
-
     protected override void OnInitialized()
     {
         ActivityService.OnActivityChanged += OnActivityChanged;
+        CalculateSegments();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnParametersSet()
     {
-        if (firstRender)
-        {
-            _isRendered = true;
-            await UpdateChartAsync();
-        }
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        if (!_isRendered) return;
-
-        var distribution = ActivityService.GetTimeDistribution(SelectedDate);
-        if (distribution == null || distribution.Count == 0) return;
-
-        var labels = distribution.Keys.ToList();
-        var data = distribution.Values.ToList();
-
-        if (_lastRenderedDate == SelectedDate.Date &&
-            _previousLabels != null && _previousData != null &&
-            _previousLabels.SequenceEqual(labels) &&
-            _previousData.SequenceEqual(data))
-        {
-            return;
-        }
-
-        await UpdateChartAsync();
+        CalculateSegments();
     }
 
     private void OnActivityChanged()
     {
-        if (_isRendered && !_isDisposed)
+        if (_isDisposed) return;
+        InvokeAsync(() =>
         {
-            SafeTaskRunner.RunAndForget(async () =>
-            {
-                await InvokeAsync(async () =>
-                {
-                    await UpdateChartAsync();
-                    StateHasChanged();
-                });
-            }, Logger, "OnActivityChanged");
-        }
+            CalculateSegments();
+            StateHasChanged();
+        });
     }
 
-    private async Task UpdateChartAsync()
+    private void CalculateSegments()
     {
-        if (_isDisposed) return;
+        var distribution = ActivityService.GetTimeDistribution(SelectedDate);
 
-        try
+        if (distribution == null || distribution.Count == 0)
         {
-            var distribution = ActivityService.GetTimeDistribution(SelectedDate);
-            _lastRenderedDate = SelectedDate.Date;
+            Segments = new List<ChartSegment>();
+            TotalMinutes = 0;
+            return;
+        }
 
-            if (distribution.Count == 0)
+        TotalMinutes = distribution.Values.Sum();
+        var segments = new List<ChartSegment>();
+        var taskIndex = 0;
+
+        foreach (var kvp in distribution)
+        {
+            var label = kvp.Key;
+            string color;
+
+            if (label.Equals(Constants.Activity.ShortBreaksLabel, StringComparison.OrdinalIgnoreCase))
             {
-                TotalMinutes = 0;
-                HasData = false;
-                // Destroy existing chart when no data
-                await JS.InvokeVoidAsync(Constants.ChartJsFunctions.DestroyChart, CanvasId);
-                StateHasChanged();
-                return;
+                color = ShortBreakColor;
+            }
+            else if (label.Equals(Constants.Activity.LongBreaksLabel, StringComparison.OrdinalIgnoreCase))
+            {
+                color = LongBreakColor;
+            }
+            else
+            {
+                color = TaskColors[taskIndex % TaskColors.Length];
+                taskIndex++;
             }
 
-            var labels = distribution.Keys.ToList();
-            var data = distribution.Values.ToList();
-            _previousLabels = labels;
-            _previousData = data;
-            TotalMinutes = data.Sum();
-            HasData = true;
-
-            var centerText = TimeFormatter.FormatTime(TotalMinutes);
-
-            await JS.InvokeVoidAsync(Constants.ChartJsFunctions.CreateDoughnutChart,
-                CanvasId,
-                labels,
-                data,
-                centerText);
-
-            StateHasChanged();
+            var pct = TotalMinutes > 0 ? Math.Round((double)kvp.Value / TotalMinutes * 100) : 0;
+            segments.Add(new ChartSegment(label, color, pct));
         }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, Constants.Messages.ErrorUpdatingTimeDistributionChart);
-        }
+
+        Segments = segments;
     }
 
     public void Dispose()
     {
         if (_isDisposed) return;
         _isDisposed = true;
-
         ActivityService.OnActivityChanged -= OnActivityChanged;
-
-        SafeTaskRunner.RunAndForget(
-            async () => { await JS.InvokeVoidAsync(Constants.ChartJsFunctions.DestroyChart, CanvasId); },
-            Logger,
-            "DestroyChart");
     }
+
+    public record ChartSegment(string Label, string Color, double Percentage);
 }

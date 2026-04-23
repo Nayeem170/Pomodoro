@@ -1,40 +1,26 @@
 @using Pomodoro.Web.Models
 @using Pomodoro.Web.Pages
 
-<div class="timeline-section" id="timeline-section">
-    <div class="section-header">
-        <h2>@Constants.Layout.TimelineTitle</h2>
-        <span class="activity-count">@(Activities?.Count ?? 0) activities</span>
-    </div>
-    <div class="timeline-scroll-container" id="@Constants.UI.TimelineScrollContainerId">
-        <ActivityTimeline Activities="Activities ?? new()" />
-        
-        @* Sentinel element for infinite scroll *@
-        @if (HasMoreActivities)
-        {
-            <div id="@Constants.UI.InfiniteScrollSentinelId" class="scroll-sentinel">
-                @if (IsLoadingMore)
-                {
-                    <div class="loading-indicator">
-                        <div class="pomodoro-loader">
-                            <div class="tomato-body">
-                                <div class="tomato-leaf tomato-leaf-left"></div>
-                                <div class="tomato-leaf tomato-leaf-right"></div>
-                            </div>
-                            <div class="tomato-shadow"></div>
-                        </div>
-                        <span>Loading more activities...</span>
-                    </div>
-                }
-            </div>
-        }
-        else if (Activities?.Count > 0)
-        {
-            <div class="end-of-list">
-                <span>No more activities</span>
-            </div>
-        }
-    </div>
+<div class="timeline-scroll-container" id="@Constants.UI.TimelineScrollContainerId">
+    <ActivityTimeline Activities="Activities ?? new()" />
+    
+    @if (HasMoreActivities)
+    {
+        <div id="@Constants.UI.InfiniteScrollSentinelId" class="scroll-sentinel">
+            @if (IsLoadingMore)
+            {
+                <div class="loading-indicator">
+                    <span>Loading more activities...</span>
+                </div>
+            }
+        </div>
+    }
+    else if (Activities?.Count > 0)
+    {
+        <div class="end-of-list">
+            <span>No more activities</span>
+        </div>
+    }
 </div>
 
 @code {

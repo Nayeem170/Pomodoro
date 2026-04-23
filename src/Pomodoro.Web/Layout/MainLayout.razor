@@ -1,4 +1,4 @@
-﻿@inherits MainLayoutBase
+@inherits MainLayoutBase
 @using Pomodoro.Web.Components
 @inject LayoutPresenterService LayoutPresenter
 
@@ -10,16 +10,15 @@
                     <span class="header-icon">@Constants.Layout.AppIcon</span>
                     <span class="header-text">@Constants.Layout.AppTitle</span>
                 </div>
-                <p class="header-tagline">@Constants.Layout.Tagline</p>
             </div>
-            <div class="header-nav">
+            <nav class="header-nav">
                 @foreach (var navLink in LayoutPresenter.GetNavigationLinks())
                 {
                     <NavLink @key="navLink.Href" href="@navLink.Href" Match="@navLink.Match" title="@navLink.Title">
-                        <span>@navLink.Icon</span>
+                        @navLink.Title
                     </NavLink>
                 }
-            </div>
+            </nav>
         </div>
     </header>
     
@@ -33,13 +32,6 @@
             </ErrorContent>
         </ErrorBoundary>
     </main>
-
-    <footer class="app-footer">
-        <div class="footer-content">
-            <p class="footer-made">@Constants.Layout.FooterMadeWithText</p>
-            <p class="footer-copy">&copy; @LayoutPresenter.GetCurrentYear() @Constants.Layout.FooterCopyrightOwner</p>
-        </div>
-    </footer>
 </div>
 
 @code {

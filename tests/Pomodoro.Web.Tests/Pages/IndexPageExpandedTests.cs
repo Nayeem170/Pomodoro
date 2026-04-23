@@ -69,6 +69,9 @@ public class IndexPageExpandedTests : TestHelper
         TimerServiceMock
             .SetupGet(x => x.IsStarted)
             .Returns(false);
+        TimerServiceMock
+            .SetupGet(x => x.Settings)
+            .Returns(new TimerSettings());
 
         // Setup ActivityService
         ActivityServiceMock
