@@ -20,8 +20,8 @@ public class TimerDurationSettingsTests : TestContext
         var settings = new TimerSettings { PomodoroMinutes = 30 };
         var cut = RenderComponent<TimerDurationSettings>(p => p.Add(x => x.Settings, settings));
 
-        var input = cut.Find("input[type='number']");
-        input.GetAttribute("value").Should().Be("30");
+        var vals = cut.FindAll(".step-val");
+        vals[0].TextContent.Should().Be("30");
     }
 
     [Fact]
@@ -30,8 +30,8 @@ public class TimerDurationSettingsTests : TestContext
         var settings = new TimerSettings { ShortBreakMinutes = 7 };
         var cut = RenderComponent<TimerDurationSettings>(p => p.Add(x => x.Settings, settings));
 
-        var inputs = cut.FindAll("input[type='number']");
-        inputs[1].GetAttribute("value").Should().Be("7");
+        var vals = cut.FindAll(".step-val");
+        vals[1].TextContent.Should().Be("7");
     }
 
     [Fact]
@@ -40,15 +40,65 @@ public class TimerDurationSettingsTests : TestContext
         var settings = new TimerSettings { LongBreakMinutes = 20 };
         var cut = RenderComponent<TimerDurationSettings>(p => p.Add(x => x.Settings, settings));
 
-        var inputs = cut.FindAll("input[type='number']");
-        inputs[2].GetAttribute("value").Should().Be("20");
+        var vals = cut.FindAll(".step-val");
+        vals[2].TextContent.Should().Be("20");
     }
+
+    [Fact]
+    public void IncrementPomodoro_UpdatesValue()
+    {
+        var settings = new TimerSettings { PomodoroMinutes = 25 };
+        var cut = RenderComponent<TimerDurationSettings>(p => p
+            .Add(x => x.Settings, settings)
+            .Add(x => x.OnChanged, () => { }));
+
+        var buttons = cut.FindAll(".step-btn");
+        buttons[1].Click();
+
+        settings.PomodoroMinutes.Should().Be(26);
+    }
+
+    [Fact]
+    public void DecrementPomodoro_UpdatesValue()
+    {
+        var settings = new TimerSettings { PomodoroMinutes = 25 };
+        var cut = RenderComponent<TimerDurationSettings>(p => p
+            .Add(x => x.Settings, settings)
+            .Add(x => x.OnChanged, () => { }));
+
+        var buttons = cut.FindAll(".step-btn");
+        buttons[0].Click();
+
+        settings.PomodoroMinutes.Should().Be(24);
+    }
+
+    [Fact]
+    public void DecrementPomodoro_DisabledAtMin()
+    {
+        var settings = new TimerSettings { PomodoroMinutes = 1 };
+        var cut = RenderComponent<TimerDurationSettings>(p => p.Add(x => x.Settings, settings));
+
+        var buttons = cut.FindAll(".step-btn");
+        buttons[0].HasAttribute("disabled").Should().BeTrue();
+    }
+
+    [Fact]
+    public void IncrementPomodoro_DisabledAtMax()
+    {
+        var settings = new TimerSettings { PomodoroMinutes = 120 };
+        var cut = RenderComponent<TimerDurationSettings>(p => p.Add(x => x.Settings, settings));
+
+        var buttons = cut.FindAll(".step-btn");
+        buttons[1].HasAttribute("disabled").Should().BeTrue();
+    }
+
+
 }
 
 [Trait("Category", "Component")]
-public class PreferenceSettingsTests : TestContext
+public class SoundNotificationSettingsTests : TestContext
 {
-    public PreferenceSettingsTests()
+    public SoundNotificationSettingsTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
@@ -56,19 +106,19 @@ public class PreferenceSettingsTests : TestContext
     [Fact]
     public void Render_BindsSoundEnabled()
     {
-        var settings = new TimerSettings { SoundEnabled = false };
-        var cut = RenderComponent<PreferenceSettings>(p => p.Add(x => x.Settings, settings));
+        var settings = new TimerSettings { SoundEnabled = true };
+        var cut = RenderComponent<SoundNotificationSettings>(p => p.Add(x => x.Settings, settings));
 
-        cut.Find("#soundToggle").Should().NotBeNull();
+        cut.Find(".tog.on").Should().NotBeNull();
     }
 
     [Fact]
     public void Render_BindsNotificationsEnabled()
     {
-        var settings = new TimerSettings { NotificationsEnabled = true };
-        var cut = RenderComponent<PreferenceSettings>(p => p.Add(x => x.Settings, settings));
+        var settings = new TimerSettings { NotificationsEnabled = true, SoundEnabled = false };
+        var cut = RenderComponent<SoundNotificationSettings>(p => p.Add(x => x.Settings, settings));
 
-        cut.Find("#notifToggle").Should().NotBeNull();
+        cut.FindAll(".tog.on").Should().HaveCount(1);
     }
 
     [Fact]
@@ -76,12 +126,12 @@ public class PreferenceSettingsTests : TestContext
     {
         var settings = new TimerSettings { SoundEnabled = true };
         var callbackInvoked = false;
-        var cut = RenderComponent<PreferenceSettings>(p => p
+        var cut = RenderComponent<SoundNotificationSettings>(p => p
             .Add(x => x.Settings, settings)
             .Add(x => x.OnChanged, () => callbackInvoked = true));
 
-        var checkbox = cut.Find("#soundToggle");
-        checkbox.Change(false);
+        var toggles = cut.FindAll(".tog");
+        toggles[0].Click();
 
         callbackInvoked.Should().BeTrue();
         settings.SoundEnabled.Should().BeFalse();
@@ -92,12 +142,12 @@ public class PreferenceSettingsTests : TestContext
     {
         var settings = new TimerSettings { NotificationsEnabled = true };
         var callbackInvoked = false;
-        var cut = RenderComponent<PreferenceSettings>(p => p
+        var cut = RenderComponent<SoundNotificationSettings>(p => p
             .Add(x => x.Settings, settings)
             .Add(x => x.OnChanged, () => callbackInvoked = true));
 
-        var checkbox = cut.Find("#notifToggle");
-        checkbox.Change(false);
+        var toggles = cut.FindAll(".tog");
+        toggles[1].Click();
 
         callbackInvoked.Should().BeTrue();
         settings.NotificationsEnabled.Should().BeFalse();
@@ -105,61 +155,70 @@ public class PreferenceSettingsTests : TestContext
 }
 
 [Trait("Category", "Component")]
-public class AutoStartSettingsTests : TestContext
+public class AutomationSettingsTests : TestContext
 {
-    public AutoStartSettingsTests()
+    public AutomationSettingsTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
     [Fact]
-    public void Render_WithAutoStartEnabled_ShowsDelayInput()
+    public void Render_BindsAutoStartPomodorosAndBreaks()
     {
-        var settings = new TimerSettings { AutoStartEnabled = true, AutoStartDelaySeconds = 5 };
-        var cut = RenderComponent<AutoStartSettings>(p => p.Add(x => x.Settings, settings));
+        var settings = new TimerSettings { AutoStartPomodoros = true, AutoStartBreaks = true };
+        var cut = RenderComponent<AutomationSettings>(p => p.Add(x => x.Settings, settings));
 
-        cut.Find("input[type='number']").GetAttribute("value").Should().Be("5");
-    }
-
-    [Fact]
-    public void Render_WithAutoStartDisabled_HidesDelayInput()
-    {
-        var settings = new TimerSettings { AutoStartEnabled = false };
-        var cut = RenderComponent<AutoStartSettings>(p => p.Add(x => x.Settings, settings));
-
-        cut.FindAll("input[type='number']").Should().BeEmpty();
+        cut.FindAll(".tog.on").Should().HaveCount(2);
     }
 
     [Fact]
     public void ToggleAutoStart_InvokesOnChanged()
     {
-        var settings = new TimerSettings { AutoStartEnabled = true };
+        var settings = new TimerSettings { AutoStartPomodoros = true, AutoStartBreaks = true };
         var callbackInvoked = false;
-        var cut = RenderComponent<AutoStartSettings>(p => p
+        var cut = RenderComponent<AutomationSettings>(p => p
             .Add(x => x.Settings, settings)
             .Add(x => x.OnChanged, () => callbackInvoked = true));
 
-        var checkbox = cut.Find("#autoStartEnabled");
-        checkbox.Change(false);
+        cut.Find(".tog").Click();
 
         callbackInvoked.Should().BeTrue();
-        settings.AutoStartEnabled.Should().BeFalse();
+        settings.AutoStartPomodoros.Should().BeFalse();
     }
 
     [Fact]
-    public void ChangeDelayInput_InvokesOnChanged()
+    public void Render_ShowsAutoStartBreaksToggle()
     {
-        var settings = new TimerSettings { AutoStartEnabled = true, AutoStartDelaySeconds = 5 };
-        var callbackInvoked = false;
-        var cut = RenderComponent<AutoStartSettings>(p => p
-            .Add(x => x.Settings, settings)
-            .Add(x => x.OnChanged, () => callbackInvoked = true));
+        var settings = new TimerSettings();
+        var cut = RenderComponent<AutomationSettings>(p => p.Add(x => x.Settings, settings));
 
-        var input = cut.Find("input[type='number']");
-        input.Change("10");
+        cut.FindAll(".tog").Should().HaveCount(2);
+    }
+}
 
-        callbackInvoked.Should().BeTrue();
-        settings.AutoStartDelaySeconds.Should().Be(10);
+[Trait("Category", "Component")]
+public class KeyboardShortcutsSectionTests : TestContext
+{
+    public KeyboardShortcutsSectionTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+    }
+
+    [Fact]
+    public void Render_ShowsAllShortcuts()
+    {
+        var cut = RenderComponent<KeyboardShortcutsSection>();
+
+        cut.FindAll(".kr").Should().HaveCount(6);
+        cut.FindAll(".kbd").Should().HaveCount(6);
+    }
+
+    [Fact]
+    public void Render_ShowsSpaceShortcut()
+    {
+        var cut = RenderComponent<KeyboardShortcutsSection>();
+
+        cut.Find(".kbd").TextContent.Should().Be("Space");
     }
 }
 
@@ -177,7 +236,7 @@ public class DataManagementSettingsTests : TestContext
         var cut = RenderComponent<DataManagementSettings>(p => p
             .Add(x => x.IsExporting, true));
 
-        cut.Find(".btn-export").HasAttribute("disabled").Should().BeTrue();
+        cut.Find(".sec-btn").HasAttribute("disabled").Should().BeTrue();
     }
 
     [Fact]
@@ -204,7 +263,7 @@ public class DataManagementSettingsTests : TestContext
         var cut = RenderComponent<DataManagementSettings>(p => p
             .Add(x => x.IsClearing, true));
 
-        cut.Find(".btn-clear").HasAttribute("disabled").Should().BeTrue();
+        cut.Find(".danger-btn").HasAttribute("disabled").Should().BeTrue();
     }
 
     [Fact]
@@ -214,7 +273,7 @@ public class DataManagementSettingsTests : TestContext
         var cut = RenderComponent<DataManagementSettings>(p => p
             .Add(x => x.OnExportJson, () => invoked = true));
 
-        cut.Find(".btn-export").Click();
+        cut.Find(".sec-btn").Click();
         invoked.Should().BeTrue();
     }
 
@@ -225,8 +284,24 @@ public class DataManagementSettingsTests : TestContext
         var cut = RenderComponent<DataManagementSettings>(p => p
             .Add(x => x.OnConfirmClearData, () => invoked = true));
 
-        cut.Find(".btn-clear").Click();
+        cut.Find(".danger-btn").Click();
         invoked.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Render_ShowsExportSubtitle()
+    {
+        var cut = RenderComponent<DataManagementSettings>();
+
+        cut.FindAll(".sr-sub").Should().Contain(s => s.TextContent.Contains("Download as JSON"));
+    }
+
+    [Fact]
+    public void Render_ShowsClearSubtitle()
+    {
+        var cut = RenderComponent<DataManagementSettings>();
+
+        cut.FindAll(".sr-sub").Should().Contain(s => s.TextContent.Contains("Cannot be undone"));
     }
 }
 
@@ -276,8 +351,7 @@ public class ClearConfirmationModalTests : TestContext
             .Add(x => x.IsVisible, true)
             .Add(x => x.OnCancel, () => invoked = true));
 
-        cut.Find(".btn-cancel").Click();
+        cut.Find(".btn-cancel-action").Click();
         invoked.Should().BeTrue();
     }
 }
-

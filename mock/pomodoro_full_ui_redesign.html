@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pomodoro — Full UI Redesign v2</title>
+<style>
+  :root {
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f5f5f4;
+    --color-background-tertiary: #efede8;
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #555551;
+    --color-text-tertiary: #888780;
+    --color-border-tertiary: rgba(0,0,0,0.12);
+    --color-border-secondary: rgba(0,0,0,0.22);
+    --color-border-primary: rgba(0,0,0,0.35);
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    --font-sans: system-ui, -apple-system, sans-serif;
+    --font-mono: ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-background-primary: #1e1e1c;
+      --color-background-secondary: #2a2a28;
+      --color-background-tertiary: #242422;
+      --color-text-primary: #f0ede8;
+      --color-text-secondary: #a8a49e;
+      --color-text-tertiary: #6e6b65;
+      --color-border-tertiary: rgba(255,255,255,0.1);
+      --color-border-secondary: rgba(255,255,255,0.2);
+      --color-border-primary: rgba(255,255,255,0.32);
+    }
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-sans);background:var(--color-background-tertiary);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px}
+  .shell{max-width:420px;width:100%;background:var(--color-background-tertiary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+  .topnav{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary)}
+  .nav-brand{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+  .navlinks{display:flex;gap:2px}
+  .nl{padding:5px 9px;font-size:12px;border:none;background:transparent;color:var(--color-text-secondary);cursor:pointer;border-radius:var(--border-radius-md)}
+  .nl.act{background:var(--color-background-secondary);color:var(--color-text-primary);font-weight:500}
+  .page{display:none}.page.act{display:block}
+
+  .mode-tabs{display:flex;gap:4px;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:3px;margin:14px 14px 10px}
+  .mtab{flex:1;padding:7px 0;font-size:12px;text-align:center;border-radius:var(--border-radius-md);border:none;background:transparent;color:var(--color-text-secondary);cursor:pointer}
+  .mtab.act{background:var(--color-background-primary);color:var(--color-text-primary);font-weight:500;border:0.5px solid var(--color-border-tertiary)}
+  .timer-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin:0 14px 12px;overflow:hidden}
+  .card-top{padding:20px 16px 16px;text-align:center}
+  .ring-area{position:relative;width:160px;height:160px;margin:0 auto 16px}
+  .ring-area svg{transform:rotate(-90deg)}
+  .rb{fill:none;stroke:var(--color-background-secondary);stroke-width:10}
+  .rf{fill:none;stroke:#D85A30;stroke-width:10;stroke-linecap:round;stroke-dasharray:439;stroke-dashoffset:110;transition:all .4s}
+  .tc{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+  .ttime{font-size:32px;font-weight:500;color:var(--color-text-primary);line-height:1}
+  .tmode-lbl{font-size:10px;color:var(--color-text-tertiary);margin-top:3px;letter-spacing:.06em}
+  .active-task{font-size:12px;color:var(--color-text-secondary);margin-bottom:14px;padding:8px 12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);text-align:left;display:flex;align-items:center;gap:8px}
+  .task-dot{width:6px;height:6px;border-radius:50%;background:#D85A30;flex-shrink:0}
+  .pomo-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .pomo-num{font-size:22px;font-weight:500;color:var(--color-text-primary);line-height:1}
+  .pomo-sub{font-size:10px;color:var(--color-text-tertiary);margin-top:2px}
+  .pbar{height:3px;background:var(--color-background-secondary);border-radius:2px;margin-bottom:18px;overflow:hidden}
+  .pbar-fill{height:100%;background:#D85A30;border-radius:2px;width:68%;transition:width .3s}
+  .ctrl-row{display:flex;align-items:center;justify-content:center;gap:20px}
+  .ibtn{width:38px;height:38px;border-radius:50%;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s}
+  .ibtn:hover{background:var(--color-background-secondary)}
+  .ibtn.lg{width:52px;height:52px;background:#D85A30;border:none;color:white}
+  .ibtn.lg:hover{opacity:.9}
+  .card-footer{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+  .pip-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);border-radius:var(--border-radius-md);cursor:pointer;color:var(--color-text-secondary)}
+  .pip-btn:hover{background:var(--color-background-tertiary)}
+  .shortcut-trigger{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--color-text-tertiary);cursor:pointer;border:none;background:transparent;font-family:var(--font-sans)}
+  .kbd{font-size:10px;font-family:var(--font-mono);background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:4px;padding:2px 6px;color:var(--color-text-secondary)}
+  .footer-divider{width:0.5px;height:16px;background:var(--color-border-tertiary)}
+  .kbd-hint{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--color-text-tertiary)}
+
+  .task-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 14px;margin:0 14px 14px}
+  .tc-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .tc-title{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+  .tc-add{font-size:12px;color:#D85A30;border:none;background:transparent;cursor:pointer}
+  .task-row{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .task-row:last-child{border-bottom:none}
+  .tck{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--color-border-secondary);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .tck.dn{background:#D85A30;border-color:#D85A30}
+  .ttxt{font-size:12px;color:var(--color-text-primary);flex:1}
+  .ttxt.dn{color:var(--color-text-tertiary);text-decoration:line-through}
+  .tpom{font-size:11px;color:var(--color-text-tertiary)}
+  .task-row.sel{background:rgba(216,90,48,.05);margin:0 -14px;padding-left:14px;padding-right:14px;border-left:2px solid #D85A30;border-radius:0}
+
+  .hist-body{padding:14px}
+  .period-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .nav-arrows{display:flex;gap:4px;align-items:center}
+  .nav-arr{width:26px;height:26px;border-radius:50%;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .nav-arr:disabled{opacity:.3;cursor:default}
+  .period-lbl{font-size:13px;font-weight:500;color:var(--color-text-primary);margin:0 6px}
+  .vtoggle{display:flex;gap:2px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:2px}
+  .vt{padding:4px 10px;font-size:12px;border:none;background:transparent;color:var(--color-text-secondary);cursor:pointer;border-radius:6px}
+  .vt.act{background:var(--color-background-primary);color:var(--color-text-primary);font-weight:500;border:0.5px solid var(--color-border-tertiary)}
+  .stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+  .sc{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 8px;text-align:center}
+  .sv{font-size:17px;font-weight:500;color:var(--color-text-primary);line-height:1.1}
+  .sl{font-size:10px;color:var(--color-text-tertiary);margin-top:3px;line-height:1.3}
+  .card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px;margin-bottom:10px}
+  .card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .card-title{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+  .card-sub{font-size:11px;color:var(--color-text-tertiary)}
+  .chart-row{display:grid;grid-template-columns:1fr 100px;gap:10px;align-items:center}
+  .donut-wrap{position:relative;width:100px;height:100px}
+  .donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+  .donut-val{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+  .donut-lbl{font-size:9px;color:var(--color-text-tertiary)}
+  .legend{display:flex;flex-direction:column;gap:8px}
+  .leg-row{display:flex;align-items:center;gap:7px}
+  .leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .leg-txt{font-size:11px;color:var(--color-text-secondary);flex:1}
+  .leg-pct{font-size:11px;font-weight:500;color:var(--color-text-primary)}
+  .divider{height:0.5px;background:var(--color-border-tertiary);margin:12px 0}
+  .bar-chart{display:flex;align-items:flex-end;gap:5px;height:88px;padding-bottom:22px;margin-bottom:4px}
+  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;position:relative}
+  .bar-bg{width:100%;background:var(--color-background-secondary);border-radius:3px 3px 0 0;position:relative}
+  .bar-fg{width:100%;background:#D85A30;border-radius:3px 3px 0 0;position:absolute;bottom:0}
+  .bar-day{font-size:10px;color:var(--color-text-tertiary);position:absolute;bottom:-18px}
+  .bar-today .bar-bg{border:1.5px solid #D85A30;background:rgba(216,90,48,.08)}
+  .bar-today .bar-day{color:#993C1D;font-weight:500}
+  .tl-row{display:flex;align-items:stretch;gap:10px;min-height:28px}
+  .tl-left{width:44px;display:flex;align-items:flex-start;padding-top:6px;flex-shrink:0}
+  .tl-time{font-size:10px;color:var(--color-text-tertiary)}
+  .tl-line-col{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:12px}
+  .tl-dot{width:8px;height:8px;border-radius:50%;background:#D85A30;flex-shrink:0;margin-top:7px}
+  .tl-dot.brk{background:#1D9E75}.tl-dot.lng{background:#378ADD}
+  .tl-connector{flex:1;width:1.5px;background:var(--color-border-tertiary);margin-top:2px}
+  .tl-content{flex:1;padding:3px 0 8px}
+  .tl-badge{display:inline-flex;padding:3px 8px;border-radius:var(--border-radius-md);font-size:11px;font-weight:500;margin-bottom:2px}
+  .tl-badge.f{background:#FAECE7;color:#993C1D}
+  .tl-badge.s{background:#E1F5EE;color:#0F6E56}
+  .tl-badge.l{background:#E6F1FB;color:#185FA5}
+  .tl-task{font-size:10px;color:var(--color-text-tertiary)}
+  .act-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .act-row:last-child{border-bottom:none}
+  .act-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px}
+  .act-info{flex:1}
+  .act-name{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+  .act-meta{font-size:10px;color:var(--color-text-tertiary);margin-top:1px}
+  .act-dur{font-size:12px;font-weight:500;color:var(--color-text-secondary)}
+
+  .sett-body{padding:14px}
+  .ss{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 14px;margin-bottom:10px}
+  .ss-hdr{font-size:10px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.07em;margin-bottom:10px}
+  .sr{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .sr:last-child{border-bottom:none}
+  .sr-lbl{font-size:13px;color:var(--color-text-primary)}
+  .sr-sub{font-size:10px;color:var(--color-text-tertiary);margin-top:1px}
+  .stepper{display:flex;align-items:center;gap:6px}
+  .step-btn{width:24px;height:24px;border-radius:50%;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
+  .step-val{font-size:13px;font-weight:500;color:var(--color-text-primary);min-width:22px;text-align:center}
+  .step-unit{font-size:11px;color:var(--color-text-tertiary)}
+  .tog{width:34px;height:19px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);border-radius:10px;position:relative;cursor:pointer;flex-shrink:0}
+  .tog.on{background:#D85A30;border-color:#D85A30}
+  .tog-k{width:13px;height:13px;border-radius:50%;background:white;position:absolute;top:2px;left:2px;transition:left .15s}
+  .tog.on .tog-k{left:17px}
+  .danger-btn{font-size:12px;color:#A32D2D;border:0.5px solid #F09595;background:transparent;border-radius:var(--border-radius-md);padding:5px 10px;cursor:pointer;font-family:var(--font-sans)}
+  .sec-btn{font-size:12px;color:var(--color-text-secondary);border:0.5px solid var(--color-border-secondary);background:transparent;border-radius:var(--border-radius-md);padding:5px 10px;cursor:pointer;font-family:var(--font-sans)}
+  .kbd-grid{display:flex;flex-direction:column}
+  .kr{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .kr:last-child{border-bottom:none}
+  .kr-lbl{font-size:12px;color:var(--color-text-secondary)}
+
+  .about-body{padding:14px}
+  .about-hero{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:24px 16px;text-align:center;margin-bottom:10px}
+  .about-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 16px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topnav">
+    <span class="nav-brand">Pomodoro</span>
+    <div class="navlinks">
+      <button class="nl act" onclick="showPage('timer',this)">Timer</button>
+      <button class="nl" onclick="showPage('history',this)">History</button>
+      <button class="nl" onclick="showPage('settings',this)">Settings</button>
+      <button class="nl" onclick="showPage('about',this)">About</button>
+    </div>
+  </div>
+
+  <!-- TIMER PAGE -->
+  <div id="pg-timer" class="page act">
+    <div class="mode-tabs">
+      <button class="mtab act" onclick="switchMode(this,'FOCUSING','#D85A30','24:00')">Pomodoro</button>
+      <button class="mtab" onclick="switchMode(this,'SHORT BREAK','#1D9E75','5:00')">Short break</button>
+      <button class="mtab" onclick="switchMode(this,'LONG BREAK','#378ADD','15:00')">Long break</button>
+    </div>
+    <div class="timer-card">
+      <div class="card-top">
+        <div class="ring-area">
+          <svg width="160" height="160" viewBox="0 0 160 160">
+            <circle class="rb" cx="80" cy="80" r="70"/>
+            <circle id="ring-fill" class="rf" cx="80" cy="80" r="70"/>
+          </svg>
+          <div class="tc">
+            <div id="ttime" class="ttime">24:00</div>
+            <div id="tmode" class="tmode-lbl">FOCUSING</div>
+          </div>
+        </div>
+        <div class="active-task">
+          <div class="task-dot"></div>
+          <span>Write quarterly report</span>
+        </div>
+        <div class="pomo-row">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:15px;line-height:1">🍅</span>
+            <div><div class="pomo-num">3</div><div class="pomo-sub">completed today</div></div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:13px;font-weight:500;color:var(--color-text-primary)">1h 15m</div>
+            <div style="font-size:10px;color:var(--color-text-tertiary)">focus time today</div>
+          </div>
+        </div>
+        <div class="pbar"><div class="pbar-fill"></div></div>
+        <!-- STOPPED STATE -->
+        <div class="ctrl-row" id="ctrl-stopped">
+          <button class="ibtn lg" onclick="startTimer()" title="Start">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M5 3.5l10 5.5-10 5.5V3.5z" fill="white"/></svg>
+          </button>
+        </div>
+        <!-- PLAYING STATE -->
+        <div class="ctrl-row" id="ctrl-playing" style="display:none">
+          <button class="ibtn lg" onclick="stopTimer()" title="Pause">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="4.5" y="3.5" width="3" height="11" rx="1" fill="white"/><rect x="10.5" y="3.5" width="3" height="11" rx="1" fill="white"/></svg>
+          </button>
+          <button class="ibtn" title="Reset timer">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5A5 5 0 1 0 4.2 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M2.5 2v2.5H5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="pip-btn" title="Picture in Picture">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><rect x="7" y="7" width="5.5" height="4.5" rx="1" fill="currentColor"/></svg>
+          </button>
+          <div class="footer-divider"></div>
+          <button class="shortcut-trigger" title="Show keyboard shortcuts">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2.5" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><rect x="3" y="4.5" width="2" height="1.5" rx=".4" fill="currentColor"/><rect x="5.5" y="4.5" width="2" height="1.5" rx=".4" fill="currentColor"/><rect x="8" y="4.5" width="2" height="1.5" rx=".4" fill="currentColor"/><rect x="4" y="7" width="5" height="1.5" rx=".4" fill="currentColor"/></svg>
+            <span class="kbd">?</span>
+          </button>
+        </div>
+        <div class="kbd-hint">
+          <span style="font-size:11px;color:var(--color-text-tertiary)">Start / pause</span>
+          <span class="kbd">Space</span>
+        </div>
+      </div>
+    </div>
+    <div class="task-card">
+      <div class="tc-hdr"><span class="tc-title">Tasks</span><button class="tc-add">+ Add</button></div>
+      <div class="task-row">
+        <div class="tck dn"><svg width="9" height="9" viewBox="0 0 9 9"><polyline points="1.5,4.5 3.5,6.5 7.5,2.5" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+        <span class="ttxt dn">Review design specs</span><span class="tpom">2/2</span>
+      </div>
+      <div class="task-row sel">
+        <div class="tck"></div><span class="ttxt">Write quarterly report</span><span class="tpom">1/3</span>
+      </div>
+      <div class="task-row">
+        <div class="tck"></div><span class="ttxt">Respond to emails</span><span class="tpom">0/1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY PAGE -->
+  <div id="pg-history" class="page">
+    <div class="hist-body">
+      <div class="period-nav">
+        <div class="nav-arrows">
+          <button class="nav-arr" id="arr-prev" onclick="shiftPeriod(-1)">&#8592;</button>
+          <button class="nav-arr" id="arr-next" onclick="shiftPeriod(1)" disabled>&#8594;</button>
+          <span class="period-lbl" id="period-lbl">Today, Apr 20</span>
+        </div>
+        <div class="vtoggle">
+          <button class="vt act" onclick="switchHistView('daily',this)">Daily</button>
+          <button class="vt" onclick="switchHistView('weekly',this)">Weekly</button>
+        </div>
+      </div>
+      <div id="hv-daily">
+        <div class="stat-grid">
+          <div class="sc"><div class="sv">6</div><div class="sl">Pomodoros</div></div>
+          <div class="sc"><div class="sv">2h 30m</div><div class="sl">Focus time</div></div>
+          <div class="sc"><div class="sv">4</div><div class="sl">Tasks done</div></div>
+          <div class="sc"><div class="sv">30m</div><div class="sl">Break time</div></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Time distribution</span></div>
+          <div class="chart-row">
+            <div class="legend">
+              <div class="leg-row"><div class="leg-dot" style="background:#D85A30"></div><span class="leg-txt">Focus</span><span class="leg-pct">75%</span></div>
+              <div class="leg-row"><div class="leg-dot" style="background:#1D9E75"></div><span class="leg-txt">Short break</span><span class="leg-pct">17%</span></div>
+              <div class="leg-row"><div class="leg-dot" style="background:#378ADD"></div><span class="leg-txt">Long break</span><span class="leg-pct">8%</span></div>
+            </div>
+            <div class="donut-wrap">
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="36" fill="none" stroke="var(--color-background-secondary)" stroke-width="14"/>
+                <circle cx="50" cy="50" r="36" fill="none" stroke="#D85A30" stroke-width="14" stroke-dasharray="169 226" stroke-dashoffset="57" transform="rotate(-90 50 50)"/>
+                <circle cx="50" cy="50" r="36" fill="none" stroke="#1D9E75" stroke-width="14" stroke-dasharray="38 226" stroke-dashoffset="-112" transform="rotate(-90 50 50)"/>
+                <circle cx="50" cy="50" r="36" fill="none" stroke="#378ADD" stroke-width="14" stroke-dasharray="18 226" stroke-dashoffset="-150" transform="rotate(-90 50 50)"/>
+              </svg>
+              <div class="donut-center"><div class="donut-val">3h</div><div class="donut-lbl">total</div></div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="card-hdr" style="margin-bottom:10px"><span class="card-title">Timeline</span></div>
+          <div>
+            <div class="tl-row"><div class="tl-left"><span class="tl-time">9:00</span></div><div class="tl-line-col"><div class="tl-dot"></div><div class="tl-connector"></div></div><div class="tl-content"><div class="tl-badge f">Pomodoro · 25 min</div><div class="tl-task">Write quarterly report</div></div></div>
+            <div class="tl-row"><div class="tl-left"><span class="tl-time">9:25</span></div><div class="tl-line-col"><div class="tl-dot brk"></div><div class="tl-connector"></div></div><div class="tl-content"><div class="tl-badge s">Short break · 5 min</div></div></div>
+            <div class="tl-row"><div class="tl-left"><span class="tl-time">9:30</span></div><div class="tl-line-col"><div class="tl-dot"></div><div class="tl-connector"></div></div><div class="tl-content"><div class="tl-badge f">Pomodoro · 25 min</div><div class="tl-task">Write quarterly report</div></div></div>
+            <div class="tl-row"><div class="tl-left"><span class="tl-time">9:55</span></div><div class="tl-line-col"><div class="tl-dot brk"></div><div class="tl-connector"></div></div><div class="tl-content"><div class="tl-badge s">Short break · 5 min</div></div></div>
+            <div class="tl-row"><div class="tl-left"><span class="tl-time">10:00</span></div><div class="tl-line-col"><div class="tl-dot"></div><div class="tl-connector"></div></div><div class="tl-content"><div class="tl-badge f">Pomodoro · 25 min</div><div class="tl-task">Review design specs</div></div></div>
+            <div class="tl-row"><div class="tl-left"><span class="tl-time">10:55</span></div><div class="tl-line-col"><div class="tl-dot lng"></div></div><div class="tl-content"><div class="tl-badge l">Long break · 15 min</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div id="hv-weekly" style="display:none">
+        <div class="stat-grid">
+          <div class="sc"><div class="sv">31</div><div class="sl">Pomodoros</div></div>
+          <div class="sc"><div class="sv">12h 55m</div><div class="sl">Focus time</div></div>
+          <div class="sc"><div class="sv">5.1</div><div class="sl">Daily avg</div></div>
+          <div class="sc"><div class="sv">18</div><div class="sl">Tasks done</div></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Sessions per day</span></div>
+          <div class="bar-chart">
+            <div class="bar-col bar-today"><div class="bar-bg" style="height:80px"><div class="bar-fg" style="height:38%"></div></div><span class="bar-day">Mon</span></div>
+            <div class="bar-col"><div class="bar-bg" style="height:80px"><div class="bar-fg" style="height:63%"></div></div><span class="bar-day">Tue</span></div>
+            <div class="bar-col"><div class="bar-bg" style="height:80px"><div class="bar-fg" style="height:88%"></div></div><span class="bar-day">Wed</span></div>
+            <div class="bar-col"><div class="bar-bg" style="height:80px"><div class="bar-fg" style="height:50%"></div></div><span class="bar-day">Thu</span></div>
+            <div class="bar-col"><div class="bar-bg" style="height:80px"><div class="bar-fg" style="height:75%"></div></div><span class="bar-day">Fri</span></div>
+            <div class="bar-col"><div class="bar-bg" style="height:80px"><div class="bar-fg" style="height:0%"></div></div><span class="bar-day">Sat</span></div>
+            <div class="bar-col"><div class="bar-bg" style="height:80px"><div class="bar-fg" style="height:75%"></div></div><span class="bar-day">Sun</span></div>
+          </div>
+          <div class="divider"></div>
+          <div class="card-hdr" style="margin-bottom:10px"><span class="card-title">Time distribution</span></div>
+          <div class="chart-row">
+            <div class="legend">
+              <div class="leg-row"><div class="leg-dot" style="background:#D85A30"></div><span class="leg-txt">Focus</span><span class="leg-pct">77%</span></div>
+              <div class="leg-row"><div class="leg-dot" style="background:#1D9E75"></div><span class="leg-txt">Short break</span><span class="leg-pct">16%</span></div>
+              <div class="leg-row"><div class="leg-dot" style="background:#378ADD"></div><span class="leg-txt">Long break</span><span class="leg-pct">7%</span></div>
+            </div>
+            <div class="donut-wrap">
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="36" fill="none" stroke="var(--color-background-secondary)" stroke-width="14"/>
+                <circle cx="50" cy="50" r="36" fill="none" stroke="#D85A30" stroke-width="14" stroke-dasharray="174 226" stroke-dashoffset="57" transform="rotate(-90 50 50)"/>
+                <circle cx="50" cy="50" r="36" fill="none" stroke="#1D9E75" stroke-width="14" stroke-dasharray="36 226" stroke-dashoffset="-117" transform="rotate(-90 50 50)"/>
+                <circle cx="50" cy="50" r="36" fill="none" stroke="#378ADD" stroke-width="14" stroke-dasharray="16 226" stroke-dashoffset="-153" transform="rotate(-90 50 50)"/>
+              </svg>
+              <div class="donut-center"><div class="donut-val">16h</div><div class="donut-lbl">total</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Recent activity</span></div>
+          <div class="act-row"><div class="act-icon" style="background:#FAECE7">🍅</div><div class="act-info"><div class="act-name">Pomodoro completed</div><div class="act-meta">Respond to emails · Today 11:35</div></div><div class="act-dur">25 min</div></div>
+          <div class="act-row"><div class="act-icon" style="background:#E1F5EE">☕</div><div class="act-info"><div class="act-name">Short break</div><div class="act-meta">Today 11:10</div></div><div class="act-dur">5 min</div></div>
+          <div class="act-row"><div class="act-icon" style="background:#FAECE7">🍅</div><div class="act-info"><div class="act-name">Pomodoro completed</div><div class="act-meta">Review design specs · Today 10:30</div></div><div class="act-dur">25 min</div></div>
+          <div class="act-row"><div class="act-icon" style="background:#E6F1FB">🌿</div><div class="act-info"><div class="act-name">Long break</div><div class="act-meta">Today 10:25</div></div><div class="act-dur">15 min</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS PAGE -->
+  <div id="pg-settings" class="page">
+    <div class="sett-body">
+      <div class="ss">
+        <div class="ss-hdr">Timer durations</div>
+        <div class="sr"><span class="sr-lbl">Pomodoro</span><div class="stepper"><button class="step-btn">−</button><span class="step-val">25</span><button class="step-btn">+</button><span class="step-unit">min</span></div></div>
+        <div class="sr"><span class="sr-lbl">Short break</span><div class="stepper"><button class="step-btn">−</button><span class="step-val">5</span><button class="step-btn">+</button><span class="step-unit">min</span></div></div>
+        <div class="sr"><span class="sr-lbl">Long break</span><div class="stepper"><button class="step-btn">−</button><span class="step-val">15</span><button class="step-btn">+</button><span class="step-unit">min</span></div></div>
+        <div class="sr"><div><div class="sr-lbl">Long break interval</div><div class="sr-sub">Sessions before long break</div></div><div class="stepper"><button class="step-btn">−</button><span class="step-val">4</span><button class="step-btn">+</button></div></div>
+      </div>
+      <div class="ss">
+        <div class="ss-hdr">Automation</div>
+        <div class="sr"><span class="sr-lbl">Auto-start pomodoros</span><div class="tog on"><div class="tog-k"></div></div></div>
+        <div class="sr"><span class="sr-lbl">Auto-start breaks</span><div class="tog"><div class="tog-k"></div></div></div>
+      </div>
+      <div class="ss">
+        <div class="ss-hdr">Sound & notifications</div>
+        <div class="sr"><span class="sr-lbl">Sound on completion</span><div class="tog on"><div class="tog-k"></div></div></div>
+        <div class="sr"><span class="sr-lbl">Browser notifications</span><div class="tog on"><div class="tog-k"></div></div></div>
+      </div>
+      <div class="ss">
+        <div class="ss-hdr">Keyboard shortcuts</div>
+        <div class="kbd-grid">
+          <div class="kr"><span class="kr-lbl">Start / pause</span><span class="kbd">Space</span></div>
+          <div class="kr"><span class="kr-lbl">Reset timer</span><span class="kbd">R</span></div>
+          <div class="kr"><span class="kr-lbl">Switch to Pomodoro</span><span class="kbd">P</span></div>
+          <div class="kr"><span class="kr-lbl">Switch to Short break</span><span class="kbd">S</span></div>
+          <div class="kr"><span class="kr-lbl">Switch to Long break</span><span class="kbd">L</span></div>
+          <div class="kr"><span class="kr-lbl">Show shortcuts</span><span class="kbd">?</span></div>
+        </div>
+      </div>
+      <div class="ss">
+        <div class="ss-hdr">Data</div>
+        <div class="sr"><div><div class="sr-lbl">Export data</div><div class="sr-sub">Download as JSON</div></div><button class="sec-btn">Export</button></div>
+        <div class="sr"><div><div class="sr-lbl">Import data</div><div class="sr-sub">Restore from JSON</div></div><button class="sec-btn">Import</button></div>
+        <div class="sr"><div><div class="sr-lbl">Clear all data</div><div class="sr-sub">Cannot be undone</div></div><button class="danger-btn">Clear</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT PAGE -->
+  <div id="pg-about" class="page">
+    <div class="about-body">
+      <div class="about-hero">
+        <div style="width:52px;height:52px;border-radius:50%;background:#FAECE7;border:0.5px solid #F5C4B3;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:24px">🍅</div>
+        <p style="font-size:16px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">Pomodoro</p>
+        <p style="font-size:12px;color:var(--color-text-tertiary);margin-bottom:14px">Focus timer · Blazor WASM PWA · v1.0</p>
+        <p style="font-size:12px;color:var(--color-text-secondary);line-height:1.7;max-width:300px;margin:0 auto">A Pomodoro-style focus timer built as a Progressive Web App. Runs entirely in your browser — no account, no server, no tracking.</p>
+      </div>
+      <div class="about-card">
+        <div class="sr" style="padding-top:0"><span class="sr-lbl">Source code</span><a href="https://github.com/Nayeem170/Pomodoro" style="font-size:12px;color:#185FA5;text-decoration:none">GitHub ↗</a></div>
+        <div class="sr"><span class="sr-lbl">Framework</span><span style="font-size:12px;color:var(--color-text-secondary)">Blazor WebAssembly (.NET 9)</span></div>
+        <div class="sr"><span class="sr-lbl">Styling</span><span style="font-size:12px;color:var(--color-text-secondary)">Bootstrap 5.3</span></div>
+        <div class="sr"><span class="sr-lbl">Storage</span><span style="font-size:12px;color:var(--color-text-secondary)">IndexedDB (local)</span></div>
+        <div class="sr" style="padding-bottom:0"><span class="sr-lbl">License</span><span style="font-size:12px;color:var(--color-text-secondary)">MIT</span></div>
+      </div>
+      <div class="about-card">
+        <div class="ss-hdr" style="margin-bottom:10px">Features</div>
+        <div class="sr" style="padding-top:0"><span style="font-size:12px;color:var(--color-text-secondary)">Timer with configurable durations</span><span style="font-size:11px;color:#0F6E56">✓</span></div>
+        <div class="sr"><span style="font-size:12px;color:var(--color-text-secondary)">Task management</span><span style="font-size:11px;color:#0F6E56">✓</span></div>
+        <div class="sr"><span style="font-size:12px;color:var(--color-text-secondary)">Activity history &amp; charts</span><span style="font-size:11px;color:#0F6E56">✓</span></div>
+        <div class="sr"><span style="font-size:12px;color:var(--color-text-secondary)">Picture in Picture timer</span><span style="font-size:11px;color:#0F6E56">✓</span></div>
+        <div class="sr"><span style="font-size:12px;color:var(--color-text-secondary)">Keyboard shortcuts</span><span style="font-size:11px;color:#0F6E56">✓</span></div>
+        <div class="sr"><span style="font-size:12px;color:var(--color-text-secondary)">Browser notifications</span><span style="font-size:11px;color:#0F6E56">✓</span></div>
+        <div class="sr" style="padding-bottom:0"><span style="font-size:12px;color:var(--color-text-secondary)">Installable PWA · works offline</span><span style="font-size:11px;color:#0F6E56">✓</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var histOffset=0,isWeekly=false;
+var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.nl').forEach(b=>b.classList.remove('act'));
+  document.getElementById('pg-'+id).classList.add('act');
+  btn.classList.add('act');
+}
+function switchMode(btn,label,color,time){
+  document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act');
+  document.getElementById('tmode').textContent=label;
+  document.getElementById('ring-fill').style.stroke=color;
+  document.getElementById('ttime').textContent=time;
+  stopTimer();
+}
+function startTimer(){
+  document.getElementById('ctrl-stopped').style.display='none';
+  document.getElementById('ctrl-playing').style.display='flex';
+}
+function stopTimer(){
+  document.getElementById('ctrl-stopped').style.display='flex';
+  document.getElementById('ctrl-playing').style.display='none';
+}
+function shiftPeriod(d){
+  histOffset+=d;
+  document.getElementById('arr-next').disabled=histOffset>=0;
+  var end=new Date(2026,3,20);end.setDate(end.getDate()+histOffset*(isWeekly?7:1));
+  if(isWeekly){var start=new Date(end);start.setDate(end.getDate()-6);document.getElementById('period-lbl').textContent=MONTHS[start.getMonth()]+' '+start.getDate()+' – '+MONTHS[end.getMonth()]+' '+end.getDate();}
+  else{document.getElementById('period-lbl').textContent=(histOffset===0?'Today, ':'')+MONTHS[end.getMonth()]+' '+end.getDate();}
+}
+function switchHistView(v,btn){
+  isWeekly=(v==='weekly');histOffset=0;
+  document.querySelectorAll('.vt').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act');
+  document.getElementById('hv-daily').style.display=isWeekly?'none':'block';
+  document.getElementById('hv-weekly').style.display=isWeekly?'block':'none';
+  document.getElementById('arr-next').disabled=true;
+  document.getElementById('period-lbl').textContent=isWeekly?'Apr 14 – Apr 20':'Today, Apr 20';
+}
+</script>
+</body>
+</html>

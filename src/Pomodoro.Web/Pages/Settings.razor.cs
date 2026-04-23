@@ -61,7 +61,20 @@ public class SettingsPageBase : ComponentBase
     /// </summary>
     protected bool HasChanges => !Settings.Equals(OriginalSettings);
 
-    protected void MarkDirty() => StateHasChanged();
+    protected void MarkDirty() => SaveAndRefresh();
+
+    private async void SaveAndRefresh()
+    {
+        try
+        {
+            await TimerService.UpdateSettingsAsync(Settings);
+            OriginalSettings = Settings.Clone();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to auto-save settings");
+        }
+    }
 
     protected async Task ShowTemporaryToastAsync(string message)
     {
@@ -115,8 +128,15 @@ public class SettingsPageBase : ComponentBase
 
     public void ResetToDefaults()
     {
-        // Use model's default values - single source of truth
         Settings = new TimerSettings();
+    }
+
+    public async Task ResetSettings()
+    {
+        Settings = new TimerSettings();
+        await TimerService.UpdateSettingsAsync(Settings);
+        OriginalSettings = Settings.Clone();
+        await ShowTemporaryToastAsync("Settings reset to defaults!");
     }
 
     #endregion

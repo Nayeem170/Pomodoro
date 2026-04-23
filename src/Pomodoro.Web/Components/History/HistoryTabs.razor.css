@@ -2,31 +2,33 @@
 
 .history-tabs {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid var(--border-color, #e0e0e0);
+    gap: 2px;
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-md);
+    padding: 2px;
 }
 
 .history-tab {
-    padding: 0.75rem 1.5rem;
-    background: transparent;
+    padding: 4px 10px;
+    font-size: 12px;
     border: none;
-    border-bottom: 3px solid transparent;
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--text-secondary, #666);
+    background: transparent;
+    color: var(--color-text-secondary);
     cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    top: 2px;
+    border-radius: 6px;
+    font-family: var(--font-sans);
+    transition: background 0.15s;
+}
+
+.history-tab.active {
+    background: var(--color-background-primary);
+    color: var(--color-text-primary);
+    font-weight: 500;
+    border: 0.5px solid var(--color-border-tertiary);
 }
 
 .history-tab:hover {
-    color: var(--text-primary, #333);
-    background-color: var(--hover-bg, rgba(0, 0, 0, 0.05));
-    transform: scale(1.05) translateY(-2px);
-    box-shadow: 0 4px 15px var(--glow-secondary),
-                0 2px 6px var(--glow-secondary-secondary);
+    background: var(--color-background-tertiary);
 }
 
 .history-tab:focus {
@@ -34,58 +36,10 @@
 }
 
 .history-tab:focus-visible {
-    outline: 2px solid var(--focus-color, #4a90e2);
+    outline: 2px solid var(--color-border-primary);
     outline-offset: 2px;
 }
 
-.history-tab.active {
-    color: var(--text-primary, #333);
-    font-weight: 600;
-    border-bottom-color: var(--accent-color, #4a90e2);
-}
-
-.history-tab.active:hover {
-    transform: scale(1.1) translateY(-2px);
-}
-
 .history-tab[aria-selected="true"] {
-    font-weight: 600;
-}
-
-/* Animation for tab switching */
-.history-tab {
-    animation: fadeIn 0.2s ease-in-out;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .history-tabs {
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-    }
-
-    .history-tab {
-        padding: 0.6rem 1rem;
-        font-size: 0.9rem;
-    }
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .history-tabs {
-        border-bottom-color: var(--border-color-dark, #333);
-    }
-
-    .history-tab {
-        color: var(--text-secondary-dark, #aaa);
-    }
-
-    .history-tab:hover {
-        color: var(--text-primary-dark, #fff);
-        background-color: var(--hover-bg-dark, rgba(255, 255, 255, 0.05));
-    }
-
-    .history-tab.active {
-        color: var(--text-primary-dark, #fff);
-    }
+    font-weight: 500;
 }

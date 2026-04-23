@@ -65,7 +65,7 @@ public class ActivityTimelineTests : TestContext
 
         // Assert
         Assert.NotNull(cut.Markup);
-        Assert.Contains("activity-timeline", cut.Markup);
+        Assert.Contains("timeline-rows", cut.Markup);
         Assert.Contains("Test Task", cut.Markup);
     }
 
@@ -108,7 +108,7 @@ public class ActivityTimelineTests : TestContext
 
         // Assert
         Assert.NotNull(cut.Markup);
-        Assert.Contains("activity-timeline", cut.Markup);
+        Assert.Contains("timeline-rows", cut.Markup);
         Assert.Contains("Task 1", cut.Markup);
     }
 
@@ -160,7 +160,7 @@ public class ActivityTimelineTests : TestContext
 
         // Assert
         Assert.NotNull(cut.Markup);
-        Assert.Contains("activity-timeline", cut.Markup);
+        Assert.Contains("timeline-rows", cut.Markup);
     }
 
     [Fact]
@@ -185,7 +185,7 @@ public class ActivityTimelineTests : TestContext
 
         // Assert
         Assert.NotNull(cut.Markup);
-        Assert.Contains("activity-timeline", cut.Markup);
+        Assert.Contains("timeline-rows", cut.Markup);
     }
 
     [Fact]
@@ -211,7 +211,7 @@ public class ActivityTimelineTests : TestContext
 
         // Assert
         Assert.NotNull(cut.Markup);
-        Assert.Contains("activity-timeline", cut.Markup);
+        Assert.Contains("timeline-rows", cut.Markup);
     }
 
     #endregion

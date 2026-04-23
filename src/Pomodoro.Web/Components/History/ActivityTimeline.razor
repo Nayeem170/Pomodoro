@@ -9,10 +9,51 @@
 }
 else
 {
-    <div class="activity-timeline">
-        @foreach (var activity in Activities)
+    <div class="timeline-rows">
+        @for (int i = 0; i < Activities.Count; i++)
         {
-            <ActivityItem @key="activity.Id" Activity="activity" />
+            var activity = Activities[i];
+            var isLast = i == Activities.Count - 1;
+            var dotClass = activity.Type switch
+            {
+                SessionType.ShortBreak => "brk",
+                SessionType.LongBreak => "lng",
+                _ => ""
+            };
+            var badgeClass = activity.Type switch
+            {
+                SessionType.Pomodoro => "f",
+                SessionType.ShortBreak => "s",
+                SessionType.LongBreak => "l",
+                _ => ""
+            };
+            var badgeText = activity.Type switch
+            {
+                SessionType.Pomodoro => "Pomodoro",
+                SessionType.ShortBreak => "Short break",
+                SessionType.LongBreak => "Long break",
+                _ => "Session"
+            };
+
+            <div class="tl-row">
+                <div class="tl-left">
+                    <span class="tl-time">@activity.CompletedAt.ToLocalTime().ToString("h:mm tt")</span>
+                </div>
+                <div class="tl-line-col">
+                    <div class="tl-dot @dotClass"></div>
+                    @if (!isLast)
+                    {
+                        <div class="tl-connector"></div>
+                    }
+                </div>
+                <div class="tl-content">
+                    <div class="tl-badge @badgeClass">@badgeText · @activity.DurationMinutes min</div>
+                    @if (activity.Type == SessionType.Pomodoro && !string.IsNullOrEmpty(activity.TaskName))
+                    {
+                        <div class="tl-task">@activity.TaskName</div>
+                    }
+                </div>
+            </div>
         }
     </div>
 }

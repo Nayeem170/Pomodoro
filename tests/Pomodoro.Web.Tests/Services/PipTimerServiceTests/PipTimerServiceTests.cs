@@ -48,7 +48,6 @@ public partial class PipTimerServiceTests
     /// </summary>
     protected void SetupTimerState(bool isRunning, bool isStarted, int remainingSeconds = 300, SessionType sessionType = SessionType.Pomodoro)
     {
-        // IsPaused is true when timer was started but is not running
         var isPaused = isStarted && !isRunning;
 
         MockTimerService.SetupGet(x => x.IsRunning).Returns(isRunning);
@@ -56,6 +55,7 @@ public partial class PipTimerServiceTests
         MockTimerService.SetupGet(x => x.IsPaused).Returns(isPaused);
         MockTimerService.SetupGet(x => x.RemainingSeconds).Returns(remainingSeconds);
         MockTimerService.SetupGet(x => x.CurrentSessionType).Returns(sessionType);
+        MockTimerService.SetupGet(x => x.Settings).Returns(new TimerSettings());
     }
 
     /// <summary>

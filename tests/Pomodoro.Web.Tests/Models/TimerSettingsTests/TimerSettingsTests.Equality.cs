@@ -41,8 +41,8 @@ public partial class TimerSettingsTests
     public void Equals_SameValues_ReturnsTrue()
     {
         // Arrange
-        var settings1 = CreateCustomSettings(30, 10, 20, true, true, true, 15);
-        var settings2 = CreateCustomSettings(30, 10, 20, true, true, true, 15);
+        var settings1 = CreateCustomSettings(30, 10, 20, true, true, true, true, 15);
+        var settings2 = CreateCustomSettings(30, 10, 20, true, true, true, true, 15);
 
         // Act
         var result = settings1.Equals(settings2);
@@ -136,11 +136,11 @@ public partial class TimerSettingsTests
     }
 
     [Fact]
-    public void Equals_DifferentAutoStartEnabled_ReturnsFalse()
+    public void Equals_DifferentAutoStartPomodoros_ReturnsFalse()
     {
         // Arrange
-        var settings1 = CreateCustomSettings(autoStartEnabled: true);
-        var settings2 = CreateCustomSettings(autoStartEnabled: false);
+        var settings1 = CreateCustomSettings(autoStartPomodoros: true);
+        var settings2 = CreateCustomSettings(autoStartPomodoros: false);
 
         // Act
         var result = settings1.Equals(settings2);
@@ -363,8 +363,8 @@ public partial class TimerSettingsTests
     public void GetHashCode_SameValues_SameHashCode()
     {
         // Arrange
-        var settings1 = CreateCustomSettings(30, 10, 20, true, false, true, 15);
-        var settings2 = CreateCustomSettings(30, 10, 20, true, false, true, 15);
+        var settings1 = CreateCustomSettings(30, 10, 20, true, false, true, true, 15);
+        var settings2 = CreateCustomSettings(30, 10, 20, true, false, true, true, 15);
 
         // Act
         var hash1 = settings1.GetHashCode();

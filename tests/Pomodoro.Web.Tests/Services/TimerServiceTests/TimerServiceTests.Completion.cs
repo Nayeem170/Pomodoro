@@ -27,6 +27,7 @@ public partial class TimerServiceTests
 
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act
             service.OnTimerTickJs();
@@ -47,6 +48,7 @@ public partial class TimerServiceTests
 
             await service.StartPomodoroAsync(); // No task
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act
             service.OnTimerTickJs();
@@ -68,6 +70,7 @@ public partial class TimerServiceTests
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act
             service.OnTimerTickJs();
@@ -87,6 +90,7 @@ public partial class TimerServiceTests
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act
             service.OnTimerTickJs();
@@ -107,6 +111,7 @@ public partial class TimerServiceTests
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act
             service.OnTimerTickJs();
@@ -136,6 +141,7 @@ public partial class TimerServiceTests
 
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act
             service.OnTimerTickJs();
@@ -170,6 +176,7 @@ public partial class TimerServiceTests
 
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act
             service.OnTimerTickJs();
@@ -188,6 +195,7 @@ public partial class TimerServiceTests
 
             await service.StartShortBreakAsync();
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act
             service.OnTimerTickJs();
@@ -207,6 +215,7 @@ public partial class TimerServiceTests
 
             await service.StartLongBreakAsync();
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act
             service.OnTimerTickJs();
@@ -229,12 +238,14 @@ public partial class TimerServiceTests
             // First pomodoro
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
             service.OnTimerTickJs();
             await WaitForCompletionAsync();
 
             // Second pomodoro
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
             service.OnTimerTickJs();
             await WaitForCompletionAsync();
 
@@ -256,12 +267,14 @@ public partial class TimerServiceTests
             // First pomodoro with task 1
             await service.StartPomodoroAsync(task1Id);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
             service.OnTimerTickJs();
             await WaitForCompletionAsync();
 
             // Second pomodoro with task 2
             await service.StartPomodoroAsync(task2Id);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
             service.OnTimerTickJs();
             await WaitForCompletionAsync();
 
@@ -283,12 +296,14 @@ public partial class TimerServiceTests
             // First pomodoro
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
             service.OnTimerTickJs();
             await WaitForCompletionAsync();
 
             // Second pomodoro with same task
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
             service.OnTimerTickJs();
             await WaitForCompletionAsync();
 
@@ -307,6 +322,7 @@ public partial class TimerServiceTests
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act - dispose before completion
             await service.DisposeAsync();
@@ -327,6 +343,7 @@ public partial class TimerServiceTests
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             var stateChangedRaised = false;
             service.OnTimerStateChanged += () => stateChangedRaised = true;
@@ -363,6 +380,7 @@ public partial class TimerServiceTests
 
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act
             service.OnTimerTickJs();
@@ -409,6 +427,7 @@ public partial class TimerServiceTests
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             var expectedDate = AppState.GetCurrentDayKey();
 
@@ -434,6 +453,7 @@ public partial class TimerServiceTests
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act
             service.OnTimerTickJs();
@@ -457,6 +477,7 @@ public partial class TimerServiceTests
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act
             service.OnTimerTickJs();
@@ -483,6 +504,7 @@ public partial class TimerServiceTests
 
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act
             service.OnTimerTickJs();
@@ -506,6 +528,7 @@ public partial class TimerServiceTests
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act - No subscribers registered, should not throw
             service.OnTimerTickJs();
@@ -542,6 +565,7 @@ public partial class TimerServiceTests
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act - Dispose while timer is running
             await service.DisposeAsync();
@@ -585,6 +609,7 @@ public partial class TimerServiceTests
 
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act
             service.OnTimerTickJs();
@@ -617,6 +642,7 @@ public partial class TimerServiceTests
 
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Act - Tick fires, then race: set session to null before async handler runs
             service.OnTimerTickJs();
@@ -651,6 +677,7 @@ public partial class TimerServiceTests
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             await service.DisposeAsync();
 
@@ -671,6 +698,7 @@ public partial class TimerServiceTests
             var taskId = Guid.NewGuid();
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             // Acquire the semaphore via reflection to block the completion handler
             var lockField = typeof(TimerService).GetField("_timerCompleteLock", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
@@ -704,6 +732,7 @@ public partial class TimerServiceTests
 
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             MockIndexedDb.Setup(db => db.PutAsync(Constants.Storage.DailyStatsStore, It.IsAny<DailyStats>()))
                 .ThrowsAsync(new InvalidOperationException("Storage failed"));

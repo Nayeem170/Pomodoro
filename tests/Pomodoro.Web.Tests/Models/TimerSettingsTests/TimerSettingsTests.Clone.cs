@@ -33,7 +33,8 @@ public partial class TimerSettingsTests
             longBreakMinutes: 20,
             soundEnabled: false,
             notificationsEnabled: true,
-            autoStartEnabled: false,
+            autoStartPomodoros: false,
+            autoStartBreaks: false,
             autoStartDelaySeconds: 25);
 
         // Act
@@ -45,7 +46,8 @@ public partial class TimerSettingsTests
         Assert.Equal(original.LongBreakMinutes, clone.LongBreakMinutes);
         Assert.Equal(original.SoundEnabled, clone.SoundEnabled);
         Assert.Equal(original.NotificationsEnabled, clone.NotificationsEnabled);
-        Assert.Equal(original.AutoStartEnabled, clone.AutoStartEnabled);
+        Assert.Equal(original.AutoStartPomodoros, clone.AutoStartPomodoros);
+        Assert.Equal(original.AutoStartBreaks, clone.AutoStartBreaks);
         Assert.Equal(original.AutoStartDelaySeconds, clone.AutoStartDelaySeconds);
     }
 
@@ -95,7 +97,8 @@ public partial class TimerSettingsTests
             longBreakMinutes: 25,
             soundEnabled: false,
             notificationsEnabled: false,
-            autoStartEnabled: true,
+            autoStartPomodoros: true,
+            autoStartBreaks: true,
             autoStartDelaySeconds: 20);
 
         // Act
@@ -108,7 +111,8 @@ public partial class TimerSettingsTests
         Assert.Equal(original.LongBreakMinutes, clone2.LongBreakMinutes);
         Assert.Equal(original.SoundEnabled, clone2.SoundEnabled);
         Assert.Equal(original.NotificationsEnabled, clone2.NotificationsEnabled);
-        Assert.Equal(original.AutoStartEnabled, clone2.AutoStartEnabled);
+        Assert.Equal(original.AutoStartPomodoros, clone2.AutoStartPomodoros);
+        Assert.Equal(original.AutoStartBreaks, clone2.AutoStartBreaks);
         Assert.Equal(original.AutoStartDelaySeconds, clone2.AutoStartDelaySeconds);
     }
 

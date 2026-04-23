@@ -2,10 +2,6 @@ using Microsoft.AspNetCore.Components;
 
 namespace Pomodoro.Web.Components.Shared;
 
-/// <summary>
-/// Code-behind for TodaySummary component
-/// Separates business logic from view
-/// </summary>
 public class TodaySummaryBase : ComponentBase
 {
     #region Parameters (Model)
@@ -19,13 +15,20 @@ public class TodaySummaryBase : ComponentBase
     [Parameter]
     public int TasksWorkedOn { get; set; }
 
+    [Parameter]
+    public int DailyGoal { get; set; }
+
     #endregion
 
     #region Business Logic Methods
 
-    /// <summary>
-    /// Formats minutes into human-readable time format
-    /// </summary>
+    protected string GetProgressWidth()
+    {
+        if (DailyGoal <= 0) return "0%";
+        var pct = Math.Min(PomodoroCount * 100.0 / DailyGoal, 100);
+        return $"{pct:F0}%";
+    }
+
     protected string FormatTime(int minutes)
     {
         if (minutes < Constants.TimeConversion.MinutesPerHour)

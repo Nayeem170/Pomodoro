@@ -1,8 +1,8 @@
 @using Microsoft.AspNetCore.Components
 @using Pomodoro.Web.Models
 
-<div class="history-tabs" role="tablist">
-    <button class="history-tab @(ActiveTab == HistoryTab.Daily ? Constants.UI.HistoryTabActiveClass : "")"
+<div class="vtoggle" role="tablist">
+    <button class="vt @(ActiveTab == HistoryTab.Daily ? "act" : "")"
             @onclick="OnDailyTabClick"
             @onkeydown="OnKeyDown"
             aria-selected="@(ActiveTab == HistoryTab.Daily ? "true" : "false")"
@@ -11,7 +11,7 @@
             id="daily-tab">
         @Constants.History.DailyTabLabel
     </button>
-    <button class="history-tab @(ActiveTab == HistoryTab.Weekly ? Constants.UI.HistoryTabActiveClass : "")"
+    <button class="vt @(ActiveTab == HistoryTab.Weekly ? "act" : "")"
             @onclick="OnWeeklyTabClick"
             @onkeydown="OnKeyDown"
             aria-selected="@(ActiveTab == HistoryTab.Weekly ? "true" : "false")"
@@ -51,7 +51,6 @@
     {
         if (e.Key == Constants.Keys.ArrowLeft || e.Key == Constants.Keys.ArrowRight)
         {
-            // Switch to the other tab
             var newTab = ActiveTab == HistoryTab.Daily ? HistoryTab.Weekly : HistoryTab.Daily;
             
             if (ActiveTab != newTab)

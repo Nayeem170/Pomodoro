@@ -1,11 +1,9 @@
 using Bunit;
 using FluentAssertions;
-using Microsoft.AspNetCore.Components.Web;
+using Moq;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Pages;
 using Xunit;
-using Moq;
-using Microsoft.JSInterop;
 
 namespace Pomodoro.Web.Tests.Pages;
 
@@ -18,13 +16,11 @@ public class SettingsPageTests : TestHelper
 {
     public SettingsPageTests()
     {
-        // Set up TimerService with default settings
         var defaultSettings = new TimerSettings();
         TimerServiceMock
             .SetupGet(x => x.Settings)
             .Returns(defaultSettings);
 
-        // Set up UpdateSettingsAsync to return completed task
         TimerServiceMock
             .Setup(x => x.UpdateSettingsAsync(It.IsAny<TimerSettings>()))
             .Returns(Task.CompletedTask);
@@ -33,10 +29,8 @@ public class SettingsPageTests : TestHelper
     [Fact]
     public void SettingsPage_RendersWithoutErrors()
     {
-        // Act
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
 
-        // Assert
         cut.Should().NotBeNull();
         cut.Markup.Should().NotBeNullOrEmpty();
     }
@@ -44,53 +38,42 @@ public class SettingsPageTests : TestHelper
     [Fact]
     public void SettingsPage_HasSettingsSections()
     {
-        // Act
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
 
-        // Assert - Settings page should have sections for Timer Durations, Preferences, Auto-Start, and Data Management
-        var headers = cut.FindAll("h2");
+        var headers = cut.FindAll(".ss-hdr");
         headers.Should().NotBeEmpty();
-        headers.Count.Should().BeGreaterThanOrEqualTo(3); // At least 3 sections
+        headers.Count.Should().BeGreaterThanOrEqualTo(3);
     }
 
     [Fact]
-    public void SettingsPage_HasTimerDurationInputs()
+    public void SettingsPage_HasTimerDurationSteppers()
     {
-        // Act
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
 
-        // Assert - Settings page should have number inputs for timer durations
-        var inputs = cut.FindAll(".setting-input[type='number']");
-        inputs.Should().NotBeEmpty();
-        inputs.Count.Should().BeGreaterThanOrEqualTo(3); // Pomodoro, Short Break, Long Break
+        var steppers = cut.FindAll(".stepper");
+        steppers.Should().NotBeEmpty();
+        steppers.Count.Should().BeGreaterThanOrEqualTo(3);
     }
 
     [Fact]
     public void SettingsPage_HasToggleSwitches()
     {
-        // Act
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
 
-        // Assert - Settings page should have toggle switches for preferences
-        var toggles = cut.FindAll(".toggle-input[type='checkbox']");
+        var toggles = cut.FindAll(".tog");
         toggles.Should().NotBeEmpty();
-        toggles.Count.Should().BeGreaterThanOrEqualTo(2); // Sound, Notifications, Auto-start
+        toggles.Count.Should().BeGreaterThanOrEqualTo(2);
     }
 
     [Fact]
     public void SettingsPage_HasDataManagementButtons()
     {
-        // Act
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
 
-        // Assert - Settings page should have buttons for data management
-        var exportButton = cut.Find(".btn-export");
-        var importLabel = cut.Find(".btn-import");
-        var clearButton = cut.Find(".btn-clear");
+        var exportButton = cut.Find(".sec-btn");
+        var clearButton = cut.Find(".danger-btn");
 
         exportButton.Should().NotBeNull();
-        importLabel.Should().NotBeNull();
         clearButton.Should().NotBeNull();
     }
 }
-

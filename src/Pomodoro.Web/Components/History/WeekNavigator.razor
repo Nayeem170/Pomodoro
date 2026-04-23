@@ -1,10 +1,9 @@
 @inherits WeekNavigatorBase
 
-<div class="date-navigator">
-    <span class="current-date">@FormatWeekRange(SelectedWeekStart)</span>
-    <div class="nav-buttons">
-        <button class="nav-btn" @onclick="GoToPreviousWeek" title="@Constants.History.PreviousWeekTitle" aria-label="@Constants.History.PreviousWeekTitle">@Constants.History.LeftArrowIcon</button>
-        <button class="nav-btn today-btn" @onclick="GoToThisWeek" disabled="@IsThisWeek">@Constants.History.ThisWeekLabel</button>
-        <button class="nav-btn" @onclick="GoToNextWeek" title="@Constants.History.NextWeekTitle" disabled="@IsThisWeek" aria-label="@Constants.History.NextWeekTitle">@Constants.History.RightArrowIcon</button>
+<div class="period-nav">
+    <div class="nav-arrows">
+        <button class="nav-arr" @onclick="GoToPreviousWeek" title="@Constants.History.PreviousWeekTitle" aria-label="@Constants.History.PreviousWeekTitle">&#8592;</button>
+        <span class="period-lbl">@FormatWeekRange(SelectedWeekStart)</span>
+        <button class="nav-arr" @onclick="GoToNextWeek" title="@Constants.History.NextWeekTitle" disabled="@IsThisWeek" aria-label="@Constants.History.NextWeekTitle">&#8594;</button>
     </div>
 </div>

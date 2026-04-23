@@ -2,30 +2,22 @@
 
 @if (WeeklyStats != null)
 {
-    <div class="weekly-summary-section">
-        <div class="section-header">
-            <h2>Weekly Summary</h2>
+    <div class="stat-grid">
+        <div class="sc">
+            <div class="sv">@WeeklyStats.TotalPomodoroCount</div>
+            <div class="sl">Pomodoros</div>
         </div>
-        <div class="weekly-stats">
-            <div class="stat">
-                <span class="stat-value">@WeeklyStats.TotalFocusMinutes</span>
-                <span class="stat-label">Minutes This Week</span>
-            </div>
-            <div class="stat">
-                <span class="stat-value">@WeeklyStats.TotalPomodoroCount</span>
-                <span class="stat-label">Pomodoros</span>
-            </div>
-            <div class="stat">
-                <span class="stat-value">@WeeklyStats.DailyAverageMinutes.ToString("F0")</span>
-                <span class="stat-label">Daily Average</span>
-            </div>
-            @if (WeeklyStats.WeekOverWeekChange != 0)
-            {
-                <div class="stat trend @(WeeklyStats.WeekOverWeekChange > 0 ? "positive" : "negative")">
-                    <span class="stat-value">@(WeeklyStats.WeekOverWeekChange > 0 ? "+" : "")@WeeklyStats.WeekOverWeekChange.ToString("F0")@Constants.UI.PercentSymbol</span>
-                    <span class="stat-label">vs Last Week</span>
-                </div>
-            }
+        <div class="sc">
+            <div class="sv">@FormatFocusTime(WeeklyStats.TotalFocusMinutes)</div>
+            <div class="sl">Focus time</div>
+        </div>
+        <div class="sc">
+            <div class="sv">@WeeklyStats.DailyAverageMinutes.ToString("F1")</div>
+            <div class="sl">Daily avg</div>
+        </div>
+        <div class="sc">
+            <div class="sv">@WeeklyStats.UniqueTasksWorkedOn</div>
+            <div class="sl">Tasks done</div>
         </div>
     </div>
 }
@@ -33,4 +25,12 @@
 @code {
     [Parameter]
     public WeeklyStats? WeeklyStats { get; set; }
+
+    private string FormatFocusTime(int minutes)
+    {
+        if (minutes < 60) return minutes + "m";
+        var hours = minutes / 60;
+        var mins = minutes % 60;
+        return mins > 0 ? $"{hours}h {mins}m" : $"{hours}h";
+    }
 }

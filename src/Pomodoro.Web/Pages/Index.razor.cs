@@ -79,6 +79,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected int TodayTotalFocusMinutes => GetTodayStats().TotalFocusMinutes;
     protected int TodayPomodoroCount => GetTodayStats().PomodoroCount;
     protected int TodayTasksWorkedOn => GetTodayStats().TasksWorkedOn;
+    protected int DailyGoal => TimerService.Settings.DailyGoal;
 
     private (int TotalFocusMinutes, int PomodoroCount, int TasksWorkedOn) GetTodayStats()
     {

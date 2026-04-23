@@ -1,15 +1,10 @@
 @page "/settings"
 @inherits SettingsPageBase
 
-<div class="settings-page">
-    <div class="settings-header">
-        <h1>⚙️ Settings</h1>
-        <p class="settings-tagline">Customize your pomodoro experience</p>
-    </div>
-    
+<div class="sett-body">
     <TimerDurationSettings Settings="@Settings" OnChanged="MarkDirty" />
-    <PreferenceSettings Settings="@Settings" OnChanged="MarkDirty" />
-    <AutoStartSettings Settings="@Settings" OnChanged="MarkDirty" />
+    <AutomationSettings Settings="@Settings" OnChanged="MarkDirty" />
+    <SoundNotificationSettings Settings="@Settings" OnChanged="MarkDirty" />
     <DataManagementSettings IsExporting="@IsExporting"
                            IsImporting="@IsImporting"
                            IsClearing="@IsClearing"
@@ -18,14 +13,13 @@
                            OnImport="HandleImport"
                            OnConfirmClearData="ConfirmClearData" />
     
+    <div class="sett-actions">
+        <button class="sec-btn" @onclick="ResetSettings" disabled="@IsAtDefaults">Reset to defaults</button>
+    </div>
+    
     <ClearConfirmationModal IsVisible="@ShowClearConfirmation"
                             OnConfirm="ClearData"
                             OnCancel="@(() => ShowClearConfirmation = false)" />
-    
-    <div class="settings-actions">
-        <button class="btn-save" @onclick="HandleSave" title="Save Settings" disabled="@(!HasChanges)">✓</button>
-        <button class="btn-reset-defaults" @onclick="ResetToDefaults" title="Reset to Defaults" disabled="@IsAtDefaults">↺</button>
-    </div>
     
     @if (ShowToast)
     {

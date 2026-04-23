@@ -44,7 +44,7 @@ public class SettingsPresenterServiceTests
             LongBreakMinutes = 20,
             SoundEnabled = false,
             NotificationsEnabled = false,
-            AutoStartEnabled = false,
+            AutoStartPomodoros = false, AutoStartBreaks = false,
             AutoStartDelaySeconds = 10
         };
 
@@ -66,7 +66,7 @@ public class SettingsPresenterServiceTests
             LongBreakMinutes = 15,
             SoundEnabled = true,
             NotificationsEnabled = true,
-            AutoStartEnabled = true,
+            AutoStartPomodoros = true, AutoStartBreaks = true,
             AutoStartDelaySeconds = 5
         };
 
@@ -88,7 +88,7 @@ public class SettingsPresenterServiceTests
             LongBreakMinutes = 15,
             SoundEnabled = true,
             NotificationsEnabled = true,
-            AutoStartEnabled = true,
+            AutoStartPomodoros = true, AutoStartBreaks = true,
             AutoStartDelaySeconds = 5
         };
 
@@ -110,7 +110,7 @@ public class SettingsPresenterServiceTests
             LongBreakMinutes = 25, // Different from default (15)
             SoundEnabled = true,
             NotificationsEnabled = true,
-            AutoStartEnabled = true,
+            AutoStartPomodoros = true, AutoStartBreaks = true,
             AutoStartDelaySeconds = 5
         };
 
@@ -132,7 +132,7 @@ public class SettingsPresenterServiceTests
             LongBreakMinutes = 15,
             SoundEnabled = false, // Different from default (true)
             NotificationsEnabled = true,
-            AutoStartEnabled = true,
+            AutoStartPomodoros = true, AutoStartBreaks = true,
             AutoStartDelaySeconds = 5
         };
 
@@ -154,7 +154,7 @@ public class SettingsPresenterServiceTests
             LongBreakMinutes = 15,
             SoundEnabled = true,
             NotificationsEnabled = false, // Different from default (true)
-            AutoStartEnabled = true,
+            AutoStartPomodoros = true, AutoStartBreaks = true,
             AutoStartDelaySeconds = 5
         };
 
@@ -176,7 +176,8 @@ public class SettingsPresenterServiceTests
             LongBreakMinutes = 15,
             SoundEnabled = true,
             NotificationsEnabled = true,
-            AutoStartEnabled = false, // Different from default (true)
+            AutoStartPomodoros = false,
+            AutoStartBreaks = false,
             AutoStartDelaySeconds = 5
         };
 
@@ -198,7 +199,7 @@ public class SettingsPresenterServiceTests
             LongBreakMinutes = 15,
             SoundEnabled = true,
             NotificationsEnabled = true,
-            AutoStartEnabled = true,
+            AutoStartPomodoros = true, AutoStartBreaks = true,
             AutoStartDelaySeconds = 15 // Different from default (10)
         };
 

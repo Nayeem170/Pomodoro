@@ -37,7 +37,8 @@ public partial class SettingsRepositoryTests
         int longBreakMinutes = 20,
         bool soundEnabled = true,
         bool notificationsEnabled = true,
-        bool autoStartEnabled = true,
+        bool autoStartPomodoros = true,
+        bool autoStartBreaks = true,
         int autoStartDelaySeconds = 15)
     {
         return new TimerSettings
@@ -47,7 +48,8 @@ public partial class SettingsRepositoryTests
             LongBreakMinutes = longBreakMinutes,
             SoundEnabled = soundEnabled,
             NotificationsEnabled = notificationsEnabled,
-            AutoStartEnabled = autoStartEnabled,
+            AutoStartPomodoros = autoStartPomodoros,
+            AutoStartBreaks = autoStartBreaks,
             AutoStartDelaySeconds = autoStartDelaySeconds
         };
     }
@@ -62,7 +64,8 @@ public partial class SettingsRepositoryTests
         int longBreakMinutes = 20,
         bool soundEnabled = true,
         bool notificationsEnabled = true,
-        bool autoStartEnabled = true,
+        bool autoStartPomodoros = true,
+        bool autoStartBreaks = true,
         int autoStartDelaySeconds = 15)
     {
         return new
@@ -73,7 +76,8 @@ public partial class SettingsRepositoryTests
             LongBreakMinutes = longBreakMinutes,
             SoundEnabled = soundEnabled,
             NotificationsEnabled = notificationsEnabled,
-            AutoStartEnabled = autoStartEnabled,
+            AutoStartPomodoros = autoStartPomodoros,
+            AutoStartBreaks = autoStartBreaks,
             AutoStartDelaySeconds = autoStartDelaySeconds
         };
     }

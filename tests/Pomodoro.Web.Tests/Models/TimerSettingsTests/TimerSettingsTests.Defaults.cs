@@ -31,13 +31,23 @@ public partial class TimerSettingsTests
     }
 
     [Fact]
-    public void AutoStartEnabled_DefaultIsTrue()
+    public void AutoStartPomodoros_DefaultIsTrue()
     {
         // Arrange & Act
         var settings = CreateDefaultSettings();
 
         // Assert
-        Assert.True(settings.AutoStartEnabled);
+        Assert.True(settings.AutoStartPomodoros);
+    }
+
+    [Fact]
+    public void AutoStartBreaks_DefaultIsTrue()
+    {
+        // Arrange & Act
+        var settings = CreateDefaultSettings();
+
+        // Assert
+        Assert.True(settings.AutoStartBreaks);
     }
 
     [Fact]
@@ -52,7 +62,8 @@ public partial class TimerSettingsTests
         Assert.Equal(Constants.Timer.DefaultLongBreakMinutes, settings.LongBreakMinutes);
         Assert.True(settings.SoundEnabled);
         Assert.True(settings.NotificationsEnabled);
-        Assert.True(settings.AutoStartEnabled);
+        Assert.True(settings.AutoStartPomodoros);
+        Assert.True(settings.AutoStartBreaks);
         Assert.Equal(Constants.Timer.DefaultAutoStartDelaySeconds, settings.AutoStartDelaySeconds);
     }
 
@@ -83,16 +94,29 @@ public partial class TimerSettingsTests
     }
 
     [Fact]
-    public void AutoStartEnabled_CanBeSetToFalse()
+    public void AutoStartPomodoros_CanBeSetToFalse()
     {
         // Arrange
         var settings = CreateDefaultSettings();
 
         // Act
-        settings.AutoStartEnabled = false;
+        settings.AutoStartPomodoros = false;
 
         // Assert
-        Assert.False(settings.AutoStartEnabled);
+        Assert.False(settings.AutoStartPomodoros);
+    }
+
+    [Fact]
+    public void AutoStartBreaks_CanBeSetToFalse()
+    {
+        // Arrange
+        var settings = CreateDefaultSettings();
+
+        // Act
+        settings.AutoStartBreaks = false;
+
+        // Assert
+        Assert.False(settings.AutoStartBreaks);
     }
 
     #endregion

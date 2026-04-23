@@ -13,67 +13,67 @@ else
     <div class="main-container">
         <ErrorBanner ErrorMessage="@ErrorMessage" OnDismiss="@(() => ErrorMessage = null)" />
         
-        <!-- Today's Summary -->
-        <div class="summary-section">
-            <TodaySummary TotalFocusMinutes="TodayTotalFocusMinutes"
-                          PomodoroCount="TodayPomodoroCount"
-                          TasksWorkedOn="TodayTasksWorkedOn" />
+        <div class="mode-tabs" role="tablist">
+            <button class="@(CurrentSessionType == SessionType.Pomodoro ? "active" : "")"
+                    @onclick="() => HandleSessionSwitch(SessionType.Pomodoro)"
+                    title="@Constants.KeyboardShortcuts.PomodoroKey"
+                    role="tab"
+                    aria-selected="@(CurrentSessionType == SessionType.Pomodoro)">
+                Pomodoro
+            </button>
+            <button class="@(CurrentSessionType == SessionType.ShortBreak ? "active" : "")"
+                    @onclick="() => HandleSessionSwitch(SessionType.ShortBreak)"
+                    title="@Constants.KeyboardShortcuts.ShortBreakKey"
+                    role="tab"
+                    aria-selected="@(CurrentSessionType == SessionType.ShortBreak)">
+                Short break
+            </button>
+            <button class="@(CurrentSessionType == SessionType.LongBreak ? "active" : "")"
+                    @onclick="() => HandleSessionSwitch(SessionType.LongBreak)"
+                    title="@Constants.KeyboardShortcuts.LongBreakKey"
+                    role="tab"
+                    aria-selected="@(CurrentSessionType == SessionType.LongBreak)">
+                Long break
+            </button>
         </div>
         
-        <!-- Timer Section -->
-        <div class="timer-section @GetTimerThemeClass()">
-            <div class="timer-section-header">
-                <div class="session-tabs" role="tablist">
-                    <button class="@(CurrentSessionType == SessionType.Pomodoro ? "active" : "")"
-                            @onclick="() => HandleSessionSwitch(SessionType.Pomodoro)"
-                            title="@Constants.KeyboardShortcuts.PomodoroKey"
-                            role="tab"
-                            aria-selected="@(CurrentSessionType == SessionType.Pomodoro)">
-                        Pomodoro
+        <div class="timer-card @GetTimerThemeClass() @(IsTimerRunning ? "running" : "")">
+            <div class="card-top">
+                <TimerDisplay RemainingTime="RemainingTime"
+                              SessionType="CurrentSessionType"
+                              IsRunning="IsTimerRunning" />
+                
+                <CurrentTaskIndicator CurrentSessionType="@CurrentSessionType"
+                                      CurrentTaskId="@CurrentTaskId"
+                                      Tasks="@Tasks" />
+                
+                <TodaySummary TotalFocusMinutes="TodayTotalFocusMinutes"
+                              PomodoroCount="TodayPomodoroCount"
+                              DailyGoal="DailyGoal"
+                              TasksWorkedOn="TodayTasksWorkedOn" />
+                
+                <TimerControls IsRunning="IsTimerRunning"
+                               IsPaused="IsTimerPaused"
+                               IsStarted="IsTimerStarted"
+                               CanStart="CurrentTaskId.HasValue || CurrentSessionType != SessionType.Pomodoro"
+                               SessionType="CurrentSessionType"
+                               OnStart="HandleTimerStart"
+                               OnPause="HandleTimerPause"
+                               OnResume="HandleTimerResume"
+                               OnReset="HandleTimerReset" />
+            </div>
+            <div class="card-footer">
+                <div class="card-footer-left">
+                    <button class="pip-btn" @onclick="HandleTogglePip" title="@(IsPipOpen ? Constants.PipTimerUI.CloseFloatingTimerTitle : Constants.PipTimerUI.PopOutFloatingTimerTitle)" aria-label="Picture in Picture">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><rect x="7" y="7" width="5.5" height="4.5" rx="1" fill="currentColor"/></svg>
                     </button>
-                    <button class="@(CurrentSessionType == SessionType.ShortBreak ? "active" : "")"
-                            @onclick="() => HandleSessionSwitch(SessionType.ShortBreak)"
-                            title="@Constants.KeyboardShortcuts.ShortBreakKey"
-                            role="tab"
-                            aria-selected="@(CurrentSessionType == SessionType.ShortBreak)">
-                        Short Break
-                    </button>
-                    <button class="@(CurrentSessionType == SessionType.LongBreak ? "active" : "")"
-                            @onclick="() => HandleSessionSwitch(SessionType.LongBreak)"
-                            title="@Constants.KeyboardShortcuts.LongBreakKey"
-                            role="tab"
-                            aria-selected="@(CurrentSessionType == SessionType.LongBreak)">
-                        Long Break
+                    <button class="pip-btn" @onclick="() => ShowKeyboardHelp = true" title="@Constants.KeyboardShortcuts.HelpKey" aria-label="Keyboard shortcuts">
+                        <svg width="14" height="14" viewBox="0 0 13 13" fill="none"><rect x="1" y="2.5" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><rect x="3" y="4.5" width="2" height="1.5" rx=".4" fill="currentColor"/><rect x="5.5" y="4.5" width="2" height="1.5" rx=".4" fill="currentColor"/><rect x="8" y="4.5" width="2" height="1.5" rx=".4" fill="currentColor"/><rect x="4" y="7" width="5" height="1.5" rx=".4" fill="currentColor"/></svg>
                     </button>
                 </div>
             </div>
-            
-            <TimerDisplay RemainingTime="RemainingTime"
-                          SessionType="CurrentSessionType"
-                          IsRunning="IsTimerRunning" />
-            
-            <TimerControls IsRunning="IsTimerRunning"
-                           IsPaused="IsTimerPaused"
-                           IsStarted="IsTimerStarted"
-                           CanStart="CurrentTaskId.HasValue || CurrentSessionType != SessionType.Pomodoro"
-                           SessionType="CurrentSessionType"
-                           OnStart="HandleTimerStart"
-                           OnPause="HandleTimerPause"
-                           OnResume="HandleTimerResume"
-                           OnReset="HandleTimerReset" />
-            
-            <CurrentTaskIndicator CurrentSessionType="@CurrentSessionType"
-                                  CurrentTaskId="@CurrentTaskId"
-                                  Tasks="@Tasks" />
-            
-            <!-- Header Actions (PiP and Help buttons) -->
-            <div class="header-actions">
-                <button class="btn-pip-header" @onclick="() => ShowKeyboardHelp = true" title="@Constants.KeyboardShortcuts.HelpKey" aria-label="Keyboard shortcuts">?</button>
-                <button class="btn-pip-header" @onclick="HandleTogglePip" title="@(IsPipOpen ? Constants.PipTimerUI.CloseFloatingTimerTitle : Constants.PipTimerUI.PopOutFloatingTimerTitle)">⧉</button>
-            </div>
         </div>
         
-        <!-- Tasks Section -->
         <ErrorBoundary @ref="_tasksErrorBoundary">
             <ChildContent>
                 <div class="tasks-section">
@@ -89,19 +89,17 @@ else
             <ErrorContent Context="ex">
                 <div class="section-error" role="alert">
                     <p>Tasks failed to load.</p>
-                    <button class="btn btn-secondary" @onclick="() => _tasksErrorBoundary?.Recover()">Retry</button>
+                    <button class="btn-icon-small btn-cancel" @onclick="() => _tasksErrorBoundary?.Recover()">Retry</button>
                 </div>
             </ErrorContent>
         </ErrorBoundary>
         
-        <!-- Consent Modal -->
         <ConsentModal IsVisible="IsConsentModalVisible"
                       CompletedSessionType="ConsentService.CompletedSessionType"
                       CountdownSeconds="ConsentCountdown"
                       Options="ConsentOptions"
                       OnOptionSelected="HandleConsentOptionSelect" />
         
-        <!-- Keyboard Help Modal -->
         <KeyboardHelpModal IsVisible="ShowKeyboardHelp"
                            OnClose="() => ShowKeyboardHelp = false" />
         

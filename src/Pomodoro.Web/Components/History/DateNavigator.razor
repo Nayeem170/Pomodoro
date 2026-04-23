@@ -1,10 +1,9 @@
 @inherits DateNavigatorBase
 
-<div class="date-navigator">
-    <span class="current-date">@FormattedDate</span>
-    <div class="nav-buttons">
-        <button class="nav-btn" @onclick="GoToPrevious" title="Previous day" aria-label="Previous day">◀</button>
-        <button class="nav-btn today-btn" @onclick="GoToToday" disabled="@IsTodayAsyncValue">Today</button>
-        <button class="nav-btn" @onclick="GoToNext" title="Next day" disabled="@IsTodayAsyncValue" aria-label="Next day">▶</button>
+<div class="period-nav">
+    <div class="nav-arrows">
+        <button class="nav-arr" @onclick="GoToPrevious" title="Previous day" aria-label="Previous day">&#8592;</button>
+        <span class="period-lbl">@FormattedDate</span>
+        <button class="nav-arr" @onclick="GoToNext" title="Next day" disabled="@IsTodayAsyncValue" aria-label="Next day">&#8594;</button>
     </div>
 </div>

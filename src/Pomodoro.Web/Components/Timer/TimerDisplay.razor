@@ -1,10 +1,17 @@
 @inherits TimerDisplayBase
 
-<div class="timer-display @GetTimerClass()">
-    <div class="timer-time">
-        @FormatTime(CurrentRemainingTime)
-    </div>
-    <div class="timer-type">
-        @GetSessionTypeLabel()
+<div class="ring-area">
+    <svg width="180" height="180" viewBox="0 0 180 180">
+        <circle class="ring-bg" cx="90" cy="90" r="81"/>
+        <circle class="ring-fill @GetRingSessionClass()" cx="90" cy="90" r="81"
+                style="stroke-dashoffset: @GetDashOffset()"/>
+    </svg>
+    <div class="timer-center">
+        <div class="timer-time">
+            @FormatTime(CurrentRemainingTime)
+        </div>
+        <div class="timer-mode-label">
+            @GetSessionTypeLabel()
+        </div>
     </div>
 </div>

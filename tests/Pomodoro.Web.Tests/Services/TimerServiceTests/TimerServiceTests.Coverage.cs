@@ -65,6 +65,7 @@ public partial class TimerServiceTests
 
                 service.OnTick += () => tickRaised = true;
                 AppState.CurrentSession!.RemainingSeconds = 100;
+                AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(100);
 
                 service.OnTimerTickJs();
 
@@ -243,6 +244,7 @@ public partial class TimerServiceTests
             await service.InitializeAsync();
             await service.StartPomodoroAsync();
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             service.OnTimerTickJs();
             AppState.CurrentSession = null;
@@ -278,6 +280,7 @@ public partial class TimerServiceTests
 
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             service.OnTimerTickJs();
             service.OnTimerTickJs();
@@ -313,6 +316,7 @@ public partial class TimerServiceTests
 
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             service.OnTimerTickJs();
             await Task.Delay(3000);
@@ -346,6 +350,7 @@ public partial class TimerServiceTests
 
             await service.StartPomodoroAsync(taskId);
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
             service.OnTimerTickJs();
             await Task.Delay(500);

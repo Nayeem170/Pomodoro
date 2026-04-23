@@ -1,28 +1,46 @@
-<div class="settings-section">
-    <h2>Timer Durations</h2>
+<div class="ss">
+    <div class="ss-hdr">Timer durations</div>
     
-    <div class="setting-item">
-        <div class="setting-label">
-            <span class="setting-icon">🍅</span>
-            <span class="setting-name">Pomodoro</span>
+    <div class="sr">
+        <span class="sr-lbl">Pomodoro</span>
+        <div class="stepper">
+            <button class="step-btn" @onclick="DecrementPomodoro" disabled="@IsPomodoroMin" aria-label="Decrease">−</button>
+            <input type="number" class="step-input" @bind="pomodoroInput" @bind:event="oninput" @onfocusout="ValidatePomodoro" @onkeydown="HandlePomodoroKey" min="1" max="120" />
+            <button class="step-btn" @onclick="IncrementPomodoro" disabled="@IsPomodoroMax" aria-label="Increase">+</button>
+            <span class="step-unit">min</span>
         </div>
-        <input type="number" class="setting-input" @bind="Settings.PomodoroMinutes" @bind:after="NotifyChanged" min="1" max="60" aria-label="Pomodoro duration (minutes)" />
     </div>
     
-    <div class="setting-item">
-        <div class="setting-label">
-            <span class="setting-icon">☕</span>
-            <span class="setting-name">Short Break</span>
+    <div class="sr">
+        <span class="sr-lbl">Short break</span>
+        <div class="stepper">
+            <button class="step-btn" @onclick="DecrementShortBreak" disabled="@IsShortBreakMin" aria-label="Decrease">−</button>
+            <input type="number" class="step-input" @bind="shortBreakInput" @bind:event="oninput" @onfocusout="ValidateShortBreak" @onkeydown="HandleShortBreakKey" min="1" max="60" />
+            <button class="step-btn" @onclick="IncrementShortBreak" disabled="@IsShortBreakMax" aria-label="Increase">+</button>
+            <span class="step-unit">min</span>
         </div>
-        <input type="number" class="setting-input" @bind="Settings.ShortBreakMinutes" @bind:after="NotifyChanged" min="1" max="30" aria-label="Short break duration (minutes)" />
     </div>
     
-    <div class="setting-item">
-        <div class="setting-label">
-            <span class="setting-icon">🏖️</span>
-            <span class="setting-name">Long Break</span>
+    <div class="sr">
+        <span class="sr-lbl">Long break</span>
+        <div class="stepper">
+            <button class="step-btn" @onclick="DecrementLongBreak" disabled="@IsLongBreakMin" aria-label="Decrease">−</button>
+            <input type="number" class="step-input" @bind="longBreakInput" @bind:event="oninput" @onfocusout="ValidateLongBreak" @onkeydown="HandleLongBreakKey" min="1" max="60" />
+            <button class="step-btn" @onclick="IncrementLongBreak" disabled="@IsLongBreakMax" aria-label="Increase">+</button>
+            <span class="step-unit">min</span>
         </div>
-        <input type="number" class="setting-input" @bind="Settings.LongBreakMinutes" @bind:after="NotifyChanged" min="1" max="60" aria-label="Long break duration (minutes)" />
+    </div>
+
+    <div class="sr">
+        <div>
+            <div class="sr-lbl">Daily goal</div>
+            <div class="sr-sub">Pomodoros per day</div>
+        </div>
+        <div class="stepper">
+            <button class="step-btn" @onclick="DecrementDailyGoal" disabled="@IsDailyGoalMin" aria-label="Decrease">−</button>
+            <input type="number" class="step-input" @bind="dailyGoalInput" @bind:event="oninput" @onfocusout="ValidateDailyGoal" @onkeydown="HandleDailyGoalKey" min="1" max="20" />
+            <button class="step-btn" @onclick="IncrementDailyGoal" disabled="@IsDailyGoalMax" aria-label="Increase">+</button>
+        </div>
     </div>
 </div>
 
@@ -33,5 +51,97 @@
     [Parameter]
     public EventCallback OnChanged { get; set; }
 
-    private async Task NotifyChanged() => await OnChanged.InvokeAsync();
+    private string? pomodoroInput;
+    private string? shortBreakInput;
+    private string? longBreakInput;
+    private string? dailyGoalInput;
+
+    private bool IsPomodoroMin => Settings.PomodoroMinutes <= 1;
+    private bool IsPomodoroMax => Settings.PomodoroMinutes >= 120;
+    private bool IsShortBreakMin => Settings.ShortBreakMinutes <= 1;
+    private bool IsShortBreakMax => Settings.ShortBreakMinutes >= 60;
+    private bool IsLongBreakMin => Settings.LongBreakMinutes <= 1;
+    private bool IsLongBreakMax => Settings.LongBreakMinutes >= 60;
+    private bool IsDailyGoalMin => Settings.DailyGoal <= 1;
+    private bool IsDailyGoalMax => Settings.DailyGoal >= 20;
+
+    private void NotifyChanged() => OnChanged.InvokeAsync();
+
+    protected override void OnParametersSet()
+    {
+        pomodoroInput = Settings.PomodoroMinutes.ToString();
+        shortBreakInput = Settings.ShortBreakMinutes.ToString();
+        longBreakInput = Settings.LongBreakMinutes.ToString();
+        dailyGoalInput = Settings.DailyGoal.ToString();
+    }
+
+    private void IncrementPomodoro() { Settings.PomodoroMinutes++; pomodoroInput = Settings.PomodoroMinutes.ToString(); NotifyChanged(); }
+    private void DecrementPomodoro() { Settings.PomodoroMinutes--; pomodoroInput = Settings.PomodoroMinutes.ToString(); NotifyChanged(); }
+    private void IncrementShortBreak() { Settings.ShortBreakMinutes++; shortBreakInput = Settings.ShortBreakMinutes.ToString(); NotifyChanged(); }
+    private void DecrementShortBreak() { Settings.ShortBreakMinutes--; shortBreakInput = Settings.ShortBreakMinutes.ToString(); NotifyChanged(); }
+    private void IncrementLongBreak() { Settings.LongBreakMinutes++; longBreakInput = Settings.LongBreakMinutes.ToString(); NotifyChanged(); }
+    private void DecrementLongBreak() { Settings.LongBreakMinutes--; longBreakInput = Settings.LongBreakMinutes.ToString(); NotifyChanged(); }
+    private void IncrementDailyGoal() { Settings.DailyGoal++; dailyGoalInput = Settings.DailyGoal.ToString(); NotifyChanged(); }
+    private void DecrementDailyGoal() { Settings.DailyGoal--; dailyGoalInput = Settings.DailyGoal.ToString(); NotifyChanged(); }
+
+    private void ValidatePomodoro()
+    {
+        if (int.TryParse(pomodoroInput, out var val))
+        {
+            Settings.PomodoroMinutes = val;
+            pomodoroInput = Settings.PomodoroMinutes.ToString();
+        }
+        else
+        {
+            pomodoroInput = Settings.PomodoroMinutes.ToString();
+        }
+        NotifyChanged();
+    }
+
+    private void ValidateShortBreak()
+    {
+        if (int.TryParse(shortBreakInput, out var val))
+        {
+            Settings.ShortBreakMinutes = val;
+            shortBreakInput = Settings.ShortBreakMinutes.ToString();
+        }
+        else
+        {
+            shortBreakInput = Settings.ShortBreakMinutes.ToString();
+        }
+        NotifyChanged();
+    }
+
+    private void ValidateLongBreak()
+    {
+        if (int.TryParse(longBreakInput, out var val))
+        {
+            Settings.LongBreakMinutes = val;
+            longBreakInput = Settings.LongBreakMinutes.ToString();
+        }
+        else
+        {
+            longBreakInput = Settings.LongBreakMinutes.ToString();
+        }
+        NotifyChanged();
+    }
+
+    private void ValidateDailyGoal()
+    {
+        if (int.TryParse(dailyGoalInput, out var val))
+        {
+            Settings.DailyGoal = val;
+            dailyGoalInput = Settings.DailyGoal.ToString();
+        }
+        else
+        {
+            dailyGoalInput = Settings.DailyGoal.ToString();
+        }
+        NotifyChanged();
+    }
+
+    private void HandlePomodoroKey(KeyboardEventArgs e) { if (e.Key == "Enter") ValidatePomodoro(); }
+    private void HandleShortBreakKey(KeyboardEventArgs e) { if (e.Key == "Enter") ValidateShortBreak(); }
+    private void HandleLongBreakKey(KeyboardEventArgs e) { if (e.Key == "Enter") ValidateLongBreak(); }
+    private void HandleDailyGoalKey(KeyboardEventArgs e) { if (e.Key == "Enter") ValidateDailyGoal(); }
 }

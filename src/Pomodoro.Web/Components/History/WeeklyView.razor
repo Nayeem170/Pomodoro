@@ -1,22 +1,22 @@
 @using Pomodoro.Web.Models
 @using Pomodoro.Web.Pages
 
-<div class="weekly-view">
-    <div class="date-navigator-container">
-        <WeekNavigator SelectedWeekStart="SelectedWeekStart" 
-                       OnWeekChanged="OnWeekChanged" />
+<WeeklySummarySection WeeklyStats="WeeklyStats" />
+
+<div class="card">
+    <div class="card-hdr">
+        <span class="card-title">Sessions per day</span>
     </div>
-    
-    <WeeklySummarySection WeeklyStats="WeeklyStats" />
-    
-    <div class="weekly-chart-section">
-        <div class="section-header">
-            <h2>@Constants.Layout.WeeklyTrendTitle</h2>
-        </div>
-        <WeeklyMiniChart DailyFocusMinutes="WeeklyFocusMinutes"
-                         BreakDailyMinutes="WeeklyBreakMinutes"
-                         WeekStartDate="SelectedWeekStart" />
+    <WeeklyMiniChart DailyFocusMinutes="WeeklyFocusMinutes"
+                     BreakDailyMinutes="WeeklyBreakMinutes"
+                     WeekStartDate="SelectedWeekStart" />
+    <div class="divider"></div>
+    <div class="card-hdr" style="margin-bottom: 10px">
+        <span class="card-title">Time distribution</span>
     </div>
+    <WeeklyTimeDistribution WeeklyFocusMinutes="WeeklyFocusMinutes"
+                            WeeklyBreakMinutes="WeeklyBreakMinutes"
+                            WeekStart="SelectedWeekStart" />
 </div>
 
 @code {

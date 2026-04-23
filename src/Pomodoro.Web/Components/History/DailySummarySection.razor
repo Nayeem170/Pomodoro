@@ -1,23 +1,22 @@
 @using Pomodoro.Web.Models
 @using Pomodoro.Web.Pages
 
-<div class="weekly-summary-section">
-    <div class="section-header">
-        <h2>Daily Summary</h2>
+<div class="stat-grid">
+    <div class="sc">
+        <div class="sv">@(CurrentStats?.PomodoroCount ?? 0)</div>
+        <div class="sl">Pomodoros</div>
     </div>
-    <div class="weekly-stats">
-        <div class="stat">
-            <span class="stat-value">@FormatFocusTime(CurrentStats?.FocusMinutes ?? 0)</span>
-            <span class="stat-label">Minutes Focused</span>
-        </div>
-        <div class="stat">
-            <span class="stat-value">@(CurrentStats?.PomodoroCount ?? 0)</span>
-            <span class="stat-label">Pomodoros</span>
-        </div>
-        <div class="stat">
-            <span class="stat-value">@(CurrentStats?.TasksWorkedOn ?? 0)</span>
-            <span class="stat-label">Tasks Worked On</span>
-        </div>
+    <div class="sc">
+        <div class="sv">@FormatFocusTime(CurrentStats?.FocusMinutes ?? 0)</div>
+        <div class="sl">Focus time</div>
+    </div>
+    <div class="sc">
+        <div class="sv">@(CurrentStats?.TasksWorkedOn ?? 0)</div>
+        <div class="sl">Tasks done</div>
+    </div>
+    <div class="sc">
+        <div class="sv">@FormatFocusTime(CurrentStats?.BreakMinutes ?? 0)</div>
+        <div class="sl">Break time</div>
     </div>
 </div>
 
@@ -28,12 +27,8 @@
     [Inject]
     protected HistoryPagePresenterService HistoryPagePresenterService { get; set; } = default!;
 
-    /// <summary>
-    /// Format focus time for display
-    /// </summary>
     internal string FormatFocusTime(int minutes)
     {
-        // DIAGNOSTIC: Check if HistoryPagePresenterService is null
         if (HistoryPagePresenterService == null)
         {
             return minutes.ToString();

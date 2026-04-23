@@ -14,4 +14,5 @@ public class TimerSession
     public bool IsRunning { get; set; }
     public bool IsCompleted { get; set; }
     public bool WasStarted { get; set; }
+    public DateTime? EndAt { get; set; }
 }
