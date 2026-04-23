@@ -51,6 +51,9 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected ITodayStatsService TodayStatsService { get; set; } = default!;
 
     [Inject]
+    protected ICloudSyncService CloudSyncService { get; set; } = default!;
+
+    [Inject]
     internal IndexPagePresenterService IndexPagePresenterService { get; set; } = default!;
 
     #endregion
@@ -207,6 +210,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                 {
                     await Task.Delay(Constants.UI.NotificationCheckDelayMs);
                     await CheckPendingNotificationActionAsync();
+                    await CloudSyncService.AutoSyncOnStartAsync();
                 },
                 Logger,
                 Constants.SafeTaskOperations.CheckPendingNotificationAction

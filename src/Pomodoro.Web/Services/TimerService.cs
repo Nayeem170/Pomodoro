@@ -14,6 +14,8 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     private readonly IJsTimerInterop _jsTimerInterop;
     private readonly AppState _appState;
     private readonly ILogger<TimerService> _logger;
+    private readonly IServiceProvider _serviceProvider;
+    private ICloudSyncService? _cloudSyncService;
     private DotNetObjectReference<object>? _dotNetRef;
     private SynchronizationContext? _syncContext;
     private readonly SemaphoreSlim _timerCompleteLock = new(Constants.Threading.SemaphoreInitialCount, Constants.Threading.SemaphoreMaxCount);
@@ -45,7 +47,8 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         IDailyStatsService dailyStatsService,
         IJsTimerInterop jsTimerInterop,
         AppState appState,
-        ILogger<TimerService> logger)
+        ILogger<TimerService> logger,
+        IServiceProvider serviceProvider)
     {
         _indexedDb = indexedDb;
         _settingsRepository = settingsRepository;
@@ -53,6 +56,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         _jsTimerInterop = jsTimerInterop;
         _appState = appState;
         _logger = logger;
+        _serviceProvider = serviceProvider;
     }
 
     public async Task InitializeAsync()
@@ -327,6 +331,9 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         await NotifyTimerCompletedAsync(eventArgs);
 
         NotifyStateChanged();
+
+        _cloudSyncService ??= _serviceProvider.GetService<ICloudSyncService>();
+        _cloudSyncService?.MarkDirtyAsync();
 
         // Note: Auto-start is handled by ConsentService which shows a consent modal
         // When auto-start is enabled, the modal appears with a countdown
