@@ -114,8 +114,17 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
                 return;
             }
 
-            _appState.CurrentSession.RemainingSeconds--;
-            TickCount++; // Increment to force UI update detection
+            var session = _appState.CurrentSession;
+            if (session.EndAt.HasValue)
+            {
+                var remaining = (int)(session.EndAt.Value - DateTime.UtcNow).TotalSeconds;
+                session.RemainingSeconds = Math.Max(0, remaining);
+            }
+            else
+            {
+                session.RemainingSeconds--;
+            }
+            TickCount++;
 
             if (_appState.CurrentSession.RemainingSeconds <= 0)
             {
@@ -169,7 +178,8 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
             RemainingSeconds = durationSeconds,
             IsRunning = true,
             IsCompleted = false,
-            WasStarted = true
+            WasStarted = true,
+            EndAt = DateTime.UtcNow.AddSeconds(durationSeconds)
         };
 
         NotifyStateChanged();
@@ -195,7 +205,8 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
             DurationSeconds = durationSeconds,
             RemainingSeconds = durationSeconds,
             IsRunning = false,
-            IsCompleted = false
+            IsCompleted = false,
+            EndAt = null
         };
 
         NotifyStateChanged();
@@ -206,6 +217,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         if (_appState.CurrentSession != null && _appState.CurrentSession.IsRunning)
         {
             _appState.CurrentSession.IsRunning = false;
+            _appState.CurrentSession.EndAt = null;
             await _jsTimerInterop.StopAsync();
             NotifyStateChanged();
         }
@@ -216,6 +228,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         if (_appState.CurrentSession != null && !_appState.CurrentSession.IsRunning)
         {
             _appState.CurrentSession.IsRunning = true;
+            _appState.CurrentSession.EndAt = DateTime.UtcNow.AddSeconds(_appState.CurrentSession.RemainingSeconds);
             NotifyStateChanged();
             _dotNetRef ??= DotNetObjectReference.Create<object>(this);
             await _jsTimerInterop.StartAsync(_dotNetRef);
@@ -238,6 +251,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
             _appState.CurrentSession.RemainingSeconds = durationSeconds;
             _appState.CurrentSession.IsRunning = false;
             _appState.CurrentSession.WasStarted = false;
+            _appState.CurrentSession.EndAt = null;
         }
 
         NotifyStateChanged();
@@ -276,6 +290,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
         session.IsRunning = false;
         session.IsCompleted = true;
+        session.EndAt = null;
 
         // Reset remaining seconds back to full duration for display
         session.RemainingSeconds = session.DurationSeconds;

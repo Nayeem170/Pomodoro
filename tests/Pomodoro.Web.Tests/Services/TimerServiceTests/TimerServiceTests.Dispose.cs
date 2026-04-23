@@ -120,6 +120,7 @@ public partial class TimerServiceTests
             // Start and complete a timer
             await service.StartPomodoroAsync();
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
             service.OnTimerTickJs();
             await Task.Delay(200); // Wait for async completion
 
@@ -162,6 +163,7 @@ public partial class TimerServiceTests
 
             // Try to trigger timer completion (should not work after disposal)
             AppState.CurrentSession!.RemainingSeconds = 1;
+            AppState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
             service.OnTimerTickJs();
             await Task.Delay(200);
 

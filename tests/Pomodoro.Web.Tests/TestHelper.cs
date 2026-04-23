@@ -47,9 +47,11 @@ public abstract class TestHelper : TestContext
     {
         // Create mocks for all services
         TimerServiceMock = new Mock<ITimerService>();
+        TimerServiceMock.SetupGet(x => x.Settings).Returns(new TimerSettings());
         TimerEventPublisherMock = new Mock<ITimerEventPublisher>();
         TaskServiceMock = new Mock<ITaskService>();
         ActivityServiceMock = new Mock<IActivityService>();
+        ActivityServiceMock.Setup(x => x.GetAllActivities()).Returns(new List<ActivityRecord>());
         StatisticsServiceMock = new Mock<IStatisticsService>();
         NotificationServiceMock = new Mock<INotificationService>();
         ExportServiceMock = new Mock<IExportService>();

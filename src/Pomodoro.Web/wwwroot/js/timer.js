@@ -1,40 +1,81 @@
 // Timer module for Blazor WebAssembly
+// Uses Web Worker to avoid browser throttling in background tabs
 window.timerFunctions = {
-    intervalId: null,
+    worker: null,
     dotNetRef: null,
-    
+    _visibilityHandler: null,
+
     start: function (dotNetReference) {
-        // Stop any existing timer first to prevent memory leaks
         this.stop();
-        
-        // Store reference and start new interval
+
         this.dotNetRef = dotNetReference;
-        
-        this.intervalId = setInterval(() => {
-            // Capture reference locally to prevent race condition with stop()
-            const ref = this.dotNetRef;
-            if (ref) {
-                try {
-                    ref.invokeMethodAsync(pomodoroConstants.jsCallbacks.onTimerTick);
-                } catch (e) {
-                    console.error(pomodoroConstants.messages.timerTickError + e);
-                    // Stop the timer on error to prevent repeated failures
-                    this.stop();
+
+        var workerCode = [
+            'let intervalId = null;',
+            'self.onmessage = function(e) {',
+            '    if (e.data.command === "start") {',
+            '        if (intervalId) clearInterval(intervalId);',
+            '        intervalId = setInterval(function() {',
+            '            self.postMessage({ type: "tick" });',
+            '        }, 1000);',
+            '    } else if (e.data.command === "stop") {',
+            '        if (intervalId) {',
+            '            clearInterval(intervalId);',
+            '            intervalId = null;',
+            '        }',
+            '    }',
+            '};'
+        ].join('\n');
+
+        var blob = new Blob([workerCode], { type: 'application/javascript' });
+        this.worker = new Worker(URL.createObjectURL(blob));
+
+        var self = this;
+        this.worker.onmessage = function(e) {
+            if (e.data.type === 'tick') {
+                var ref = self.dotNetRef;
+                if (ref) {
+                    try {
+                        ref.invokeMethodAsync(pomodoroConstants.jsCallbacks.onTimerTick);
+                    } catch (err) {
+                        console.error(pomodoroConstants.messages.timerTickError + err);
+                        self.stop();
+                    }
                 }
             }
-        }, pomodoroConstants.timerIntervalMs);
+        };
+
+        this.worker.postMessage({ command: 'start' });
+
+        this._visibilityHandler = function() {
+            if (!document.hidden) {
+                var ref = self.dotNetRef;
+                if (ref && self.worker) {
+                    try {
+                        ref.invokeMethodAsync(pomodoroConstants.jsCallbacks.onTimerTick);
+                    } catch (err) {
+                        console.error(pomodoroConstants.messages.timerTickError + err);
+                    }
+                }
+            }
+        };
+        document.addEventListener('visibilitychange', this._visibilityHandler);
     },
-    
+
     stop: function () {
-        if (this.intervalId) {
-            clearInterval(this.intervalId);
-            this.intervalId = null;
+        if (this.worker) {
+            this.worker.postMessage({ command: 'stop' });
+            this.worker.terminate();
+            this.worker = null;
         }
-        // Clear the dotNetRef to prevent stale callbacks
+        if (this._visibilityHandler) {
+            document.removeEventListener('visibilitychange', this._visibilityHandler);
+            this._visibilityHandler = null;
+        }
         this.dotNetRef = null;
     },
-    
+
     isRunning: function () {
-        return this.intervalId !== null;
+        return this.worker !== null;
     }
 };
