@@ -32,7 +32,7 @@ public class TimerDisplayCoverageTests : TestContext
         SetupTimerService(TimeSpan.FromMinutes(25), SessionType.Pomodoro, false);
         var cut = RenderComponent<TimerDisplay>();
         var result = cut.Instance.GetSessionTypeLabel();
-        Assert.Contains("POMODORO", result);
+        Assert.Contains("FOCUSING", result);
 
         SetupTimerService(TimeSpan.FromMinutes(5), SessionType.ShortBreak, false);
         cut.SetParametersAndRender();
@@ -46,25 +46,22 @@ public class TimerDisplayCoverageTests : TestContext
     }
 
     [Fact]
-    public void GetTimerClass_WithAllSessionTypesAndRunningStates_ReturnsCorrectClasses()
+    public void GetRingSessionClass_WithAllSessionTypes_ReturnsCorrectClasses()
     {
         SetupTimerService(TimeSpan.FromMinutes(25), SessionType.Pomodoro, true);
         var cut = RenderComponent<TimerDisplay>();
-        var result = cut.Instance.GetTimerClass();
-        Assert.Contains("pomodoro", result);
-        Assert.DoesNotContain("paused", result);
+        var result = cut.Instance.GetRingSessionClass();
+        Assert.Equal("", result);
 
         SetupTimerService(TimeSpan.FromMinutes(5), SessionType.ShortBreak, false);
         cut.SetParametersAndRender();
-        result = cut.Instance.GetTimerClass();
-        Assert.Contains("short-break", result);
-        Assert.Contains("paused", result);
+        result = cut.Instance.GetRingSessionClass();
+        Assert.Equal("short-break", result);
 
         SetupTimerService(TimeSpan.FromMinutes(15), SessionType.LongBreak, true);
         cut.SetParametersAndRender();
-        result = cut.Instance.GetTimerClass();
-        Assert.Contains("long-break", result);
-        Assert.DoesNotContain("paused", result);
+        result = cut.Instance.GetRingSessionClass();
+        Assert.Equal("long-break", result);
     }
 
     [Fact]
@@ -73,16 +70,16 @@ public class TimerDisplayCoverageTests : TestContext
         SetupTimerService(TimeSpan.FromMinutes(25), (SessionType)99, false);
         var cut = RenderComponent<TimerDisplay>();
         var result = cut.Instance.GetSessionTypeLabel();
-        Assert.Equal(Constants.SessionTypes.PomodoroUppercase, result);
+        Assert.Equal("FOCUSING", result);
     }
 
     [Fact]
-    public void GetTimerClass_WithInvalidSessionType_ReturnsPomodoroClass()
+    public void GetRingSessionClass_WithInvalidSessionType_ReturnsEmptyClass()
     {
         SetupTimerService(TimeSpan.FromMinutes(25), (SessionType)99, true);
         var cut = RenderComponent<TimerDisplay>();
-        var result = cut.Instance.GetTimerClass();
-        Assert.Equal(Constants.SessionTypes.PomodoroClass, result);
+        var result = cut.Instance.GetRingSessionClass();
+        Assert.Equal("", result);
     }
 
     [Fact]

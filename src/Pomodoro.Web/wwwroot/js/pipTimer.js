@@ -8,44 +8,40 @@ window.pipTimer = {
     dotNetRef: null,
     pipScriptInitialized: false,
     
-    // Check if Document PiP API is supported
     isSupported: function() {
         return pomodoroConstants.pip.apiName in window;
     },
     
-    // Check if PiP window is currently open
     isOpen: function() {
         return this.pipWindow && !this.pipWindow.closed;
     },
     
-    // Register .NET reference for callbacks
     registerDotNetRef: function(dotNetRef) {
         this.dotNetRef = dotNetRef;
     },
     
-    // Unregister .NET reference
     unregisterDotNetRef: function() {
         this.dotNetRef = null;
     },
     
-    // Open PiP window
     open: async function(timerState) {
-        // Close existing window if open
         if (this.isOpen()) {
             this.close();
             return false;
         }
         
-        // Try Document PiP API first
+        var width = Math.round(Math.min(window.innerWidth, 420) * 0.9);
+        var height = Math.round(width * 1.35 * 0.6) + 140;
+        
         if (this.isSupported()) {
             try {
                 this.pipWindow = await window[pomodoroConstants.pip.apiName].requestWindow({
-                    width: pomodoroConstants.pipWindowWidth,
-                    height: pomodoroConstants.pipWindowHeight
+                    width: width,
+                    height: height
                 });
                 
                 this.pipDocument = this.pipWindow.document;
-                this.copyStyles();
+                this.injectPipStyles();
                 this.setupCloseHandler();
                 this.renderTimer(timerState);
                 this.setupBroadcastChannel();
@@ -57,15 +53,16 @@ window.pipTimer = {
             }
         }
         
-        // Fallback to popup window
         return this.openFallback(timerState);
     },
     
-    // Fallback: Open as popup window
     openFallback: function(timerState) {
+        var width = Math.round(Math.min(window.innerWidth, 420) * 0.9);
+        var height = Math.round(width * 1.35 * 0.6) + 140;
+        
         const features = [
-            'width=' + pomodoroConstants.pipWindowWidth,
-            'height=' + pomodoroConstants.pipWindowHeight,
+            'width=' + width,
+            'height=' + height,
             'menubar=no',
             'toolbar=no',
             'location=no',
@@ -90,35 +87,25 @@ window.pipTimer = {
         return true;
     },
     
-    // Copy styles from main document to PiP window
-    copyStyles: function() {
+    getThemeClass: function(sessionType) {
+        switch (sessionType) {
+            case 0: return 'pomodoro-theme';
+            case 1: return 'short-break-theme';
+            case 2: return 'long-break-theme';
+            default: return 'pomodoro-theme';
+        }
+    },
+    
+    injectPipStyles: function() {
         if (!this.pipDocument) return;
         
-        // Copy all style sheets
-        const styleSheets = document.querySelectorAll('link[rel="stylesheet"], style');
-        styleSheets.forEach(sheet => {
-            try {
-                if (sheet.tagName === 'STYLE') {
-                    const clone = sheet.cloneNode(true);
-                    this.pipDocument.head.appendChild(clone);
-                } else if (sheet.tagName === 'LINK') {
-                    const clone = sheet.cloneNode(true);
-                    this.pipDocument.head.appendChild(clone);
-                }
-            } catch (e) {
-                // Ignore cross-origin stylesheet errors
-            }
-        });
-        
-        // Add PiP-specific styles (compact version)
-        const pipStyles = this.pipDocument.createElement('style');
+        var pipStyles = this.pipDocument.createElement('style');
+        pipStyles.id = 'pip-styles';
         pipStyles.textContent = `
-            :root {
-                --surface-color: #16213e;
-            }
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: #1a1a2e;
                 color: #ffffff;
                 min-height: 100vh;
                 display: flex;
@@ -129,134 +116,178 @@ window.pipTimer = {
                 padding: 0;
             }
             .pip-container {
-                text-align: center;
                 width: 100%;
-                min-height: 100vh;
+                max-width: 380px;
+            }
+            .mode-tabs {
+                display: flex;
+                gap: 4px;
+                background: #1f3460;
+                border-radius: 12px;
+                padding: 3px;
+                margin: 10px 14px 8px;
+            }
+            .mode-tab {
+                flex: 1;
+                padding: 6px 0;
+                font-size: 16px;
+                text-align: center;
+                border-radius: 8px;
+                border: none;
+                background: transparent;
+                color: #a0a0a0;
+                cursor: pointer;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                font-weight: 400;
+                transition: background 0.15s;
+            }
+            .mode-tab:hover {
+                background: #16213e;
+            }
+            .mode-tab.active {
+                background: #16213e;
+                color: #ffffff;
+                font-weight: 500;
+                border: 1px solid #2d4a6f;
+            }
+            .timer-card {
+                background: #16213e;
+                border: 1px solid #2d4a6f;
+                border-radius: 12px;
+                margin: 0 14px;
+                overflow: hidden;
+                transition: background 0.3s ease, border-color 0.3s ease;
+            }
+            .card-top {
+                padding: 18px 14px 14px;
+                text-align: center;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                justify-content: center;
             }
-            .pip-container.pomodoro-theme {
-                background: linear-gradient(135deg, rgba(231, 76, 60, 0.15) 0%, var(--surface-color) 100%);
+            .ring-area {
+                position: relative;
+                width: 180px;
+                height: 180px;
+                flex-shrink: 0;
             }
-            .pip-container.short-break-theme {
-                background: linear-gradient(135deg, rgba(39, 174, 96, 0.15) 0%, var(--surface-color) 100%);
+            .ring-area svg { transform: rotate(-90deg); }
+            .ring-bg { fill: none; stroke: #1f3460; stroke-width: 10; }
+            .ring-fill {
+                fill: none;
+                stroke: #e74c3c;
+                stroke-width: 10;
+                stroke-linecap: round;
+                stroke-dasharray: 509;
+                stroke-dashoffset: 0;
+                transition: stroke-dashoffset 0.4s ease;
             }
-            .pip-container.long-break-theme {
-                background: linear-gradient(135deg, rgba(52, 152, 219, 0.15) 0%, var(--surface-color) 100%);
+            .ring-fill.short-break { stroke: #27ae60; }
+            .ring-fill.long-break { stroke: #3498db; }
+            .timer-center {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+                pointer-events: none;
             }
-            .session-tabs {
-                display: flex;
-                justify-content: center;
-                gap: 1px;
-                margin-bottom: 2px;
-            }
-            .session-tab {
-                padding: 1px 2px;
-                border: none;
-                border-radius: 3px;
-                font-size: 5px;
-                font-weight: 600;
-                cursor: pointer;
-                text-transform: uppercase;
-                letter-spacing: 0;
-                transition: all 0.2s;
-                background: rgba(255,255,255,0.1);
-                color: #a0a0a0;
-            }
-            .session-tab.active {
-                background: var(--session-color, #e74c3c);
-                color: white;
-            }
-            .session-tab.pomodoro { --session-color: #e74c3c; }
-            .session-tab.short-break { --session-color: #27ae60; }
-            .session-tab.long-break { --session-color: #3498db; }
-            .time-display {
-                font-size: 70px;
+            .ttime {
+                font-size: 42px;
                 font-weight: 700;
+                color: #ffffff;
+                line-height: 1;
                 font-family: 'Courier New', monospace;
                 font-variant-numeric: tabular-nums;
-                letter-spacing: 4px;
-                margin: 2px 0;
             }
-            .time-display { color: #ffffff; }
-            .time-display.paused { opacity: 0.7; }
-            .time-display.running.pomodoro { color: #e74c3c; }
-            .time-display.running.short-break { color: #27ae60; }
-            .time-display.running.long-break { color: #3498db; }
-            .controls {
+            .pip-container.running.pomodoro-theme .ttime { color: #e74c3c; }
+            .pip-container.running.short-break-theme .ttime { color: #27ae60; }
+            .pip-container.running.long-break-theme .ttime { color: #3498db; }
+            .tmode {
+                font-size: 15px;
+                color: #6e7a8a;
+                margin-top: 3px;
+                letter-spacing: 0.06em;
+            }
+            .active-task {
+                font-size: 16px;
+                color: #a0a0a0;
+                margin-top: 12px;
+                margin-bottom: 10px;
+                padding: 8px 12px;
+                background: #1f3460;
+                border-radius: 8px;
+                text-align: left;
                 display: flex;
-                justify-content: center;
-                gap: 10px;
-                margin-top: -10px;
-            }
-            .btn {
-                width: 50px;
-                height: 50px;
-                border: none;
-                border-radius: 50%;
-                font-size: 1.2rem;
-                cursor: pointer;
-                transition: all 0.2s;
-                display: inline-flex;
                 align-items: center;
-                justify-content: center;
-                line-height: 1;
-                padding: 0;
-            }
-            .btn-primary {
-                background: var(--session-color, #e74c3c);
-                color: white;
-                box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4),
-                            0 2px 6px rgba(231, 76, 60, 0.3);
-            }
-            .btn-primary:hover {
-                filter: brightness(1.1);
-                transform: scale(1.05);
-            }
-            .btn-primary.pomodoro { background: #e74c3c; }
-            .btn-primary.short-break { background: #27ae60; }
-            .btn-primary.long-break { background: #3498db; }
-            .btn-pause {
-                background: #f39c12;
-                color: white;
-                box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4),
-                            0 2px 6px rgba(243, 156, 18, 0.3);
-            }
-            .btn-pause:hover {
-                background: #e67e22;
-                transform: scale(1.05);
-            }
-            .btn-secondary {
-                background-color: #7f8c8d;
-                color: white;
-                box-shadow: 0 4px 15px rgba(127, 140, 141, 0.4),
-                            0 2px 6px rgba(127, 140, 141, 0.3);
-            }
-            .btn-secondary:hover {
-                transform: translateY(-2px);
-                background-color: #6c7a7b;
-            }
-            .current-task {
-                margin-top: 4px;
-                padding: 3px 6px;
-                font-size: 8px;
-                color: rgba(255,255,255,0.9);
-                background: rgba(217, 85, 85, 0.3);
-                border-radius: 6px;
-                border-left: 2px solid #d95555;
-                max-width: 180px;
+                gap: 6px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
-                text-align: left;
+                width: 100%;
+            }
+            .task-dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: #e74c3c;
+                flex-shrink: 0;
+            }
+            .task-dot.short-break { background: #27ae60; }
+            .task-dot.long-break { background: #3498db; }
+            .ctrl-row {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 16px;
+            }
+            .ibtn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                cursor: pointer;
+                border: 1px solid rgba(45, 74, 111, 0.6);
+                background: transparent;
+                color: #a0a0a0;
+                padding: 0;
+                transition: background 0.15s;
+            }
+            .ibtn.sm { width: 36px; height: 36px; font-size: 14px; }
+            .ibtn.lg { width: 50px; height: 50px; border: none; color: white; font-size: 16px; }
+            .ibtn.lg.pomodoro { background: #e74c3c; }
+            .ibtn.lg.short-break { background: #27ae60; }
+            .ibtn.lg.long-break { background: #3498db; }
+            .ibtn.lg:hover { opacity: 0.9; }
+            .ibtn.sm:hover { background: #1f3460; }
+            .card-footer {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 8px 14px;
+                border-top: 1px solid #2d4a6f;
+                background: #1f3460;
+            }
+            .session-info {
+                font-size: 16px;
+                color: #6e7a8a;
+            }
+            .pip-container.pomodoro-theme .timer-card {
+                background: linear-gradient(135deg, rgba(231, 76, 60, 0.15) 0%, #16213e 100%);
+                border: 1px solid rgba(231, 76, 60, 0.3);
+            }
+            .pip-container.short-break-theme .timer-card {
+                background: linear-gradient(135deg, rgba(39, 174, 96, 0.15) 0%, #16213e 100%);
+                border: 1px solid rgba(39, 174, 96, 0.3);
+            }
+            .pip-container.long-break-theme .timer-card {
+                background: linear-gradient(135deg, rgba(52, 152, 219, 0.15) 0%, #16213e 100%);
+                border: 1px solid rgba(52, 152, 219, 0.3);
             }
         `;
         this.pipDocument.head.appendChild(pipStyles);
     },
     
-    // Write content for popup fallback
     writePopupContent: function(timerState) {
         if (!this.pipDocument) return;
         
@@ -276,222 +307,171 @@ window.pipTimer = {
             </html>
         `);
         this.pipDocument.close();
-        
-        // Add styles after document is written
-        this.copyStyles();
+        this.injectPipStyles();
     },
     
-    // Generate timer HTML
     generateTimerHTML: function(state) {
-        const sessionType = state.sessionType || 0;
-        // Use shared sessionClasses from pomodoroConstants (DRY principle)
-        const sessionClass = pomodoroConstants.getSessionClass(sessionType);
+        var sessionType = state.sessionType || 0;
+        var sessionClass = pomodoroConstants.getSessionClass(sessionType);
         
-        const remainingSeconds = state.remainingSeconds ?? 0;
-        const minutes = Math.floor(remainingSeconds / 60);
-        const seconds = remainingSeconds % 60;
-        const timeDisplay = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        var remainingSeconds = state.remainingSeconds ?? 0;
+        var minutes = Math.floor(remainingSeconds / 60);
+        var seconds = remainingSeconds % 60;
+        var timeDisplay = minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
         
-        const isRunning = state.isRunning || false;
-        const isStarted = state.isStarted || false;
-        const playPauseIcon = isRunning ? '⏸' : '▶';
+        var isRunning = state.isRunning || false;
+        var isStarted = state.isStarted || false;
+        var playPauseIcon = isRunning ? '\u23F8' : '\u25B6';
+        var showReset = state.showReset || false;
+
+        var circumference = 2 * Math.PI * 81;
+        var totalSeconds = state.totalDurationSeconds || remainingSeconds;
+        var progress = totalSeconds > 0 ? remainingSeconds / totalSeconds : 0;
+        var dashOffset = circumference * (1 - progress);
+
+        var modeLabel = sessionType === 0 ? 'FOCUSING' : sessionType === 1 ? 'SHORT BREAK' : 'LONG BREAK';
         
-        // Single source of truth: showReset is computed by C# GetTimerState()
-        // Business logic: showReset = isRunning || isStarted (kept in C# only)
-        const showReset = state.showReset || false;
+        var html = '<div class="mode-tabs">';
+        html += '<button class="mode-tab ' + (sessionType === 0 ? 'active' : '') + '" onclick="window.pipSwitchSession(0)">Pomodoro</button>';
+        html += '<button class="mode-tab ' + (sessionType === 1 ? 'active' : '') + '" onclick="window.pipSwitchSession(1)">Short break</button>';
+        html += '<button class="mode-tab ' + (sessionType === 2 ? 'active' : '') + '" onclick="window.pipSwitchSession(2)">Long break</button>';
+        html += '</div>';
+        html += '<div class="timer-card">';
+        html += '<div class="card-top">';
+        html += '<div class="ring-area">';
+        html += '<svg width="180" height="180" viewBox="0 0 180 180">';
+        html += '<circle class="ring-bg" cx="90" cy="90" r="81"/>';
+        html += '<circle class="ring-fill ' + sessionClass + '" cx="90" cy="90" r="81" style="stroke-dasharray: ' + circumference.toFixed(1) + '; stroke-dashoffset: ' + dashOffset.toFixed(1) + '"/>';
+        html += '</svg>';
+        html += '<div class="timer-center">';
+        html += '<div class="ttime">' + timeDisplay + '</div>';
+        html += '<div class="tmode">' + modeLabel + '</div>';
+        html += '</div></div>';
+        if (state.taskName) {
+            html += '<div class="active-task"><div class="task-dot ' + sessionClass + '"></div><span>' + state.taskName + '</span></div>';
+        }
+        html += '<div class="ctrl-row">';
+        html += '<button class="ibtn lg ' + sessionClass + '" onclick="window.pipToggleTimer()">' + playPauseIcon + '</button>';
+        if (showReset) {
+            html += '<button class="ibtn sm" onclick="window.pipResetTimer()">&#x21BA;</button>';
+        }
+        html += '</div></div>';
+        html += '<div class="card-footer">';
+        html += '<span class="session-info">' + modeLabel + '</span>';
+        html += '<span class="session-info">' + timeDisplay + '</span>';
+        html += '</div></div>';
         
-        return `
-            <div class="session-tabs">
-                <button class="session-tab pomodoro ${sessionType === 0 ? 'active' : ''}"
-                        onclick="window.pipSwitchSession(0)">Pomo</button>
-                <button class="session-tab short-break ${sessionType === 1 ? 'active' : ''}"
-                        onclick="window.pipSwitchSession(1)">Short</button>
-                <button class="session-tab long-break ${sessionType === 2 ? 'active' : ''}"
-                        onclick="window.pipSwitchSession(2)">Long</button>
-            </div>
-            <div class="time-display ${isRunning ? 'running' : 'paused'} ${sessionClass}">${timeDisplay}</div>
-            <div class="controls">
-                <button class="btn ${isRunning ? 'btn-pause' : `btn-primary ${sessionClass}`}"
-                        onclick="window.pipToggleTimer()">${playPauseIcon}</button>
-                ${showReset ? `<button class="btn btn-secondary"
-                        onclick="window.pipResetTimer()">↺</button>` : ''}
-            </div>
-        `;
+        return html;
     },
     
-    // Render timer in PiP window
     renderTimer: function(timerState) {
         if (!this.pipDocument) return;
         
-        const sessionType = timerState.sessionType || 0;
-        // Use shared themeClasses from pomodoroConstants (DRY principle)
-        const themeClass = pomodoroConstants.getThemeClass(sessionType);
-        
-        // Get or create container
-        let container = this.pipDocument.getElementById('pip-container');
+        var container = this.pipDocument.getElementById('pip-container');
         if (!container) {
             container = this.pipDocument.createElement('div');
             container.id = 'pip-container';
             this.pipDocument.body.appendChild(container);
         }
         
-        // Ensure global functions are available (pipToggleTimer, pipResetTimer, pipSwitchSession)
-        // These functions are needed for button onclick handlers
-        // Only initialize once to avoid repeated checks
         if (!this.pipScriptInitialized) {
             this.ensurePipScript();
             this.pipScriptInitialized = true;
         }
         
-        // Update container class for theme (gradient applied to container, not body)
-        container.className = 'pip-container ' + themeClass;
+        var themeClass = this.getThemeClass(timerState.sessionType || 0);
+        var runningClass = timerState.isRunning ? 'running' : '';
+        container.className = 'pip-container ' + themeClass + ' ' + runningClass;
         container.innerHTML = this.generateTimerHTML(timerState);
         
-        // Ensure body has tabindex and focus for keyboard shortcuts
-        // This is needed because innerHTML replacement doesn't preserve focus state
         if (this.pipDocument.body) {
             this.pipDocument.body.setAttribute('tabindex', '0');
             this.pipDocument.body.focus();
         }
     },
     
-    // Ensure PIP script with global functions is present
     ensurePipScript: function() {
         if (!this.pipDocument) return;
         
-        // Check if script already exists
-        const existingScript = this.pipDocument.getElementById('pip-control-script');
+        var existingScript = this.pipDocument.getElementById('pip-control-script');
         if (existingScript) {
-            return; // Script already exists
+            return;
         }
         
-        // Add script for communication with main window
-        // Note: PiP window runs in isolated context, so we inject constant values directly
-        const bcName = pipTimer.getBroadcastChannelName();
-        const msgToggleTimer = pipTimer.getMessageType('toggleTimer');
-        const msgResetTimer = pipTimer.getMessageType('resetTimer');
-        const msgSwitchSession = pipTimer.getMessageType('switchSession');
-        const msgTimerUpdate = pipTimer.getMessageType('timerUpdate');
+        var bcName = pipTimer.getBroadcastChannelName();
+        var msgToggleTimer = pipTimer.getMessageType('toggleTimer');
+        var msgResetTimer = pipTimer.getMessageType('resetTimer');
+        var msgSwitchSession = pipTimer.getMessageType('switchSession');
+        var msgTimerUpdate = pipTimer.getMessageType('timerUpdate');
         
-        const pipScript = this.pipDocument.createElement('script');
+        var pipScript = this.pipDocument.createElement('script');
         pipScript.id = 'pip-control-script';
-        pipScript.textContent = `
-            // Setup broadcast channel for communication with main window
-            (function() {
-                var bc = new BroadcastChannel('${bcName}');
-                
-                // Control functions that send messages to main window
-                window.pipToggleTimer = function() {
-                    bc.postMessage({ type: '${msgToggleTimer}' });
-                };
-                window.pipResetTimer = function() {
-                    bc.postMessage({ type: '${msgResetTimer}' });
-                };
-                window.pipSwitchSession = function(sessionType) {
-                    bc.postMessage({ type: '${msgSwitchSession}', sessionType: sessionType });
-                };
-                
-                // Listen for timer updates from main window
-                bc.onmessage = function(event) {
-                    if (event.data.type === '${msgTimerUpdate}') {
-                        // Re-render will be handled by parent's update call
-                    }
-                };
-                
-                // Keyboard shortcuts for PIP window
-                // Use window instead of document for better event handling
-                window.addEventListener('keydown', function(event) {
-                    // Ignore if user is typing in an input field
-                    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
-                        return;
-                    }
-                    
-                    var key = event.key.toLowerCase();
-                    
-                    // Space: Toggle timer (play/pause)
-                    if (key === ' ' || event.code === 'Space') {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        window.pipToggleTimer();
-                    }
-                    // R: Reset timer
-                    else if (key === 'r') {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        window.pipResetTimer();
-                    }
-                    // P: Switch to Pomodoro
-                    else if (key === 'p') {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        window.pipSwitchSession(0);
-                    }
-                    // S: Switch to Short Break
-                    else if (key === 's') {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        window.pipSwitchSession(1);
-                    }
-                    // L: Switch to Long Break
-                    else if (key === 'l') {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        window.pipSwitchSession(2);
-                    }
-                }, { capture: true });
-                
-                // Auto-focus PIP window to enable keyboard shortcuts immediately
-                document.body.setAttribute('tabindex', '0');
-                document.body.focus();
-            })();
-        `;
+        pipScript.textContent = [
+            '(function() {',
+            '    var bc = new BroadcastChannel("' + bcName + '");',
+            '    window.pipToggleTimer = function() { bc.postMessage({ type: "' + msgToggleTimer + '" }); };',
+            '    window.pipResetTimer = function() { bc.postMessage({ type: "' + msgResetTimer + '" }); };',
+            '    window.pipSwitchSession = function(sessionType) { bc.postMessage({ type: "' + msgSwitchSession + '", sessionType: sessionType }); };',
+            '    bc.onmessage = function(event) {',
+            '        if (event.data.type === "' + msgTimerUpdate + '") {}',
+            '    };',
+            '    window.addEventListener("keydown", function(event) {',
+            '        if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;',
+            '        var key = event.key.toLowerCase();',
+            '        if (key === " " || event.code === "Space") { event.preventDefault(); event.stopPropagation(); window.pipToggleTimer(); }',
+            '        else if (key === "r") { event.preventDefault(); event.stopPropagation(); window.pipResetTimer(); }',
+            '        else if (key === "p") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(0); }',
+            '        else if (key === "s") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(1); }',
+            '        else if (key === "l") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(2); }',
+            '    }, { capture: true });',
+            '    document.body.setAttribute("tabindex", "0");',
+            '    document.body.focus();',
+            '})();'
+        ].join('\n');
         this.pipDocument.head.appendChild(pipScript);
     },
     
-    // Update timer display
     update: function(timerState) {
         if (!this.isOpen()) return;
         this.renderTimer(timerState);
     },
     
-    // Setup close handler
     setupCloseHandler: function() {
         if (!this.pipWindow) return;
         
-        this.pipWindow.addEventListener('pagehide', () => {
-            this.pipWindow = null;
-            this.pipDocument = null;
-            this.notifyClosed();
+        this.pipWindow.addEventListener('pagehide', function() {
+            pipTimer.pipWindow = null;
+            pipTimer.pipDocument = null;
+            pipTimer.pipScriptInitialized = false;
+            pipTimer.notifyClosed();
         });
     },
     
-    // Setup broadcast channel for communication
     setupBroadcastChannel: function() {
         if ('BroadcastChannel' in window) {
             this.broadcastChannel = new BroadcastChannel(pomodoroConstants.pip.broadcastChannel);
-            this.broadcastChannel.onmessage = (event) => {
-                // Handle messages from PiP window
+            this.broadcastChannel.onmessage = function(event) {
                 switch (event.data.type) {
                     case pipTimer.getMessageType('timerUpdate'):
-                        this.update(event.data.state);
+                        pipTimer.update(event.data.state);
                         break;
                     case pipTimer.getMessageType('toggleTimer'):
-                        if (this.dotNetRef) {
-                            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onToggle')).catch(function(err) {
+                        if (pipTimer.dotNetRef) {
+                            pipTimer.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onToggle')).catch(function(err) {
                                 console.error('PiP toggle timer callback failed:', err);
                             });
                         }
                         break;
                     case pipTimer.getMessageType('resetTimer'):
-                        if (this.dotNetRef) {
-                            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onReset')).catch(function(err) {
+                        if (pipTimer.dotNetRef) {
+                            pipTimer.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onReset')).catch(function(err) {
                                 console.error('PiP reset timer callback failed:', err);
                             });
                         }
                         break;
                     case pipTimer.getMessageType('switchSession'):
-                        if (this.dotNetRef) {
-                            this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onSwitchSession'), event.data.sessionType).catch(function(err) {
+                        if (pipTimer.dotNetRef) {
+                            pipTimer.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onSwitchSession'), event.data.sessionType).catch(function(err) {
                                 console.error('PiP switch session callback failed:', err);
                             });
                         }
@@ -501,7 +481,6 @@ window.pipTimer = {
         }
     },
     
-    // Timer control functions (called from main window or .NET)
     toggleTimer: function() {
         if (this.dotNetRef) {
             this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onToggle')).catch(function(err) {
@@ -526,14 +505,13 @@ window.pipTimer = {
         }
     },
     
-    // Close PiP window
     close: function() {
         if (this.pipWindow && !this.pipWindow.closed) {
             this.pipWindow.close();
         }
         this.pipWindow = null;
         this.pipDocument = null;
-        this.pipScriptInitialized = false; // Reset flag to allow re-initialization on next open
+        this.pipScriptInitialized = false;
         
         if (this.broadcastChannel) {
             this.broadcastChannel.close();
@@ -541,7 +519,6 @@ window.pipTimer = {
         }
     },
     
-    // Notify .NET that PiP was closed
     notifyClosed: function() {
         if (this.dotNetRef) {
             this.dotNetRef.invokeMethodAsync(pipTimer.getCallbackName('onClosed')).catch(function(err) {
@@ -550,7 +527,6 @@ window.pipTimer = {
         }
     },
     
-    // Helper methods to access constants (for cleaner code and testability)
     getBroadcastChannelName: function() {
         return pomodoroConstants.pip.broadcastChannel;
     },

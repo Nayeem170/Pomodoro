@@ -5,10 +5,6 @@ using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Components.Timer;
 
-/// <summary>
-/// Code-behind for TimerDisplay component
-/// Reads directly from TimerService for real-time updates
-/// </summary>
 public class TimerDisplayBase : ComponentBase, IDisposable
 {
     #region Dependencies
@@ -37,15 +33,13 @@ public class TimerDisplayBase : ComponentBase, IDisposable
 
     #endregion
 
-    #region Private Fields
-
-    #endregion
-
     #region Properties - Always read from service for real-time updates
 
     protected TimeSpan CurrentRemainingTime => TimerService.RemainingTime;
     protected SessionType CurrentSessionType => TimerService.CurrentSessionType;
     protected bool CurrentIsRunning => TimerService.IsRunning;
+
+    private const double Circumference = 2 * Math.PI * 81; // ~508.94
 
     #endregion
 
@@ -53,7 +47,6 @@ public class TimerDisplayBase : ComponentBase, IDisposable
 
     protected override void OnInitialized()
     {
-        // Subscribe to timer service events
         TimerEventPublisher.OnTick += OnTimerTick;
         TimerEventPublisher.OnTimerStateChanged += OnTimerStateChanged;
     }
@@ -99,51 +92,46 @@ public class TimerDisplayBase : ComponentBase, IDisposable
 
     #region Business Logic Methods
 
-    /// <summary>
-    /// Formats the remaining time as MM:SS
-    /// </summary>
     protected string FormatTime(TimeSpan time)
     {
         return string.Format(Constants.TimeFormats.TimerFormat, (int)time.TotalMinutes, time.Seconds);
     }
 
-    /// <summary>
-    /// Gets the display label for the current session type
-    /// </summary>
     internal string GetSessionTypeLabel()
     {
         var sessionType = CurrentSessionType;
         return sessionType switch
         {
-            Models.SessionType.Pomodoro => Constants.SessionTypes.PomodoroUppercase,
-            Models.SessionType.ShortBreak => Constants.SessionTypes.ShortBreakUppercase,
-            Models.SessionType.LongBreak => Constants.SessionTypes.LongBreakUppercase,
-            _ => Constants.SessionTypes.PomodoroUppercase
+            Models.SessionType.Pomodoro => "FOCUSING",
+            Models.SessionType.ShortBreak => "SHORT BREAK",
+            Models.SessionType.LongBreak => "LONG BREAK",
+            _ => "FOCUSING"
         };
     }
 
-    /// <summary>
-    /// Gets the CSS class based on timer state and session type
-    /// Returns both session class and paused state to allow session color with reduced opacity
-    /// </summary>
-    internal string GetTimerClass()
+    internal string GetRingSessionClass()
     {
-        // Get session class (matches PIP window behavior)
-        var sessionClass = CurrentSessionType switch
+        return CurrentSessionType switch
         {
-            Models.SessionType.Pomodoro => Constants.SessionTypes.PomodoroClass,
-            Models.SessionType.ShortBreak => Constants.SessionTypes.ShortBreakClass,
-            Models.SessionType.LongBreak => Constants.SessionTypes.LongBreakClass,
-            _ => Constants.SessionTypes.PomodoroClass
+            Models.SessionType.Pomodoro => "",
+            Models.SessionType.ShortBreak => "short-break",
+            Models.SessionType.LongBreak => "long-break",
+            _ => ""
         };
+    }
 
-        // Add paused class if not running (allows session color + reduced opacity)
-        if (!CurrentIsRunning)
-        {
-            return $"{sessionClass} {Constants.SessionTypes.PausedState}";
-        }
+    internal string GetDashOffset()
+    {
+        var settings = TimerService.Settings;
+        if (settings == null) return "0";
 
-        return sessionClass;
+        var totalSeconds = settings.GetDurationSeconds(CurrentSessionType);
+        if (totalSeconds <= 0) return "0";
+
+        var remainingSeconds = CurrentRemainingTime.TotalSeconds;
+        var progress = remainingSeconds / totalSeconds;
+        var offset = Circumference * (1 - progress);
+        return offset.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
     }
 
     #endregion
