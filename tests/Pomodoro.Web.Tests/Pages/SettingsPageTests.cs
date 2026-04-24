@@ -70,10 +70,8 @@ public class SettingsPageTests : TestHelper
     {
         var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
 
-        var exportButton = cut.Find(".sec-btn");
         var clearButton = cut.Find(".danger-btn");
 
-        exportButton.Should().NotBeNull();
         clearButton.Should().NotBeNull();
     }
 }

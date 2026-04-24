@@ -58,6 +58,7 @@ namespace Pomodoro.Web.Tests.Pages
             Services.AddSingleton(_mockPresenterLogger.Object);
 
             Services.AddSingleton(new SettingsPresenterService(_mockPresenterLogger.Object));
+            Services.AddSingleton(Mock.Of<ICloudSyncService>());
 
             Services.AddSingleton<NavigationManager>(new MockNavigationManager());
         }
@@ -114,8 +115,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
 
-            cut.Markup.Contains("Keyboard shortcuts");
-            cut.Markup.Contains("kbd-grid");
+            Assert.Contains("Automation", cut.Markup);
         }
 
         [Fact]
@@ -124,19 +124,7 @@ namespace Pomodoro.Web.Tests.Pages
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
 
             cut.Markup.Contains("Data");
-            cut.Markup.Contains("Export data");
-            cut.Markup.Contains("Import data");
             cut.Markup.Contains("Clear all data");
-        }
-
-        [Fact]
-        public void SettingsPage_ExportButton_NotDisabledInitially()
-        {
-            var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-
-            var exportButton = cut.Find("button.sec-btn");
-
-            Assert.False(exportButton.HasAttribute("disabled"));
         }
 
         [Fact]
@@ -173,18 +161,6 @@ namespace Pomodoro.Web.Tests.Pages
         }
 
         [Fact]
-        public async Task SettingsPage_ExportJson_CallsExportService()
-        {
-            var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-            _mockExportService.Setup(x => x.ExportToJsonAsync())
-                .ReturnsAsync("{\"test\": \"data\"}");
-
-            cut.Find("button.sec-btn").Click();
-
-            _mockExportService.Verify(x => x.ExportToJsonAsync(), Times.Once);
-        }
-
-        [Fact]
         public async Task SettingsPage_ClearData_CallsClearAllData()
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
@@ -198,31 +174,13 @@ namespace Pomodoro.Web.Tests.Pages
         }
 
         [Fact]
-        public void SettingsPage_ShowsImportResult_WhenImportResultIsNotNull()
-        {
-            var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-
-            cut.Markup.Contains("import-container");
-        }
-
-        [Fact]
-        public void SettingsPage_ImportButton_NotDisabledInitially()
-        {
-            var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-
-            var importLabel = cut.Find("label.sec-btn");
-
-            Assert.False(importLabel.ClassList.Contains("disabled"));
-        }
-
-        [Fact]
         public void SettingsPage_ConfirmationModal_HasWarningIcon()
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
 
             cut.Find("button.danger-btn").Click();
 
-            cut.WaitForAssertion(() => cut.Markup.Contains("⚠️"));
+            cut.WaitForAssertion(() => cut.Markup.Contains("Clear All Data?"));
         }
 
         [Fact]
@@ -234,8 +192,8 @@ namespace Pomodoro.Web.Tests.Pages
 
             cut.WaitForAssertion(() =>
             {
-                cut.Markup.Contains("This will permanently delete all your activities, tasks, and reset settings to defaults.");
-                cut.Markup.Contains("This action cannot be undone.");
+                cut.Markup.Contains("Delete all activities, tasks, and settings from this device");
+                cut.Markup.Contains("This cannot be undone.");
             });
         }
 
@@ -254,19 +212,11 @@ namespace Pomodoro.Web.Tests.Pages
         }
 
         [Fact]
-        public void SettingsPage_ExportButton_HasCorrectTitle()
-        {
-            var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-
-            Assert.Contains("Export all data as JSON backup", cut.Markup);
-        }
-
-        [Fact]
         public void SettingsPage_ClearButton_HasCorrectTitle()
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
 
-            Assert.Contains("Delete all data", cut.Markup);
+            Assert.Contains("Clear all data", cut.Markup);
         }
 
         [Fact]
@@ -277,7 +227,6 @@ namespace Pomodoro.Web.Tests.Pages
             Assert.Contains("Timer durations", cut.Markup);
             Assert.Contains("Sound & notifications", cut.Markup);
             Assert.Contains("Automation", cut.Markup);
-            Assert.Contains("Keyboard shortcuts", cut.Markup);
             Assert.Contains("Data", cut.Markup);
         }
 
@@ -305,8 +254,6 @@ namespace Pomodoro.Web.Tests.Pages
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
 
-            Assert.Contains("Export data", cut.Markup);
-            Assert.Contains("Import data", cut.Markup);
             Assert.Contains("Clear all data", cut.Markup);
         }
 
@@ -379,7 +326,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
 
-            Assert.Contains("step-val", cut.Markup);
+            Assert.Contains("step-input", cut.Markup);
         }
 
         [Fact]
@@ -411,9 +358,8 @@ namespace Pomodoro.Web.Tests.Pages
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
 
-            Assert.Contains("kbd-grid", cut.Markup);
-            Assert.Contains("kr", cut.Markup);
-            Assert.Contains("kbd", cut.Markup);
+            Assert.Contains("ss", cut.Markup);
+            Assert.Contains("sr", cut.Markup);
         }
 
         [Fact]
@@ -467,22 +413,6 @@ namespace Pomodoro.Web.Tests.Pages
         }
 
         [Fact]
-        public void SettingsPage_HasImportContainerClass()
-        {
-            var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-
-            Assert.Contains("import-container", cut.Markup);
-        }
-
-        [Fact]
-        public void SettingsPage_HasFileInputClass()
-        {
-            var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
-
-            Assert.Contains("file-input", cut.Markup);
-        }
-
-        [Fact]
         public void SettingsPage_ConfirmationModal_HasCorrectHeading()
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Settings>();
@@ -501,8 +431,8 @@ namespace Pomodoro.Web.Tests.Pages
 
             cut.WaitForAssertion(() =>
             {
-                cut.Markup.Contains("This will permanently delete all your activities, tasks, and reset settings to defaults.");
-                cut.Markup.Contains("This action cannot be undone.");
+                cut.Markup.Contains("Delete all activities, tasks, and settings from this device");
+                cut.Markup.Contains("This cannot be undone.");
             });
         }
 

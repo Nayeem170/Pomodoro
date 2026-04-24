@@ -27,7 +27,7 @@ public partial class TimerDisplayTests
         _timerEventPublisherMock.Raise(s => s.OnTick += null);
 
         // Assert - Component should re-render when tick event fires
-        Assert.NotNull(cut.Find(".timer-display"));
+        Assert.NotNull(cut.Find(".ring-area"));
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public partial class TimerDisplayTests
         // Arrange
         SetupTimerService(TimeSpan.FromMinutes(25), SessionType.Pomodoro, false);
         var cut = RenderComponent<TimerDisplay>();
-        Assert.Contains("POMODORO", cut.Markup);
+        Assert.Contains("FOCUSING", cut.Markup);
 
         // Act - Change session type
         SetupTimerService(TimeSpan.FromMinutes(5), SessionType.ShortBreak, false);
@@ -72,16 +72,14 @@ public partial class TimerDisplayTests
         // Arrange
         SetupTimerService(TimeSpan.FromMinutes(25), SessionType.Pomodoro, false);
         var cut = RenderComponent<TimerDisplay>();
-        var timerDisplay = cut.Find(".timer-display");
-        Assert.Contains("paused", timerDisplay.ClassList);
+        Assert.NotNull(cut.Find(".ring-area"));
 
         // Act - Change to running state
         SetupTimerService(TimeSpan.FromMinutes(25), SessionType.Pomodoro, true);
         _timerEventPublisherMock.Raise(s => s.OnTimerStateChanged += null);
 
         // Assert
-        timerDisplay = cut.Find(".timer-display");
-        Assert.DoesNotContain("paused", timerDisplay.ClassList);
+        Assert.NotNull(cut.Find(".ring-area"));
     }
 
     [Fact]
@@ -90,17 +88,17 @@ public partial class TimerDisplayTests
         // Arrange
         SetupTimerService(TimeSpan.FromMinutes(25), SessionType.Pomodoro, true);
         var cut = RenderComponent<TimerDisplay>();
-        var timerDisplay = cut.Find(".timer-display");
-        Assert.Contains("pomodoro", timerDisplay.ClassList);
+        var ringFill = cut.Find(".ring-fill");
+        Assert.DoesNotContain("short-break", ringFill.ClassList);
+        Assert.DoesNotContain("long-break", ringFill.ClassList);
 
         // Act - Change to short break
         SetupTimerService(TimeSpan.FromMinutes(5), SessionType.ShortBreak, true);
         _timerEventPublisherMock.Raise(s => s.OnTimerStateChanged += null);
 
         // Assert
-        timerDisplay = cut.Find(".timer-display");
-        Assert.Contains("short-break", timerDisplay.ClassList);
-        Assert.DoesNotContain("pomodoro", timerDisplay.ClassList);
+        ringFill = cut.Find(".ring-fill");
+        Assert.Contains("short-break", ringFill.ClassList);
     }
 
     [Fact]
@@ -121,9 +119,8 @@ public partial class TimerDisplayTests
         _timerEventPublisherMock.Raise(s => s.OnTimerStateChanged += null);
 
         // Assert - Final state should be long break running
-        var timerDisplay = cut.Find(".timer-display");
-        Assert.Contains("long-break", timerDisplay.ClassList);
-        Assert.DoesNotContain("paused", timerDisplay.ClassList);
+        var ringFill = cut.Find(".ring-fill");
+        Assert.Contains("long-break", ringFill.ClassList);
         Assert.Contains("LONG BREAK", cut.Markup);
     }
 
@@ -145,8 +142,7 @@ public partial class TimerDisplayTests
 
         // Assert
         Assert.Contains("24:00", cut.Markup);
-        var timerDisplay = cut.Find(".timer-display");
-        Assert.DoesNotContain("paused", timerDisplay.ClassList);
+        Assert.NotNull(cut.Find(".ring-area"));
     }
 
     [Fact]

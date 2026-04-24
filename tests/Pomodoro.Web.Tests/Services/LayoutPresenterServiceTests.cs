@@ -444,7 +444,7 @@ namespace Pomodoro.Web.Tests.Services
             var links = _service.GetNavigationLinks().ToList();
 
             // Assert
-            links[3].Title.Should().Be("About Pomodoro");
+            links[3].Title.Should().Be("About");
             links[3].Href.Should().Be("/about");
             links[3].Match.Should().Be(NavLinkMatch.Prefix);
         }
