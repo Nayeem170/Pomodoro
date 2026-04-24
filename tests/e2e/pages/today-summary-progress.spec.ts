@@ -6,7 +6,8 @@ async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskN
   await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
   const pomodoroInput = page.locator('.step-input').first();
   await pomodoroInput.click({ clickCount: 3 });
-  await pomodoroInput.fill('1');
+  await pomodoroInput.pressSequentially('1');
+  await pomodoroInput.dispatchEvent('input');
   await pomodoroInput.dispatchEvent('change');
   await page.waitForTimeout(500);
   await pomodoroPage.goto('/');
@@ -76,13 +77,15 @@ test.describe('Today Summary Progress Bar', () => {
 
     const pomodoroInput = page.locator('.step-input').first();
     await pomodoroInput.click({ clickCount: 3 });
-    await pomodoroInput.fill('1');
+    await pomodoroInput.pressSequentially('1');
+    await pomodoroInput.dispatchEvent('input');
     await pomodoroInput.dispatchEvent('change');
     await page.waitForTimeout(500);
 
     const dailyGoalInput = page.locator('.step-input').nth(3);
     await dailyGoalInput.click({ clickCount: 3 });
-    await dailyGoalInput.fill('4');
+    await dailyGoalInput.pressSequentially('4');
+    await dailyGoalInput.dispatchEvent('input');
     await dailyGoalInput.dispatchEvent('change');
     await page.waitForTimeout(500);
 

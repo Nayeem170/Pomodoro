@@ -13,7 +13,8 @@ test.describe('Settings Persistence', () => {
 
     const pomodoroInput = page.locator('.step-input').first();
     await pomodoroInput.click({ clickCount: 3 });
-    await pomodoroInput.fill('30');
+    await pomodoroInput.pressSequentially('30');
+    await pomodoroInput.dispatchEvent('input');
     await pomodoroInput.dispatchEvent('change');
     await page.waitForTimeout(500);
 
@@ -84,7 +85,8 @@ test.describe('Settings Persistence', () => {
 
     const pomodoroInput = page.locator('.step-input').first();
     await pomodoroInput.click({ clickCount: 3 });
-    await pomodoroInput.fill('20');
+    await pomodoroInput.pressSequentially('20');
+    await pomodoroInput.dispatchEvent('input');
     await pomodoroInput.dispatchEvent('change');
     await page.waitForTimeout(500);
 

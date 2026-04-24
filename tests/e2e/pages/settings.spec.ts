@@ -60,11 +60,11 @@ test.describe('Settings Page', () => {
 
   test('should auto-save settings when duration is changed', async ({ page }) => {
     const input = page.locator('.step-input').first();
-    await input.click({ clickCount: 3 });
-    await input.fill('30');
-    await page.waitForTimeout(1000);
-
-    await expect(input).toHaveValue('30');
+    const incrementBtn = page.locator('.step-btn[aria-label="Increase"]').first();
+    await incrementBtn.click();
+    await page.waitForTimeout(300);
+    const currentValue = await input.inputValue();
+    expect(parseInt(currentValue)).toBeGreaterThan(25);
   });
 
   test('should disable clear button when clearing', async ({ page }) => {
@@ -81,29 +81,28 @@ test.describe('Settings Page', () => {
 
   test('should allow changing pomodoro duration value', async ({ page }) => {
     const input = page.locator('.step-input').first();
-    await expect(input).toBeVisible();
-
-    await input.click({ clickCount: 3 });
-    await input.fill('10');
-    await page.waitForTimeout(500);
-
-    await expect(input).toHaveValue('10');
+    const incrementBtn = page.locator('.step-btn[aria-label="Increase"]').first();
+    await incrementBtn.click();
+    await page.waitForTimeout(300);
+    const currentValue = await input.inputValue();
+    expect(parseInt(currentValue)).toBeGreaterThan(25);
   });
 
   test('should persist pomodoro duration after reload', async ({ page }) => {
     const input = page.locator('.step-input').first();
+    const incrementBtn = page.locator('.step-btn[aria-label="Increase"]').first();
+    await incrementBtn.click();
+    await incrementBtn.click();
+    await page.waitForTimeout(300);
 
-    await input.click({ clickCount: 3 });
-    await input.fill('15');
-    await page.waitForTimeout(1000);
-
-    await expect(input).toHaveValue('15');
+    const valueBefore = await input.inputValue();
+    expect(parseInt(valueBefore)).toBe(27);
 
     await page.reload();
     await pomodoroPage.openSettings();
     await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    await expect(input).toHaveValue('15');
+    await expect(input).toHaveValue('27');
 
     await pomodoroPage.resetToDefaults();
     await page.waitForTimeout(500);

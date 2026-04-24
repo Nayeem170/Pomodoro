@@ -31,7 +31,7 @@ test.describe('Timer Controls', () => {
 
   test('should start timer when task is selected', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Test Task');
+    await page.locator('.task-input').pressSequentially('Test Task');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
     
@@ -47,7 +47,7 @@ test.describe('Timer Controls', () => {
 
   test('should show pause button when timer is running', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Test Task');
+    await page.locator('.task-input').pressSequentially('Test Task');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
     
@@ -64,7 +64,7 @@ test.describe('Timer Controls', () => {
 
   test('should pause timer', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Test Task');
+    await page.locator('.task-input').pressSequentially('Test Task');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
     
@@ -84,7 +84,7 @@ test.describe('Timer Controls', () => {
 
   test('should show resume button when timer is paused', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Test Task');
+    await page.locator('.task-input').pressSequentially('Test Task');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
     
@@ -105,7 +105,7 @@ test.describe('Timer Controls', () => {
 
   test('should show reset button when timer is started', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Test Task');
+    await page.locator('.task-input').pressSequentially('Test Task');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
     
@@ -122,7 +122,7 @@ test.describe('Timer Controls', () => {
 
   test('should resume timer', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Test Task');
+    await page.locator('.task-input').pressSequentially('Test Task');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
     
@@ -146,7 +146,7 @@ test.describe('Timer Controls', () => {
 
   test('should reset timer', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Test Task');
+    await page.locator('.task-input').pressSequentially('Test Task');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
     
@@ -166,7 +166,7 @@ test.describe('Timer Controls', () => {
 
   test('should display current task indicator', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Test Task');
+    await page.locator('.task-input').pressSequentially('Test Task');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
     

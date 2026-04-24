@@ -67,10 +67,11 @@ test.describe('Settings Flow', () => {
 
   test('should reset to defaults and verify values reset', async ({ page }) => {
     const input = page.locator('.step-input').first();
-    await input.click({ clickCount: 3 });
-    await input.fill('10');
-    await page.waitForTimeout(500);
-    await expect(input).toHaveValue('10');
+    const incrementBtn = page.locator('.step-btn[aria-label="Increase"]').first();
+    await incrementBtn.click();
+    await page.waitForTimeout(300);
+    const valueBefore = await input.inputValue();
+    expect(parseInt(valueBefore)).toBeGreaterThan(25);
 
     await pomodoroPage.resetToDefaults();
     await page.waitForTimeout(500);

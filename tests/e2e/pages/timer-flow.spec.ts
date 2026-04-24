@@ -6,12 +6,9 @@ test.describe.configure({ mode: 'serial' });
 test.describe('Timer Flow', () => {
   let pomodoroPage: PomodoroPage;
 
-  test.beforeEach(async ({ page }) => {
+  test('should add a task, select it, start pomodoro, and verify timer counts down', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-  });
-
-  test('should add a task, select it, start pomodoro, and verify timer counts down', async ({ page }) => {
     await pomodoroPage.addTask('Flow test task');
     await expect(page.locator('.task-row').filter({ hasText: 'Flow test task' })).toBeVisible();
     await pomodoroPage.selectTask('Flow test task');

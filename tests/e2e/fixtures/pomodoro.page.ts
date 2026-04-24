@@ -45,7 +45,7 @@ export class PomodoroPage {
     await this.page.waitForTimeout(500);
     
     await this.page.locator('.task-input').waitFor({ state: 'visible', timeout: 5000 });
-    await this.page.locator('.task-input').fill(taskName);
+    await this.page.locator('.task-input').pressSequentially(taskName);
     await this.page.waitForTimeout(300);
     
     await this.page.locator('.btn-icon-small.btn-add').click();
@@ -169,8 +169,9 @@ export class PomodoroPage {
   async setPomodoroMinutes(minutes: number) {
     const input = this.page.locator('.step-input').first();
     await input.click({ clickCount: 3 });
-    await input.fill(minutes.toString());
-    await this.page.waitForTimeout(200);
+    await input.pressSequentially(minutes.toString());
+    await input.dispatchEvent('input');
+    await this.page.waitForTimeout(300);
   }
 
   async toggleSound() {

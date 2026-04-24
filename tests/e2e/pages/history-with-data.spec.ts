@@ -7,7 +7,8 @@ async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskN
 
   const pomodoroInput = page.locator('.step-input').first();
   await pomodoroInput.click({ clickCount: 3 });
-  await pomodoroInput.fill('1');
+  await pomodoroInput.pressSequentially('1');
+  await pomodoroInput.dispatchEvent('input');
   await page.waitForTimeout(500);
 
   await pomodoroPage.goto('/');

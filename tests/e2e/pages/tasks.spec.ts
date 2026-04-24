@@ -29,7 +29,7 @@ test.describe('Task Management', () => {
     const initialCount = await page.locator('.task-row').count();
 
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Test Task');
+    await page.locator('.task-input').pressSequentially('Test Task');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
 
@@ -41,7 +41,7 @@ test.describe('Task Management', () => {
 
   test('should select a task', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Test Task');
+    await page.locator('.task-input').pressSequentially('Test Task');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
 
@@ -54,7 +54,7 @@ test.describe('Task Management', () => {
 
   test('should complete a task', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Test Task');
+    await page.locator('.task-input').pressSequentially('Test Task');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
 
@@ -71,7 +71,7 @@ test.describe('Task Management', () => {
 
   test('should uncomplete a task', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Test Task');
+    await page.locator('.task-input').pressSequentially('Test Task');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
 
@@ -93,7 +93,7 @@ test.describe('Task Management', () => {
 
   test('should delete a task', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Test Task');
+    await page.locator('.task-input').pressSequentially('Test Task');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
 

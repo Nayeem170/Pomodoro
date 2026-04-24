@@ -25,7 +25,7 @@ test.describe('Task Validation', () => {
     await page.locator('.task-add-btn').click();
     await expect(page.locator('.add-task-form')).toBeVisible();
 
-    await page.locator('.task-input').fill('Valid Task');
+    await page.locator('.task-input').pressSequentially('Valid Task');
     await page.waitForTimeout(200);
 
     const addButton = page.locator('.btn-icon-small.btn-add');
@@ -37,7 +37,7 @@ test.describe('Task Validation', () => {
     await page.locator('.task-add-btn').click();
     await expect(page.locator('.add-task-form')).toBeVisible();
 
-    await page.locator('.task-input').fill('   ');
+    await page.locator('.task-input').pressSequentially('   ');
     await page.waitForTimeout(200);
 
     const addButton = page.locator('.btn-icon-small.btn-add');
@@ -59,7 +59,7 @@ test.describe('Task Validation', () => {
     await page.locator('.task-add-btn').click();
     await expect(page.locator('.add-task-form')).toBeVisible();
 
-    await page.locator('.task-input').fill('Enter Key Task');
+    await page.locator('.task-input').pressSequentially('Enter Key Task');
     await page.locator('.task-input').press('Enter');
     await page.waitForTimeout(500);
 
@@ -72,7 +72,7 @@ test.describe('Task Validation', () => {
     await page.locator('.task-add-btn').click();
     await expect(page.locator('.add-task-form')).toBeVisible();
 
-    await page.locator('.task-input').fill('Escape Key Task');
+    await page.locator('.task-input').pressSequentially('Escape Key Task');
     await page.locator('.btn-icon-small.btn-cancel').click();
     await page.waitForTimeout(300);
 
@@ -85,7 +85,7 @@ test.describe('Task Validation', () => {
     await page.locator('.task-add-btn').click();
 
     const longName = 'A'.repeat(200);
-    await page.locator('.task-input').fill(longName);
+    await page.locator('.task-input').pressSequentially(longName);
     await page.waitForTimeout(200);
 
     const addButton = page.locator('.btn-icon-small.btn-add');

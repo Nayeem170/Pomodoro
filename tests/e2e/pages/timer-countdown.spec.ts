@@ -30,7 +30,7 @@ test.describe('Timer Countdown', () => {
 
   test('should decrement timer when running', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Countdown Test');
+    await page.locator('.task-input').pressSequentially('Countdown Test');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
 
@@ -48,7 +48,7 @@ test.describe('Timer Countdown', () => {
 
   test('should stop decrementing when paused', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Pause Test');
+    await page.locator('.task-input').pressSequentially('Pause Test');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
 
@@ -71,7 +71,7 @@ test.describe('Timer Countdown', () => {
 
   test('should reset timer to full duration', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Reset Test');
+    await page.locator('.task-input').pressSequentially('Reset Test');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
 
@@ -91,7 +91,7 @@ test.describe('Timer Countdown', () => {
 
   test('should apply paused theme class when timer is paused', async ({ page }) => {
     await page.locator('.task-add-btn').click();
-    await page.locator('.task-input').fill('Theme Test');
+    await page.locator('.task-input').pressSequentially('Theme Test');
     await page.locator('.btn-icon-small.btn-add').click();
     await page.waitForTimeout(500);
 

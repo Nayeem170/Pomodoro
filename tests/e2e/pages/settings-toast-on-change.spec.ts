@@ -15,7 +15,8 @@ test.describe('Settings Toast On Change', () => {
   test('should show toast when reset to defaults is clicked', async ({ page }) => {
     const input = page.locator('.step-input').first();
     await input.click({ clickCount: 3 });
-    await input.fill('10');
+    await input.pressSequentially('10');
+    await input.dispatchEvent('input');
     await page.waitForTimeout(500);
     await expect(input).toHaveValue('10');
 
@@ -39,7 +40,8 @@ test.describe('Settings Toast On Change', () => {
   test('should show toast message for settings saved successfully', async ({ page }) => {
     const input = page.locator('.step-input').first();
     await input.click({ clickCount: 3 });
-    await input.fill('30');
+    await input.pressSequentially('30');
+    await input.dispatchEvent('input');
     await input.dispatchEvent('change');
     await page.waitForTimeout(500);
 

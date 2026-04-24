@@ -20,7 +20,8 @@ test.describe('Settings Auto-Save', () => {
   test('should persist pomodoro duration after reload without save button', async ({ page }) => {
     const input = page.locator('.step-input').first();
     await input.click({ clickCount: 3 });
-    await input.fill('30');
+    await input.pressSequentially('30');
+    await input.dispatchEvent('input');
     await page.waitForTimeout(1000);
 
     await expect(input).toHaveValue('30');

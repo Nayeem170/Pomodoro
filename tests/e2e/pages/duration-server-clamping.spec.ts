@@ -15,7 +15,8 @@ test.describe('Duration Server-Side Clamping', () => {
   test('should clamp pomodoro value to minimum of 1 when entering 0', async ({ page }) => {
     const pomodoroInput = page.locator('.step-input').first();
     await pomodoroInput.click({ clickCount: 3 });
-    await pomodoroInput.fill('0');
+    await pomodoroInput.pressSequentially('0');
+    await pomodoroInput.dispatchEvent('input');
     await pomodoroInput.dispatchEvent('change');
     await page.waitForTimeout(500);
 
@@ -30,7 +31,8 @@ test.describe('Duration Server-Side Clamping', () => {
   test('should clamp pomodoro value to maximum of 120 when entering 999', async ({ page }) => {
     const pomodoroInput = page.locator('.step-input').first();
     await pomodoroInput.click({ clickCount: 3 });
-    await pomodoroInput.fill('999');
+    await pomodoroInput.pressSequentially('999');
+    await pomodoroInput.dispatchEvent('input');
     await pomodoroInput.dispatchEvent('change');
     await page.waitForTimeout(500);
 
@@ -45,7 +47,8 @@ test.describe('Duration Server-Side Clamping', () => {
   test('should clamp short break value to minimum of 1 when entering 0', async ({ page }) => {
     const shortBreakInput = page.locator('.step-input').nth(1);
     await shortBreakInput.click({ clickCount: 3 });
-    await shortBreakInput.fill('0');
+    await shortBreakInput.pressSequentially('0');
+    await shortBreakInput.dispatchEvent('input');
     await shortBreakInput.dispatchEvent('change');
     await page.waitForTimeout(500);
 
@@ -60,7 +63,8 @@ test.describe('Duration Server-Side Clamping', () => {
   test('should clamp long break value to maximum of 60 when entering 999', async ({ page }) => {
     const longBreakInput = page.locator('.step-input').nth(2);
     await longBreakInput.click({ clickCount: 3 });
-    await longBreakInput.fill('999');
+    await longBreakInput.pressSequentially('999');
+    await longBreakInput.dispatchEvent('input');
     await longBreakInput.dispatchEvent('change');
     await page.waitForTimeout(500);
 
@@ -75,7 +79,8 @@ test.describe('Duration Server-Side Clamping', () => {
   test('should clamp negative pomodoro value to minimum of 1', async ({ page }) => {
     const pomodoroInput = page.locator('.step-input').first();
     await pomodoroInput.click({ clickCount: 3 });
-    await pomodoroInput.fill('-5');
+    await pomodoroInput.pressSequentially('-5');
+    await pomodoroInput.dispatchEvent('input');
     await pomodoroInput.dispatchEvent('change');
     await page.waitForTimeout(500);
 

@@ -6,12 +6,9 @@ test.describe.configure({ mode: 'serial' });
 test.describe('Keyboard Shortcuts', () => {
   let pomodoroPage: PomodoroPage;
 
-  test.beforeEach(async ({ page }) => {
+  test('should open keyboard help modal with button', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-  });
-
-  test('should open keyboard help modal with button', async ({ page }) => {
     await pomodoroPage.openKeyboardHelp();
     await expect(page.locator('.keyboard-help-modal.visible')).toBeVisible();
   });

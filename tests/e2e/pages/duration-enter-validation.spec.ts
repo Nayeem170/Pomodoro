@@ -15,7 +15,8 @@ test.describe('Duration Input Enter Key Validation', () => {
   test('should clamp pomodoro duration to max on Enter', async ({ page }) => {
     const pomodoroInput = page.locator('.step-input').first();
     await pomodoroInput.click({ clickCount: 3 });
-    await pomodoroInput.fill('999');
+    await pomodoroInput.pressSequentially('999');
+    await pomodoroInput.dispatchEvent('input');
     await page.waitForTimeout(300);
 
     await pomodoroInput.press('Enter');
@@ -31,7 +32,8 @@ test.describe('Duration Input Enter Key Validation', () => {
     const breakInputs = page.locator('.step-input');
     const shortBreakInput = breakInputs.nth(1);
     await shortBreakInput.click({ clickCount: 3 });
-    await shortBreakInput.fill('999');
+    await shortBreakInput.pressSequentially('999');
+    await shortBreakInput.dispatchEvent('input');
     await page.waitForTimeout(300);
 
     await shortBreakInput.press('Enter');
@@ -47,7 +49,8 @@ test.describe('Duration Input Enter Key Validation', () => {
     const breakInputs = page.locator('.step-input');
     const longBreakInput = breakInputs.nth(2);
     await longBreakInput.click({ clickCount: 3 });
-    await longBreakInput.fill('999');
+    await longBreakInput.pressSequentially('999');
+    await longBreakInput.dispatchEvent('input');
     await page.waitForTimeout(300);
 
     await longBreakInput.press('Enter');
