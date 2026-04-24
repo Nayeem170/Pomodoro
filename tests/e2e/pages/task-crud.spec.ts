@@ -39,7 +39,7 @@ test.describe('Task CRUD', () => {
 
   test('should select a task and update active task indicator', async ({ page }) => {
     await pomodoroPage.selectTask('Third task');
-    await expect(page.locator('.active-task')).toContainText('Third task');
+    await expect(page.locator('.task-row.selected')).toContainText('Third task');
   });
 
   test('should disable add button when task input is empty', async ({ page }) => {
