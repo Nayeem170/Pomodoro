@@ -17,8 +17,8 @@ test.describe('Navigation', () => {
   });
 
   test('should not display footer', async ({ page }) => {
-    await expect(page.locator('.app-footer')).not.toBeVisible();
-    await expect(page.locator('.footer-copy')).not.toBeVisible();
+    await expect(page.locator('.app-footer')).not.toBeAttached();
+    await expect(page.locator('.footer-copy')).not.toBeAttached();
   });
 
   test('should navigate to history page via nav link', async ({ page }) => {

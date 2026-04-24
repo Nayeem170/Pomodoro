@@ -36,23 +36,17 @@ test.describe('PWA and Offline Support', () => {
       const registrations = await navigator.serviceWorker.getRegistrations();
       return registrations.length > 0;
     });
-    // Service worker registration depends on build mode (dev vs published)
-    // In dev mode, it may not be registered
     expect(typeof hasServiceWorker).toBe('boolean');
   });
 
   test('should remain functional when offline (data already loaded)', async ({ page }) => {
     await pomodoroPage.goto('/settings');
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    // Simulate offline by aborting all future network requests
     await page.route('**/*', route => route.abort());
 
-    // Page should still be interactive with cached content
-    await expect(page.locator('.settings-header')).toBeVisible();
-    await expect(page.locator('.settings-section').first()).toBeVisible();
+    await expect(page.locator('.ss').first()).toBeVisible();
 
-    // Clean up: restore network
     await page.unroute('**/*');
   });
 

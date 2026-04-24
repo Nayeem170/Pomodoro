@@ -7,7 +7,7 @@ test.describe('Mobile Nav Menu', () => {
   test.beforeEach(async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
   });
 
   test.describe.configure({ timeout: 60000 });
@@ -27,31 +27,31 @@ test.describe('Mobile Nav Menu', () => {
   test('should navigate to each page via nav links', async ({ page }) => {
     await page.locator('.header-nav a[title="History"]').click();
     await page.waitForLoadState('domcontentloaded');
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
 
     await page.locator('.header-nav a[title="Settings"]').click();
     await page.waitForLoadState('domcontentloaded');
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
     await page.locator('.header-nav a[title="About Pomodoro"]').click();
     await page.waitForLoadState('domcontentloaded');
-    await expect(page.locator('.about-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.about-body')).toBeVisible({ timeout: 30000 });
 
     await page.locator('.header-nav a[title="Timer"]').click();
     await page.waitForLoadState('domcontentloaded');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
   });
 });
 
 test.describe('Mobile Header Responsive', () => {
   test.describe.configure({ timeout: 60000 });
 
-  test('should render tagline inside header-left', async ({ page }) => {
+  test('should render tagline inside header-title', async ({ page }) => {
     const pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const tagline = page.locator('.header-left .header-tagline');
+    const tagline = page.locator('.header-title .header-text');
     await expect(tagline).toBeVisible();
     await expect(tagline).toContainText('Focus. Work. Achieve.');
   });
@@ -61,7 +61,7 @@ test.describe('Mobile Header Responsive', () => {
     const page = await context.newPage();
     const pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     const header = page.locator('.app-header');
     await expect(header).toBeVisible();
@@ -84,7 +84,7 @@ test.describe('Mobile Header Responsive', () => {
     const page = await context.newPage();
     const pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     const navIconSize = await page.locator('.header-nav a').first().evaluate(el => {
       const style = window.getComputedStyle(el);
@@ -103,10 +103,10 @@ test.describe('Round Button', () => {
   test('should render add button as round circle', async ({ page }) => {
     const pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    await page.locator('.btn-add-task').waitFor({ state: 'visible', timeout: 30000 });
-    await page.locator('.btn-add-task').click();
+    await page.locator('.task-add-btn').waitFor({ state: 'visible', timeout: 30000 });
+    await page.locator('.task-add-btn').click();
     await page.waitForTimeout(500);
 
     const addButton = page.locator('.btn-icon-small.btn-add');
@@ -122,10 +122,10 @@ test.describe('Round Button', () => {
   test('should have equal width and height for round shape', async ({ page }) => {
     const pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    await page.locator('.btn-add-task').waitFor({ state: 'visible', timeout: 30000 });
-    await page.locator('.btn-add-task').click();
+    await page.locator('.task-add-btn').waitFor({ state: 'visible', timeout: 30000 });
+    await page.locator('.task-add-btn').click();
     await page.waitForTimeout(500);
 
     const addButton = page.locator('.btn-icon-small.btn-add');

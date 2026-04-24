@@ -27,7 +27,7 @@ test.describe('Swipe Navigation', () => {
   test.beforeEach(async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
   });
 
   test('should navigate to history page on swipe left', async ({ page }) => {
@@ -47,7 +47,7 @@ test.describe('Swipe Navigation', () => {
 
   test('should block swipe left on last page (about)', async ({ page }) => {
     await page.locator('.header-nav a[title="About Pomodoro"]').click();
-    await expect(page.locator('.about-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.about-body')).toBeVisible({ timeout: 30000 });
 
     const urlBeforeSwipe = page.url();
 

@@ -3,24 +3,20 @@ import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 async function setupFastPomodoro(page: any, pomodoroPage: PomodoroPage, taskName: string) {
   await pomodoroPage.goto('/settings');
-  await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+  await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-  const pomodoroInput = page.locator('input[type="number"]').first();
+  const pomodoroInput = page.locator('.step-input').first();
+  await pomodoroInput.click({ clickCount: 3 });
   await pomodoroInput.fill('1');
-  await pomodoroInput.dispatchEvent('change');
-  await page.waitForTimeout(500);
-
-  await page.locator('.btn-save').click();
-  await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
   await page.waitForTimeout(500);
 
   await pomodoroPage.goto('/');
-  await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+  await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
   await pomodoroPage.addTask(taskName);
   await pomodoroPage.selectTask(taskName);
   await pomodoroPage.startTimer();
-  await expect(page.locator('.btn-pause')).toBeVisible();
+  await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
   await page.waitForTimeout(500);
 
   await page.evaluate(async () => {
@@ -64,26 +60,22 @@ test.describe('Sound on Timer Completion', () => {
 
   test('should play timer complete sound when pomodoro finishes', async ({ page }) => {
     await pomodoroPage.goto('/settings');
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    const pomodoroInput = page.locator('input[type="number"]').first();
+    const pomodoroInput = page.locator('.step-input').first();
+    await pomodoroInput.click({ clickCount: 3 });
     await pomodoroInput.fill('1');
-    await pomodoroInput.dispatchEvent('change');
-    await page.waitForTimeout(500);
-
-    await page.locator('.btn-save').click();
-    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
     await page.waitForTimeout(500);
 
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await injectSoundTracking(page);
 
     await pomodoroPage.addTask('Sound Timer Test');
     await pomodoroPage.selectTask('Sound Timer Test');
     await pomodoroPage.startTimer();
-    await expect(page.locator('.btn-pause')).toBeVisible();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
     await page.waitForTimeout(500);
 
     await page.evaluate(async () => {
@@ -106,31 +98,27 @@ test.describe('Sound on Timer Completion', () => {
 
   test('should play break complete sound when break finishes', async ({ page }) => {
     await pomodoroPage.goto('/settings');
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    const pomodoroInput = page.locator('input[type="number"]').first();
+    const pomodoroInput = page.locator('.step-input').first();
+    await pomodoroInput.click({ clickCount: 3 });
     await pomodoroInput.fill('1');
-    await pomodoroInput.dispatchEvent('change');
     await page.waitForTimeout(500);
 
-    const shortBreakInput = page.locator('input[type="number"]').nth(1);
+    const shortBreakInput = page.locator('.step-input').nth(1);
+    await shortBreakInput.click({ clickCount: 3 });
     await shortBreakInput.fill('1');
-    await shortBreakInput.dispatchEvent('change');
-    await page.waitForTimeout(500);
-
-    await page.locator('.btn-save').click();
-    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
     await page.waitForTimeout(500);
 
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await injectSoundTracking(page);
 
     await pomodoroPage.addTask('Sound Break Test');
     await pomodoroPage.selectTask('Sound Break Test');
     await pomodoroPage.startTimer();
-    await expect(page.locator('.btn-pause')).toBeVisible();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
     await page.waitForTimeout(500);
 
     await page.evaluate(async () => {
@@ -152,13 +140,13 @@ test.describe('Sound on Timer Completion', () => {
       await page.locator('.btn-option').filter({ hasText: 'Short Break' }).click();
       await page.waitForTimeout(500);
 
-      const isRunning = await page.locator('.btn-pause').isVisible().catch(() => false);
+      const isRunning = await page.locator('button[aria-label="Pause timer"]').isVisible().catch(() => false);
       if (!isRunning) {
-        const startOrResume = page.locator('.btn-start, .btn-resume').first();
+        const startOrResume = page.locator('button[aria-label="Start timer"], button[aria-label="Resume timer"]').first();
         await expect(startOrResume).toBeVisible({ timeout: 5000 });
         await startOrResume.click();
       }
-      await expect(page.locator('.btn-pause')).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
       await page.waitForTimeout(500);
 
       await page.evaluate(async () => {
@@ -182,34 +170,29 @@ test.describe('Sound on Timer Completion', () => {
 
   test('should not play sound when sound is disabled', async ({ page }) => {
     await pomodoroPage.goto('/settings');
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    const soundToggle = page.locator('#soundToggle');
-    const isSoundOn = await soundToggle.isChecked();
-    if (isSoundOn) {
-      await page.locator('label[for="soundToggle"]').click();
-      await page.waitForTimeout(500);
-      await page.locator('.btn-save').click();
+    const soundToggle = page.locator('.sr-lbl').filter({ hasText: 'Sound on completion' }).locator('..').locator('.tog');
+    const isOn = await soundToggle.evaluate(el => el.classList.contains('on'));
+    if (isOn) {
+      await soundToggle.click();
       await page.waitForTimeout(500);
     }
 
-    const pomodoroInput = page.locator('input[type="number"]').first();
+    const pomodoroInput = page.locator('.step-input').first();
+    await pomodoroInput.click({ clickCount: 3 });
     await pomodoroInput.fill('1');
-    await pomodoroInput.dispatchEvent('change');
-    await page.waitForTimeout(500);
-    await page.locator('.btn-save').click();
-    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
     await page.waitForTimeout(500);
 
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await injectSoundTracking(page);
 
     await pomodoroPage.addTask('No Sound Test');
     await pomodoroPage.selectTask('No Sound Test');
     await pomodoroPage.startTimer();
-    await expect(page.locator('.btn-pause')).toBeVisible();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
     await page.waitForTimeout(500);
 
     await page.evaluate(async () => {
@@ -244,7 +227,7 @@ test.describe('Notification on Timer Completion', () => {
     pomodoroPage = new PomodoroPage(page);
 
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     const notificationPromise = page.waitForEvent('notification', { timeout: 15000 }).catch(() => null);
 
@@ -266,27 +249,22 @@ test.describe('Notification on Timer Completion', () => {
     pomodoroPage = new PomodoroPage(page);
 
     await pomodoroPage.goto('/settings');
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    const notifToggle = page.locator('#notifToggle');
-    const isNotifOn = await notifToggle.isChecked();
-    if (isNotifOn) {
-      await page.locator('label[for="notifToggle"]').click();
-      await page.waitForTimeout(500);
-      await page.locator('.btn-save').click();
+    const notifToggle = page.locator('.sr-lbl').filter({ hasText: 'Browser notifications' }).locator('..').locator('.tog');
+    const isOn = await notifToggle.evaluate(el => el.classList.contains('on'));
+    if (isOn) {
+      await notifToggle.click();
       await page.waitForTimeout(500);
     }
 
-    const pomodoroInput = page.locator('input[type="number"]').first();
+    const pomodoroInput = page.locator('.step-input').first();
+    await pomodoroInput.click({ clickCount: 3 });
     await pomodoroInput.fill('1');
-    await pomodoroInput.dispatchEvent('change');
-    await page.waitForTimeout(500);
-    await page.locator('.btn-save').click();
-    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
     await page.waitForTimeout(500);
 
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     let notificationReceived = false;
     page.on('notification', () => { notificationReceived = true; });
@@ -294,7 +272,7 @@ test.describe('Notification on Timer Completion', () => {
     await pomodoroPage.addTask('No Notif Test');
     await pomodoroPage.selectTask('No Notif Test');
     await pomodoroPage.startTimer();
-    await expect(page.locator('.btn-pause')).toBeVisible();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
     await page.waitForTimeout(500);
 
     await page.evaluate(async () => {

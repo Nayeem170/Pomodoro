@@ -23,7 +23,7 @@ test.describe('404 Page Content', () => {
   test('should display error display component with retry and reload buttons on error', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await page.evaluate(() => {
       const blazorError = new Event('blazorerror', { bubbles: true, cancelable: true });
