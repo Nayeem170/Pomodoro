@@ -1,10 +1,13 @@
+@using Pomodoro.Web.Services
+@inject ICloudSyncService CloudSyncService
+
 @if (IsVisible)
 {
     <div class="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="clear-confirm-title">
         <div class="confirmation-content">
-            <h3 id="clear-confirm-title">⚠️ Clear All Data?</h3>
-            <p>This will permanently delete all your activities, tasks, and reset settings to defaults.</p>
-            <p><strong>This action cannot be undone.</strong></p>
+            <h3 id="clear-confirm-title">Clear All Data?</h3>
+            <p>Delete all activities, tasks, and settings from this device@(CloudSyncService.IsConnected ? " and Google Drive" : "").</p>
+            <p><strong>This cannot be undone.</strong></p>
             <div class="confirmation-buttons">
                 <button class="btn-confirm-danger" @onclick="OnConfirm">Yes, Clear All</button>
                 <button class="btn-cancel-action" @onclick="OnCancel">Cancel</button>

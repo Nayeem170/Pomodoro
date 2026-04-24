@@ -5,15 +5,21 @@
     <TimerDurationSettings Settings="@Settings" OnChanged="MarkDirty" />
     <AutomationSettings Settings="@Settings" OnChanged="MarkDirty" />
     <SoundNotificationSettings Settings="@Settings" OnChanged="MarkDirty" />
-    <DataManagementSettings IsExporting="@IsExporting"
-                           IsImporting="@IsImporting"
-                           IsClearing="@IsClearing"
-                           ImportResult="@ImportResult"
-                           OnExportJson="ExportJson"
-                           OnImport="HandleImport"
-                           OnConfirmClearData="ConfirmClearData" />
 
-    <CloudSyncSettings />
+    <CloudSyncSettings OnShowToast="ShowTemporaryToastAsync" />
+
+    <div class="ss ss-data">
+        <div class="ss-hdr">Data</div>
+        <div class="sr">
+            <div>
+                <div class="sr-lbl">Clear all data</div>
+                <div class="sr-sub">Local data@(IsCloudConnected ? " and cloud backup" : "") will be deleted</div>
+            </div>
+            <button class="danger-btn" @onclick="ConfirmClearData" disabled="@IsClearing">
+                @(IsClearing ? "Clearing..." : "Clear")
+            </button>
+        </div>
+    </div>
     
     <div class="sett-actions">
         <button class="sec-btn" @onclick="ResetSettings" disabled="@IsAtDefaults">Reset to defaults</button>

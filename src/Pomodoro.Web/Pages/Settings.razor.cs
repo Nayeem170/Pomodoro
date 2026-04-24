@@ -37,11 +37,16 @@ public class SettingsPageBase : ComponentBase
     [Inject]
     protected SettingsPresenterService SettingsPresenterService { get; set; } = null!;
 
+    [Inject]
+    protected ICloudSyncService CloudSyncService { get; set; } = default!;
+
     #endregion
 
     #region State
 
     protected TimerSettings Settings { get; set; } = new TimerSettings();
+
+    protected bool IsCloudConnected => CloudSyncService.IsConnected;
 
     protected TimerSettings OriginalSettings { get; set; } = new TimerSettings();
 
@@ -246,15 +251,18 @@ public class SettingsPageBase : ComponentBase
 
         try
         {
+            if (IsCloudConnected)
+            {
+                await CloudSyncService.ClearRemoteDataAsync();
+            }
+
             await ExportService.ClearAllDataAsync();
 
-            // Reset settings to defaults
             Settings = new TimerSettings();
             await TimerService.UpdateSettingsAsync(Settings);
 
             OriginalSettings = new TimerSettings();
 
-            // Reload all services to reflect cleared data without page reload
             await TaskService.ReloadAsync();
             await ActivityService.ReloadAsync();
 
