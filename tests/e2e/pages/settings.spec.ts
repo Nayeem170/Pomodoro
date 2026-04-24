@@ -19,7 +19,7 @@ test.describe('Settings Page', () => {
   });
 
   test('should display pomodoro duration setting', async ({ page }) => {
-    await expect(page.locator('.sr-lbl').filter({ hasText: 'Pomodoro' })).toBeVisible();
+    await expect(page.locator('.sr-lbl').filter({ hasText: /^Pomodoro$/ })).toBeVisible();
   });
 
   test('should display short break duration setting', async ({ page }) => {
@@ -63,8 +63,7 @@ test.describe('Settings Page', () => {
     await input.fill('30');
     await input.dispatchEvent('change');
     await page.waitForTimeout(1000);
-    
-    await pomodoroPage.saveSettings();
+
     await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
     await page.waitForTimeout(500);
     await expect(page.locator('.settings-toast')).toContainText('Settings saved successfully!');
@@ -98,9 +97,8 @@ test.describe('Settings Page', () => {
 
     await input.fill('15');
     await input.dispatchEvent('change');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
 
-    await pomodoroPage.saveSettings();
     await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
     await page.waitForTimeout(500);
 

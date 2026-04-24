@@ -15,7 +15,7 @@ test.describe('Timer Controls', () => {
   });
 
   test('should display start button initially', async ({ page }) => {
-    await expect(page.locator('button[aria-label="Start timer"]')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.timer-controls button.ibtn.lg')).toBeVisible({ timeout: 30000 });
   });
 
   test('should show task hint when no task is selected', async ({ page }) => {
@@ -25,7 +25,7 @@ test.describe('Timer Controls', () => {
   });
 
   test('should not be able to start timer without task', async ({ page }) => {
-    const startButton = page.locator('button[aria-label="Start timer"]');
+    const startButton = page.locator('button[aria-label="Select a task first"]');
     await expect(startButton).toBeDisabled();
   });
 
@@ -179,7 +179,7 @@ test.describe('Timer Controls', () => {
   });
 
   test('should show select task prompt when no task selected', async ({ page }) => {
-    await expect(page.locator('button[aria-label="Start timer"]')).toBeDisabled();
+    await expect(page.locator('button[aria-label="Select a task first"]')).toBeDisabled();
     await expect(page.locator('.task-hint')).toBeVisible();
     await expect(page.locator('.task-hint')).toContainText('Select a task to start');
   });
