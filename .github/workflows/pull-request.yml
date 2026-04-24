@@ -31,17 +31,23 @@ jobs:
       - run: dotnet test Pomodoro.sln --configuration Release --no-restore --verbosity normal
 
   e2e-smoke:
-    name: E2E ${{ matrix.shard }}
+    name: E2E ${{ matrix.shard.name }}
     runs-on: ubuntu-latest
     needs: build-and-test
     strategy:
       fail-fast: false
       matrix:
         shard:
-          - name: "navigation+index"
-            tests: "tests/e2e/pages/navigation.spec.ts tests/e2e/pages/index.spec.ts"
-          - name: "timer+settings+about"
-            tests: "tests/e2e/pages/timer.spec.ts tests/e2e/pages/settings.spec.ts tests/e2e/pages/about.spec.ts"
+          - name: "navigation"
+            tests: "tests/e2e/pages/navigation.spec.ts"
+          - name: "index"
+            tests: "tests/e2e/pages/index.spec.ts"
+          - name: "timer"
+            tests: "tests/e2e/pages/timer.spec.ts"
+          - name: "settings"
+            tests: "tests/e2e/pages/settings.spec.ts"
+          - name: "about"
+            tests: "tests/e2e/pages/about.spec.ts"
     steps:
       - uses: actions/checkout@v4
 
@@ -60,14 +66,21 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-chromium-${{ hashFiles('package-lock.json') }}
 
+      - uses: actions/cache@v4
+        id: publish-cache
+        with:
+          path: ./bin/e2e-publish
+          key: e2e-publish-${{ runner.os }}-${{ hashFiles('src/**', '**/*.csproj') }}
+
       - run: npm ci
       - run: npx playwright install --with-deps chromium
         if: steps.playwright-cache.outputs.cache-hit != 'true'
       - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
+        if: steps.publish-cache.outputs.cache-hit != 'true'
       - run: rm -f bin/e2e-publish/wwwroot/_redirects bin/e2e-publish/wwwroot/_headers
 
       - name: Run smoke tests
-        run: npx playwright test ${{ matrix.tests }} --reporter=list
+        run: npx playwright test ${{ matrix.shard.tests }} --reporter=list
         env:
           CI: true
         shell: bash
