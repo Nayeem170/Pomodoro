@@ -3,12 +3,12 @@ import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskName: string) {
   await pomodoroPage.goto('/');
-  await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+  await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
   await pomodoroPage.addTask(taskName);
   await pomodoroPage.selectTask(taskName);
   await pomodoroPage.startTimer();
-  await expect(page.locator('.btn-pause')).toBeVisible();
+  await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
   await page.waitForTimeout(500);
 
   await page.evaluate(async () => {
@@ -39,12 +39,12 @@ test.describe('Consent Auto-Continue', () => {
   test('should auto-start default session when consent countdown reaches zero', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await pomodoroPage.addTask('Auto Continue Test');
     await pomodoroPage.selectTask('Auto Continue Test');
     await pomodoroPage.startTimer();
-    await expect(page.locator('.btn-pause')).toBeVisible();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
     await page.waitForTimeout(500);
 
     await page.evaluate(async () => {
@@ -64,7 +64,7 @@ test.describe('Consent Auto-Continue', () => {
     const isModalVisible = await consentModal.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (isModalVisible) {
-      const countdownText = page.locator('.countdown-text');
+      const countdownText = page.locator('.auto-continue-row span');
       const text = await countdownText.textContent();
       const match = text?.match(/(\d+)\s*seconds/);
 

@@ -12,12 +12,12 @@ test.describe('Consent Countdown', () => {
 
   test('should show countdown text with default delay seconds', async ({ page }) => {
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await pomodoroPage.addTask('Countdown Test');
     await pomodoroPage.selectTask('Countdown Test');
     await pomodoroPage.startTimer();
-    await expect(page.locator('.btn-pause')).toBeVisible();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
     await page.waitForTimeout(500);
 
     await page.evaluate(async () => {
@@ -39,7 +39,7 @@ test.describe('Consent Countdown', () => {
       return;
     }
 
-    const countdownText = page.locator('.countdown-text');
+    const countdownText = page.locator('.auto-continue-row span');
     await expect(countdownText).toBeVisible();
 
     const text = await countdownText.textContent();

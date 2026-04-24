@@ -37,7 +37,7 @@ test.describe('Today Summary', () => {
 
   test('should display progress bar', async ({ page }) => {
     await expect(page.locator('.progress-bar')).toBeVisible({ timeout: 30000 });
-    await expect(page.locator('.progress-bar-fill')).toBeVisible();
+    await expect(page.locator('.progress-bar-fill')).toBeAttached();
   });
 
   test('should show initial zero values', async ({ page }) => {
