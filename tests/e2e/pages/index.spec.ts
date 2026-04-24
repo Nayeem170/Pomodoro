@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
-// Index page requires more time due to Blazor WASM initialization and data loading
 test.describe('Index Page', () => {
   let pomodoroPage: PomodoroPage;
 
@@ -10,7 +9,6 @@ test.describe('Index Page', () => {
     await pomodoroPage.goto('/');
   });
 
-  // Set longer timeout for all tests in this describe block
   test.describe.configure({ timeout: 60000 });
 
   test('should render main container', async ({ page }) => {
@@ -31,32 +29,32 @@ test.describe('Index Page', () => {
 
   test('should render task list section', async ({ page }) => {
     await expect(page.locator('.tasks-section')).toBeVisible();
-    await expect(page.locator('.task-list')).toBeVisible();
+    await expect(page.locator('.task-card')).toBeVisible();
   });
 
   test('should render timer section', async ({ page }) => {
-    await expect(page.locator('.timer-section')).toBeVisible();
+    await expect(page.locator('.timer-card')).toBeVisible();
     await expect(page.locator('.timer-controls')).toBeVisible();
   });
 
   test('should render session tabs', async ({ page }) => {
-    await expect(page.locator('.session-tabs')).toBeVisible();
-    await expect(page.locator('button:has-text("Pomodoro")')).toBeVisible();
-    await expect(page.locator('button:has-text("Short Break")')).toBeVisible();
-    await expect(page.locator('button:has-text("Long Break")')).toBeVisible();
+    await expect(page.locator('.mode-tabs')).toBeVisible();
+    await expect(page.locator('.mode-tabs button').filter({ hasText: 'Pomodoro' })).toBeVisible();
+    await expect(page.locator('.mode-tabs button').filter({ hasText: 'Short break' })).toBeVisible();
+    await expect(page.locator('.mode-tabs button').filter({ hasText: 'Long break' })).toBeVisible();
   });
 
   test('should switch to Short Break', async ({ page }) => {
     const pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.switchToShortBreak();
-    const shortBreakButton = page.locator('button:has-text("Short Break")');
+    const shortBreakButton = page.locator('.mode-tabs button').filter({ hasText: 'Short break' });
     await expect(shortBreakButton).toHaveClass(/active/);
   });
 
   test('should switch to Long Break', async ({ page }) => {
     const pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.switchToLongBreak();
-    const longBreakButton = page.locator('button:has-text("Long Break")');
+    const longBreakButton = page.locator('.mode-tabs button').filter({ hasText: 'Long break' });
     await expect(longBreakButton).toHaveClass(/active/);
   });
 
@@ -64,17 +62,16 @@ test.describe('Index Page', () => {
     const pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.switchToShortBreak();
     await pomodoroPage.switchToPomodoro();
-    const pomodoroButton = page.locator('button:has-text("Pomodoro")');
+    const pomodoroButton = page.locator('.mode-tabs button').filter({ hasText: 'Pomodoro' });
     await expect(pomodoroButton).toHaveClass(/active/);
   });
 
-  test('should render summary section', async ({ page }) => {
-    await expect(page.locator('.summary-section')).toBeVisible({ timeout: 30000 });
+  test('should render today summary', async ({ page }) => {
+    await expect(page.locator('.pomo-row')).toBeVisible({ timeout: 30000 });
   });
 
-  test('should render header actions', async ({ page }) => {
-    await expect(page.locator('.header-actions')).toBeVisible();
-    await expect(page.locator('button:has-text("?")')).toBeVisible();
-    await expect(page.locator('button:has-text("⧉")')).toBeVisible();
+  test('should render pip and keyboard help buttons', async ({ page }) => {
+    await expect(page.locator('button[aria-label="Picture in Picture"]')).toBeVisible();
+    await expect(page.locator('button[aria-label="Keyboard shortcuts"]')).toBeVisible();
   });
 });

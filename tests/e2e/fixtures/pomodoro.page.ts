@@ -8,7 +8,6 @@ export class PomodoroPage {
   }
 
   async goto(path: string = '/') {
-    // Set up console error logging before navigation
     const consoleErrors: string[] = [];
     this.page.on('console', msg => {
       if (msg.type() === 'error') {
@@ -20,73 +19,59 @@ export class PomodoroPage {
     await this.page.goto(path);
     await this.page.waitForLoadState('domcontentloaded');
     
-    // Wait for Blazor WebAssembly to fully initialize
-    // This waits for the WASM runtime to download, compile, and render components
     try {
-      // First wait for the blazor script to load
       await this.page.waitForFunction(() => {
-        // Check if Blazor has started by looking for the blazor-loaded marker
-        // or if our app content is rendered
         const appLoaded = document.querySelector('.main-container') !== null ||
-                          document.querySelector('.timer-section') !== null ||
-                          document.querySelector('.tasks-section') !== null ||
+                          document.querySelector('.ring-area') !== null ||
+                          document.querySelector('.task-card') !== null ||
                           document.querySelector('#app > div') !== null;
         return appLoaded;
-      }, { timeout: 30000 }); // 30 second timeout for WASM initialization
+      }, { timeout: 30000 });
       
-      // Additional wait for components to fully render
       await this.page.waitForTimeout(2000);
       
-      // Log all console errors for debugging but don't fail the test
       if (consoleErrors.length > 0) {
         console.log('Console errors detected (ignoring):', consoleErrors.join(', '));
       }
     } catch (error) {
-      // Log error but continue - let individual tests fail with clearer error messages
       console.log('Warning: Blazor initialization may not have completed:', error);
-      
-      // Take a screenshot for debugging
       await this.page.screenshot({ path: 'test-results/blazor-init-failure.png' });
     }
   }
 
   async addTask(taskName: string) {
-    // Wait for and click the "Add Task" button to show the input field
-    // Increased timeout to 30 seconds for Blazor WASM initialization
-    await this.page.locator('.btn-add-task').waitFor({ state: 'visible', timeout: 30000 });
-    await this.page.locator('.btn-add-task').click();
-    await this.page.waitForTimeout(500); // Increased wait after click
+    await this.page.locator('.task-add-btn').waitFor({ state: 'visible', timeout: 30000 });
+    await this.page.locator('.task-add-btn').click();
+    await this.page.waitForTimeout(500);
     
-    // Fill in the task name
     await this.page.locator('.task-input').waitFor({ state: 'visible', timeout: 5000 });
     await this.page.locator('.task-input').fill(taskName);
     await this.page.waitForTimeout(300);
     
-    // Click the add button
     await this.page.locator('.btn-icon-small.btn-add').click();
     await this.page.waitForTimeout(500);
   }
 
   async completeTask(taskName: string) {
-    const taskItem = this.page.locator('.task-item').filter({ hasText: taskName }).first();
-    await taskItem.locator('button:has-text("✓")').click();
+    const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
+    await taskItem.locator('button[aria-label="Complete"]').click();
     await this.page.waitForTimeout(300);
   }
 
   async uncompleteTask(taskName: string) {
-    const taskItem = this.page.locator('.task-item').filter({ hasText: taskName }).first();
-    await taskItem.locator('button:has-text("↩")').click();
+    const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
+    await taskItem.locator('button[aria-label="Undo"]').click();
     await this.page.waitForTimeout(300);
   }
 
   async deleteTask(taskName: string) {
-    const taskItem = this.page.locator('.task-item').filter({ hasText: taskName }).first();
-    await taskItem.locator('button:has-text("🗑")').click();
+    const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
+    await taskItem.locator('button[aria-label="Delete"]').click();
     await this.page.waitForTimeout(500);
   }
 
   async selectTask(taskName: string) {
-    const taskItem = this.page.locator('.task-item').filter({ hasText: taskName }).first();
+    const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
     await taskItem.click();
     await this.page.waitForTimeout(300);
   }
@@ -97,71 +82,68 @@ export class PomodoroPage {
   }
 
   async getTimerType(): Promise<string> {
-    const element = this.page.locator('.timer-type');
+    const element = this.page.locator('.timer-mode-label');
     return await element.textContent() || '';
   }
 
   async getTaskCount(): Promise<number> {
-    const count = await this.page.locator('.task-item').count();
+    const count = await this.page.locator('.task-row').count();
     return count;
   }
 
   async isTimerRunning(): Promise<boolean> {
-    // Check if pause button is visible (timer is running)
-    const pauseButton = this.page.locator('.btn-pause');
+    const pauseButton = this.page.locator('button[aria-label="Pause timer"]');
     return await pauseButton.isVisible();
   }
 
   async isTimerPaused(): Promise<boolean> {
-    // Check if resume button is visible (timer is paused)
-    const resumeButton = this.page.locator('.btn-resume');
+    const resumeButton = this.page.locator('button[aria-label="Resume timer"]');
     return await resumeButton.isVisible();
   }
 
   async isTimerStarted(): Promise<boolean> {
-    // Check if reset button is visible (timer was started)
-    const resetButton = this.page.locator('.btn-reset');
+    const resetButton = this.page.locator('button[aria-label="Reset timer"]');
     return await resetButton.isVisible();
   }
 
   async startTimer() {
-    const startButton = this.page.locator('.btn-start');
+    const startButton = this.page.locator('button[aria-label="Start timer"]');
     await startButton.click();
     await this.page.waitForTimeout(500);
   }
 
   async pauseTimer() {
-    const pauseButton = this.page.locator('.btn-pause');
+    const pauseButton = this.page.locator('button[aria-label="Pause timer"]');
     await pauseButton.click();
     await this.page.waitForTimeout(500);
   }
 
   async resumeTimer() {
-    const resumeButton = this.page.locator('.btn-resume');
+    const resumeButton = this.page.locator('button[aria-label="Resume timer"]');
     await resumeButton.click();
     await this.page.waitForTimeout(500);
   }
 
   async resetTimer() {
-    const resetButton = this.page.locator('.btn-reset');
+    const resetButton = this.page.locator('button[aria-label="Reset timer"]');
     await resetButton.click();
     await this.page.waitForTimeout(500);
   }
 
   async switchToPomodoro() {
-    const pomodoroButton = this.page.locator('button:has-text("Pomodoro")');
+    const pomodoroButton = this.page.locator('.mode-tabs button').filter({ hasText: 'Pomodoro' });
     await pomodoroButton.click();
     await this.page.waitForTimeout(300);
   }
 
   async switchToShortBreak() {
-    const shortBreakButton = this.page.locator('button:has-text("Short Break")');
+    const shortBreakButton = this.page.locator('.mode-tabs button').filter({ hasText: 'Short break' });
     await shortBreakButton.click();
     await this.page.waitForTimeout(300);
   }
 
   async switchToLongBreak() {
-    const longBreakButton = this.page.locator('button:has-text("Long Break")');
+    const longBreakButton = this.page.locator('.mode-tabs button').filter({ hasText: 'Long break' });
     await longBreakButton.click();
     await this.page.waitForTimeout(300);
   }
@@ -171,39 +153,36 @@ export class PomodoroPage {
   }
 
   async saveSettings() {
-    const saveButton = this.page.locator('.btn-save');
-    await saveButton.click();
-    await this.page.waitForTimeout(500);
+    const saveButton = this.page.locator('.sec-btn').filter({ hasText: 'Save' });
+    if (await saveButton.isVisible()) {
+      await saveButton.click();
+      await this.page.waitForTimeout(500);
+    }
   }
 
   async resetToDefaults() {
-    const resetButton = this.page.locator('.btn-reset-defaults');
+    const resetButton = this.page.locator('.sec-btn').filter({ hasText: 'Reset to defaults' });
     await resetButton.click();
     await this.page.waitForTimeout(500);
   }
 
   async setPomodoroMinutes(minutes: number) {
-    const input = this.page.locator('input[type="number"]').filter({ hasText: '' }).first();
+    const input = this.page.locator('.step-input').first();
     await input.fill(minutes.toString());
+    await input.dispatchEvent('change');
     await this.page.waitForTimeout(200);
   }
 
   async toggleSound() {
-    const toggle = this.page.locator('label[for="soundToggle"]');
-    await toggle.click();
+    const soundToggle = this.page.locator('.sr-lbl').filter({ hasText: 'Sound on completion' }).locator('..').locator('.tog');
+    await soundToggle.click();
     await this.page.waitForTimeout(200);
   }
 
   async toggleNotifications() {
-    const toggle = this.page.locator('label[for="notifToggle"]');
-    await toggle.click();
+    const notifToggle = this.page.locator('.sr-lbl').filter({ hasText: 'Browser notifications' }).locator('..').locator('.tog');
+    await notifToggle.click();
     await this.page.waitForTimeout(200);
-  }
-
-  async exportData() {
-    const exportButton = this.page.locator('.btn-export');
-    await exportButton.click();
-    await this.page.waitForTimeout(1000);
   }
 
   async openHistory() {
@@ -235,7 +214,7 @@ export class PomodoroPage {
   }
 
   async openKeyboardHelp() {
-    const helpButton = this.page.locator('button:has-text("?")');
+    const helpButton = this.page.locator('button[aria-label="Keyboard shortcuts"]');
     await helpButton.click();
     await this.page.waitForTimeout(300);
   }
@@ -249,7 +228,7 @@ export class PomodoroPage {
   }
 
   async togglePipTimer() {
-    const pipButton = this.page.locator('button:has-text("⧉")');
+    const pipButton = this.page.locator('button[aria-label="Picture in Picture"]');
     await pipButton.click();
     await this.page.waitForTimeout(500);
   }

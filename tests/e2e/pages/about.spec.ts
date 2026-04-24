@@ -12,51 +12,43 @@ test.describe('About Page', () => {
   test.describe.configure({ timeout: 60000 });
 
   test('should load about page', async ({ page }) => {
-    await expect(page.locator('.about-page')).toBeVisible();
+    await expect(page.locator('.about-body')).toBeVisible();
   });
 
-  test('should display about header', async ({ page }) => {
-    await expect(page.locator('.about-header h1')).toBeVisible();
-    await expect(page.locator('.about-header h1')).toContainText('Pomodoro Technique');
-    await expect(page.locator('.about-header .subtitle')).toBeVisible();
+  test('should display about hero section', async ({ page }) => {
+    await expect(page.locator('.about-hero')).toBeVisible();
+    await expect(page.locator('.about-hero-title')).toContainText('Pomodoro');
+    await expect(page.locator('.about-hero-sub')).toBeVisible();
   });
 
   test('should display what is it section', async ({ page }) => {
-    await expect(page.locator('h2').filter({ hasText: 'What is Pomodoro' })).toBeVisible();
+    await expect(page.locator('.collapse-toggle').filter({ hasText: 'What is Pomodoro' })).toBeVisible();
   });
 
   test('should display how it works section with 5 steps', async ({ page }) => {
-    await expect(page.locator('h2').filter({ hasText: 'How It Works' })).toBeVisible();
+    const toggle = page.locator('.collapse-toggle').filter({ hasText: 'How It Works' });
+    await toggle.click();
     await expect(page.locator('.step-card')).toHaveCount(5);
   });
 
   test('should display benefits section with 6 cards', async ({ page }) => {
-    await expect(page.locator('h2').filter({ hasText: 'Benefits' })).toBeVisible();
+    const toggle = page.locator('.collapse-toggle').filter({ hasText: 'Benefits' });
+    await toggle.click();
     await expect(page.locator('.benefit-card')).toHaveCount(6);
   });
 
   test('should display tips section', async ({ page }) => {
-    await expect(page.locator('h2').filter({ hasText: 'Tips' })).toBeVisible();
+    const toggle = page.locator('.collapse-toggle').filter({ hasText: 'Tips' });
+    await toggle.click();
     await expect(page.locator('.tips-list li')).toHaveCount(6);
   });
 
   test('should display default timer settings', async ({ page }) => {
-    await expect(page.locator('h2').filter({ hasText: 'Default Timer' })).toBeVisible();
+    const toggle = page.locator('.collapse-toggle').filter({ hasText: 'Default Timer' });
+    await toggle.click();
     await expect(page.locator('.time-card')).toHaveCount(3);
     await expect(page.locator('.time-card.pomodoro .time-value')).toContainText('25');
     await expect(page.locator('.time-card.short-break .time-value')).toContainText('5');
     await expect(page.locator('.time-card.long-break .time-value')).toContainText('15');
-  });
-
-  test('should display call to action with link to home', async ({ page }) => {
-    await expect(page.locator('.cta-section')).toBeVisible();
-    await expect(page.locator('.cta-button')).toBeVisible();
-    await expect(page.locator('.cta-button')).toHaveAttribute('href', '/');
-  });
-
-  test('should navigate to home from CTA button', async ({ page }) => {
-    await page.locator('.cta-button').click();
-    await page.waitForLoadState('domcontentloaded');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
   });
 });
