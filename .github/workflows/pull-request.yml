@@ -26,7 +26,26 @@ jobs:
       - run: dotnet restore Pomodoro.sln
       - run: dotnet format Pomodoro.sln --verify-no-changes
       - run: dotnet build Pomodoro.sln --configuration Release --no-restore
-      - run: dotnet test Pomodoro.sln --configuration Release --no-restore --verbosity normal
+      - run: dotnet test Pomodoro.sln --configuration Release --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+      - name: Generate coverage report
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          reportgenerator -reports:"./coverage/**/coverage.cobertura.xml" -targetdir:"./coverage/report" -reporttypes:"Html;Cobertura"
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./coverage/report/
+          retention-days: 30
+
+      - name: Publish coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/**/coverage.cobertura.xml
+          fail_on_error: false
 
   e2e-smoke:
     name: E2E Smoke Tests
