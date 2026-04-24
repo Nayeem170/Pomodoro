@@ -105,6 +105,6 @@ public class WeeklyViewTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Components.History.WeeklyView>();
 
         Assert.Contains("Sessions per day", cut.Markup);
-        Assert.Contains("Recent activity", cut.Markup);
+        Assert.Contains("Time distribution", cut.Markup);
     }
 }

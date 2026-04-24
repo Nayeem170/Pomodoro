@@ -1,4 +1,5 @@
 using Microsoft.JSInterop;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Pomodoro.Web.Models;
@@ -32,6 +33,8 @@ public partial class TimerServiceTests
 
     protected TimerService CreateService()
     {
+        var services = new ServiceCollection();
+        var serviceProvider = services.BuildServiceProvider();
         var dailyStatsService = new DailyStatsService(MockIndexedDb.Object, AppState, new Mock<ILogger<DailyStatsService>>().Object);
         var jsTimerInterop = new JsTimerInterop(MockJsRuntime.Object, new Mock<ILogger<JsTimerInterop>>().Object);
         return new TimerService(
@@ -40,7 +43,8 @@ public partial class TimerServiceTests
             dailyStatsService,
             jsTimerInterop,
             AppState,
-            MockLogger.Object
+            MockLogger.Object,
+            serviceProvider
         );
     }
 

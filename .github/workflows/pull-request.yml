@@ -2,9 +2,11 @@ name: Pull Request
 on:
   pull_request:
     branches: [main, develop]
+  push:
+    branches: [develop]
 
 concurrency:
-  group: pr-${{ github.event.pull_request.number }}
+  group: pr-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 jobs:

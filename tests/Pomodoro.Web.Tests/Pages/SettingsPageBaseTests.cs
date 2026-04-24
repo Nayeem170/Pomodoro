@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Moq;
 using Xunit;
+using Pomodoro.Web.Components.Settings;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Pages;
 using Pomodoro.Web.Services;
@@ -54,11 +55,14 @@ namespace Pomodoro.Web.Tests.Pages
             Services.AddSingleton(_mockJSRuntime.Object);
             Services.AddSingleton(_mockJSInteropService.Object);
             Services.AddSingleton(_mockNavigationManager.Object);
+            Services.AddSingleton<NavigationManager, TestNavigationManager>();
             Services.AddSingleton(_mockLogger.Object);
             Services.AddSingleton(_mockPresenterLogger.Object);
 
             // Register SettingsPresenterService
             Services.AddSingleton(new SettingsPresenterService(_mockPresenterLogger.Object));
+            Services.AddSingleton(Mock.Of<ICloudSyncService>());
+            Services.AddSingleton(new Mock<ILogger<CloudSyncSettings>>().Object);
         }
 
         [Fact]
@@ -399,5 +403,15 @@ namespace Pomodoro.Web.Tests.Pages
         public void TestConfirmClearData() => ConfirmClearData();
         public Task TestClearData() => ClearData();
         public Task TestDownloadFileAsync(string filename, string content, string mimeType) => SettingsPresenterService.DownloadFileAsync(JSInteropService, filename, content, mimeType);
+    }
+
+    internal class TestNavigationManager : NavigationManager
+    {
+        public TestNavigationManager()
+        {
+            Initialize("http://localhost/", "http://localhost/");
+        }
+
+        protected override void NavigateToCore(string uri, bool forceLoad) { }
     }
 }

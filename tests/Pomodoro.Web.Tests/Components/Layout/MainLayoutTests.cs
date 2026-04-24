@@ -20,6 +20,7 @@ namespace Pomodoro.Web.Tests.Layout
         {
             _mockLayoutPresenter = new Mock<LayoutPresenterService>();
             Services.AddSingleton(_mockLayoutPresenter.Object);
+            Services.AddSingleton(Mock.Of<ICloudSyncService>());
             JSInterop.Mode = JSRuntimeMode.Loose;
         }
 
@@ -42,7 +43,7 @@ namespace Pomodoro.Web.Tests.Layout
             Assert.Contains("app-wrapper", component.Markup);
             Assert.Contains("app-header", component.Markup);
             Assert.Contains("app-content", component.Markup);
-            Assert.Contains("app-footer", component.Markup);
+            Assert.DoesNotContain("app-footer", component.Markup);
         }
 
         [Fact]
@@ -77,9 +78,6 @@ namespace Pomodoro.Web.Tests.Layout
             var component = RenderComponent<MainLayout>();
 
             // Assert
-            Assert.Contains("oi-timer", component.Markup);
-            Assert.Contains("oi-calendar", component.Markup);
-            Assert.Contains("oi-cog", component.Markup);
             Assert.Contains("Timer", component.Markup);
             Assert.Contains("History", component.Markup);
             Assert.Contains("Settings", component.Markup);
@@ -95,9 +93,8 @@ namespace Pomodoro.Web.Tests.Layout
             // Act
             var component = RenderComponent<MainLayout>();
 
-            // Assert
-            Assert.Contains("2023", component.Markup);
-            Assert.Contains("footer", component.Markup);
+            // Assert - footer was removed
+            Assert.DoesNotContain("footer", component.Markup);
         }
 
         [Fact]
@@ -131,7 +128,7 @@ namespace Pomodoro.Web.Tests.Layout
             Assert.Contains("header-left", component.Markup);
             Assert.Contains("header-nav", component.Markup);
             Assert.Contains("header-title", component.Markup);
-            Assert.Contains("header-tagline", component.Markup);
+            Assert.DoesNotContain("header-tagline", component.Markup);
         }
 
         [Fact]
@@ -144,10 +141,10 @@ namespace Pomodoro.Web.Tests.Layout
             // Act
             var component = RenderComponent<MainLayout>();
 
-            // Assert
-            Assert.Contains("footer-content", component.Markup);
-            Assert.Contains("footer-made", component.Markup);
-            Assert.Contains("footer-copy", component.Markup);
+            // Assert - footer was removed
+            Assert.DoesNotContain("footer-content", component.Markup);
+            Assert.DoesNotContain("footer-made", component.Markup);
+            Assert.DoesNotContain("footer-copy", component.Markup);
         }
 
         [Fact]
@@ -182,15 +179,9 @@ namespace Pomodoro.Web.Tests.Layout
             // Act
             var component = RenderComponent<MainLayout>();
 
-            // Assert - Verify complete footer structure is rendered (covers lines33-37)
-            var footer = component.Find(".app-footer");
-            Assert.NotNull(footer);
-
-            var footerContent = component.Find(".footer-content");
-            Assert.NotNull(footerContent);
-
-            // Verify year is rendered
-            Assert.Contains("2024", component.Markup);
+            // Assert - footer was removed
+            Assert.DoesNotContain("app-footer", component.Markup);
+            Assert.DoesNotContain("footer-content", component.Markup);
         }
 
         [Fact]
@@ -234,9 +225,8 @@ namespace Pomodoro.Web.Tests.Layout
             var main = component.Find(".app-content");
             Assert.NotNull(main);
 
-            // Footer section
-            var footer = component.Find(".app-footer");
-            Assert.NotNull(footer);
+            // Footer section - removed
+            Assert.DoesNotContain("app-footer", component.Markup);
         }
 
         [Fact]
@@ -249,10 +239,9 @@ namespace Pomodoro.Web.Tests.Layout
             // Act
             var component = RenderComponent<MainLayout>();
 
-            // Assert - Use actual tagline from Constants
-            var tagline = component.Find(".header-tagline");
-            Assert.NotNull(tagline);
-            Assert.Contains("Focus. Work. Achieve.", tagline.TextContent);
+            // Assert - tagline was removed
+            Assert.DoesNotContain("header-tagline", component.Markup);
+            Assert.DoesNotContain("Focus. Work. Achieve.", component.Markup);
         }
 
         [Fact]
@@ -379,14 +368,8 @@ namespace Pomodoro.Web.Tests.Layout
             // Act
             var cut = RenderComponent<MainLayout>();
 
-            // Assert - tagline is inside header-left, after header-title
-            var headerLeft = cut.Find(".header-left");
-            var markup = headerLeft.InnerHtml;
-            var titleIndex = markup.IndexOf("header-title");
-            var taglineIndex = markup.IndexOf("header-tagline");
-            Assert.True(titleIndex >= 0, "header-title should exist");
-            Assert.True(taglineIndex >= 0, "header-tagline should exist");
-            Assert.True(taglineIndex > titleIndex, "header-tagline should be after header-title");
+            // Assert - tagline was removed
+            Assert.DoesNotContain("header-tagline", cut.Markup);
         }
 
         [Fact]

@@ -113,6 +113,7 @@ public abstract class TestHelper : TestContext
         Services.AddSingleton(IndexPagePresenterService);
         Services.AddSingleton(HistoryPagePresenterService);
         Services.AddSingleton(SettingsPresenterService);
+        Services.AddSingleton(Mock.Of<ICloudSyncService>());
 
         // Register LocalDateTimeService
         var mockLocalDateTimeService = new Mock<ILocalDateTimeService>();

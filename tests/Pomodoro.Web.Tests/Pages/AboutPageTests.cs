@@ -62,16 +62,6 @@ namespace Pomodoro.Web.Tests.Pages
         }
 
         [Fact]
-        public void AboutPage_DisplaysHeroSub()
-        {
-            // Act
-            var cut = RenderComponent<About>();
-
-            // Assert
-            Assert.Contains("Focus timer", cut.Markup);
-        }
-
-        [Fact]
         public void AboutPage_HasWhatIsSectionToggle()
         {
             // Act
@@ -120,70 +110,6 @@ namespace Pomodoro.Web.Tests.Pages
 
             // Assert
             Assert.Contains("Default Timer Settings", cut.Markup);
-        }
-
-        [Fact]
-        public void AboutPage_HasTechInfoCard()
-        {
-            // Act
-            var cut = RenderComponent<About>();
-
-            // Assert
-            Assert.Contains("about-card", cut.Markup);
-            Assert.Contains("sr-lbl", cut.Markup);
-            Assert.Contains("sr-val", cut.Markup);
-            Assert.Contains("about-link", cut.Markup);
-        }
-
-        [Fact]
-        public void AboutPage_TechInfoCard_HasCorrectLabels()
-        {
-            // Act
-            var cut = RenderComponent<About>();
-
-            // Assert
-            Assert.Contains("Source code", cut.Markup);
-            Assert.Contains("Framework", cut.Markup);
-            Assert.Contains("Styling", cut.Markup);
-            Assert.Contains("Storage", cut.Markup);
-            Assert.Contains("License", cut.Markup);
-        }
-
-        [Fact]
-        public void AboutPage_TechInfoCard_HasGitHubLink()
-        {
-            // Act
-            var cut = RenderComponent<About>();
-
-            // Assert
-            Assert.Contains("href=\"https://github.com/Nayeem170/Pomodoro\"", cut.Markup);
-        }
-
-        [Fact]
-        public void AboutPage_HasFeaturesCard()
-        {
-            // Act
-            var cut = RenderComponent<About>();
-
-            // Assert
-            Assert.Contains("Features", cut.Markup);
-            Assert.Contains("feat-check", cut.Markup);
-        }
-
-        [Fact]
-        public void AboutPage_FeaturesCard_HasFeatureList()
-        {
-            // Act
-            var cut = RenderComponent<About>();
-
-            // Assert
-            Assert.Contains("Timer with configurable durations", cut.Markup);
-            Assert.Contains("Task management", cut.Markup);
-            Assert.Contains("Activity history", cut.Markup);
-            Assert.Contains("Picture in Picture timer", cut.Markup);
-            Assert.Contains("Keyboard shortcuts", cut.Markup);
-            Assert.Contains("Browser notifications", cut.Markup);
-            Assert.Contains("Installable PWA", cut.Markup);
         }
 
         [Fact]

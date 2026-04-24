@@ -425,7 +425,7 @@ public class IndexPageExpandedTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         // Act - Click the Pomodoro session tab button
-        cut.Find(".session-tabs button:first-child").Click();
+        cut.Find(".mode-tabs button:first-child").Click();
 
         // Assert
         cut.Should().NotBeNull();

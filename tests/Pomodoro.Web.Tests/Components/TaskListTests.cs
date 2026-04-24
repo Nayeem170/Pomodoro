@@ -31,8 +31,8 @@ public class TaskListTests : TestContext
             .Add(p => p.CurrentTaskId, null));
 
         // Assert
-        Assert.Contains("btn-add-task", cut.Markup);
-        Assert.Contains("+ Add Task", cut.Markup);
+        Assert.Contains("task-add-btn", cut.Markup);
+        Assert.Contains("+ Add", cut.Markup);
     }
 
     [Fact]
@@ -118,7 +118,7 @@ public class TaskListTests : TestContext
             .Add(p => p.CurrentTaskId, null));
 
         // Act
-        cut.Find("button.btn-add-task").Click();
+        cut.Find("button.task-add-btn").Click();
 
         // Assert
         Assert.Contains("add-task-form", cut.Markup);
@@ -136,7 +136,7 @@ public class TaskListTests : TestContext
             .Add(p => p.CurrentTaskId, null));
 
         // Act
-        cut.Find("button.btn-add-task").Click();
+        cut.Find("button.task-add-btn").Click();
 
         // Assert
         var input = cut.Find("input.task-input");
@@ -150,7 +150,7 @@ public class TaskListTests : TestContext
         var cut = RenderComponent<TaskList>(parameters => parameters
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null));
-        cut.Find("button.btn-add-task").Click();
+        cut.Find("button.task-add-btn").Click();
 
         // Act
         var addButton = cut.Find("button.btn-add");
@@ -166,14 +166,14 @@ public class TaskListTests : TestContext
         var cut = RenderComponent<TaskList>(parameters => parameters
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null));
-        cut.Find("button.btn-add-task").Click();
+        cut.Find("button.task-add-btn").Click();
 
         // Act
         cut.Find("button.btn-cancel").Click();
 
         // Assert
         Assert.DoesNotContain("add-task-form", cut.Markup);
-        Assert.Contains("btn-add-task", cut.Markup);
+        Assert.Contains("task-add-btn", cut.Markup);
     }
 
     #endregion
@@ -191,7 +191,7 @@ public class TaskListTests : TestContext
             .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<string>(this, name => addedTaskName = name)));
 
         // Act - Show form and enter task name
-        cut.Find("button.btn-add-task").Click();
+        cut.Find("button.task-add-btn").Click();
         var input = cut.Find("input.task-input");
         input.Input("New Task");
         cut.Find("button.btn-add").Click();
@@ -211,7 +211,7 @@ public class TaskListTests : TestContext
             .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<string>(this, name => addedTaskName = name)));
 
         // Act
-        cut.Find("button.btn-add-task").Click();
+        cut.Find("button.task-add-btn").Click();
         var input = cut.Find("input.task-input");
         input.Input("  New Task  ");
         cut.Find("button.btn-add").Click();
@@ -231,7 +231,7 @@ public class TaskListTests : TestContext
             .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<string>(this, _ => callbackInvoked = true)));
 
         // Act
-        cut.Find("button.btn-add-task").Click();
+        cut.Find("button.task-add-btn").Click();
         // Input is empty, add button is disabled
         var addButton = cut.Find("button.btn-add");
         // Can't click disabled button, but let's verify it's disabled
@@ -252,7 +252,7 @@ public class TaskListTests : TestContext
             .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<string>(this, name => addedTaskName = name)));
 
         // Act
-        cut.Find("button.btn-add-task").Click();
+        cut.Find("button.task-add-btn").Click();
         var input = cut.Find("input.task-input");
         input.Input("New Task");
         input.KeyDown("Enter");
@@ -268,7 +268,7 @@ public class TaskListTests : TestContext
         var cut = RenderComponent<TaskList>(parameters => parameters
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null));
-        cut.Find("button.btn-add-task").Click();
+        cut.Find("button.task-add-btn").Click();
 
         // Act
         var input = cut.Find("input.task-input");
@@ -276,7 +276,7 @@ public class TaskListTests : TestContext
 
         // Assert
         Assert.DoesNotContain("add-task-form", cut.Markup);
-        Assert.Contains("btn-add-task", cut.Markup);
+        Assert.Contains("task-add-btn", cut.Markup);
     }
 
     #endregion
@@ -381,7 +381,7 @@ public class TaskListTests : TestContext
             .Add(p => p.CurrentTaskId, null)
             .Add(p => p.OnTaskComplete, EventCallback.Factory.Create<Guid>(this, id => completedTaskId = id)));
 
-        cut.Find("button[title=\"Complete\"]").Click();
+        cut.Find("button[aria-label=\"Complete\"]").Click();
 
         Assert.Equal(taskId, completedTaskId);
     }
@@ -401,7 +401,7 @@ public class TaskListTests : TestContext
             .Add(p => p.CurrentTaskId, null)
             .Add(p => p.OnTaskDelete, EventCallback.Factory.Create<Guid>(this, id => deletedTaskId = id)));
 
-        cut.Find("button[title=\"Delete\"]").Click();
+        cut.Find("button[aria-label=\"Delete\"]").Click();
 
         Assert.Equal(taskId, deletedTaskId);
     }
@@ -421,7 +421,7 @@ public class TaskListTests : TestContext
             .Add(p => p.CurrentTaskId, null)
             .Add(p => p.OnTaskUncomplete, EventCallback.Factory.Create<Guid>(this, id => uncompletedTaskId = id)));
 
-        cut.Find("button[title=\"Undo\"]").Click();
+        cut.Find("button[aria-label=\"Undo\"]").Click();
 
         Assert.Equal(taskId, uncompletedTaskId);
     }
@@ -439,7 +439,7 @@ public class TaskListTests : TestContext
             .Add(p => p.CurrentTaskId, null));
 
         // Assert
-        Assert.Contains("TASKS", cut.Markup);
+        Assert.Contains("Tasks", cut.Markup);
     }
 
     #endregion

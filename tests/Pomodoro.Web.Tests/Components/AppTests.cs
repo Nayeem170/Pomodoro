@@ -47,6 +47,7 @@ namespace Pomodoro.Web.Tests
             Services.AddSingleton<IJSInteropService>(new Mock<IJSInteropService>().Object);
             Services.AddSingleton<IInfiniteScrollInterop>(new Mock<IInfiniteScrollInterop>().Object);
             Services.AddSingleton<ITimerEventPublisher>(new Mock<ITimerEventPublisher>().Object);
+            Services.AddSingleton(Mock.Of<ICloudSyncService>());
 
             // Register concrete services (not mocked as they have no interface)
             Services.AddSingleton<LayoutPresenterService>();
