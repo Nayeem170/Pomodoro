@@ -13,6 +13,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     private readonly ITaskRepository _taskRepository;
     private readonly IIndexedDbService _indexedDb;
     private readonly AppState _appState;
+    private readonly IServiceProvider _serviceProvider;
 
     public event Action? OnChange;
 
@@ -21,11 +22,12 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     public Guid? CurrentTaskId => _appState.CurrentTaskId;
     public TaskItem? CurrentTask => _appState.CurrentTask;
 
-    public TaskService(ITaskRepository taskRepository, IIndexedDbService indexedDb, AppState appState)
+    public TaskService(ITaskRepository taskRepository, IIndexedDbService indexedDb, AppState appState, IServiceProvider serviceProvider)
     {
         _taskRepository = taskRepository;
         _indexedDb = indexedDb;
         _appState = appState;
+        _serviceProvider = serviceProvider;
     }
 
     public async Task InitializeAsync()
@@ -102,6 +104,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         _appState.CurrentTaskId = task.Id;
         await SaveCurrentTaskIdAsync();
         NotifyStateChanged();
+        MarkDirty();
     }
 
     public async Task UpdateTaskAsync(TaskItem task)
@@ -135,6 +138,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         // Update in-memory state only after successful persistence
         _appState.UpdateTask(task.Id, t => t.Name = sanitized);
         NotifyStateChanged();
+        MarkDirty();
     }
 
     public async Task DeleteTaskAsync(Guid taskId)
@@ -172,6 +176,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         }
 
         NotifyStateChanged();
+        MarkDirty();
     }
 
     public async Task CompleteTaskAsync(Guid taskId)
@@ -197,6 +202,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         // Update in-memory state only after successful persistence
         _appState.UpdateTask(taskId, t => t.IsCompleted = true);
         NotifyStateChanged();
+        MarkDirty();
     }
 
     public async Task UncompleteTaskAsync(Guid taskId)
@@ -222,6 +228,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         // Update in-memory state only after successful persistence
         _appState.UpdateTask(taskId, t => t.IsCompleted = false);
         NotifyStateChanged();
+        MarkDirty();
     }
 
     public async Task SelectTaskAsync(Guid taskId)
@@ -315,6 +322,14 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     private void NotifyStateChanged()
     {
         OnChange?.Invoke();
+    }
+
+    private ICloudSyncService? _cloudSyncService;
+
+    private void MarkDirty()
+    {
+        _cloudSyncService ??= _serviceProvider.GetService<ICloudSyncService>();
+        _cloudSyncService?.ScheduleSyncAsync();
     }
 
     /// <summary>

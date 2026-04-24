@@ -87,7 +87,7 @@ public static partial class Constants
 
         public const string CloudSyncPush = "CloudSync Push";
         public const string CloudSyncPull = "CloudSync Pull";
-        public const string CloudSyncAutoSync = "CloudSync AutoSyncOnStart";
+        public const string CloudSyncAutoSync = "CloudSync BackgroundSync";
         public const string CloudSyncPeriodic = "CloudSync PeriodicSync";
 
         /// <summary>Log message format for errors in operations</summary>

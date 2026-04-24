@@ -278,6 +278,8 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         await _indexedDb.InitializeJsConstantsAsync(settings.PomodoroMinutes, settings.ShortBreakMinutes, settings.LongBreakMinutes);
 
         NotifyStateChanged();
+        _cloudSyncService ??= _serviceProvider.GetService<ICloudSyncService>();
+        _cloudSyncService?.ScheduleSyncAsync();
     }
 
     public async Task SaveSettingsAsync()
@@ -333,7 +335,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         NotifyStateChanged();
 
         _cloudSyncService ??= _serviceProvider.GetService<ICloudSyncService>();
-        _cloudSyncService?.MarkDirtyAsync();
+        _cloudSyncService?.ScheduleSyncAsync();
 
         // Note: Auto-start is handled by ConsentService which shows a consent modal
         // When auto-start is enabled, the modal appears with a countdown
