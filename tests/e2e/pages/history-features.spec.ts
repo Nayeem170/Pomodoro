@@ -12,9 +12,9 @@ test.describe('History Features', () => {
 
   test('should show empty state when no activities exist for selected date', async ({ page }) => {
     await pomodoroPage.openHistory();
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
 
-    const prevDayBtn = page.locator('button.nav-btn[title="Previous day"]');
+    const prevDayBtn = page.locator('button.nav-arr[title="Previous day"]');
     await prevDayBtn.click();
     await page.waitForTimeout(500);
     await prevDayBtn.click();
@@ -24,7 +24,7 @@ test.describe('History Features', () => {
 
     const emptyState = page.locator('.empty-state');
     const isTimelineEmpty = await emptyState.isVisible().catch(() => false);
-    const hasNoActivities = await page.locator('.timeline-section .activity-item').count() === 0;
+    const hasNoActivities = await page.locator('.tl-row').count() === 0;
 
     if (isTimelineEmpty) {
       await expect(page.locator('.empty-state p')).toContainText('No activities for this day');
@@ -35,39 +35,39 @@ test.describe('History Features', () => {
 
   test('should disable Today button when already on today', async ({ page }) => {
     await pomodoroPage.openHistory();
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
 
-    const todayBtn = page.locator('button.today-btn');
+    const todayBtn = page.locator('button.nav-qbtn');
     await expect(todayBtn).toBeVisible();
 
-    const isDisabled = await todayBtn.isDisabled();
-    expect(isDisabled).toBe(true);
+    const isActive = await todayBtn.evaluate(el => el.classList.contains('active'));
+    expect(isActive).toBe(true);
   });
 
   test('should enable Today button after navigating away from today', async ({ page }) => {
     await pomodoroPage.openHistory();
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
 
-    const prevDayBtn = page.locator('button.nav-btn[title="Previous day"]');
+    const prevDayBtn = page.locator('button.nav-arr[title="Previous day"]');
     await prevDayBtn.click();
     await page.waitForTimeout(500);
 
-    const todayBtn = page.locator('button.today-btn');
-    const isDisabled = await todayBtn.isDisabled();
-    expect(isDisabled).toBe(false);
+    const todayBtn = page.locator('button.nav-qbtn');
+    const isActive = await todayBtn.evaluate(el => el.classList.contains('active'));
+    expect(isActive).toBe(false);
 
     await todayBtn.click();
     await page.waitForTimeout(500);
 
-    const isDisabledAgain = await todayBtn.isDisabled();
-    expect(isDisabledAgain).toBe(true);
+    const isActiveAgain = await todayBtn.evaluate(el => el.classList.contains('active'));
+    expect(isActiveAgain).toBe(true);
   });
 
   test('should disable next day button when on today', async ({ page }) => {
     await pomodoroPage.openHistory();
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
 
-    const nextDayBtn = page.locator('button.nav-btn[title="Next day"]');
+    const nextDayBtn = page.locator('button.nav-arr[title="Next day"]');
     const isDisabled = await nextDayBtn.isDisabled();
     expect(isDisabled).toBe(true);
   });

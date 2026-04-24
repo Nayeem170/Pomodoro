@@ -3,29 +3,25 @@ import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskName: string) {
   await pomodoroPage.goto('/settings');
-  await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+  await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-  const pomodoroInput = page.locator('input[type="number"]').first();
+  const pomodoroInput = page.locator('.step-input').first();
+  await pomodoroInput.click({ clickCount: 3 });
   await pomodoroInput.fill('1');
-  await pomodoroInput.dispatchEvent('change');
   await page.waitForTimeout(300);
 
-  const shortBreakInput = page.locator('input[type="number"]').nth(1);
+  const shortBreakInput = page.locator('.step-input').nth(1);
+  await shortBreakInput.click({ clickCount: 3 });
   await shortBreakInput.fill('1');
-  await shortBreakInput.dispatchEvent('change');
-  await page.waitForTimeout(500);
-
-  await page.locator('.btn-save').click();
-  await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
   await page.waitForTimeout(500);
 
   await pomodoroPage.goto('/');
-  await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+  await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
   await pomodoroPage.addTask(taskName);
   await pomodoroPage.selectTask(taskName);
   await pomodoroPage.startTimer();
-  await expect(page.locator('.btn-pause')).toBeVisible();
+  await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
   await page.waitForTimeout(500);
 
   await page.evaluate(async () => {
@@ -61,23 +57,22 @@ test.describe('Activity Item Rendering', () => {
     await completePomodoroFast(page, pomodoroPage, 'Render Test Task');
 
     await pomodoroPage.goto('/history');
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
 
-    const activityItem = page.locator('.activity-item').first();
+    const activityItem = page.locator('.tl-row').first();
     await expect(activityItem).toBeVisible({ timeout: 5000 });
 
-    await expect(activityItem.locator('.activity-icon')).toBeVisible();
-    await expect(activityItem.locator('.activity-icon')).toContainText('🍅');
+    await expect(activityItem.locator('.tl-dot')).toBeVisible();
 
-    await expect(activityItem.locator('.activity-time')).toBeVisible();
-    const timeText = await activityItem.locator('.activity-time').textContent();
+    await expect(activityItem.locator('.tl-time')).toBeVisible();
+    const timeText = await activityItem.locator('.tl-time').textContent();
     expect(timeText).toMatch(/\d{1,2}:\d{2}\s*[AP]M/);
 
-    await expect(activityItem.locator('.activity-name')).toBeVisible();
-    await expect(activityItem.locator('.activity-name')).toContainText('Render Test Task');
+    await expect(activityItem.locator('.tl-badge')).toBeVisible();
+    await expect(activityItem.locator('.tl-badge')).toContainText('Pomodoro');
 
-    await expect(activityItem.locator('.activity-duration')).toBeVisible();
-    await expect(activityItem.locator('.activity-duration')).toContainText('min');
+    await expect(activityItem.locator('.tl-task')).toBeVisible();
+    await expect(activityItem.locator('.tl-task')).toContainText('Render Test Task');
   });
 
   test('should render break activity with correct icon and name', async ({ page }) => {
@@ -88,11 +83,11 @@ test.describe('Activity Item Rendering', () => {
       await consentOption.click();
       await page.waitForTimeout(1000);
 
-      const startBtn = page.locator('.btn-start');
+      const startBtn = page.locator('button[aria-label="Start timer"]');
       if (await startBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
         await pomodoroPage.startTimer();
       }
-      await expect(page.locator('.btn-pause')).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
       await page.waitForTimeout(500);
 
       await page.evaluate(async () => {
@@ -116,12 +111,12 @@ test.describe('Activity Item Rendering', () => {
     }
 
     await pomodoroPage.goto('/history');
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
 
-    const breakActivity = page.locator('.activity-item').filter({ hasText: /Short break/i }).first();
+    const breakActivity = page.locator('.tl-row').filter({ hasText: /Short break/i }).first();
     if (await breakActivity.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await expect(breakActivity.locator('.activity-icon').first()).toContainText('☕');
-      await expect(breakActivity.locator('.activity-name').first()).toContainText('Short break');
+      await expect(breakActivity.locator('.tl-dot').first()).toHaveClass(/brk/);
+      await expect(breakActivity.locator('.tl-badge').first()).toContainText('Short break');
     }
   });
 });

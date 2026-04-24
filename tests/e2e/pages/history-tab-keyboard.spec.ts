@@ -9,7 +9,7 @@ test.describe('History Tab Keyboard Navigation', () => {
   test.beforeEach(async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/history');
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
   });
 
   test('should switch to weekly tab with arrow key', async ({ page }) => {

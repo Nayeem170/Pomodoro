@@ -12,7 +12,7 @@ test.describe('Infinite Scroll', () => {
 
   test('should display scroll sentinel element', async ({ page }) => {
     await pomodoroPage.openHistory();
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
 
     const sentinel = page.locator('#scroll-sentinel');
     const hasSentinel = await sentinel.count().catch(() => 0);
@@ -23,9 +23,9 @@ test.describe('Infinite Scroll', () => {
 
   test('should show end-of-list when all activities are loaded', async ({ page }) => {
     await pomodoroPage.openHistory();
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
 
-    const prevDayBtn = page.locator('button.nav-btn[title="Previous day"]');
+    const prevDayBtn = page.locator('button.nav-arr[title="Previous day"]');
     await prevDayBtn.click();
     await page.waitForTimeout(500);
     await prevDayBtn.click();
@@ -35,7 +35,7 @@ test.describe('Infinite Scroll', () => {
 
     const endOfList = page.locator('.end-of-list');
     const isEmpty = await page.locator('.empty-state').isVisible().catch(() => false);
-    const hasNoActivities = await page.locator('.timeline-section .activity-item').count() === 0;
+    const hasNoActivities = await page.locator('.tl-row').count() === 0;
 
     if (isEmpty) {
       await expect(page.locator('.empty-state p')).toContainText('No activities for this day');
@@ -49,7 +49,7 @@ test.describe('Infinite Scroll', () => {
 
   test('should not show loading indicator when idle', async ({ page }) => {
     await pomodoroPage.openHistory();
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
 
     const loadingIndicator = page.locator('.loading-indicator');
     await expect(loadingIndicator).not.toBeVisible();
