@@ -9,42 +9,39 @@ test.describe('Today Summary', () => {
     await pomodoroPage.goto('/');
   });
 
-  test.describe.configure({ timeout: 60000 });
-
   test('should display today summary section', async ({ page }) => {
-    await expect(page.locator('.today-summary')).toBeVisible();
+    await expect(page.locator('.pomo-row')).toBeVisible({ timeout: 30000 });
   });
 
-  test('should display summary heading', async ({ page }) => {
-    await expect(page.locator('.today-summary h3')).toContainText("TODAY'S SUMMARY");
+  test('should display pomodoro emoji', async ({ page }) => {
+    await expect(page.locator('.pomo-emoji')).toBeVisible({ timeout: 30000 });
   });
 
-  test('should display focused time stat', async ({ page }) => {
-    await expect(page.locator('.today-summary .stat-item').filter({ hasText: 'focused' })).toBeVisible();
-    await expect(page.locator('.today-summary .stat-item').filter({ hasText: 'focused' }).locator('.stat-icon')).toContainText('⏱️');
+  test('should display pomodoro count', async ({ page }) => {
+    await expect(page.locator('.pomo-num')).toBeVisible({ timeout: 30000 });
   });
 
-  test('should display pomodoros stat', async ({ page }) => {
-    await expect(page.locator('.today-summary .stat-item').filter({ hasText: 'pomodoros' })).toBeVisible();
-    await expect(page.locator('.today-summary .stat-item').filter({ hasText: 'pomodoros' }).locator('.stat-icon')).toContainText('🍅');
+  test('should display daily goal text', async ({ page }) => {
+    await expect(page.locator('.pomo-sub')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.pomo-sub')).toContainText('completed today');
   });
 
-  test('should display tasks stat', async ({ page }) => {
-    await expect(page.locator('.today-summary .stat-item').filter({ hasText: 'tasks' })).toBeVisible();
-    await expect(page.locator('.today-summary .stat-item').filter({ hasText: 'tasks' }).locator('.stat-icon')).toContainText('📋');
+  test('should display focus time', async ({ page }) => {
+    await expect(page.locator('.pomo-focus-time')).toBeVisible({ timeout: 30000 });
   });
 
-  test('should display all three stat items', async ({ page }) => {
-    await expect(page.locator('.today-summary .stat-item')).toHaveCount(3);
+  test('should display focus time label', async ({ page }) => {
+    await expect(page.locator('.pomo-focus-label')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.pomo-focus-label')).toContainText('focus time');
+  });
+
+  test('should display progress bar', async ({ page }) => {
+    await expect(page.locator('.progress-bar')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.progress-bar-fill')).toBeVisible();
   });
 
   test('should show initial zero values', async ({ page }) => {
-    const focusedValue = page.locator('.today-summary .stat-item').filter({ hasText: 'focused' }).locator('.stat-value');
-    const pomodorosValue = page.locator('.today-summary .stat-item').filter({ hasText: 'pomodoros' }).locator('.stat-value');
-    const tasksValue = page.locator('.today-summary .stat-item').filter({ hasText: 'tasks' }).locator('.stat-value');
-
-    await expect(focusedValue).toContainText('0m');
-    await expect(pomodorosValue).toContainText('0');
-    await expect(tasksValue).toContainText('0');
+    await expect(page.locator('.pomo-num')).toContainText('0');
+    await expect(page.locator('.pomo-focus-time')).toContainText('0m');
   });
 });

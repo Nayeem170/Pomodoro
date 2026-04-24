@@ -168,8 +168,8 @@ export class PomodoroPage {
 
   async setPomodoroMinutes(minutes: number) {
     const input = this.page.locator('.step-input').first();
-    await input.fill(minutes.toString());
-    await input.dispatchEvent('change');
+    await input.click();
+    await input.pressSequentially(minutes.toString());
     await this.page.waitForTimeout(200);
   }
 

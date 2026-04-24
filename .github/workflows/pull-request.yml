@@ -38,16 +38,14 @@ jobs:
       fail-fast: false
       matrix:
         shard:
-          - name: "navigation"
-            tests: "tests/e2e/pages/navigation.spec.ts"
-          - name: "index"
-            tests: "tests/e2e/pages/index.spec.ts"
-          - name: "timer"
-            tests: "tests/e2e/pages/timer.spec.ts"
-          - name: "settings"
-            tests: "tests/e2e/pages/settings.spec.ts"
-          - name: "about"
-            tests: "tests/e2e/pages/about.spec.ts"
+          - name: "navigation+index"
+            tests: "tests/e2e/pages/navigation.spec.ts tests/e2e/pages/index.spec.ts tests/e2e/pages/today-summary.spec.ts"
+          - name: "timer+tasks"
+            tests: "tests/e2e/pages/timer.spec.ts tests/e2e/pages/timer-flow.spec.ts tests/e2e/pages/task-crud.spec.ts"
+          - name: "settings+keyboard"
+            tests: "tests/e2e/pages/settings.spec.ts tests/e2e/pages/settings-flow.spec.ts tests/e2e/pages/keyboard-shortcuts.spec.ts"
+          - name: "about+mobile"
+            tests: "tests/e2e/pages/about.spec.ts tests/e2e/pages/mobile-viewport.spec.ts"
     steps:
       - uses: actions/checkout@v4
 

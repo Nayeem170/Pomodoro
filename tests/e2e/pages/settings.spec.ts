@@ -60,8 +60,8 @@ test.describe('Settings Page', () => {
 
   test('should show toast message when settings change is saved', async ({ page }) => {
     const input = page.locator('.step-input').first();
-    await input.fill('30');
-    await input.dispatchEvent('change');
+    await input.click();
+    await input.pressSequentially('30');
     await page.waitForTimeout(1000);
 
     await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
@@ -85,8 +85,8 @@ test.describe('Settings Page', () => {
     const input = page.locator('.step-input').first();
     await expect(input).toBeVisible();
 
-    await input.fill('10');
-    await input.dispatchEvent('change');
+    await input.click();
+    await input.pressSequentially('10');
     await page.waitForTimeout(500);
 
     await expect(input).toHaveValue('10');
@@ -95,8 +95,8 @@ test.describe('Settings Page', () => {
   test('should persist pomodoro duration after save and reload', async ({ page }) => {
     const input = page.locator('.step-input').first();
 
-    await input.fill('15');
-    await input.dispatchEvent('change');
+    await input.click();
+    await input.pressSequentially('15');
     await page.waitForTimeout(1000);
 
     await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
