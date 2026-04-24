@@ -43,7 +43,8 @@ public partial class SettingsRepositoryTests
                 LongBreakMinutes = 20,
                 SoundEnabled = true,
                 NotificationsEnabled = true,
-                AutoStartPomodoros = false, AutoStartBreaks = false,
+                AutoStartPomodoros = false,
+                AutoStartBreaks = false,
                 AutoStartDelaySeconds = 15
             };
 
@@ -95,7 +96,8 @@ public partial class SettingsRepositoryTests
                 LongBreakMinutes = 20,
                 SoundEnabled = true,
                 NotificationsEnabled = true,
-                AutoStartPomodoros = false, AutoStartBreaks = false,
+                AutoStartPomodoros = false,
+                AutoStartBreaks = false,
                 AutoStartDelaySeconds = 15
             };
 
@@ -134,7 +136,8 @@ public partial class SettingsRepositoryTests
                 LongBreakMinutes = 0,
                 SoundEnabled = false,
                 NotificationsEnabled = false,
-                AutoStartPomodoros = false, AutoStartBreaks = false,
+                AutoStartPomodoros = false,
+                AutoStartBreaks = false,
                 AutoStartDelaySeconds = 0
             };
 
@@ -173,7 +176,8 @@ public partial class SettingsRepositoryTests
                 LongBreakMinutes = 30,
                 SoundEnabled = true,
                 NotificationsEnabled = true,
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 30
             };
 
@@ -244,7 +248,8 @@ public partial class SettingsRepositoryTests
                 LongBreakMinutes = 15,
                 SoundEnabled = true,
                 NotificationsEnabled = true,
-                AutoStartPomodoros = false, AutoStartBreaks = false,
+                AutoStartPomodoros = false,
+                AutoStartBreaks = false,
                 AutoStartDelaySeconds = 10
             };
 
