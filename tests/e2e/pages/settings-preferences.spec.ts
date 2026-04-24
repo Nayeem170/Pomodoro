@@ -12,44 +12,54 @@ test.describe('Settings Preferences', () => {
   test.describe.configure({ timeout: 60000 });
 
   test('should display sound toggle', async ({ page }) => {
-    await expect(page.locator('label[for="soundToggle"]')).toBeVisible();
+    await expect(page.locator('.sr-lbl').filter({ hasText: 'Sound on completion' })).toBeVisible();
   });
 
   test('should display notifications toggle', async ({ page }) => {
-    await expect(page.locator('label[for="notifToggle"]')).toBeVisible();
+    await expect(page.locator('.sr-lbl').filter({ hasText: 'Browser notifications' })).toBeVisible();
   });
 
   test('should toggle sound setting', async ({ page }) => {
-    const soundToggle = page.locator('#soundToggle');
-    const initialState = await soundToggle.isChecked();
-    await page.locator('label[for="soundToggle"]').click();
+    const soundToggle = page.locator('.sr-lbl').filter({ hasText: 'Sound on completion' }).locator('..').locator('.tog');
+    const initialState = await soundToggle.evaluate(el => el.classList.contains('on'));
+    await soundToggle.click();
     await page.waitForTimeout(500);
-    const toggledState = await soundToggle.isChecked();
+    const toggledState = await soundToggle.evaluate(el => el.classList.contains('on'));
     expect(toggledState).toBe(!initialState);
   });
 
   test('should toggle notifications setting', async ({ page }) => {
-    const notifToggle = page.locator('#notifToggle');
-    const initialState = await notifToggle.isChecked();
-    await page.locator('label[for="notifToggle"]').click();
+    const notifToggle = page.locator('.sr-lbl').filter({ hasText: 'Browser notifications' }).locator('..').locator('.tog');
+    const initialState = await notifToggle.evaluate(el => el.classList.contains('on'));
+    await notifToggle.click();
     await page.waitForTimeout(500);
-    const toggledState = await notifToggle.isChecked();
+    const toggledState = await notifToggle.evaluate(el => el.classList.contains('on'));
     expect(toggledState).toBe(!initialState);
   });
 
-  test('should enable save button when sound is toggled', async ({ page }) => {
-    const saveButton = page.locator('.btn-save');
-    await expect(saveButton).toBeDisabled();
-    await page.locator('label[for="soundToggle"]').click();
+  test('should auto-save when sound is toggled', async ({ page }) => {
+    const soundToggle = page.locator('.sr-lbl').filter({ hasText: 'Sound on completion' }).locator('..').locator('.tog');
+    await soundToggle.click();
     await page.waitForTimeout(500);
-    await expect(saveButton).not.toBeDisabled();
+
+    await page.reload();
+    await pomodoroPage.openSettings();
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
+
+    const toggledState = await soundToggle.evaluate(el => el.classList.contains('on'));
+    expect(toggledState).toBe(false);
   });
 
-  test('should enable save button when notifications is toggled', async ({ page }) => {
-    const saveButton = page.locator('.btn-save');
-    await expect(saveButton).toBeDisabled();
-    await page.locator('label[for="notifToggle"]').click();
+  test('should auto-save when notifications is toggled', async ({ page }) => {
+    const notifToggle = page.locator('.sr-lbl').filter({ hasText: 'Browser notifications' }).locator('..').locator('.tog');
+    await notifToggle.click();
     await page.waitForTimeout(500);
-    await expect(saveButton).not.toBeDisabled();
+
+    await page.reload();
+    await pomodoroPage.openSettings();
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
+
+    const toggledState = await notifToggle.evaluate(el => el.classList.contains('on'));
+    expect(toggledState).toBe(false);
   });
 });

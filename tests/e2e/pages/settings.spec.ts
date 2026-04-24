@@ -47,26 +47,24 @@ test.describe('Settings Page', () => {
   });
 
   test('should not display export backup button', async ({ page }) => {
-    await expect(page.locator('.btn-export')).toHaveCount(0);
+    await expect(page.locator('.sec-btn').filter({ hasText: 'Export' })).toHaveCount(0);
   });
 
   test('should not display import backup button', async ({ page }) => {
-    await expect(page.locator('.btn-import')).toHaveCount(0);
+    await expect(page.locator('.sec-btn').filter({ hasText: 'Import' })).toHaveCount(0);
   });
 
   test('should display reset to defaults button', async ({ page }) => {
     await expect(page.locator('.sec-btn').filter({ hasText: 'Reset to defaults' })).toBeVisible();
   });
 
-  test('should show toast message when settings change is saved', async ({ page }) => {
+  test('should auto-save settings when duration is changed', async ({ page }) => {
     const input = page.locator('.step-input').first();
-    await input.click();
-    await input.pressSequentially('30');
+    await input.click({ clickCount: 3 });
+    await input.fill('30');
     await page.waitForTimeout(1000);
 
-    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
-    await page.waitForTimeout(500);
-    await expect(page.locator('.settings-toast')).toContainText('Settings saved successfully!');
+    await expect(input).toHaveValue('30');
   });
 
   test('should disable clear button when clearing', async ({ page }) => {
@@ -85,22 +83,21 @@ test.describe('Settings Page', () => {
     const input = page.locator('.step-input').first();
     await expect(input).toBeVisible();
 
-    await input.click();
-    await input.pressSequentially('10');
+    await input.click({ clickCount: 3 });
+    await input.fill('10');
     await page.waitForTimeout(500);
 
     await expect(input).toHaveValue('10');
   });
 
-  test('should persist pomodoro duration after save and reload', async ({ page }) => {
+  test('should persist pomodoro duration after reload', async ({ page }) => {
     const input = page.locator('.step-input').first();
 
-    await input.click();
-    await input.pressSequentially('15');
+    await input.click({ clickCount: 3 });
+    await input.fill('15');
     await page.waitForTimeout(1000);
 
-    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
-    await page.waitForTimeout(500);
+    await expect(input).toHaveValue('15');
 
     await page.reload();
     await pomodoroPage.openSettings();

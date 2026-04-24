@@ -67,8 +67,8 @@ test.describe('Settings Flow', () => {
 
   test('should reset to defaults and verify values reset', async ({ page }) => {
     const input = page.locator('.step-input').first();
-    await input.click();
-    await input.pressSequentially('10');
+    await input.click({ clickCount: 3 });
+    await input.fill('10');
     await page.waitForTimeout(500);
     await expect(input).toHaveValue('10');
 

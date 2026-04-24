@@ -6,119 +6,96 @@ test.describe('Settings Persistence', () => {
 
   test.describe.configure({ timeout: 60000 });
 
-  test('should apply new pomodoro duration to timer after save and reload', async ({ page }) => {
+  test('should apply new pomodoro duration to timer after reload', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.openSettings();
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    const pomodoroInput = page.locator('input[type="number"]').first();
+    const pomodoroInput = page.locator('.step-input').first();
+    await pomodoroInput.click({ clickCount: 3 });
     await pomodoroInput.fill('30');
     await pomodoroInput.dispatchEvent('change');
     await page.waitForTimeout(500);
 
-    await page.locator('.btn-save').click();
-    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
-    await page.waitForTimeout(500);
-
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     const timerDisplay = await pomodoroPage.getTimerDisplay();
     expect(timerDisplay).toMatch(/30:00/);
 
     await pomodoroPage.openSettings();
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
-    await page.locator('.btn-reset-defaults').click();
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
+    await pomodoroPage.resetToDefaults();
     await page.waitForTimeout(500);
   });
 
-  test('should persist sound toggle after save and reload', async ({ page }) => {
+  test('should persist sound toggle after reload', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.openSettings();
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    await page.locator('label[for="soundToggle"]').click();
+    const soundToggle = page.locator('.sr-lbl').filter({ hasText: 'Sound on completion' }).locator('..').locator('.tog');
+    await soundToggle.click();
     await page.waitForTimeout(500);
-
-    await page.locator('.btn-save').click();
-    await page.waitForTimeout(2000);
 
     await page.reload();
     await pomodoroPage.openSettings();
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    const soundToggle = page.locator('#soundToggle');
-    const isChecked = await soundToggle.isChecked();
-    expect(isChecked).toBe(false);
+    const togKnob = soundToggle.locator('.tog-k');
+    const hasActiveClass = await soundToggle.evaluate(el => el.classList.contains('on'));
+    expect(hasActiveClass).toBe(false);
 
-    await page.locator('label[for="soundToggle"]').click();
-    await page.locator('.btn-save').click();
-    await page.waitForTimeout(2000);
+    await soundToggle.click();
+    await page.waitForTimeout(500);
   });
 
-  test('should persist auto-start setting after save and reload', async ({ page }) => {
+  test('should persist auto-start setting after reload', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.openSettings();
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    const autoStartToggle = page.locator('#autoStartEnabled');
-    const isCurrentlyChecked = await autoStartToggle.isChecked();
+    const autoStartToggle = page.locator('.sr-lbl').filter({ hasText: 'Auto-start pomodoros' }).locator('..').locator('.tog');
+    const isCurrentlyOn = await autoStartToggle.evaluate(el => el.classList.contains('on'));
 
-    if (isCurrentlyChecked) {
-      await page.evaluate(() => {
-        const cb = document.getElementById('autoStartEnabled') as HTMLInputElement;
-        if (cb) { cb.checked = false; cb.dispatchEvent(new Event('change', { bubbles: true })); }
-      });
+    if (isCurrentlyOn) {
+      await autoStartToggle.click();
       await page.waitForTimeout(500);
-      await page.locator('.btn-save').click();
-      await page.waitForTimeout(2000);
     }
 
-    await page.evaluate(() => {
-      const cb = document.getElementById('autoStartEnabled') as HTMLInputElement;
-      if (cb) { cb.checked = true; cb.dispatchEvent(new Event('change', { bubbles: true })); }
-    });
+    await autoStartToggle.click();
     await page.waitForTimeout(500);
-
-    await page.locator('.btn-save').click();
-    await page.waitForTimeout(2000);
 
     await page.reload();
     await pomodoroPage.openSettings();
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    const isChecked = await autoStartToggle.isChecked();
+    const isChecked = await autoStartToggle.evaluate(el => el.classList.contains('on'));
     expect(isChecked).toBe(true);
 
-    await page.evaluate(() => {
-      const cb = document.getElementById('autoStartEnabled') as HTMLInputElement;
-      if (cb) { cb.checked = false; cb.dispatchEvent(new Event('change', { bubbles: true })); }
-    });
-    await page.locator('.btn-save').click();
-    await page.waitForTimeout(2000);
+    await autoStartToggle.click();
+    await page.waitForTimeout(500);
   });
 
   test('should show changed duration on timer after navigating away and back', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.openSettings();
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    const pomodoroInput = page.locator('input[type="number"]').first();
+    const pomodoroInput = page.locator('.step-input').first();
+    await pomodoroInput.click({ clickCount: 3 });
     await pomodoroInput.fill('20');
     await pomodoroInput.dispatchEvent('change');
     await page.waitForTimeout(500);
 
-    await page.locator('.btn-save').click();
-    await page.waitForTimeout(2000);
-
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     const timerDisplay = await pomodoroPage.getTimerDisplay();
     expect(timerDisplay).toMatch(/20:00/);
 
     await pomodoroPage.openSettings();
-    await page.locator('.btn-reset-defaults').click();
+    await pomodoroPage.resetToDefaults();
     await page.waitForTimeout(500);
   });
 });
