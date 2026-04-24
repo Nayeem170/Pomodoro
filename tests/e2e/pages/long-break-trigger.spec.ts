@@ -3,12 +3,12 @@ import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskName: string) {
   await pomodoroPage.goto('/');
-  await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+  await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
   await pomodoroPage.addTask(taskName);
   await pomodoroPage.selectTask(taskName);
   await pomodoroPage.startTimer();
-  await expect(page.locator('.btn-pause')).toBeVisible();
+  await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
   await page.waitForTimeout(500);
 
   await page.evaluate(async () => {
@@ -39,12 +39,12 @@ test.describe('Long Break Trigger', () => {
   test('should offer long break as an option after completing pomodoro', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await pomodoroPage.addTask('Long Break Test');
     await pomodoroPage.selectTask('Long Break Test');
     await pomodoroPage.startTimer();
-    await expect(page.locator('.btn-pause')).toBeVisible();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
     await page.waitForTimeout(500);
 
     await page.evaluate(async () => {
@@ -67,7 +67,7 @@ test.describe('Long Break Trigger', () => {
       const longBreakOption = page.locator('.btn-option').filter({ hasText: /Long Break/i });
       await expect(longBreakOption).toBeVisible();
     } else {
-      const longBreakTab = page.locator('button:has-text("Long Break")');
+      const longBreakTab = page.locator('.mode-tabs button').filter({ hasText: 'Long break' });
       await expect(longBreakTab).toBeVisible();
     }
   });

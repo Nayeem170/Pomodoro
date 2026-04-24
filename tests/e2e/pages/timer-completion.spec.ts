@@ -3,24 +3,20 @@ import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskName: string) {
   await pomodoroPage.goto('/settings');
-  await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+  await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-  const pomodoroInput = page.locator('input[type="number"]').first();
+  const pomodoroInput = page.locator('.step-input').first();
+  await pomodoroInput.click({ clickCount: 3 });
   await pomodoroInput.fill('1');
-  await pomodoroInput.dispatchEvent('change');
-  await page.waitForTimeout(500);
-
-  await page.locator('.btn-save').click();
-  await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
   await page.waitForTimeout(500);
 
   await pomodoroPage.goto('/');
-  await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+  await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
   await pomodoroPage.addTask(taskName);
   await pomodoroPage.selectTask(taskName);
   await pomodoroPage.startTimer();
-  await expect(page.locator('.btn-pause')).toBeVisible();
+  await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
   await page.waitForTimeout(500);
 
   await page.evaluate(async () => {
@@ -54,24 +50,20 @@ test.describe('Timer Completion', () => {
   test('should show start button after pomodoro completes without auto-start', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/settings');
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    const pomodoroInput = page.locator('input[type="number"]').first();
+    const pomodoroInput = page.locator('.step-input').first();
+    await pomodoroInput.click({ clickCount: 3 });
     await pomodoroInput.fill('1');
-    await pomodoroInput.dispatchEvent('change');
-    await page.waitForTimeout(500);
-
-    await page.locator('.btn-save').click();
-    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
     await page.waitForTimeout(500);
 
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await pomodoroPage.addTask('No Auto Test');
     await pomodoroPage.selectTask('No Auto Test');
     await pomodoroPage.startTimer();
-    await expect(page.locator('.btn-pause')).toBeVisible();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
     await page.waitForTimeout(500);
 
     await page.evaluate(async () => {
@@ -93,36 +85,33 @@ test.describe('Timer Completion', () => {
       await page.locator('.btn-option').filter({ hasText: 'Another Pomodoro' }).click();
       await page.waitForTimeout(2000);
       await pomodoroPage.pauseTimer();
-      await page.locator('.btn-reset').click();
+      await page.locator('button[aria-label="Reset timer"]').click();
       await page.waitForTimeout(1000);
     }
 
-    await expect(page.locator('.btn-start')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('button[aria-label="Start timer"]')).toBeVisible({ timeout: 10000 });
   });
 
   test('should switch to break session after selecting option from consent modal', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/settings');
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    await page.locator('#autoStartEnabled').check({ force: true });
+    await pomodoroPage.toggleAutoStartPomodoros();
     await page.waitForTimeout(500);
 
-    const pomodoroInput = page.locator('input[type="number"]').first();
+    const pomodoroInput = page.locator('.step-input').first();
+    await pomodoroInput.click({ clickCount: 3 });
     await pomodoroInput.fill('1');
-    await pomodoroInput.dispatchEvent('change');
     await page.waitForTimeout(500);
-
-    await page.locator('.btn-save').click();
-    await page.waitForTimeout(2000);
 
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await pomodoroPage.addTask('Session Switch Test');
     await pomodoroPage.selectTask('Session Switch Test');
     await pomodoroPage.startTimer();
-    await expect(page.locator('.btn-pause')).toBeVisible();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
     await page.waitForTimeout(500);
 
     await page.evaluate(async () => {
@@ -151,10 +140,10 @@ test.describe('Timer Completion', () => {
     await completePomodoroFast(page, pomodoroPage, 'Activity Record Test');
 
     await pomodoroPage.openHistory();
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
     await page.waitForTimeout(2000);
 
-    const activityCount = await page.locator('.activity-item').count();
+    const activityCount = await page.locator('.tl-row').count();
     expect(activityCount).toBeGreaterThanOrEqual(1);
   });
 });

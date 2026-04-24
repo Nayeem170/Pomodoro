@@ -9,19 +9,19 @@ test.describe('Timer Reload Contract', () => {
   test('should not persist running timer state across page reload', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await pomodoroPage.addTask('Reload Contract Task');
     await pomodoroPage.selectTask('Reload Contract Task');
     await pomodoroPage.startTimer();
-    await expect(page.locator('.btn-pause')).toBeVisible();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
     await page.waitForTimeout(3000);
 
     const runningDisplay = await pomodoroPage.getTimerDisplay();
     expect(runningDisplay).not.toBe('25:00');
 
     await page.reload();
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
     await page.waitForTimeout(1000);
 
     const reloadedDisplay = await pomodoroPage.getTimerDisplay();
@@ -34,20 +34,20 @@ test.describe('Timer Reload Contract', () => {
   test('should show start button after reload regardless of previous timer state', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await pomodoroPage.addTask('Start Btn Reload Task');
     await pomodoroPage.selectTask('Start Btn Reload Task');
     await pomodoroPage.startTimer();
-    await expect(page.locator('.btn-pause')).toBeVisible();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
     await pomodoroPage.pauseTimer();
-    await expect(page.locator('.btn-resume')).toBeVisible();
+    await expect(page.locator('button[aria-label="Resume timer"]')).toBeVisible();
 
     await page.reload();
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
     await page.waitForTimeout(1000);
 
-    await expect(page.locator('.btn-start')).toBeVisible();
+    await expect(page.locator('button[aria-label="Start timer"]')).toBeVisible();
     const isPaused = await pomodoroPage.isTimerPaused();
     expect(isPaused).toBe(false);
   });
