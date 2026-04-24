@@ -25,7 +25,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -73,7 +74,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -123,7 +125,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -173,7 +176,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -220,7 +224,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -268,7 +273,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -316,7 +322,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 10,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -406,7 +413,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -454,7 +462,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -501,7 +510,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -551,7 +561,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -600,7 +611,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -651,7 +663,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -707,7 +720,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -758,7 +772,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -809,7 +824,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -860,7 +876,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -910,7 +927,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -959,7 +977,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -1008,7 +1027,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -1057,7 +1077,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -1108,7 +1129,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -1157,7 +1179,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
@@ -1206,7 +1229,8 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true, AutoStartBreaks = true,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = true,
                 NotificationsEnabled = true
