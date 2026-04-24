@@ -10,7 +10,7 @@
         <div class="sr">
             <div>
                 <div class="sr-lbl">Google Drive</div>
-                <div class="sr-sub">Sync data across your devices</div>
+                <div class="sr-sub">Sync across devices</div>
             </div>
             <button class="sec-btn" @onclick="Connect" disabled="@_isConnecting">
                 @(_isConnecting ? "Connecting..." : "Connect")
@@ -21,66 +21,26 @@
     {
         <div class="sr">
             <div>
-                <div class="sr-lbl">Status</div>
-                <div class="sr-sub sync-status-connected">Connected</div>
+                <div class="sr-lbl">Google Drive</div>
+                <div class="sr-sub">Last synced @FormatLastSynced</div>
             </div>
-        </div>
-
-        <div class="sr">
-            <div>
-                <div class="sr-lbl">Last synced</div>
-                <div class="sr-sub">@FormatLastSynced</div>
+            <div class="sync-actions">
+                <button class="sec-btn" @onclick="SyncNow" disabled="@_isSyncing">
+                    @(_isSyncing ? "Syncing..." : "Sync")
+                </button>
+                <button class="danger-btn" @onclick="Disconnect" disabled="@_isSyncing">Disconnect</button>
             </div>
-        </div>
-
-        <div class="sr">
-            <div>
-                <div class="sr-lbl">Device</div>
-                <div class="sr-sub">@CloudSyncService.DeviceId</div>
-            </div>
-        </div>
-
-        <div class="sr">
-            <div>
-                <div class="sr-lbl">Sync now</div>
-                <div class="sr-sub">Push local changes and pull remote</div>
-            </div>
-            <button class="sec-btn" @onclick="SyncNow" disabled="@_isSyncing">
-                @(_isSyncing ? "Syncing..." : "Sync Now")
-            </button>
-        </div>
-
-        <div class="sr">
-            <div>
-                <div class="sr-lbl">Disconnect</div>
-                <div class="sr-sub">Stop syncing with Google Drive</div>
-            </div>
-            <button class="danger-btn" @onclick="Disconnect" disabled="@_isSyncing">
-                Disconnect
-            </button>
-        </div>
-    }
-
-    @if (!string.IsNullOrEmpty(_errorMessage))
-    {
-        <div class="sr sync-error">
-            <span>@_errorMessage</span>
-        </div>
-    }
-
-    @if (!string.IsNullOrEmpty(_successMessage))
-    {
-        <div class="sr sync-success">
-            <span>@_successMessage</span>
         </div>
     }
 </div>
 
 @code {
+    [Parameter]
+    public EventCallback<string> OnShowToast { get; set; }
+
     private bool _isConnecting;
     private bool _isSyncing;
-    private string? _errorMessage;
-    private string? _successMessage;
+    private bool _isDisconnecting;
 
     protected override void OnInitialized()
     {
@@ -96,11 +56,14 @@
         ? CloudSyncService.LastSyncedAt.Value.ToLocalTime().ToString("g")
         : "Never";
 
+    private async Task ShowToast(string message)
+    {
+        await OnShowToast.InvokeAsync(message);
+    }
+
     private async Task Connect()
     {
         _isConnecting = true;
-        _errorMessage = null;
-        _successMessage = null;
         StateHasChanged();
 
         try
@@ -109,17 +72,17 @@
             var success = await CloudSyncService.ConnectAsync(clientId);
             if (success)
             {
-                _successMessage = Constants.SyncMessages.Connected;
+                await ShowToast(Constants.SyncMessages.Connected);
             }
             else
             {
-                _errorMessage = Constants.SyncMessages.AuthFailed;
+                await ShowToast(Constants.SyncMessages.AuthFailed);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Failed to connect Google Drive");
-            _errorMessage = Constants.SyncMessages.InitFailed;
+            await ShowToast(Constants.SyncMessages.InitFailed);
         }
         finally
         {
@@ -131,16 +94,15 @@
     private async Task SyncNow()
     {
         _isSyncing = true;
-        _errorMessage = null;
-        _successMessage = null;
         StateHasChanged();
 
         try
         {
             var result = await CloudSyncService.SyncNowAsync();
+
             if (result.Success)
             {
-                _successMessage = result.Action switch
+                var message = result.Action switch
                 {
                     SyncAction.Pushed => Constants.SyncMessages.SyncPushSuccess,
                     SyncAction.Pulled => string.Format(Constants.SyncMessages.SyncPullSuccess,
@@ -148,16 +110,46 @@
                     SyncAction.UpToDate => Constants.SyncMessages.AlreadyUpToDate,
                     _ => Constants.SyncMessages.SyncComplete
                 };
+                await ShowToast(message);
+            }
+            else if (result.ErrorMessage == Constants.SyncMessages.ReconnectRequired)
+            {
+                var clientId = CloudSyncService.ClientId ?? Constants.Sync.DefaultClientId;
+                var connected = await CloudSyncService.ConnectAsync(clientId);
+                if (connected)
+                {
+                    result = await CloudSyncService.SyncNowAsync();
+                    if (result.Success)
+                    {
+                        var message = result.Action switch
+                        {
+                            SyncAction.Pushed => Constants.SyncMessages.SyncPushSuccess,
+                            SyncAction.Pulled => string.Format(Constants.SyncMessages.SyncPullSuccess,
+                                result.ActivitiesImported, result.TasksImported),
+                            SyncAction.UpToDate => Constants.SyncMessages.AlreadyUpToDate,
+                            _ => Constants.SyncMessages.SyncComplete
+                        };
+                        await ShowToast(message);
+                    }
+                    else
+                    {
+                        await ShowToast(result.ErrorMessage ?? Constants.SyncMessages.SyncFailed);
+                    }
+                }
+                else
+                {
+                    await ShowToast(Constants.SyncMessages.AuthFailed);
+                }
             }
             else
             {
-                _errorMessage = result.ErrorMessage ?? Constants.SyncMessages.SyncFailed;
+                await ShowToast(result.ErrorMessage ?? Constants.SyncMessages.SyncFailed);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Manual sync failed");
-            _errorMessage = Constants.SyncMessages.SyncFailed;
+            await ShowToast(Constants.SyncMessages.SyncFailed);
         }
         finally
         {
@@ -169,36 +161,30 @@
     private async Task Disconnect()
     {
         _isSyncing = true;
-        _errorMessage = null;
-        _successMessage = null;
+        _isDisconnecting = true;
         StateHasChanged();
 
         try
         {
             await CloudSyncService.DisconnectAsync();
-            _successMessage = Constants.SyncMessages.Disconnected;
+            await ShowToast(Constants.SyncMessages.Disconnected);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Failed to disconnect Google Drive");
-            _errorMessage = Constants.SyncMessages.SyncFailed;
+            await ShowToast(Constants.SyncMessages.SyncFailed);
         }
         finally
         {
             _isSyncing = false;
+            _isDisconnecting = false;
             StateHasChanged();
         }
     }
 
     private void OnSyncStatusChanged()
     {
-        _errorMessage = null;
-        _successMessage = null;
-
-        if (!CloudSyncService.IsConnected && CloudSyncService.IsInitialized)
-        {
-            _errorMessage = Constants.SyncMessages.ReconnectRequired;
-        }
+        if (_isDisconnecting) return;
 
         InvokeAsync(StateHasChanged);
     }
