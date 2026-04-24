@@ -168,8 +168,8 @@ export class PomodoroPage {
 
   async setPomodoroMinutes(minutes: number) {
     const input = this.page.locator('.step-input').first();
-    await input.click();
-    await input.pressSequentially(minutes.toString());
+    await input.click({ clickCount: 3 });
+    await input.fill(minutes.toString());
     await this.page.waitForTimeout(200);
   }
 
@@ -190,7 +190,7 @@ export class PomodoroPage {
   }
 
   async switchToDailyTab() {
-    const dailyTab = this.page.locator('button:has-text("Daily")');
+    const dailyTab = this.page.locator('#daily-tab');
     if (await dailyTab.isVisible()) {
       await dailyTab.click();
       await this.page.waitForTimeout(300);
@@ -198,7 +198,7 @@ export class PomodoroPage {
   }
 
   async switchToWeeklyTab() {
-    const weeklyTab = this.page.locator('button:has-text("Weekly")');
+    const weeklyTab = this.page.locator('#weekly-tab');
     if (await weeklyTab.isVisible()) {
       await weeklyTab.click();
       await this.page.waitForTimeout(300);
@@ -220,7 +220,7 @@ export class PomodoroPage {
   }
 
   async closeKeyboardHelp() {
-    const closeButton = this.page.locator('button:has-text("Close"), .modal-close');
+    const closeButton = this.page.locator('.modal-close');
     if (await closeButton.isVisible()) {
       await closeButton.click();
       await this.page.waitForTimeout(300);
@@ -239,9 +239,21 @@ export class PomodoroPage {
     await this.page.waitForTimeout(2000);
   }
 
+  async toggleAutoStartPomodoros() {
+    const toggle = this.page.locator('.sr-lbl').filter({ hasText: 'Auto-start pomodoros' }).locator('..').locator('.tog');
+    await toggle.click();
+    await this.page.waitForTimeout(200);
+  }
+
+  async toggleAutoStartBreaks() {
+    const toggle = this.page.locator('.sr-lbl').filter({ hasText: 'Auto-start breaks' }).locator('..').locator('.tog');
+    await toggle.click();
+    await this.page.waitForTimeout(200);
+  }
+
   async getWeeklyStatValue(label: string): Promise<string> {
-    const statItem = this.page.locator('.stat-item, .stat').filter({ hasText: label });
-    const valueEl = statItem.locator('.stat-value');
+    const statItem = this.page.locator('.sc').filter({ hasText: label });
+    const valueEl = statItem.locator('.sv');
     return await valueEl.textContent() || '';
   }
 }
