@@ -1,5 +1,7 @@
 # Pomodoro
 
+![Coverage](https://codecov.io/gh/Nayeem170/Pomodoro/branch/main/graph/badge.svg)
+
 A Pomodoro-style focus timer built as a Progressive Web App with Blazor WebAssembly (.NET 9).
 
 **Live Demo:** [pomodoro.bitops.bd](https://pomodoro.bitops.bd)
