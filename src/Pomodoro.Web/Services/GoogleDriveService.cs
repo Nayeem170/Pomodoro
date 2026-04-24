@@ -17,11 +17,37 @@ public class GoogleDriveService : IGoogleDriveService
         _logger = logger;
     }
 
+    public void SetConnected(bool connected) => _isConnected = connected;
+
+    public async Task SetAccessTokenAsync(string token)
+    {
+        await _jsRuntime.InvokeVoidAsync(Constants.GoogleDriveJsFunctions.SetAccessToken, token);
+        _isConnected = true;
+    }
+
+    public async Task<bool> TrySilentAuthAsync()
+    {
+        try
+        {
+            var token = await _jsRuntime.InvokeAsync<string?>(Constants.GoogleDriveJsFunctions.TrySilentAuth);
+            if (!string.IsNullOrEmpty(token))
+            {
+                _isConnected = true;
+                return true;
+            }
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public async Task InitializeAsync(string clientId)
     {
         try
         {
-            await _jsRuntime.InvokeAsync<string>(Constants.GoogleDriveJsFunctions.Init, clientId);
+            await _jsRuntime.InvokeAsync<object>(Constants.GoogleDriveJsFunctions.Init, clientId, false);
             _logger.LogInformation(Constants.SyncMessages.LogInitSuccess);
         }
         catch (Exception ex)

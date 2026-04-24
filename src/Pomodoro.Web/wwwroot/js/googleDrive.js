@@ -24,7 +24,7 @@ window.googleDrive = {
         });
     },
 
-    init: function(clientId) {
+    init: function(clientId, autoAuth) {
         return this._waitForGis().then(() => {
             this._clientId = clientId;
             this._tokenClient = google.accounts.oauth2.initTokenClient({
@@ -36,6 +36,20 @@ window.googleDrive = {
                     }
                 }
             });
+
+            if (autoAuth && this._tokenClient) {
+                return new Promise((resolve) => {
+                    this._tokenClient.callback = (response) => {
+                        if (response.access_token) {
+                            this._accessToken = response.access_token;
+                        }
+                        resolve(!!response.access_token);
+                    };
+                    this._tokenClient.requestAccessToken({ prompt: '' });
+                });
+            }
+
+            return false;
         });
     },
 
@@ -57,6 +71,28 @@ window.googleDrive = {
         });
     },
 
+    trySilentAuth: function() {
+        return new Promise((resolve) => {
+            if (!this._tokenClient) {
+                resolve(null);
+                return;
+            }
+            this._tokenClient.callback = (response) => {
+                if (response.access_token) {
+                    this._accessToken = response.access_token;
+                    resolve(response.access_token);
+                } else {
+                    resolve(null);
+                }
+            };
+            try {
+                this._tokenClient.requestAccessToken({ prompt: '' });
+            } catch (e) {
+                resolve(null);
+            }
+        });
+    },
+
     revokeAuth: function() {
         return new Promise((resolve) => {
             if (this._accessToken) {
@@ -74,7 +110,14 @@ window.googleDrive = {
         return this._accessToken !== null && this._accessToken !== undefined;
     },
 
+    setAccessToken: function(token) {
+        this._accessToken = token;
+    },
+
     _getAuthHeaders: function() {
+        if (!this._accessToken) {
+            throw new Error('401 No access token');
+        }
         return {
             'Authorization': 'Bearer ' + this._accessToken
         };
@@ -85,7 +128,7 @@ window.googleDrive = {
         const url = 'https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=' + encodeURIComponent(query) + '&fields=files(id,name,modifiedTime)';
         return fetch(url, { headers: this._getAuthHeaders() })
             .then(response => {
-                if (response.status === 401) throw { status: 401, message: 'Unauthorized' };
+                if (response.status === 401) throw new Error('401 Unauthorized');
                 if (!response.ok) throw new Error('Failed to find sync file: ' + response.status);
                 return response.json();
             })
@@ -101,8 +144,8 @@ window.googleDrive = {
         const url = 'https://www.googleapis.com/drive/v3/files/' + fileId + '?alt=media';
         return fetch(url, { headers: this._getAuthHeaders() })
             .then(response => {
-                if (response.status === 401) throw { status: 401, message: 'Unauthorized' };
-                if (response.status === 404) throw { status: 404, message: 'File not found' };
+                if (response.status === 401) throw new Error('401 Unauthorized');
+                if (response.status === 404) throw new Error('404 Not Found');
                 if (!response.ok) throw new Error('Failed to read file: ' + response.status);
                 return response.text();
             });
@@ -137,7 +180,7 @@ window.googleDrive = {
             body: requestBody
         })
             .then(response => {
-                if (response.status === 401) throw { status: 401, message: 'Unauthorized' };
+                if (response.status === 401) throw new Error('401 Unauthorized');
                 if (!response.ok) throw new Error('Failed to create file: ' + response.status);
                 return response.json();
             })
@@ -170,7 +213,7 @@ window.googleDrive = {
             body: requestBody
         })
             .then(response => {
-                if (response.status === 401) throw { status: 401, message: 'Unauthorized' };
+                if (response.status === 401) throw new Error('401 Unauthorized');
                 if (!response.ok) throw new Error('Failed to update file: ' + response.status);
                 return response.json();
             });
@@ -183,7 +226,7 @@ window.googleDrive = {
             headers: this._getAuthHeaders()
         })
             .then(response => {
-                if (response.status === 401) throw { status: 401, message: 'Unauthorized' };
+                if (response.status === 401) throw new Error('401 Unauthorized');
                 if (!response.ok) throw new Error('Failed to delete file: ' + response.status);
             });
     }

@@ -3,6 +3,9 @@ namespace Pomodoro.Web.Services;
 public interface IGoogleDriveService
 {
     Task InitializeAsync(string clientId);
+    Task<bool> TrySilentAuthAsync();
+    void SetConnected(bool connected);
+    Task SetAccessTokenAsync(string token);
     Task<string?> ConnectAsync();
     Task DisconnectAsync();
     bool IsConnected { get; }

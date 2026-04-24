@@ -18,8 +18,9 @@ public interface ICloudSyncService
     Task<bool> ConnectAsync(string clientId);
     Task DisconnectAsync();
     Task<SyncResult> SyncNowAsync();
-    Task AutoSyncOnStartAsync();
-    Task MarkDirtyAsync();
+    Task SyncInBackgroundAsync();
+    Task ScheduleSyncAsync();
+    Task ClearRemoteDataAsync();
 }
 
 public class SyncResult
@@ -108,25 +109,42 @@ public class CloudSyncService : ICloudSyncService, IDisposable
     {
         if (_isInitialized) return;
 
-        try
+        for (var attempt = 0; attempt < 3; attempt++)
         {
-            var syncState = await LoadSyncStateAsync();
-            ClientId = syncState.ClientId;
-            LastSyncedAt = syncState.LastSyncedAt;
-            _deviceId = syncState.DeviceId ?? _deviceId;
-
-            if (!string.IsNullOrEmpty(ClientId))
+            try
             {
-                await _googleDriveService.InitializeAsync(ClientId);
-                StartPeriodicSync();
-            }
+                var syncState = await LoadSyncStateAsync();
+                ClientId = syncState.ClientId;
+                LastSyncedAt = syncState.LastSyncedAt;
+                _deviceId = syncState.DeviceId ?? _deviceId;
 
-            _isInitialized = true;
+                if (!string.IsNullOrEmpty(ClientId) && syncState.IsConnected)
+                {
+                    await _googleDriveService.InitializeAsync(ClientId);
+                    if (!string.IsNullOrEmpty(syncState.AccessToken))
+                    {
+                        await _googleDriveService.SetAccessTokenAsync(syncState.AccessToken);
+                    }
+                    _googleDriveService.SetConnected(true);
+                    StartPeriodicSync();
+                }
+
+                _isInitialized = true;
+                NotifyStatusChanged();
+                return;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Cloud sync init attempt {Attempt} failed", attempt + 1);
+                if (attempt < 2)
+                {
+                    await Task.Delay(500);
+                }
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, Constants.SyncMessages.LogInitFailed, ex.Message);
-        }
+
+        _isInitialized = true;
+        NotifyStatusChanged();
     }
 
     public async Task<bool> ConnectAsync(string clientId)
@@ -134,10 +152,10 @@ public class CloudSyncService : ICloudSyncService, IDisposable
         try
         {
             await _googleDriveService.InitializeAsync(clientId);
-            await _googleDriveService.ConnectAsync();
+            var token = await _googleDriveService.ConnectAsync();
 
             ClientId = clientId;
-            await SaveSyncStateAsync();
+            await SaveSyncStateAsync(connected: true, accessToken: token);
 
             StartPeriodicSync();
             NotifyStatusChanged();
@@ -172,7 +190,7 @@ public class CloudSyncService : ICloudSyncService, IDisposable
 
         ClientId = null;
         LastSyncedAt = null;
-        await SaveSyncStateAsync();
+        await SaveSyncStateAsync(connected: false);
         NotifyStatusChanged();
     }
 
@@ -217,7 +235,8 @@ public class CloudSyncService : ICloudSyncService, IDisposable
         }
         catch (UnauthorizedAccessException)
         {
-            NotifyStatusChanged();
+            _logger.LogWarning(Constants.SyncMessages.LogSyncUnauthorized);
+            await SaveSyncStateAsync(accessToken: null);
             return SyncResult.Failed(Constants.SyncMessages.ReconnectRequired);
         }
         catch (Exception ex)
@@ -227,20 +246,12 @@ public class CloudSyncService : ICloudSyncService, IDisposable
         }
     }
 
-    public Task AutoSyncOnStartAsync()
+    public Task SyncInBackgroundAsync()
     {
         if (!_isInitialized || !IsConnected) return Task.CompletedTask;
 
         SafeTaskRunner.RunAndForget(
-            async () =>
-            {
-                await Task.Delay(1000);
-                var result = await SyncNowAsync();
-                if (!result.Success && result.ErrorMessage == Constants.SyncMessages.ReconnectRequired)
-                {
-                    NotifyStatusChanged();
-                }
-            },
+            () => SyncNowAsync(),
             _logger,
             Constants.SafeTaskOperations.CloudSyncAutoSync
         );
@@ -248,7 +259,7 @@ public class CloudSyncService : ICloudSyncService, IDisposable
         return Task.CompletedTask;
     }
 
-    public Task MarkDirtyAsync()
+    public Task ScheduleSyncAsync()
     {
         if (!IsConnected) return Task.CompletedTask;
 
@@ -365,6 +376,29 @@ public class CloudSyncService : ICloudSyncService, IDisposable
         }
     }
 
+    public async Task ClearRemoteDataAsync()
+    {
+        try
+        {
+            var fileId = await _googleDriveService.FindSyncFileAsync();
+            if (fileId != null)
+            {
+                await _googleDriveService.DeleteFileAsync(fileId);
+            }
+            LastSyncedAt = null;
+            await SaveSyncStateAsync();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to clear remote data");
+            throw;
+        }
+    }
+
     private void StartPeriodicSync()
     {
         StopPeriodicSync();
@@ -400,7 +434,7 @@ public class CloudSyncService : ICloudSyncService, IDisposable
         }
     }
 
-    private async Task SaveSyncStateAsync()
+    private async Task SaveSyncStateAsync(bool? connected = null, string? accessToken = null)
     {
         try
         {
@@ -408,7 +442,9 @@ public class CloudSyncService : ICloudSyncService, IDisposable
             {
                 ClientId = ClientId,
                 LastSyncedAt = LastSyncedAt,
-                DeviceId = DeviceId
+                DeviceId = DeviceId,
+                IsConnected = connected ?? IsConnected,
+                AccessToken = accessToken
             };
             await _indexedDb.PutAsync(Constants.Storage.AppStateStore, state);
         }
@@ -445,4 +481,6 @@ public class SyncStateRecord
     public string? ClientId { get; set; }
     public DateTime? LastSyncedAt { get; set; }
     public string? DeviceId { get; set; }
+    public bool IsConnected { get; set; }
+    public string? AccessToken { get; set; }
 }
