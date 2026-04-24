@@ -210,7 +210,6 @@ public partial class IndexBase : ComponentBase, IDisposable
                 {
                     await Task.Delay(Constants.UI.NotificationCheckDelayMs);
                     await CheckPendingNotificationActionAsync();
-                    await CloudSyncService.AutoSyncOnStartAsync();
                 },
                 Logger,
                 Constants.SafeTaskOperations.CheckPendingNotificationAction

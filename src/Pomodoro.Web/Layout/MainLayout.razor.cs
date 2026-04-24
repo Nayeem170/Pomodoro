@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Layout;
 
@@ -10,6 +11,9 @@ public partial class MainLayoutBase : LayoutComponentBase, IDisposable
 
     [Inject]
     protected NavigationManager NavigationManager { get; set; } = default!;
+
+    [Inject]
+    protected ICloudSyncService CloudSyncService { get; set; } = default!;
 
     private DotNetObjectReference<MainLayoutBase>? _dotNetRef;
     private bool _isDisposed;
@@ -27,6 +31,8 @@ public partial class MainLayoutBase : LayoutComponentBase, IDisposable
                 Constants.Routing.AboutRoute
             };
             await JSRuntime.InvokeVoidAsync("swipeNavigation.init", _dotNetRef, routes);
+
+            await CloudSyncService.InitializeAsync();
         }
     }
 
