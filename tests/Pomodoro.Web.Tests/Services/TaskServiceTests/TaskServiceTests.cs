@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Pomodoro.Web;
 using Pomodoro.Web.Models;
@@ -33,7 +34,8 @@ public partial class TaskServiceTests
         return new TaskService(
             MockTaskRepository.Object,
             MockIndexedDb.Object,
-            AppState
+            AppState,
+            new ServiceCollection().BuildServiceProvider()
         );
     }
 

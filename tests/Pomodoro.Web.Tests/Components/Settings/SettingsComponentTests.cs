@@ -1,7 +1,10 @@
 using Bunit;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Pomodoro.Web.Components.Settings;
 using Pomodoro.Web.Models;
+using Pomodoro.Web.Services;
 using Xunit;
 
 namespace Pomodoro.Web.Tests.Settings;
@@ -20,8 +23,8 @@ public class TimerDurationSettingsTests : TestContext
         var settings = new TimerSettings { PomodoroMinutes = 30 };
         var cut = RenderComponent<TimerDurationSettings>(p => p.Add(x => x.Settings, settings));
 
-        var vals = cut.FindAll(".step-val");
-        vals[0].TextContent.Should().Be("30");
+        var vals = cut.FindAll(".step-input");
+        vals[0].GetAttribute("value").Should().Be("30");
     }
 
     [Fact]
@@ -30,8 +33,8 @@ public class TimerDurationSettingsTests : TestContext
         var settings = new TimerSettings { ShortBreakMinutes = 7 };
         var cut = RenderComponent<TimerDurationSettings>(p => p.Add(x => x.Settings, settings));
 
-        var vals = cut.FindAll(".step-val");
-        vals[1].TextContent.Should().Be("7");
+        var vals = cut.FindAll(".step-input");
+        vals[1].GetAttribute("value").Should().Be("7");
     }
 
     [Fact]
@@ -40,8 +43,8 @@ public class TimerDurationSettingsTests : TestContext
         var settings = new TimerSettings { LongBreakMinutes = 20 };
         var cut = RenderComponent<TimerDurationSettings>(p => p.Add(x => x.Settings, settings));
 
-        var vals = cut.FindAll(".step-val");
-        vals[2].TextContent.Should().Be("20");
+        var vals = cut.FindAll(".step-input");
+        vals[2].GetAttribute("value").Should().Be("20");
     }
 
     [Fact]
@@ -311,6 +314,7 @@ public class ClearConfirmationModalTests : TestContext
     public ClearConfirmationModalTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddSingleton(Mock.Of<ICloudSyncService>());
     }
 
     [Fact]

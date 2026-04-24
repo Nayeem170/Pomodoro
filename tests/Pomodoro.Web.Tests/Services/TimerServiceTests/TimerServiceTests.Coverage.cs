@@ -1,4 +1,5 @@
 using System.Threading;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Moq;
@@ -121,7 +122,7 @@ public partial class TimerServiceTests
             var jsTimerInterop = new JsTimerInterop(jsRuntime, jsTimerLogger.Object);
 
             var service = new TimerService(
-                MockIndexedDb.Object, MockSettingsRepository.Object, new DailyStatsService(MockIndexedDb.Object, AppState, new Mock<ILogger<DailyStatsService>>().Object), jsTimerInterop, AppState, MockLogger.Object);
+                MockIndexedDb.Object, MockSettingsRepository.Object, new DailyStatsService(MockIndexedDb.Object, AppState, new Mock<ILogger<DailyStatsService>>().Object), jsTimerInterop, AppState, MockLogger.Object, new ServiceCollection().BuildServiceProvider());
 
             var exception = await Record.ExceptionAsync(() => service.StartPomodoroAsync());
 
@@ -147,7 +148,7 @@ public partial class TimerServiceTests
             var jsTimerInterop = new JsTimerInterop(jsRuntime, jsTimerLogger.Object);
 
             var service = new TimerService(
-                MockIndexedDb.Object, MockSettingsRepository.Object, new DailyStatsService(MockIndexedDb.Object, AppState, new Mock<ILogger<DailyStatsService>>().Object), jsTimerInterop, AppState, MockLogger.Object);
+                MockIndexedDb.Object, MockSettingsRepository.Object, new DailyStatsService(MockIndexedDb.Object, AppState, new Mock<ILogger<DailyStatsService>>().Object), jsTimerInterop, AppState, MockLogger.Object, new ServiceCollection().BuildServiceProvider());
 
             var exception = await Record.ExceptionAsync(() => service.StartPomodoroAsync());
 
@@ -167,7 +168,7 @@ public partial class TimerServiceTests
             var jsTimerInterop = new JsTimerInterop(jsRuntime, jsTimerLogger.Object);
 
             var service = new TimerService(
-                MockIndexedDb.Object, MockSettingsRepository.Object, new DailyStatsService(MockIndexedDb.Object, AppState, new Mock<ILogger<DailyStatsService>>().Object), jsTimerInterop, AppState, MockLogger.Object);
+                MockIndexedDb.Object, MockSettingsRepository.Object, new DailyStatsService(MockIndexedDb.Object, AppState, new Mock<ILogger<DailyStatsService>>().Object), jsTimerInterop, AppState, MockLogger.Object, new ServiceCollection().BuildServiceProvider());
 
             var exception = await Record.ExceptionAsync(() => service.StartPomodoroAsync());
 
@@ -197,7 +198,7 @@ public partial class TimerServiceTests
                 .Returns(Task.CompletedTask);
 
             var service = new TimerService(
-                MockIndexedDb.Object, MockSettingsRepository.Object, new DailyStatsService(MockIndexedDb.Object, AppState, new Mock<ILogger<DailyStatsService>>().Object), jsTimerInterop, AppState, MockLogger.Object);
+                MockIndexedDb.Object, MockSettingsRepository.Object, new DailyStatsService(MockIndexedDb.Object, AppState, new Mock<ILogger<DailyStatsService>>().Object), jsTimerInterop, AppState, MockLogger.Object, new ServiceCollection().BuildServiceProvider());
             await service.InitializeAsync();
             await service.StartPomodoroAsync();
 
@@ -339,7 +340,7 @@ public partial class TimerServiceTests
                 .Returns(Task.CompletedTask);
 
             var service = new TimerService(
-                MockIndexedDb.Object, MockSettingsRepository.Object, new DailyStatsService(MockIndexedDb.Object, AppState, new Mock<ILogger<DailyStatsService>>().Object), jsTimerInterop, AppState, MockLogger.Object);
+                MockIndexedDb.Object, MockSettingsRepository.Object, new DailyStatsService(MockIndexedDb.Object, AppState, new Mock<ILogger<DailyStatsService>>().Object), jsTimerInterop, AppState, MockLogger.Object, new ServiceCollection().BuildServiceProvider());
             await service.InitializeAsync();
 
             await service.DisposeAsync();

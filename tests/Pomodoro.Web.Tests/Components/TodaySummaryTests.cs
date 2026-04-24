@@ -30,7 +30,7 @@ public class TodaySummaryTests : TestContext
             .Add(p => p.TasksWorkedOn, 0));
 
         // Assert
-        Assert.Contains("TODAY'S SUMMARY", cut.Markup);
+        Assert.NotNull(cut.Find(".pomo-row"));
     }
 
     [Fact]
@@ -44,7 +44,6 @@ public class TodaySummaryTests : TestContext
 
         // Assert
         Assert.Contains("25m", cut.Markup);
-        Assert.Contains("focused", cut.Markup);
     }
 
     [Fact]
@@ -58,7 +57,6 @@ public class TodaySummaryTests : TestContext
 
         // Assert
         Assert.Contains("3", cut.Markup);
-        Assert.Contains("pomodoros", cut.Markup);
     }
 
     [Fact]
@@ -72,7 +70,6 @@ public class TodaySummaryTests : TestContext
 
         // Assert
         Assert.Contains("5", cut.Markup);
-        Assert.Contains("tasks", cut.Markup);
     }
 
     [Fact]
@@ -183,19 +180,6 @@ public class TodaySummaryTests : TestContext
     #region Icon Tests
 
     [Fact]
-    public void TodaySummary_ShowsTimerIcon()
-    {
-        // Arrange & Act
-        var cut = RenderComponent<TodaySummary>(parameters => parameters
-            .Add(p => p.TotalFocusMinutes, 25)
-            .Add(p => p.PomodoroCount, 1)
-            .Add(p => p.TasksWorkedOn, 1));
-
-        // Assert
-        Assert.Contains("⏱️", cut.Markup);
-    }
-
-    [Fact]
     public void TodaySummary_ShowsPomodoroIcon()
     {
         // Arrange & Act
@@ -206,19 +190,6 @@ public class TodaySummaryTests : TestContext
 
         // Assert
         Assert.Contains("🍅", cut.Markup);
-    }
-
-    [Fact]
-    public void TodaySummary_ShowsTaskIcon()
-    {
-        // Arrange & Act
-        var cut = RenderComponent<TodaySummary>(parameters => parameters
-            .Add(p => p.TotalFocusMinutes, 25)
-            .Add(p => p.PomodoroCount, 1)
-            .Add(p => p.TasksWorkedOn, 1));
-
-        // Assert
-        Assert.Contains("📋", cut.Markup);
     }
 
     #endregion

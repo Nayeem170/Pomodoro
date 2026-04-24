@@ -46,7 +46,7 @@ public class KeyboardHelpModalTests : TestContext
             .Add(p => p.IsVisible, true));
 
         // Assert
-        var header = cut.Find(".modal-header h3");
+        var header = cut.Find(".modal-title span");
         Assert.NotNull(header);
         Assert.False(string.IsNullOrEmpty(header.TextContent));
     }

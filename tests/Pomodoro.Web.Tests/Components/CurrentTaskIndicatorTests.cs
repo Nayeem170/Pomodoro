@@ -22,7 +22,7 @@ public class CurrentTaskIndicatorTests : TestContext
             .Add(p => p.CurrentTaskId, (Guid?)null)
             .Add(p => p.Tasks, new List<TaskItem>()));
 
-        cut.Find(".current-task-indicator .task-label").TextContent.Should()
+        cut.Find(".active-task span").TextContent.Should()
             .Be(Constants.TaskUI.SelectTaskPrompt);
     }
 
@@ -37,10 +37,8 @@ public class CurrentTaskIndicatorTests : TestContext
             .Add(p => p.CurrentTaskId, taskId)
             .Add(p => p.Tasks, new List<TaskItem> { task }));
 
-        cut.Find(".current-task-indicator .task-label").TextContent.Should()
-            .Be(Constants.TaskUI.CurrentTaskLabel);
-        cut.Find(".current-task-indicator .task-name").TextContent.Should()
-            .Be("My Task");
+        cut.Find(".active-task span").TextContent.Should()
+            .Contain("My Task");
     }
 
     [Fact]
@@ -54,7 +52,7 @@ public class CurrentTaskIndicatorTests : TestContext
                 new() { Id = Guid.NewGuid(), Name = "Other Task" }
             }));
 
-        cut.Find(".current-task-indicator").ChildNodes.Should().BeEmpty();
+        cut.Markup.Should().NotContain("Other Task");
     }
 
     [Fact]
@@ -68,7 +66,7 @@ public class CurrentTaskIndicatorTests : TestContext
                 new() { Id = Guid.NewGuid(), Name = "Some Task" }
             }));
 
-        cut.Markup.Should().NotContain("current-task-indicator");
+        cut.Markup.Should().NotContain("active-task");
     }
 
     [Fact]
@@ -82,7 +80,7 @@ public class CurrentTaskIndicatorTests : TestContext
                 new() { Id = Guid.NewGuid(), Name = "Some Task" }
             }));
 
-        cut.Markup.Should().NotContain("current-task-indicator");
+        cut.Markup.Should().NotContain("active-task");
     }
 }
 

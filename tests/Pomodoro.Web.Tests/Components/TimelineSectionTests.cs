@@ -26,7 +26,7 @@ public class TimelineSectionTests : TestContext
             .Add(p => p.HasMoreActivities, false)
             .Add(p => p.IsLoadingMore, false));
 
-        Assert.Contains("0 activities", cut.Markup);
+        Assert.NotNull(cut.Find(".timeline-scroll-container"));
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class TimelineSectionTests : TestContext
             .Add(p => p.HasMoreActivities, false)
             .Add(p => p.IsLoadingMore, false));
 
-        Assert.Contains("0 activities", cut.Markup);
+        Assert.NotNull(cut.Find(".timeline-scroll-container"));
     }
 
     [Fact]
@@ -55,7 +55,9 @@ public class TimelineSectionTests : TestContext
             .Add(p => p.HasMoreActivities, false)
             .Add(p => p.IsLoadingMore, false));
 
-        Assert.Contains("3 activities", cut.Markup);
+        Assert.Contains("Test 1", cut.Markup);
+        Assert.Contains("Test 2", cut.Markup);
+        Assert.Contains("Test 3", cut.Markup);
     }
 
     [Fact]
@@ -82,7 +84,6 @@ public class TimelineSectionTests : TestContext
             .Add(p => p.HasMoreActivities, false)
             .Add(p => p.IsLoadingMore, false));
 
-        Assert.Contains("1 activities", cut.Markup);
         Assert.Contains("No more activities", cut.Markup);
     }
 
@@ -99,7 +100,6 @@ public class TimelineSectionTests : TestContext
             .Add(p => p.HasMoreActivities, true)
             .Add(p => p.IsLoadingMore, true));
 
-        Assert.Contains("1 activities", cut.Markup);
         Assert.Contains("Loading more activities...", cut.Markup);
     }
 
@@ -116,7 +116,6 @@ public class TimelineSectionTests : TestContext
             .Add(p => p.HasMoreActivities, true)
             .Add(p => p.IsLoadingMore, false));
 
-        Assert.Contains("1 activities", cut.Markup);
         Assert.DoesNotContain("Loading more activities...", cut.Markup);
         Assert.DoesNotContain("No more activities", cut.Markup);
     }
@@ -129,7 +128,7 @@ public class TimelineSectionTests : TestContext
             .Add(p => p.HasMoreActivities, false)
             .Add(p => p.IsLoadingMore, false));
 
-        Assert.Contains("Timeline", cut.Markup);
+        Assert.NotNull(cut.Find(".timeline-scroll-container"));
     }
 }
 

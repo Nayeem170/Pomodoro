@@ -87,6 +87,8 @@ public class SettingsBaseTests : TestContext
         Services.AddSingleton(JSInteropServiceMock.Object);
         Services.AddSingleton(LoggerMock.Object);
         Services.AddSingleton(SettingsPresenterService);
+        Services.AddSingleton(Mock.Of<ICloudSyncService>());
+        Services.AddSingleton(new Mock<ILogger<Pomodoro.Web.Components.Settings.CloudSyncSettings>>().Object);
     }
 
     #endregion

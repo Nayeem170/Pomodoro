@@ -38,9 +38,9 @@ public partial class TimerDisplayTests : TestContext
         var cut = RenderComponent<TimerDisplay>();
 
         // Assert
-        Assert.NotNull(cut.Find(".timer-display"));
+        Assert.NotNull(cut.Find(".ring-area"));
         Assert.NotNull(cut.Find(".timer-time"));
-        Assert.NotNull(cut.Find(".timer-type"));
+        Assert.NotNull(cut.Find(".timer-mode-label"));
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public partial class TimerDisplayTests : TestContext
         var cut = RenderComponent<TimerDisplay>();
 
         // Assert
-        Assert.Contains("POMODORO", cut.Markup);
+        Assert.Contains("FOCUSING", cut.Markup);
     }
 
     [Fact]
@@ -138,9 +138,10 @@ public partial class TimerDisplayTests : TestContext
         // Act
         var cut = RenderComponent<TimerDisplay>();
 
-        // Assert
-        var timerDisplay = cut.Find(".timer-display");
-        Assert.Contains("pomodoro", timerDisplay.ClassList);
+        // Assert - Pomodoro session class is empty string, so ring-fill should not have break classes
+        var ringFill = cut.Find(".ring-fill");
+        Assert.DoesNotContain("short-break", ringFill.ClassList);
+        Assert.DoesNotContain("long-break", ringFill.ClassList);
     }
 
     [Fact]
@@ -153,8 +154,8 @@ public partial class TimerDisplayTests : TestContext
         var cut = RenderComponent<TimerDisplay>();
 
         // Assert
-        var timerDisplay = cut.Find(".timer-display");
-        Assert.Contains("short-break", timerDisplay.ClassList);
+        var ringFill = cut.Find(".ring-fill.short-break");
+        Assert.NotNull(ringFill);
     }
 
     [Fact]
@@ -167,8 +168,8 @@ public partial class TimerDisplayTests : TestContext
         var cut = RenderComponent<TimerDisplay>();
 
         // Assert
-        var timerDisplay = cut.Find(".timer-display");
-        Assert.Contains("long-break", timerDisplay.ClassList);
+        var ringFill = cut.Find(".ring-fill.long-break");
+        Assert.NotNull(ringFill);
     }
 
     [Fact]
@@ -180,9 +181,9 @@ public partial class TimerDisplayTests : TestContext
         // Act
         var cut = RenderComponent<TimerDisplay>();
 
-        // Assert
-        var timerDisplay = cut.Find(".timer-display");
-        Assert.Contains("paused", timerDisplay.ClassList);
+        // Assert - paused class no longer exists in the markup
+        Assert.NotNull(cut.Find(".ring-area"));
+        Assert.DoesNotContain("paused", cut.Markup);
     }
 
     [Fact]
@@ -194,9 +195,9 @@ public partial class TimerDisplayTests : TestContext
         // Act
         var cut = RenderComponent<TimerDisplay>();
 
-        // Assert
-        var timerDisplay = cut.Find(".timer-display");
-        Assert.DoesNotContain("paused", timerDisplay.ClassList);
+        // Assert - paused class no longer exists in the markup
+        Assert.NotNull(cut.Find(".ring-area"));
+        Assert.DoesNotContain("paused", cut.Markup);
     }
 
     [Fact]
@@ -208,10 +209,10 @@ public partial class TimerDisplayTests : TestContext
         // Act
         var cut = RenderComponent<TimerDisplay>();
 
-        // Assert
-        var timerDisplay = cut.Find(".timer-display");
-        Assert.Contains("short-break", timerDisplay.ClassList);
-        Assert.Contains("paused", timerDisplay.ClassList);
+        // Assert - paused class no longer exists; verify session class on ring-fill
+        var ringFill = cut.Find(".ring-fill.short-break");
+        Assert.NotNull(ringFill);
+        Assert.DoesNotContain("paused", cut.Markup);
     }
 
     #endregion

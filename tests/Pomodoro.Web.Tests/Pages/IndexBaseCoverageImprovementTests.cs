@@ -49,6 +49,7 @@ namespace Pomodoro.Web.Tests.Pages
             PresenterLoggerMock = new Mock<ILogger<IndexPagePresenterService>>();
             IndexPagePresenterService = new IndexPagePresenterService(PresenterLoggerMock.Object);
 
+            TimerServiceMock.SetupGet(x => x.Settings).Returns(new TimerSettings());
             TimerServiceMock.Setup(x => x.PauseAsync()).Returns(Task.CompletedTask);
             TimerServiceMock.Setup(x => x.ResumeAsync()).Returns(Task.CompletedTask);
             TimerServiceMock.Setup(x => x.ResetAsync()).Returns(Task.CompletedTask);
@@ -69,6 +70,7 @@ namespace Pomodoro.Web.Tests.Pages
             Services.AddSingleton(IndexPagePresenterService);
             Services.AddSingleton(LoggerMock.Object);
             Services.AddSingleton(TimerThemeFormatter);
+            Services.AddSingleton(Mock.Of<ICloudSyncService>());
         }
 
         #region HandleTaskAdd Tests
