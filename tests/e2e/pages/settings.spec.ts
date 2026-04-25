@@ -59,12 +59,13 @@ test.describe('Settings Page', () => {
   });
 
   test('should auto-save settings when duration is changed', async ({ page }) => {
-    const input = page.locator('.step-input').first();
     const incrementBtn = page.locator('.step-btn[aria-label="Increase"]').first();
     await incrementBtn.click();
+    await incrementBtn.click();
     await page.waitForTimeout(300);
-    const currentValue = await input.inputValue();
-    expect(parseInt(currentValue)).toBeGreaterThan(25);
+
+    const input = page.locator('.step-input').first();
+    await expect(input).toHaveValue('27');
   });
 
   test('should disable clear button when clearing', async ({ page }) => {
@@ -81,22 +82,23 @@ test.describe('Settings Page', () => {
 
   test('should allow changing pomodoro duration value', async ({ page }) => {
     const input = page.locator('.step-input').first();
-    const incrementBtn = page.locator('.step-btn[aria-label="Increase"]').first();
-    await incrementBtn.click();
+    await expect(input).toBeVisible();
+
+    const decrementBtn = page.locator('.step-btn[aria-label="Decrease"]').first();
+    await decrementBtn.click();
     await page.waitForTimeout(300);
-    const currentValue = await input.inputValue();
-    expect(parseInt(currentValue)).toBeGreaterThan(25);
+
+    await expect(input).toHaveValue('24');
   });
 
   test('should persist pomodoro duration after reload', async ({ page }) => {
-    const input = page.locator('.step-input').first();
     const incrementBtn = page.locator('.step-btn[aria-label="Increase"]').first();
     await incrementBtn.click();
     await incrementBtn.click();
     await page.waitForTimeout(300);
 
-    const valueBefore = await input.inputValue();
-    expect(parseInt(valueBefore)).toBe(27);
+    const input = page.locator('.step-input').first();
+    await expect(input).toHaveValue('27');
 
     await page.reload();
     await pomodoroPage.openSettings();

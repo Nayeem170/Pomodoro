@@ -66,16 +66,16 @@ test.describe('Settings Flow', () => {
   });
 
   test('should reset to defaults and verify values reset', async ({ page }) => {
-    const input = page.locator('.step-input').first();
     const incrementBtn = page.locator('.step-btn[aria-label="Increase"]').first();
     await incrementBtn.click();
+    await incrementBtn.click();
     await page.waitForTimeout(300);
-    const valueBefore = await input.inputValue();
+    const valueBefore = await page.locator('.step-input').first().inputValue();
     expect(parseInt(valueBefore)).toBeGreaterThan(25);
 
     await pomodoroPage.resetToDefaults();
     await page.waitForTimeout(500);
-    await expect(input).toHaveValue('25');
+    await expect(page.locator('.step-input').first()).toHaveValue('25');
   });
 
   test('should show clear data confirmation modal', async ({ page }) => {
