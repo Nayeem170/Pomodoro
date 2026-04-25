@@ -14,16 +14,13 @@ test.describe('Settings Auto-Save', () => {
 
   test.afterEach(async ({ page }) => {
     await pomodoroPage.resetToDefaults();
-    await page.waitForTimeout(500);
   });
 
   test('should persist pomodoro duration after reload without save button', async ({ page }) => {
-    const input = page.locator('.step-input').first();
-    await input.click({ clickCount: 3 });
-    await input.pressSequentially('30');
-    await input.dispatchEvent('input');
+    await pomodoroPage.setPomodoroMinutes(30);
     await page.waitForTimeout(1000);
 
+    const input = page.locator('.step-input').first();
     await expect(input).toHaveValue('30');
 
     await page.reload();

@@ -64,7 +64,7 @@ test.describe('History Weekly View', () => {
   test('should display this week button', async ({ page }) => {
     await page.locator('#weekly-tab').click();
     await page.waitForTimeout(500);
-    await expect(page.locator('button.nav-qbtn')).toContainText('This Week');
+    await expect(page.locator('button.nav-qbtn')).toContainText('This week');
   });
 
   test('should navigate to previous week', async ({ page }) => {

@@ -1,41 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
-async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskName: string) {
-  await pomodoroPage.goto('/settings');
-  await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
-  const pomodoroInput = page.locator('.step-input').first();
-  await pomodoroInput.click({ clickCount: 3 });
-  await pomodoroInput.pressSequentially('1');
-  await pomodoroInput.dispatchEvent('input');
-  await pomodoroInput.dispatchEvent('change');
-  await page.waitForTimeout(500);
-  await pomodoroPage.goto('/');
-  await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
-  await pomodoroPage.addTask(taskName);
-  await pomodoroPage.selectTask(taskName);
-  await pomodoroPage.startTimer();
-  await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
-  await page.waitForTimeout(500);
-  await page.evaluate(async () => {
-    const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-    for (let i = 0; i < 60; i++) {
-      if ((window as any).timerFunctions?.dotNetRef) {
-        try {
-          await (window as any).timerFunctions.dotNetRef.invokeMethodAsync('OnTimerTickJs');
-        } catch { break; }
-      }
-      await delay(30);
-    }
-  });
-  await page.waitForTimeout(3000);
-  const consentOption = page.locator('.btn-option').filter({ hasText: /Skip/i });
-  if (await consentOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await consentOption.click();
-    await page.waitForTimeout(1000);
-  }
-}
-
 test.describe('Infinite Scroll Loading', () => {
   let pomodoroPage: PomodoroPage;
 
@@ -89,8 +54,16 @@ test.describe('Infinite Scroll Loading', () => {
 
   test('should display multiple activity rows after completing pomodoros', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
+    await pomodoroPage.goto('/');
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    await completePomodoroFast(page, pomodoroPage, 'Scroll Task A');
+    await pomodoroPage.addTask('Scroll Task A');
+    await pomodoroPage.selectTask('Scroll Task A');
+    await pomodoroPage.startTimer();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
+    await pomodoroPage.completePomodoroFast();
+    await pomodoroPage.skipConsentModal();
+
     await pomodoroPage.resetTimer();
     await page.waitForTimeout(500);
 
@@ -98,26 +71,12 @@ test.describe('Infinite Scroll Loading', () => {
     await pomodoroPage.selectTask('Scroll Task B');
     await pomodoroPage.startTimer();
     await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
-    await page.evaluate(async () => {
-      const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-      for (let i = 0; i < 60; i++) {
-        if ((window as any).timerFunctions?.dotNetRef) {
-          try {
-            await (window as any).timerFunctions.dotNetRef.invokeMethodAsync('OnTimerTickJs');
-          } catch { break; }
-        }
-        await delay(30);
-      }
-    });
-    await page.waitForTimeout(3000);
-    const consentOption = page.locator('.btn-option').filter({ hasText: /Skip/i });
-    if (await consentOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await consentOption.click();
-      await page.waitForTimeout(1000);
-    }
+    await pomodoroPage.completePomodoroFast();
+    await pomodoroPage.skipConsentModal();
 
     await pomodoroPage.openHistory();
     await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
+    await page.waitForTimeout(2000);
 
     const activityCount = await page.locator('.tl-row').count();
     expect(activityCount).toBeGreaterThanOrEqual(1);

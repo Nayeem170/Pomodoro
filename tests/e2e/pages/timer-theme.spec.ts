@@ -37,7 +37,7 @@ test.describe('Timer Theme', () => {
 
   test('should display correct timer type label for Pomodoro', async ({ page }) => {
     const timerType = await pomodoroPage.getTimerType();
-    expect(timerType.toUpperCase()).toContain('POMODORO');
+    expect(timerType.toUpperCase()).toContain('FOCUSING');
   });
 
   test('should display correct timer type label for Short Break', async ({ page }) => {

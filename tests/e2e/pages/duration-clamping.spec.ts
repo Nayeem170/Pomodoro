@@ -15,14 +15,14 @@ test.describe('Duration Input Clamping', () => {
   test('should have correct min/max attributes on pomodoro input', async ({ page }) => {
     const pomodoroInput = page.locator('.step-input').first();
     await expect(pomodoroInput).toHaveAttribute('min', '1');
-    await expect(pomodoroInput).toHaveAttribute('max', '60');
+    await expect(pomodoroInput).toHaveAttribute('max', '120');
   });
 
   test('should have correct min/max attributes on short break input', async ({ page }) => {
     const breakInputs = page.locator('.step-input');
     const shortBreakInput = breakInputs.nth(1);
     await expect(shortBreakInput).toHaveAttribute('min', '1');
-    await expect(shortBreakInput).toHaveAttribute('max', '30');
+    await expect(shortBreakInput).toHaveAttribute('max', '60');
   });
 
   test('should have correct min/max attributes on long break input', async ({ page }) => {

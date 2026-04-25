@@ -25,7 +25,7 @@ test.describe('Clear Confirmation Modal Text', () => {
     await expect(page.locator('.confirmation-modal')).toBeVisible({ timeout: 5000 });
 
     const modalText = await page.locator('.confirmation-modal').textContent();
-    expect(modalText?.toLowerCase()).toContain('local');
+    expect(modalText?.toLowerCase()).toContain('device');
   });
 
   test('should close clear confirmation modal with cancel button', async ({ page }) => {

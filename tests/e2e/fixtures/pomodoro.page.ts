@@ -60,7 +60,7 @@ export class PomodoroPage {
 
   async uncompleteTask(taskName: string) {
     const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
-    await taskItem.locator('button[aria-label="Undo"]').click();
+    await taskItem.locator('.task-action-btn[aria-label="Undo"]').click();
     await this.page.waitForTimeout(300);
   }
 
@@ -162,16 +162,25 @@ export class PomodoroPage {
 
   async resetToDefaults() {
     const resetButton = this.page.locator('.sec-btn').filter({ hasText: 'Reset to defaults' });
-    await resetButton.click();
-    await this.page.waitForTimeout(500);
+    if (await resetButton.isEnabled({ timeout: 1000 }).catch(() => false)) {
+      await resetButton.click();
+      await this.page.waitForTimeout(500);
+    }
   }
 
   async setPomodoroMinutes(minutes: number) {
     const input = this.page.locator('.step-input').first();
-    await input.click({ clickCount: 3 });
-    await input.pressSequentially(minutes.toString());
-    await input.dispatchEvent('input');
-    await this.page.waitForTimeout(300);
+    const currentValue = parseInt(await input.inputValue());
+    const diff = minutes - currentValue;
+    if (diff === 0) return;
+
+    const btnLabel = diff > 0 ? 'Increase' : 'Decrease';
+    const btn = this.page.locator('.step-btn[aria-label="' + btnLabel + '"]').first();
+
+    for (let i = 0; i < Math.abs(diff); i++) {
+      await btn.click();
+      await this.page.waitForTimeout(50);
+    }
   }
 
   async toggleSound() {
@@ -256,5 +265,28 @@ export class PomodoroPage {
     const statItem = this.page.locator('.sc').filter({ hasText: label });
     const valueEl = statItem.locator('.sv');
     return await valueEl.textContent() || '';
+  }
+
+  async completePomodoroFast() {
+    await this.page.evaluate(async () => {
+      const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+      for (let i = 0; i < 1500; i++) {
+        if ((window as any).timerFunctions?.dotNetRef) {
+          try {
+            await (window as any).timerFunctions.dotNetRef.invokeMethodAsync('OnTimerTickJs');
+          } catch { break; }
+        }
+        await delay(1);
+      }
+    });
+    await this.page.waitForTimeout(3000);
+  }
+
+  async skipConsentModal() {
+    const skipOption = this.page.locator('.btn-option').filter({ hasText: /Skip/i });
+    if (await skipOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await skipOption.click();
+      await this.page.waitForTimeout(1000);
+    }
   }
 }

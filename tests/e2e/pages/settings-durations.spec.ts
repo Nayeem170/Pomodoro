@@ -34,22 +34,14 @@ test.describe('Settings Timer Durations', () => {
   });
 
   test('should allow changing pomodoro duration', async ({ page }) => {
-    const inputs = page.locator('.step-input');
-    const pomodoroInput = inputs.nth(0);
-    await pomodoroInput.click({ clickCount: 3 });
-    await pomodoroInput.pressSequentially('30');
-    await pomodoroInput.dispatchEvent('input');
-    await pomodoroInput.dispatchEvent('change');
+    await pomodoroPage.setPomodoroMinutes(30);
     await page.waitForTimeout(500);
-    await expect(pomodoroInput).toHaveValue('30');
+    const inputs = page.locator('.step-input');
+    await expect(inputs.nth(0)).toHaveValue('30');
   });
 
   test('should auto-save when duration is changed', async ({ page }) => {
-    const inputs = page.locator('.step-input');
-    await inputs.nth(0).click({ clickCount: 3 });
-    await inputs.nth(0).pressSequentially('30');
-    await inputs.nth(0).dispatchEvent('input');
-    await inputs.nth(0).dispatchEvent('change');
+    await pomodoroPage.setPomodoroMinutes(30);
     await page.waitForTimeout(500);
 
     await page.reload();
@@ -61,11 +53,7 @@ test.describe('Settings Timer Durations', () => {
   });
 
   test('should reset durations to defaults', async ({ page }) => {
-    const inputs = page.locator('.step-input');
-    await inputs.nth(0).click({ clickCount: 3 });
-    await inputs.nth(0).pressSequentially('30');
-    await inputs.nth(0).dispatchEvent('input');
-    await inputs.nth(0).dispatchEvent('change');
+    await pomodoroPage.setPomodoroMinutes(30);
     await page.waitForTimeout(500);
 
     const resetButton = page.locator('.sec-btn').filter({ hasText: 'Reset to defaults' });
@@ -73,6 +61,7 @@ test.describe('Settings Timer Durations', () => {
     await resetButton.click();
     await page.waitForTimeout(500);
 
+    const inputs = page.locator('.step-input');
     await expect(inputs.nth(0)).toHaveValue('25');
     await expect(inputs.nth(1)).toHaveValue('5');
     await expect(inputs.nth(2)).toHaveValue('15');

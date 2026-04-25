@@ -14,7 +14,6 @@ test.describe('Daily Goal Stepper', () => {
 
   test.afterEach(async ({ page }) => {
     await pomodoroPage.resetToDefaults();
-    await page.waitForTimeout(500);
   });
 
   test('should display daily goal as 4th step-input', async ({ page }) => {

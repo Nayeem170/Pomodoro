@@ -1,39 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
-async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskName: string) {
-  await pomodoroPage.goto('/settings');
-  await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
-
-  const pomodoroInput = page.locator('.step-input').first();
-  await pomodoroInput.click({ clickCount: 3 });
-  await pomodoroInput.pressSequentially('1');
-  await pomodoroInput.dispatchEvent('input');
-  await page.waitForTimeout(500);
-
-  await pomodoroPage.goto('/');
-  await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
-
-  await pomodoroPage.addTask(taskName);
-  await pomodoroPage.selectTask(taskName);
-  await pomodoroPage.startTimer();
-  await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
-  await page.waitForTimeout(500);
-
-  await page.evaluate(async () => {
-    const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-    for (let i = 0; i < 60; i++) {
-      if ((window as any).timerFunctions?.dotNetRef) {
-        try {
-          await (window as any).timerFunctions.dotNetRef.invokeMethodAsync('OnTimerTickJs');
-        } catch { break; }
-      }
-      await delay(30);
-    }
-  });
-  await page.waitForTimeout(3000);
-}
-
 test.describe('History With Data', () => {
   let pomodoroPage: PomodoroPage;
 
@@ -41,7 +8,15 @@ test.describe('History With Data', () => {
 
   test('should display activity items after completing pomodoro', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
-    await completePomodoroFast(page, pomodoroPage, 'History Data Task');
+    await pomodoroPage.goto('/');
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
+
+    await pomodoroPage.addTask('History Data Task');
+    await pomodoroPage.selectTask('History Data Task');
+    await pomodoroPage.startTimer();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
+    await pomodoroPage.completePomodoroFast();
+    await pomodoroPage.skipConsentModal();
 
     await pomodoroPage.openHistory();
     await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
@@ -59,7 +34,15 @@ test.describe('History With Data', () => {
 
   test('should display non-zero stats after completing pomodoro', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
-    await completePomodoroFast(page, pomodoroPage, 'Stats Data Task');
+    await pomodoroPage.goto('/');
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
+
+    await pomodoroPage.addTask('Stats Data Task');
+    await pomodoroPage.selectTask('Stats Data Task');
+    await pomodoroPage.startTimer();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
+    await pomodoroPage.completePomodoroFast();
+    await pomodoroPage.skipConsentModal();
 
     await pomodoroPage.openHistory();
     await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
@@ -75,7 +58,15 @@ test.describe('History With Data', () => {
 
   test('should display focused time greater than zero after completing pomodoro', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
-    await completePomodoroFast(page, pomodoroPage, 'Focus Time Task');
+    await pomodoroPage.goto('/');
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
+
+    await pomodoroPage.addTask('Focus Time Task');
+    await pomodoroPage.selectTask('Focus Time Task');
+    await pomodoroPage.startTimer();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
+    await pomodoroPage.completePomodoroFast();
+    await pomodoroPage.skipConsentModal();
 
     await pomodoroPage.openHistory();
     await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
@@ -91,7 +82,15 @@ test.describe('History With Data', () => {
 
   test('should render time distribution chart after completing pomodoro', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
-    await completePomodoroFast(page, pomodoroPage, 'Chart Data Task');
+    await pomodoroPage.goto('/');
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
+
+    await pomodoroPage.addTask('Chart Data Task');
+    await pomodoroPage.selectTask('Chart Data Task');
+    await pomodoroPage.startTimer();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
+    await pomodoroPage.completePomodoroFast();
+    await pomodoroPage.skipConsentModal();
 
     await pomodoroPage.openHistory();
     await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
@@ -102,7 +101,15 @@ test.describe('History With Data', () => {
 
   test('should display weekly mini chart on weekly view after completing pomodoro', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
-    await completePomodoroFast(page, pomodoroPage, 'Weekly Chart Task');
+    await pomodoroPage.goto('/');
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
+
+    await pomodoroPage.addTask('Weekly Chart Task');
+    await pomodoroPage.selectTask('Weekly Chart Task');
+    await pomodoroPage.startTimer();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
+    await pomodoroPage.completePomodoroFast();
+    await pomodoroPage.skipConsentModal();
 
     await pomodoroPage.openHistory();
     await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });

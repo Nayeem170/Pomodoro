@@ -1,51 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
-async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskName: string) {
-  await pomodoroPage.goto('/settings');
-  await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
-
-  const pomodoroInput = page.locator('.step-input').first();
-  await pomodoroInput.click({ clickCount: 3 });
-  await pomodoroInput.pressSequentially('1');
-  await pomodoroInput.dispatchEvent('input');
-  await page.waitForTimeout(300);
-
-  const shortBreakInput = page.locator('.step-input').nth(1);
-  await shortBreakInput.click({ clickCount: 3 });
-  await shortBreakInput.pressSequentially('1');
-  await shortBreakInput.dispatchEvent('input');
-  await page.waitForTimeout(500);
-
-  await pomodoroPage.goto('/');
-  await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
-
-  await pomodoroPage.addTask(taskName);
-  await pomodoroPage.selectTask(taskName);
-  await pomodoroPage.startTimer();
-  await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
-  await page.waitForTimeout(500);
-
-  await page.evaluate(async () => {
-    const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-    for (let i = 0; i < 70; i++) {
-      if ((window as any).timerFunctions?.dotNetRef) {
-        try {
-          await (window as any).timerFunctions.dotNetRef.invokeMethodAsync('OnTimerTickJs');
-        } catch { break; }
-      }
-      await delay(50);
-    }
-  });
-  await page.waitForTimeout(3000);
-
-  const consentOption = page.locator('.btn-option').filter({ hasText: /Skip/i });
-  if (await consentOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await consentOption.click();
-    await page.waitForTimeout(1000);
-  }
-}
-
 test.describe('Activity Item Rendering', () => {
   let pomodoroPage: PomodoroPage;
 
@@ -56,10 +11,19 @@ test.describe('Activity Item Rendering', () => {
   });
 
   test('should render activity item with correct structure after pomodoro', async ({ page }) => {
-    await completePomodoroFast(page, pomodoroPage, 'Render Test Task');
+    await pomodoroPage.goto('/');
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    await pomodoroPage.goto('/history');
+    await pomodoroPage.addTask('Render Test Task');
+    await pomodoroPage.selectTask('Render Test Task');
+    await pomodoroPage.startTimer();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
+    await pomodoroPage.completePomodoroFast();
+    await pomodoroPage.skipConsentModal();
+
+    await pomodoroPage.openHistory();
     await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
+    await page.waitForTimeout(2000);
 
     const activityItem = page.locator('.tl-row').first();
     await expect(activityItem).toBeVisible({ timeout: 5000 });
@@ -78,7 +42,14 @@ test.describe('Activity Item Rendering', () => {
   });
 
   test('should render break activity with correct icon and name', async ({ page }) => {
-    await completePomodoroFast(page, pomodoroPage, 'Break Render Task');
+    await pomodoroPage.goto('/');
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
+
+    await pomodoroPage.addTask('Break Render Task');
+    await pomodoroPage.selectTask('Break Render Task');
+    await pomodoroPage.startTimer();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
+    await pomodoroPage.completePomodoroFast();
 
     const consentOption = page.locator('.btn-option').filter({ hasText: /Short Break/i });
     if (await consentOption.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -90,30 +61,13 @@ test.describe('Activity Item Rendering', () => {
         await pomodoroPage.startTimer();
       }
       await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
-      await page.waitForTimeout(500);
-
-      await page.evaluate(async () => {
-        const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-        for (let i = 0; i < 2000; i++) {
-          if ((window as any).timerFunctions?.dotNetRef) {
-            try {
-              await (window as any).timerFunctions.dotNetRef.invokeMethodAsync('OnTimerTickJs');
-            } catch { break; }
-          }
-          await delay(5);
-        }
-      });
-      await page.waitForTimeout(3000);
-
-      const skipOption = page.locator('.btn-option').filter({ hasText: /Skip/i });
-      if (await skipOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await skipOption.click();
-        await page.waitForTimeout(1000);
-      }
+      await pomodoroPage.completePomodoroFast();
+      await pomodoroPage.skipConsentModal();
     }
 
-    await pomodoroPage.goto('/history');
+    await pomodoroPage.openHistory();
     await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
+    await page.waitForTimeout(2000);
 
     const breakActivity = page.locator('.tl-row').filter({ hasText: /Short break/i }).first();
     if (await breakActivity.isVisible({ timeout: 2000 }).catch(() => false)) {

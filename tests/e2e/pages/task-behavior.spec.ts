@@ -1,36 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
-async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskName: string) {
-  await pomodoroPage.goto('/');
-  await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
-
-  await pomodoroPage.addTask(taskName);
-  await pomodoroPage.selectTask(taskName);
-  await pomodoroPage.startTimer();
-  await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
-  await page.waitForTimeout(500);
-
-  await page.evaluate(async () => {
-    const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-    for (let i = 0; i < 2000; i++) {
-      if ((window as any).timerFunctions?.dotNetRef) {
-        try {
-          await (window as any).timerFunctions.dotNetRef.invokeMethodAsync('OnTimerTickJs');
-        } catch { break; }
-      }
-      await delay(5);
-    }
-  });
-  await page.waitForTimeout(3000);
-
-  const consentOption = page.locator('.btn-option').filter({ hasText: /Skip/i });
-  if (await consentOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await consentOption.click();
-    await page.waitForTimeout(1000);
-  }
-}
-
 test.describe('Task Behavior', () => {
   let pomodoroPage: PomodoroPage;
 
@@ -75,7 +45,7 @@ test.describe('Task Behavior', () => {
     await expect(completedTask).toContainText('Complete Test Task');
     await expect(completedTask.locator('.task-text.completed')).toBeVisible();
 
-    const undoButton = completedTask.locator('button[aria-label="Undo"]');
+    const undoButton = completedTask.locator('.task-action-btn[aria-label="Undo"]');
     await expect(undoButton).toBeVisible();
 
     await undoButton.click();
@@ -88,7 +58,15 @@ test.describe('Task Behavior', () => {
   });
 
   test('should display task pomo count after completing a pomodoro', async ({ page }) => {
-    await completePomodoroFast(page, pomodoroPage, 'Stats Task');
+    await pomodoroPage.goto('/');
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
+
+    await pomodoroPage.addTask('Stats Task');
+    await pomodoroPage.selectTask('Stats Task');
+    await pomodoroPage.startTimer();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
+    await pomodoroPage.completePomodoroFast();
+    await pomodoroPage.skipConsentModal();
 
     const taskItem = page.locator('.task-row').filter({ hasText: 'Stats Task' });
     await expect(taskItem).toBeVisible();

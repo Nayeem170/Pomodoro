@@ -18,6 +18,7 @@ test.describe('Task CRUD', () => {
   });
 
   test('should add multiple tasks and verify order', async ({ page }) => {
+    await expect(page.locator('.task-row').filter({ hasText: 'First task' })).toBeVisible({ timeout: 10000 });
     await pomodoroPage.addTask('Second task');
     await pomodoroPage.addTask('Third task');
     const taskRows = page.locator('.task-items .task-row');

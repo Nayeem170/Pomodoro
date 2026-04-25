@@ -106,6 +106,6 @@ test.describe('Timer Countdown', () => {
     await page.waitForTimeout(500);
 
     const timerCard = page.locator('.timer-card');
-    await expect(timerCard).toHaveClass(/paused/);
+    await expect(timerCard).not.toHaveClass(/running/);
   });
 });

@@ -19,6 +19,7 @@ test.describe('Timer Flow', () => {
     await page.waitForTimeout(2000);
     const timeAfter = await pomodoroPage.getTimerDisplay();
     expect(timeBefore).not.toBe(timeAfter);
+    await pomodoroPage.pauseTimer();
   });
 
   test('should pause and resume the timer', async ({ page }) => {
