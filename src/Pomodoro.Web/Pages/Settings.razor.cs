@@ -81,7 +81,7 @@ public class SettingsPageBase : ComponentBase
         }
     }
 
-    protected async Task ShowTemporaryToastAsync(string message)
+    protected void ShowTemporaryToastAsync(string message)
     {
         ToastMessage = message;
         ShowToast = true;
@@ -128,7 +128,7 @@ public class SettingsPageBase : ComponentBase
         // Update original settings after save using Clone() for consistency
         OriginalSettings = Settings.Clone();
 
-        await ShowTemporaryToastAsync("Settings saved successfully!");
+        ShowTemporaryToastAsync("Settings saved successfully!");
     }
 
     public void ResetToDefaults()
@@ -141,7 +141,7 @@ public class SettingsPageBase : ComponentBase
         Settings = new TimerSettings();
         await TimerService.UpdateSettingsAsync(Settings);
         OriginalSettings = Settings.Clone();
-        await ShowTemporaryToastAsync("Settings reset to defaults!");
+        ShowTemporaryToastAsync("Settings reset to defaults!");
     }
 
     #endregion
@@ -159,7 +159,7 @@ public class SettingsPageBase : ComponentBase
             var filename = $"pomodoro-backup-{DateTime.Today:yyyy-MM-dd}.json";
             await SettingsPresenterService.DownloadFileAsync(JSInteropService, filename, json, "application/json");
 
-            await ShowTemporaryToastAsync("JSON backup exported successfully!");
+            ShowTemporaryToastAsync("JSON backup exported successfully!");
         }
         catch (Exception ex)
         {
@@ -219,7 +219,7 @@ public class SettingsPageBase : ComponentBase
 
                 IsImporting = false;
                 ImportResult = null;
-                await ShowTemporaryToastAsync(message);
+                ShowTemporaryToastAsync(message);
             }
             else
             {
@@ -267,7 +267,7 @@ public class SettingsPageBase : ComponentBase
             await ActivityService.ReloadAsync();
 
             IsClearing = false;
-            await ShowTemporaryToastAsync("All data cleared successfully!");
+            ShowTemporaryToastAsync("All data cleared successfully!");
         }
         catch (Exception ex)
         {

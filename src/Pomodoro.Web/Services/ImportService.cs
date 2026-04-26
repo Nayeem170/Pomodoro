@@ -39,7 +39,7 @@ public class ImportService : IImportService
                 return validationResult.Result;
             }
 
-            var parseResult = await ParseJsonDataAsync(jsonData);
+            var parseResult = ParseJsonDataAsync(jsonData);
             if (!parseResult.IsValid)
             {
                 return parseResult.Result;
@@ -82,7 +82,7 @@ public class ImportService : IImportService
         return (true, ImportResult.Succeeded(0, 0, 0, 0, false));
     }
 
-    private async Task<(bool IsValid, ImportResult Result, ExportData? ImportData)> ParseJsonDataAsync(string jsonData)
+    private (bool IsValid, ImportResult Result, ExportData? ImportData) ParseJsonDataAsync(string jsonData)
     {
         var options = new JsonSerializerOptions
         {
