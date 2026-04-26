@@ -8,7 +8,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,11 +16,6 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
 
       - uses: actions/cache@v4
         with:
@@ -31,7 +26,34 @@ jobs:
       - run: dotnet restore Pomodoro.sln
       - run: dotnet format Pomodoro.sln --verify-no-changes
       - run: dotnet build Pomodoro.sln --configuration Release --no-restore
-      - run: dotnet test Pomodoro.sln --configuration Release --no-restore --verbosity normal
+
+      - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
+      - run: rm -f bin/e2e-publish/wwwroot/_redirects bin/e2e-publish/wwwroot/_headers
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e2e-publish
+          path: bin/e2e-publish
+          retention-days: 1
+
+  unit-test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - run: dotnet restore Pomodoro.sln
+      - run: dotnet test Pomodoro.sln --configuration Release --verbosity normal
             --collect:"XPlat Code Coverage" --results-directory ./coverage
 
       - uses: codecov/codecov-action@v4
@@ -40,50 +62,8 @@ jobs:
           fail_ci_if_error: false
 
   e2e:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        shard:
-          - name: "timer"
-            tests: "tests/e2e/pages/timer*.spec.ts tests/e2e/pages/long-break*.spec.ts"
-          - name: "tasks"
-            tests: "tests/e2e/pages/task*.spec.ts tests/e2e/pages/tasks.spec.ts"
-          - name: "settings"
-            tests: "tests/e2e/pages/settings*.spec.ts tests/e2e/pages/duration*.spec.ts tests/e2e/pages/daily-goal*.spec.ts"
-          - name: "history"
-            tests: "tests/e2e/pages/history*.spec.ts tests/e2e/pages/activity*.spec.ts tests/e2e/pages/weekly*.spec.ts tests/e2e/pages/clear*.spec.ts tests/e2e/pages/infinite*.spec.ts"
-          - name: "integration-a"
-            tests: "tests/e2e/pages/consent*.spec.ts tests/e2e/pages/today*.spec.ts tests/e2e/pages/keyboard*.spec.ts tests/e2e/pages/pip*.spec.ts tests/e2e/pages/notification-url-params.spec.ts"
-          - name: "integration-b"
-            tests: "tests/e2e/pages/cloud*.spec.ts tests/e2e/pages/sound*.spec.ts tests/e2e/pages/notification-actions.spec.ts tests/e2e/pages/persistence.spec.ts tests/e2e/pages/mobile*.spec.ts"
-          - name: "integration-c"
-            tests: "tests/e2e/pages/about*.spec.ts tests/e2e/pages/pwa*.spec.ts tests/e2e/pages/error*.spec.ts tests/e2e/pages/not-found*.spec.ts tests/e2e/pages/broadcast*.spec.ts"
-          - name: "integration-d"
-            tests: "tests/e2e/pages/navigation.spec.ts tests/e2e/pages/page-title.spec.ts tests/e2e/pages/offline*.spec.ts tests/e2e/pages/swipe*.spec.ts tests/e2e/pages/index.spec.ts tests/e2e/pages/loading*.spec.ts tests/e2e/pages/mode*.spec.ts tests/e2e/pages/data*.spec.ts"
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.0.x'
-
-      - run: dotnet tool install --global dotnet-serve
-
-      - uses: ./.github/actions/setup-e2e
-
-      - uses: actions/cache@v4
-        id: publish-cache
-        with:
-          path: ./bin/e2e-publish
-          key: e2e-publish-${{ runner.os }}-${{ hashFiles('src/**', '**/*.csproj') }}
-      - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
-        if: steps.publish-cache.outputs.cache-hit != 'true'
-      - run: rm -f bin/e2e-publish/wwwroot/_redirects bin/e2e-publish/wwwroot/_headers
-
-      - name: Run E2E tests
-        run: npx playwright test ${{ matrix.shard.tests }} --reporter=list
-        env:
-          CI: true
-        shell: bash
+    needs: build
+    uses: ./.github/workflows/e2e.yml
+    with:
+      app_source: 'download'
+      reporter: 'list'
