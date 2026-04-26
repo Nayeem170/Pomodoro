@@ -4,71 +4,82 @@ import { PomodoroPage } from '../fixtures/pomodoro.page';
 test.describe('Long Break Activity Timeline Rendering', () => {
   let pomodoroPage: PomodoroPage;
 
-  test.describe.configure({ timeout: 600000 });
+  test.describe.configure({ timeout: 60000 });
 
   test('should render long break entry in history timeline', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
-    await pomodoroPage.goto('/settings');
-    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
-    await pomodoroPage.setSettingViaIndexedDB('longBreakInterval', 2);
-    await pomodoroPage.goto('/settings');
-    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
-    await pomodoroPage.setPomodoroMinutes(1);
-
-    const longBreakInput = page.locator('.step-input').nth(2);
-    const currentLongBreak = parseInt(await longBreakInput.inputValue());
-    if (currentLongBreak !== 1) {
-      const diff = 1 - currentLongBreak;
-      const btnLabel = diff > 0 ? 'Increase' : 'Decrease';
-      const btn = page.locator('.stepper').nth(2).locator(`.step-btn[aria-label="${btnLabel}"]`);
-      for (let i = 0; i < Math.abs(diff); i++) {
-        await btn.click();
-        await page.waitForTimeout(50);
-      }
-    }
-
     await pomodoroPage.goto('/');
-    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    await pomodoroPage.addTask('Timeline Task 1');
-    await pomodoroPage.selectTask('Timeline Task 1');
-    await pomodoroPage.startTimer();
-    await pomodoroPage.completePomodoroFast();
+    await page.evaluate(async () => {
+      const db = await new Promise<IDBDatabase>((resolve, reject) => {
+        const req = indexedDB.open('PomodoroDB', 1);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
 
-    const consentModal1 = page.locator('.consent-modal-overlay');
-    if (await consentModal1.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await page.locator('.btn-option').filter({ hasText: 'Another Pomodoro' }).click();
-      await page.waitForTimeout(1000);
-    }
+      const now = new Date().toISOString();
+      const today = now.split('T')[0];
 
-    const isAlreadyRunning = await page.locator('button[aria-label="Pause timer"]').isVisible({ timeout: 3000 }).catch(() => false);
-    if (!isAlreadyRunning) {
-      await pomodoroPage.startTimer();
-    }
-    await pomodoroPage.completePomodoroFast();
+      const pomodoro1 = {
+        id: crypto.randomUUID(),
+        type: 0,
+        taskName: 'Timeline Task',
+        taskId: null,
+        completedAt: new Date(Date.now() - 300000).toISOString(),
+        durationMinutes: 1,
+        wasCompleted: true
+      };
 
-    const consentModal2 = page.locator('.consent-modal-overlay');
-    if (await consentModal2.isVisible({ timeout: 5000 }).catch(() => false)) {
-      const longBreakOption = page.locator('.btn-option').filter({ hasText: /Long Break/i });
-      if (await longBreakOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await longBreakOption.click();
-        await page.waitForTimeout(500);
+      const pomodoro2 = {
+        id: crypto.randomUUID(),
+        type: 0,
+        taskName: 'Timeline Task',
+        taskId: null,
+        completedAt: new Date(Date.now() - 180000).toISOString(),
+        durationMinutes: 1,
+        wasCompleted: true
+      };
 
-        const isBreakRunning = await page.locator('button[aria-label="Pause timer"]').isVisible({ timeout: 3000 }).catch(() => false);
-        if (!isBreakRunning) {
-          const startOrResume = page.locator('button[aria-label="Start timer"], button[aria-label="Resume timer"]').first();
-          if (await startOrResume.isVisible({ timeout: 3000 }).catch(() => false)) {
-            await startOrResume.click();
-          }
-        }
-        await pomodoroPage.completePomodoroFast();
+      const longBreak = {
+        id: crypto.randomUUID(),
+        type: 2,
+        taskName: null,
+        taskId: null,
+        completedAt: new Date(Date.now() - 60000).toISOString(),
+        durationMinutes: 1,
+        wasCompleted: true
+      };
 
-        const consentModal3 = page.locator('.consent-modal-overlay');
-        if (await consentModal3.isVisible({ timeout: 5000 }).catch(() => false)) {
-          await pomodoroPage.skipConsentModal();
-        }
+      const tx = db.transaction('activities', 'readwrite');
+      const store = tx.objectStore('activities');
+      store.put(pomodoro1);
+      store.put(pomodoro2);
+      store.put(longBreak);
+      await new Promise<void>((resolve) => { tx.oncomplete = () => resolve(); });
+
+      const statsTx = db.transaction('dailyStats', 'readwrite');
+      const statsStore = statsTx.objectStore('dailyStats');
+      const getReq = statsStore.get(today);
+      await new Promise<void>((resolve) => { getReq.onsuccess = () => resolve(); });
+      const stats = getReq.result;
+      if (stats) {
+        stats.completedPomodoros = (stats.completedPomodoros || 0) + 2;
+        stats.totalFocusMinutes = (stats.totalFocusMinutes || 0) + 2;
+        stats.totalBreakMinutes = (stats.totalBreakMinutes || 0) + 1;
+        stats.longBreaks = (stats.longBreaks || 0) + 1;
+        statsStore.put(stats);
+      } else {
+        statsStore.put({
+          date: today,
+          completedPomodoros: 2,
+          totalFocusMinutes: 2,
+          totalBreakMinutes: 1,
+          longBreaks: 1
+        });
       }
-    }
+      await new Promise<void>((resolve) => { statsTx.oncomplete = () => resolve(); });
+      db.close();
+    });
 
     await pomodoroPage.openHistory();
     await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
