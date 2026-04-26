@@ -12,10 +12,6 @@ test.describe('Keyboard Shortcuts', () => {
     await pomodoroPage.goto('/');
   });
 
-  test.afterAll(async () => {
-    await pomodoroPage.page.close();
-  });
-
   test('should open keyboard help modal with button', async () => {
     await pomodoroPage.openKeyboardHelp();
     await expect(pomodoroPage.page.locator('.keyboard-help-modal.visible')).toBeVisible();
