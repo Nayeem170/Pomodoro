@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       run_e2e:
-        description: 'Run full E2E suite (11 shards)'
+        description: 'Run full E2E suite (17 shards)'
         required: false
         default: true
         type: boolean
@@ -90,6 +90,15 @@ jobs:
       reporter: 'list,html'
       continue_on_error: true
       upload_report: true
+
+  e2e-gate:
+    needs: e2e
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.run_e2e == 'true' }}
+    steps:
+      - run: exit 1
+        if: needs.e2e.result != 'success'
+      - run: echo "All E2E tests passed"
 
   pages:
     name: Deploy to GitHub Pages
