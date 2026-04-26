@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       run_e2e:
-        description: 'Run full E2E suite (8 shards)'
+        description: 'Run full E2E suite (11 shards)'
         required: false
         default: true
         type: boolean
@@ -93,18 +93,24 @@ jobs:
       fail-fast: false
       matrix:
         shard:
-          - name: "timer"
-            tests: "tests/e2e/pages/timer*.spec.ts tests/e2e/pages/long-break*.spec.ts"
+          - name: "timer-a"
+            tests: "tests/e2e/pages/timer.spec.ts tests/e2e/pages/timer-completion.spec.ts tests/e2e/pages/timer-countdown.spec.ts tests/e2e/pages/timer-reload-contract.spec.ts"
+          - name: "timer-b"
+            tests: "tests/e2e/pages/timer-ring-progress.spec.ts tests/e2e/pages/timer-theme.spec.ts tests/e2e/pages/timer-visibility-sync.spec.ts tests/e2e/pages/long-break*.spec.ts"
           - name: "tasks"
             tests: "tests/e2e/pages/task*.spec.ts tests/e2e/pages/tasks.spec.ts"
           - name: "settings"
             tests: "tests/e2e/pages/settings*.spec.ts tests/e2e/pages/duration*.spec.ts tests/e2e/pages/daily-goal*.spec.ts"
           - name: "history"
             tests: "tests/e2e/pages/history*.spec.ts tests/e2e/pages/activity*.spec.ts tests/e2e/pages/weekly*.spec.ts tests/e2e/pages/clear*.spec.ts tests/e2e/pages/infinite*.spec.ts"
-          - name: "integration-a"
-            tests: "tests/e2e/pages/consent*.spec.ts tests/e2e/pages/today*.spec.ts tests/e2e/pages/keyboard*.spec.ts tests/e2e/pages/pip*.spec.ts tests/e2e/pages/notification-url-params.spec.ts"
-          - name: "integration-b"
-            tests: "tests/e2e/pages/cloud*.spec.ts tests/e2e/pages/sound*.spec.ts tests/e2e/pages/notification-actions.spec.ts tests/e2e/pages/persistence.spec.ts tests/e2e/pages/mobile*.spec.ts"
+          - name: "integration-a1"
+            tests: "tests/e2e/pages/consent*.spec.ts tests/e2e/pages/today-summary.spec.ts tests/e2e/pages/today-summary-progress.spec.ts tests/e2e/pages/keyboard*.spec.ts"
+          - name: "integration-a2"
+            tests: "tests/e2e/pages/today-summary-updates.spec.ts tests/e2e/pages/pip*.spec.ts tests/e2e/pages/notification-url-params.spec.ts"
+          - name: "integration-b1"
+            tests: "tests/e2e/pages/cloud-sync.spec.ts tests/e2e/pages/cloud-sync-mocked.spec.ts tests/e2e/pages/cloud-sync-states.spec.ts tests/e2e/pages/notification-actions.spec.ts"
+          - name: "integration-b2"
+            tests: "tests/e2e/pages/cloud-sync-toast.spec.ts tests/e2e/pages/sound*.spec.ts tests/e2e/pages/persistence.spec.ts tests/e2e/pages/mobile*.spec.ts"
           - name: "integration-c"
             tests: "tests/e2e/pages/about*.spec.ts tests/e2e/pages/pwa*.spec.ts tests/e2e/pages/error*.spec.ts tests/e2e/pages/not-found*.spec.ts tests/e2e/pages/broadcast*.spec.ts"
           - name: "integration-d"
