@@ -12,16 +12,15 @@ test.describe('Picture-in-Picture Timer', () => {
   test.describe.configure({ timeout: 60000 });
 
   test('should display PiP toggle button in header', async ({ page }) => {
-    await expect(page.locator('button:has-text("⧉")')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('button[aria-label="Picture in Picture"]')).toBeVisible({ timeout: 30000 });
   });
 
   test('should have PiP button with correct title', async ({ page }) => {
-    const pipButton = page.locator('button:has-text("⧉")');
+    const pipButton = page.locator('button[aria-label="Picture in Picture"]');
     await expect(pipButton).toHaveAttribute('title', /floating timer/i);
   });
 
   test('should check PiP API support without crashing', async ({ page }) => {
-    // Verify the app checks for PiP support on load
     const hasPipError = await page.evaluate(() => {
       const errors = (window as any).__consoleErrors || [];
       return errors.some((e: string) => e.includes('pip') || e.includes('Picture-in-Picture'));
@@ -30,16 +29,14 @@ test.describe('Picture-in-Picture Timer', () => {
   });
 
   test('should toggle PiP button state on click', async ({ page }) => {
-    const pipButton = page.locator('button:has-text("⧉")');
+    const pipButton = page.locator('button[aria-label="Picture in Picture"]');
     const initialTitle = await pipButton.getAttribute('title');
     await pipButton.click();
     await page.waitForTimeout(1000);
 
-    // Button should still be visible and functional after click
     await expect(pipButton).toBeVisible();
 
-    // In environments without PiP support, the button should not crash the app
-    await expect(page.locator('.timer-section')).toBeVisible();
+    await expect(page.locator('.main-container')).toBeVisible();
     await expect(page.locator('.tasks-section')).toBeVisible();
   });
 
@@ -52,35 +49,30 @@ test.describe('Picture-in-Picture Timer', () => {
   });
 
   test('should show error banner when PiP popup is blocked', async ({ page }) => {
-    // Remove Document PiP API to force fallback popup path
     await page.evaluate(() => {
       delete (window as any).documentPictureInPicture;
     });
 
-    // Override window.open to return null (simulating popup blocked)
     await page.evaluate(() => {
       (window as any).open = () => null;
     });
 
-    const pipButton = page.locator('button:has-text("⧉")');
+    const pipButton = page.locator('button[aria-label="Picture in Picture"]');
     await pipButton.click();
     await page.waitForTimeout(1000);
 
-    // Error banner should be visible with popup blocked message
     const errorBanner = page.locator('.error-banner');
     await expect(errorBanner).toBeVisible({ timeout: 5000 });
     await expect(errorBanner).toContainText(/pop-up blocked/i);
   });
 
   test('should handle PiP close gracefully', async ({ page }) => {
-    // Simulate PiP window close event
     await page.evaluate(() => {
       window.dispatchEvent(new Event('pipclosed'));
     });
     await page.waitForTimeout(500);
 
-    // App should remain functional
-    await expect(page.locator('.timer-section')).toBeVisible();
-    await expect(page.locator('button:has-text("⧉")')).toBeVisible();
+    await expect(page.locator('.main-container')).toBeVisible();
+    await expect(page.locator('button[aria-label="Picture in Picture"]')).toBeVisible();
   });
 });

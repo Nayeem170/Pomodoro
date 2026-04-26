@@ -12,96 +12,95 @@ test.describe('History Weekly View', () => {
   test.describe.configure({ timeout: 60000 });
 
   test('should display weekly view when switched', async ({ page }) => {
-    await page.locator('button:has-text("Weekly")').click();
+    await page.locator('#weekly-tab').click();
     await page.waitForTimeout(500);
-    await expect(page.locator('.weekly-view')).toBeVisible();
+    await expect(page.locator('.stat-grid').first()).toBeVisible();
   });
 
   test('should display weekly summary section', async ({ page }) => {
-    await page.locator('button:has-text("Weekly")').click();
+    await page.locator('#weekly-tab').click();
     await page.waitForTimeout(500);
-    await expect(page.locator('.weekly-summary-section')).toBeVisible();
-    await expect(page.locator('.weekly-summary-section h2')).toContainText('Weekly Summary');
+    await expect(page.locator('.stat-grid').first()).toBeVisible();
   });
 
   test('should display weekly stats', async ({ page }) => {
-    await page.locator('button:has-text("Weekly")').click();
+    await page.locator('#weekly-tab').click();
     await page.waitForTimeout(500);
-    await expect(page.locator('.weekly-stats')).toBeVisible();
+    await expect(page.locator('.stat-grid').first()).toBeVisible();
   });
 
-  test('should display minutes this week stat', async ({ page }) => {
-    await page.locator('button:has-text("Weekly")').click();
+  test('should display focus time stat', async ({ page }) => {
+    await page.locator('#weekly-tab').click();
     await page.waitForTimeout(500);
-    await expect(page.locator('.stat-label').filter({ hasText: 'Minutes This Week' })).toBeVisible();
+    await expect(page.locator('.sl').filter({ hasText: 'Focus time' })).toBeVisible();
   });
 
   test('should display pomodoros stat', async ({ page }) => {
-    await page.locator('button:has-text("Weekly")').click();
+    await page.locator('#weekly-tab').click();
     await page.waitForTimeout(500);
-    await expect(page.locator('.stat-label').filter({ hasText: 'Pomodoros' })).toBeVisible();
+    await expect(page.locator('.sl').filter({ hasText: 'Pomodoros' })).toBeVisible();
   });
 
   test('should display daily average stat', async ({ page }) => {
-    await page.locator('button:has-text("Weekly")').click();
+    await page.locator('#weekly-tab').click();
     await page.waitForTimeout(500);
-    await expect(page.locator('.stat-label').filter({ hasText: 'Daily Average' })).toBeVisible();
+    await expect(page.locator('.sl').filter({ hasText: 'Daily avg' })).toBeVisible();
   });
 
   test('should display weekly trend chart section', async ({ page }) => {
-    await page.locator('button:has-text("Weekly")').click();
+    await page.locator('#weekly-tab').click();
     await page.waitForTimeout(500);
-    await expect(page.locator('.weekly-chart-section')).toBeVisible();
-    await expect(page.locator('.weekly-chart-section h2')).toContainText('Weekly Trend');
+    await expect(page.locator('.card-title').filter({ hasText: 'Sessions per day' })).toBeVisible();
+    await expect(page.locator('.weekly-chart')).toBeVisible();
   });
 
   test('should display week navigator', async ({ page }) => {
-    await page.locator('button:has-text("Weekly")').click();
+    await page.locator('#weekly-tab').click();
     await page.waitForTimeout(500);
-    await expect(page.locator('.date-navigator-container')).toBeVisible();
-    await expect(page.locator('.date-navigator .current-date')).toBeVisible();
+    await expect(page.locator('.period-nav')).toBeVisible();
+    await expect(page.locator('.period-lbl')).toBeVisible();
   });
 
   test('should display this week button', async ({ page }) => {
-    await page.locator('button:has-text("Weekly")').click();
+    await page.locator('#weekly-tab').click();
     await page.waitForTimeout(500);
-    await expect(page.locator('.date-navigator .today-btn')).toContainText('This Week');
+    await expect(page.locator('button.nav-qbtn')).toContainText('This week');
   });
 
   test('should navigate to previous week', async ({ page }) => {
-    await page.locator('button:has-text("Weekly")').click();
+    await page.locator('#weekly-tab').click();
     await page.waitForTimeout(500);
-    const currentWeek = await page.locator('.date-navigator .current-date').textContent();
-    await page.locator('.date-navigator .nav-btn').filter({ hasText: '◀' }).click();
+    const currentWeek = await page.locator('.period-lbl').textContent();
+    await page.locator('button.nav-arr[title="Previous week"]').click();
     await page.waitForTimeout(500);
-    const prevWeek = await page.locator('.date-navigator .current-date').textContent();
+    const prevWeek = await page.locator('.period-lbl').textContent();
     expect(prevWeek).not.toBe(currentWeek);
   });
 
   test('should navigate to next week', async ({ page }) => {
-    await page.locator('button:has-text("Weekly")').click();
+    await page.locator('#weekly-tab').click();
     await page.waitForTimeout(500);
-    const currentWeek = await page.locator('.date-navigator .current-date').textContent();
-    await page.locator('.date-navigator .nav-btn').filter({ hasText: '◀' }).click();
+    const currentWeek = await page.locator('.period-lbl').textContent();
+    await page.locator('button.nav-arr[title="Previous week"]').click();
     await page.waitForTimeout(500);
-    const prevWeek = await page.locator('.date-navigator .current-date').textContent();
-    await page.locator('.date-navigator .nav-btn').filter({ hasText: '▶' }).click();
+    const prevWeek = await page.locator('.period-lbl').textContent();
+    await page.locator('button.nav-arr[title="Next week"]').click();
     await page.waitForTimeout(500);
-    const nextWeek = await page.locator('.date-navigator .current-date').textContent();
+    const nextWeek = await page.locator('.period-lbl').textContent();
     expect(prevWeek).not.toBe(currentWeek);
     expect(nextWeek).toBe(currentWeek);
   });
 
   test('should return to this week when button is clicked', async ({ page }) => {
-    await page.locator('button:has-text("Weekly")').click();
+    await page.locator('#weekly-tab').click();
     await page.waitForTimeout(500);
-    await page.locator('.date-navigator .nav-btn').filter({ hasText: '◀' }).click();
+    await page.locator('button.nav-arr[title="Previous week"]').click();
     await page.waitForTimeout(500);
-    const prevWeek = await page.locator('.date-navigator .current-date').textContent();
+    const prevWeek = await page.locator('.period-lbl').textContent();
 
-    await page.locator('.date-navigator .today-btn').click();
+    await page.locator('button.nav-qbtn').click();
     await page.waitForTimeout(500);
-    const thisWeek = await page.locator('.date-navigator .current-date').textContent();
+    const thisWeek = await page.locator('.period-lbl').textContent();
     expect(thisWeek).not.toBe(prevWeek);
   });
 });

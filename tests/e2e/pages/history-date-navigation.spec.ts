@@ -12,51 +12,51 @@ test.describe('History Date Navigation', () => {
   test.describe.configure({ timeout: 60000 });
 
   test('should display date navigator with current date', async ({ page }) => {
-    await expect(page.locator('.date-navigator')).toBeVisible();
-    await expect(page.locator('.date-navigator .current-date')).toBeVisible();
+    await expect(page.locator('.period-nav')).toBeVisible();
+    await expect(page.locator('.period-lbl')).toBeVisible();
   });
 
   test('should display previous day button', async ({ page }) => {
-    await expect(page.locator('.date-navigator .nav-btn').filter({ hasText: '◀' })).toBeVisible();
+    await expect(page.locator('button.nav-arr[title="Previous day"]')).toBeVisible();
   });
 
   test('should display next day button', async ({ page }) => {
-    await expect(page.locator('.date-navigator .nav-btn').filter({ hasText: '▶' })).toBeVisible();
+    await expect(page.locator('button.nav-arr[title="Next day"]')).toBeVisible();
   });
 
   test('should display today button', async ({ page }) => {
-    await expect(page.locator('.date-navigator .today-btn')).toBeVisible();
-    await expect(page.locator('.date-navigator .today-btn')).toContainText('Today');
+    await expect(page.locator('button.nav-qbtn')).toBeVisible();
+    await expect(page.locator('button.nav-qbtn')).toContainText('Today');
   });
 
   test('should navigate to previous day', async ({ page }) => {
-    const currentDate = await page.locator('.date-navigator .current-date').textContent();
-    await page.locator('.date-navigator .nav-btn').filter({ hasText: '◀' }).click();
+    const currentDate = await page.locator('.period-lbl').textContent();
+    await page.locator('button.nav-arr[title="Previous day"]').click();
     await page.waitForTimeout(500);
-    const newDate = await page.locator('.date-navigator .current-date').textContent();
+    const newDate = await page.locator('.period-lbl').textContent();
     expect(newDate).not.toBe(currentDate);
   });
 
   test('should navigate to next day', async ({ page }) => {
-    const currentDate = await page.locator('.date-navigator .current-date').textContent();
-    await page.locator('.date-navigator .nav-btn').filter({ hasText: '◀' }).click();
+    const currentDate = await page.locator('.period-lbl').textContent();
+    await page.locator('button.nav-arr[title="Previous day"]').click();
     await page.waitForTimeout(500);
-    const prevDate = await page.locator('.date-navigator .current-date').textContent();
-    await page.locator('.date-navigator .nav-btn').filter({ hasText: '▶' }).click();
+    const prevDate = await page.locator('.period-lbl').textContent();
+    await page.locator('button.nav-arr[title="Next day"]').click();
     await page.waitForTimeout(500);
-    const nextDate = await page.locator('.date-navigator .current-date').textContent();
+    const nextDate = await page.locator('.period-lbl').textContent();
     expect(prevDate).not.toBe(currentDate);
     expect(nextDate).toBe(currentDate);
   });
 
   test('should return to today when today button is clicked', async ({ page }) => {
-    await page.locator('.date-navigator .nav-btn').filter({ hasText: '◀' }).click();
+    await page.locator('button.nav-arr[title="Previous day"]').click();
     await page.waitForTimeout(500);
-    const prevDate = await page.locator('.date-navigator .current-date').textContent();
+    const prevDate = await page.locator('.period-lbl').textContent();
 
-    await page.locator('.date-navigator .today-btn').click();
+    await page.locator('button.nav-qbtn').click();
     await page.waitForTimeout(500);
-    const todayDate = await page.locator('.date-navigator .current-date').textContent();
+    const todayDate = await page.locator('.period-lbl').textContent();
     expect(todayDate).not.toBe(prevDate);
   });
 });

@@ -9,7 +9,7 @@ test.describe('Notification Action Buttons', () => {
   test('should have notification service initialized with permission grant capability', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     const hasNotificationApi = await page.evaluate(() => {
       return 'Notification' in window;
@@ -20,7 +20,7 @@ test.describe('Notification Action Buttons', () => {
   test('should have notification permission state accessible', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     const permissionState = await page.evaluate(() => {
       if ('Notification' in window) {
@@ -34,14 +34,15 @@ test.describe('Notification Action Buttons', () => {
   test('should not crash when requesting notification permission', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/settings');
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
     await page.context().grantPermissions(['notifications']);
 
-    await page.locator('label[for="notifToggle"]').click();
+    const notifToggle = page.locator('.sr-lbl').filter({ hasText: 'Browser notifications' }).locator('..').locator('.tog');
+    await notifToggle.click();
     await page.waitForTimeout(500);
 
-    await expect(page.locator('.settings-page')).toBeVisible();
+    await expect(page.locator('.sett-body')).toBeVisible();
     const hasError = await page.locator('.error-banner').isVisible().catch(() => false);
     expect(hasError).toBe(false);
   });

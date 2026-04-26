@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
-test.describe('Task Status Icons', () => {
+test.describe('Task Pomo Count Display', () => {
   let pomodoroPage: PomodoroPage;
 
   test.describe.configure({ timeout: 60000 });
@@ -10,36 +10,36 @@ test.describe('Task Status Icons', () => {
     pomodoroPage = new PomodoroPage(page);
   });
 
-  test('should show default icon for new task', async ({ page }) => {
+  test('should show pomo count for new task', async ({ page }) => {
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    await pomodoroPage.addTask('Icon Test Task');
+    await pomodoroPage.addTask('Pomo Count Task');
 
-    const statusIcon = page.locator('.task-item').filter({ hasText: 'Icon Test Task' }).locator('.task-status');
-    await expect(statusIcon).toContainText('📝');
+    const pomoCount = page.locator('.task-row').filter({ hasText: 'Pomo Count Task' }).locator('.task-pomo-count');
+    await expect(pomoCount).toBeVisible();
   });
 
-  test('should show completed icon for completed task', async ({ page }) => {
+  test('should show pomo count for completed task', async ({ page }) => {
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    await pomodoroPage.addTask('Complete Icon Task');
-    await pomodoroPage.completeTask('Complete Icon Task');
+    await pomodoroPage.addTask('Completed Pomo Task');
+    await pomodoroPage.completeTask('Completed Pomo Task');
     await page.waitForTimeout(500);
 
-    const statusIcon = page.locator('.completed-section .task-item').filter({ hasText: 'Complete Icon Task' }).locator('.task-status');
-    await expect(statusIcon).toContainText('✅');
+    const pomoCount = page.locator('.completed-section .task-row').filter({ hasText: 'Completed Pomo Task' }).locator('.task-pomo-count');
+    await expect(pomoCount).toBeVisible();
   });
 
-  test('should show has-pomodoros icon after completing a pomodoro', async ({ page }) => {
+  test('should update pomo count after completing a pomodoro', async ({ page }) => {
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    await pomodoroPage.addTask('Pomo Icon Task');
-    await pomodoroPage.selectTask('Pomo Icon Task');
+    await pomodoroPage.addTask('Pomo Update Task');
+    await pomodoroPage.selectTask('Pomo Update Task');
     await pomodoroPage.startTimer();
-    await expect(page.locator('.btn-pause')).toBeVisible();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
     await page.waitForTimeout(500);
 
     await page.evaluate(async () => {
@@ -61,7 +61,9 @@ test.describe('Task Status Icons', () => {
       await page.waitForTimeout(1000);
     }
 
-    const statusIcon = page.locator('.task-item').filter({ hasText: 'Pomo Icon Task' }).locator('.task-status');
-    await expect(statusIcon).toContainText('📋');
+    const pomoCount = page.locator('.task-row').filter({ hasText: 'Pomo Update Task' }).locator('.task-pomo-count');
+    await expect(pomoCount).toBeVisible();
+    const countText = await pomoCount.textContent();
+    expect(countText).toMatch(/\d+m/);
   });
 });

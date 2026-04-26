@@ -3,12 +3,12 @@ import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskName: string) {
   await pomodoroPage.goto('/');
-  await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+  await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
   await pomodoroPage.addTask(taskName);
   await pomodoroPage.selectTask(taskName);
   await pomodoroPage.startTimer();
-  await expect(page.locator('.btn-pause')).toBeVisible();
+  await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
   await page.waitForTimeout(500);
 
   await page.evaluate(async () => {
@@ -41,28 +41,28 @@ test.describe('Clear Data Removes Activities', () => {
     await completePomodoroFast(page, pomodoroPage, 'Activity Clear Task');
 
     await pomodoroPage.openHistory();
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
     await page.waitForTimeout(3000);
 
-    const activityCountBefore = await page.locator('.activity-item').count();
+    const activityCountBefore = await page.locator('.tl-row').count();
     if (activityCountBefore === 0) {
       return;
     }
 
     await pomodoroPage.openSettings();
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    await page.locator('.btn-clear').click();
+    await page.locator('.danger-btn').click();
     await page.waitForTimeout(1000);
     await expect(page.locator('.confirmation-modal')).toBeVisible();
     await page.locator('.btn-confirm-danger').click();
     await page.waitForTimeout(3000);
 
     await pomodoroPage.openHistory();
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
     await page.waitForTimeout(2000);
 
-    const activityCountAfter = await page.locator('.activity-item').count();
+    const activityCountAfter = await page.locator('.tl-row').count();
     expect(activityCountAfter).toBe(0);
   });
 
@@ -71,20 +71,20 @@ test.describe('Clear Data Removes Activities', () => {
     await completePomodoroFast(page, pomodoroPage, 'Empty State Clear Task');
 
     await pomodoroPage.openSettings();
-    await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    await page.locator('.btn-clear').click();
+    await page.locator('.danger-btn').click();
     await page.waitForTimeout(1000);
     await expect(page.locator('.confirmation-modal')).toBeVisible();
     await page.locator('.btn-confirm-danger').click();
     await page.waitForTimeout(3000);
 
     await pomodoroPage.openHistory();
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
     await page.waitForTimeout(2000);
 
     const hasEmptyState = await page.locator('.empty-state').isVisible().catch(() => false);
-    const hasNoActivities = (await page.locator('.activity-item').count()) === 0;
+    const hasNoActivities = (await page.locator('.tl-row').count()) === 0;
     expect(hasEmptyState || hasNoActivities).toBe(true);
   });
 });

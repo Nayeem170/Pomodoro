@@ -12,32 +12,32 @@ test.describe('Timer Theme', () => {
   test.describe.configure({ timeout: 60000 });
 
   test('should apply pomodoro theme class by default', async ({ page }) => {
-    const timerDisplay = page.locator('.timer-display');
-    await expect(timerDisplay).toHaveClass(/pomodoro/);
+    const timerCard = page.locator('.timer-card');
+    await expect(timerCard).toHaveClass(/pomodoro/);
   });
 
   test('should apply short-break theme when switched', async ({ page }) => {
     await pomodoroPage.switchToShortBreak();
-    const timerDisplay = page.locator('.timer-display');
-    await expect(timerDisplay).toHaveClass(/short-break/);
+    const timerCard = page.locator('.timer-card');
+    await expect(timerCard).toHaveClass(/short-break/);
   });
 
   test('should apply long-break theme when switched', async ({ page }) => {
     await pomodoroPage.switchToLongBreak();
-    const timerDisplay = page.locator('.timer-display');
-    await expect(timerDisplay).toHaveClass(/long-break/);
+    const timerCard = page.locator('.timer-card');
+    await expect(timerCard).toHaveClass(/long-break/);
   });
 
   test('should revert to pomodoro theme when switching back', async ({ page }) => {
     await pomodoroPage.switchToShortBreak();
     await pomodoroPage.switchToPomodoro();
-    const timerDisplay = page.locator('.timer-display');
-    await expect(timerDisplay).toHaveClass(/pomodoro/);
+    const timerCard = page.locator('.timer-card');
+    await expect(timerCard).toHaveClass(/pomodoro/);
   });
 
   test('should display correct timer type label for Pomodoro', async ({ page }) => {
     const timerType = await pomodoroPage.getTimerType();
-    expect(timerType.toUpperCase()).toContain('POMODORO');
+    expect(timerType.toUpperCase()).toContain('FOCUSING');
   });
 
   test('should display correct timer type label for Short Break', async ({ page }) => {

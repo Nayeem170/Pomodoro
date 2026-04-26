@@ -9,13 +9,13 @@ test.describe('Offline Timer', () => {
   test('should keep timer page functional when going offline', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await page.route('**/*', route => route.abort());
 
-    await expect(page.locator('.timer-section')).toBeVisible();
-    await expect(page.locator('.session-tabs')).toBeVisible();
-    await expect(page.locator('.timer-display')).toBeVisible();
+    await expect(page.locator('.main-container')).toBeVisible();
+    await expect(page.locator('.mode-tabs')).toBeVisible();
+    await expect(page.locator('.ring-area')).toBeVisible();
 
     await page.unroute('**/*');
   });
@@ -23,15 +23,15 @@ test.describe('Offline Timer', () => {
   test('should display timer controls when offline', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await pomodoroPage.addTask('Offline Timer Task');
     await pomodoroPage.selectTask('Offline Timer Task');
 
     await page.route('**/*', route => route.abort());
 
-    await expect(page.locator('.btn-start')).toBeVisible();
-    await expect(page.locator('.btn-start')).toBeEnabled();
+    await expect(page.locator('button[aria-label="Start timer"]')).toBeVisible();
+    await expect(page.locator('button[aria-label="Start timer"]')).toBeEnabled();
 
     await page.unroute('**/*');
   });
@@ -39,7 +39,7 @@ test.describe('Offline Timer', () => {
   test('should allow session switching when offline', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await page.route('**/*', route => route.abort());
 
@@ -53,7 +53,7 @@ test.describe('Offline Timer', () => {
 
     await pomodoroPage.switchToPomodoro();
     const timerTypePom = await pomodoroPage.getTimerType();
-    expect(timerTypePom.toUpperCase()).toContain('POMODORO');
+    expect(timerTypePom.toUpperCase()).toContain('FOCUSING');
 
     await page.unroute('**/*');
   });
@@ -61,14 +61,14 @@ test.describe('Offline Timer', () => {
   test('should display task list when offline', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await pomodoroPage.addTask('Offline Task');
 
     await page.route('**/*', route => route.abort());
 
-    await expect(page.locator('.task-list')).toBeVisible();
-    await expect(page.locator('.task-item').filter({ hasText: 'Offline Task' })).toBeVisible();
+    await expect(page.locator('.tasks-section')).toBeVisible();
+    await expect(page.locator('.task-row').filter({ hasText: 'Offline Task' })).toBeVisible();
 
     await page.unroute('**/*');
   });

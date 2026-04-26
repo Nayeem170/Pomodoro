@@ -12,7 +12,7 @@ test.describe('Task Ordering', () => {
 
   test('should display most recently added task first', async ({ page }) => {
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await pomodoroPage.addTask('Alpha Task');
     await page.waitForTimeout(300);
@@ -21,14 +21,14 @@ test.describe('Task Ordering', () => {
     await pomodoroPage.addTask('Gamma Task');
     await page.waitForTimeout(300);
 
-    const taskItems = page.locator('.task-items .task-item');
-    const count = await taskItems.count();
+    const taskRows = page.locator('.task-items .task-row');
+    const count = await taskRows.count();
     expect(count).toBeGreaterThanOrEqual(3);
 
-    const firstTask = taskItems.first();
+    const firstTask = taskRows.first();
     await expect(firstTask).toContainText('Gamma Task');
 
-    const lastTask = taskItems.last();
+    const lastTask = taskRows.last();
     await expect(lastTask).toContainText('Alpha Task');
   });
 });

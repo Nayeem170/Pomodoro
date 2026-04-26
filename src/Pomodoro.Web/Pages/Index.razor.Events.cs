@@ -51,7 +51,7 @@ public partial class IndexBase
 
     #region Timer Service Events
 
-    public async Task OnTimerCompleted(TimerCompletedEventArgs args)
+    public Task OnTimerCompleted(TimerCompletedEventArgs args)
     {
         try
         {
@@ -62,6 +62,8 @@ public partial class IndexBase
         {
             Logger.LogError(ex, Constants.Messages.ErrorInOnTimerComplete);
         }
+
+        return Task.CompletedTask;
     }
 
     public void OnTimerStateChanged()

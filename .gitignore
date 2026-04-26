@@ -89,3 +89,15 @@ TASK_COMPLETION_SUMMARY.md
 TEST_OPTIMIZATION_SUMMARY.md
 TEST_PERFORMANCE_OPTIMIZATION_GUIDE.md
 TEST_PERFORMANCE_VERIFICATION.md
+
+# Graphify
+graphify-out/
+.graphify_python
+.graphifyignore
+
+# E2E publish output
+bin/e2e-publish/
+
+# Coverage reports
+coverage/
+publish/

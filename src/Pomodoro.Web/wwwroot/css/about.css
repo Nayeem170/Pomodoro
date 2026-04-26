@@ -17,20 +17,13 @@
     width: 52px;
     height: 52px;
     border-radius: 50%;
-    background: #FAECE7;
-    border: 0.5px solid #F5C4B3;
+    background: rgba(231, 76, 60, 0.15);
+    border: 0.5px solid rgba(231, 76, 60, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 8px;
     font-size: 16px;
-}
-
-@media (prefers-color-scheme: dark) {
-    .about-hero-icon {
-        background: rgba(231, 76, 60, 0.15);
-        border-color: rgba(231, 76, 60, 0.3);
-    }
 }
 
 .about-hero-title {
@@ -136,15 +129,6 @@
 .step-card.highlight {
     background: var(--color-background-secondary);
     border: none;
-}
-
-@media (prefers-color-scheme: light) {
-    .step-card.highlight {
-        background: var(--color-background-secondary);
-        border: none;
-    }
-}
-
 .step-number {
     display: flex;
     align-items: center;

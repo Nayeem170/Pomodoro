@@ -5,7 +5,7 @@ async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskN
   await pomodoroPage.addTask(taskName);
   await pomodoroPage.selectTask(taskName);
   await pomodoroPage.startTimer();
-  await expect(page.locator('.btn-pause')).toBeVisible();
+  await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
   await page.waitForTimeout(500);
 
   await page.evaluate(async () => {
@@ -45,23 +45,23 @@ test.describe('History Real-Time Updates', () => {
   test('should update history page when new activity is recorded', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await pomodoroPage.openHistory();
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
     await page.waitForTimeout(2000);
 
-    const activityCountBefore = await page.locator('.activity-item').count();
+    const activityCountBefore = await page.locator('.tl-row').count();
 
     await pomodoroPage.goto('/');
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
     await completePomodoroFast(page, pomodoroPage, 'Realtime Update Task');
 
     await pomodoroPage.openHistory();
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
     await page.waitForTimeout(5000);
 
-    const activityCountAfter = await page.locator('.activity-item').count();
+    const activityCountAfter = await page.locator('.tl-row').count();
     expect(activityCountAfter).toBeGreaterThanOrEqual(activityCountBefore);
   });
 });
