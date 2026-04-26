@@ -12,12 +12,12 @@ test.describe('Error Banner', () => {
   test.describe.configure({ timeout: 60000 });
 
   test('should not display error banner when there is no error', async ({ page }) => {
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
     await expect(page.locator('.error-banner')).not.toBeVisible();
   });
 
   test('should display error banner when error message is set', async ({ page }) => {
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     await page.evaluate(() => {
       const banner = document.querySelector('.error-banner') as HTMLElement;
@@ -43,9 +43,9 @@ test.describe('Error Banner', () => {
   });
 
   test('should not block app functionality when error banner is not shown', async ({ page }) => {
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
     await expect(page.locator('.tasks-section')).toBeVisible();
-    await expect(page.locator('.session-tabs')).toBeVisible();
-    await expect(page.locator('.summary-section')).toBeVisible();
+    await expect(page.locator('.mode-tabs')).toBeVisible();
+    await expect(page.locator('.pomo-row')).toBeVisible();
   });
 });

@@ -1,5 +1,4 @@
-name: Deploy Production
-
+name: Deploy
 on:
   push:
     branches: [main]
@@ -14,10 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
-    name: Build, Test & Deploy
+  build-test-deploy:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: production
       url: ${{ steps.deploy.outputs.deployment-url }}
@@ -26,19 +23,18 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "9.0.x"
+          dotnet-version: '9.0.x'
 
-      - name: Restore NuGet packages
-        run: dotnet restore
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
 
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
-
-      - name: Run unit tests
-        run: dotnet test Pomodoro.sln --configuration Release --no-build --verbosity normal
-
-      - name: Publish Blazor WASM app
-        run: dotnet publish src/Pomodoro.Web -c Release -o ./publish
+      - run: dotnet restore Pomodoro.sln
+      - run: dotnet build Pomodoro.sln --configuration Release --no-restore
+      - run: dotnet test Pomodoro.sln --configuration Release --no-build --verbosity normal
+      - run: dotnet publish src/Pomodoro.Web -c Release -o ./publish
 
       - name: Deploy to Cloudflare Pages
         id: deploy

@@ -12,8 +12,8 @@ test.describe('Task Validation', () => {
   test.describe.configure({ timeout: 60000 });
 
   test('should disable add button when task name is empty', async ({ page }) => {
-    await expect(page.locator('.btn-add-task')).toBeVisible({ timeout: 30000 });
-    await page.locator('.btn-add-task').click();
+    await expect(page.locator('.task-add-btn')).toBeVisible({ timeout: 30000 });
+    await page.locator('.task-add-btn').click();
     await expect(page.locator('.add-task-form')).toBeVisible();
 
     const addButton = page.locator('.btn-icon-small.btn-add');
@@ -21,11 +21,11 @@ test.describe('Task Validation', () => {
   });
 
   test('should enable add button when task name is entered', async ({ page }) => {
-    await expect(page.locator('.btn-add-task')).toBeVisible({ timeout: 30000 });
-    await page.locator('.btn-add-task').click();
+    await expect(page.locator('.task-add-btn')).toBeVisible({ timeout: 30000 });
+    await page.locator('.task-add-btn').click();
     await expect(page.locator('.add-task-form')).toBeVisible();
 
-    await page.locator('.task-input').fill('Valid Task');
+    await page.locator('.task-input').pressSequentially('Valid Task');
     await page.waitForTimeout(200);
 
     const addButton = page.locator('.btn-icon-small.btn-add');
@@ -33,11 +33,11 @@ test.describe('Task Validation', () => {
   });
 
   test('should disable add button when task name is whitespace only', async ({ page }) => {
-    await expect(page.locator('.btn-add-task')).toBeVisible({ timeout: 30000 });
-    await page.locator('.btn-add-task').click();
+    await expect(page.locator('.task-add-btn')).toBeVisible({ timeout: 30000 });
+    await page.locator('.task-add-btn').click();
     await expect(page.locator('.add-task-form')).toBeVisible();
 
-    await page.locator('.task-input').fill('   ');
+    await page.locator('.task-input').pressSequentially('   ');
     await page.waitForTimeout(200);
 
     const addButton = page.locator('.btn-icon-small.btn-add');
@@ -45,47 +45,49 @@ test.describe('Task Validation', () => {
   });
 
   test('should allow adding task with duplicate name', async ({ page }) => {
-    await expect(page.locator('.btn-add-task')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.task-add-btn')).toBeVisible({ timeout: 30000 });
 
     await pomodoroPage.addTask('Duplicate Task');
+    await expect(page.locator('.task-row').filter({ hasText: 'Duplicate Task' })).toBeVisible({ timeout: 5000 });
     await pomodoroPage.addTask('Duplicate Task');
+    await expect(page.locator('.task-row').filter({ hasText: 'Duplicate Task' }).nth(1)).toBeVisible({ timeout: 5000 });
 
-    const taskCount = await page.locator('.task-item').filter({ hasText: 'Duplicate Task' }).count();
+    const taskCount = await page.locator('.task-row').filter({ hasText: 'Duplicate Task' }).count();
     expect(taskCount).toBe(2);
   });
 
   test('should add task by pressing Enter key', async ({ page }) => {
-    await expect(page.locator('.btn-add-task')).toBeVisible({ timeout: 30000 });
-    await page.locator('.btn-add-task').click();
+    await expect(page.locator('.task-add-btn')).toBeVisible({ timeout: 30000 });
+    await page.locator('.task-add-btn').click();
     await expect(page.locator('.add-task-form')).toBeVisible();
 
-    await page.locator('.task-input').fill('Enter Key Task');
+    await page.locator('.task-input').pressSequentially('Enter Key Task');
     await page.locator('.task-input').press('Enter');
     await page.waitForTimeout(500);
 
-    await expect(page.locator('.task-item')).toContainText('Enter Key Task');
+    await expect(page.locator('.task-row')).toContainText('Enter Key Task');
     await expect(page.locator('.add-task-form')).not.toBeVisible();
   });
 
   test('should cancel adding task by pressing Escape key', async ({ page }) => {
-    await expect(page.locator('.btn-add-task')).toBeVisible({ timeout: 30000 });
-    await page.locator('.btn-add-task').click();
+    await expect(page.locator('.task-add-btn')).toBeVisible({ timeout: 30000 });
+    await page.locator('.task-add-btn').click();
     await expect(page.locator('.add-task-form')).toBeVisible();
 
-    await page.locator('.task-input').fill('Escape Key Task');
-    await page.locator('.btn-cancel').click();
+    await page.locator('.task-input').pressSequentially('Escape Key Task');
+    await page.locator('.btn-icon-small.btn-cancel').click();
     await page.waitForTimeout(300);
 
     await expect(page.locator('.add-task-form')).not.toBeVisible();
-    await expect(page.locator('.task-item').filter({ hasText: 'Escape Key Task' })).toHaveCount(0);
+    await expect(page.locator('.task-row').filter({ hasText: 'Escape Key Task' })).toHaveCount(0);
   });
 
   test('should allow adding task with long name', async ({ page }) => {
-    await expect(page.locator('.btn-add-task')).toBeVisible({ timeout: 30000 });
-    await page.locator('.btn-add-task').click();
+    await expect(page.locator('.task-add-btn')).toBeVisible({ timeout: 30000 });
+    await page.locator('.task-add-btn').click();
 
     const longName = 'A'.repeat(200);
-    await page.locator('.task-input').fill(longName);
+    await page.locator('.task-input').pressSequentially(longName);
     await page.waitForTimeout(200);
 
     const addButton = page.locator('.btn-icon-small.btn-add');
@@ -94,6 +96,6 @@ test.describe('Task Validation', () => {
     await addButton.click();
     await page.waitForTimeout(500);
 
-    await expect(page.locator('.task-item')).toContainText(longName);
+    await expect(page.locator('.task-row')).toContainText(longName);
   });
 });

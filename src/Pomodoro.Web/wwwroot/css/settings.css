@@ -230,10 +230,6 @@
     background: rgba(163, 45, 45, 0.08);
 }
 
-@media (prefers-color-scheme: light) {
-    .danger-btn { border-color: #F09595; color: #A32D2D; }
-}
-
 /* Export/Import */
 .file-input {
     display: none;

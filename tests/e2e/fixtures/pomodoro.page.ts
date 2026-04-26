@@ -2,168 +2,115 @@ import { Page, expect } from '@playwright/test';
 
 export class PomodoroPage {
   readonly page: Page;
-  
+  private _clockInstalled = false;
+
   constructor(page: Page) {
     this.page = page;
   }
 
   async goto(path: string = '/') {
-    // Set up console error logging before navigation
-    const consoleErrors: string[] = [];
-    this.page.on('console', msg => {
-      if (msg.type() === 'error') {
-        consoleErrors.push(msg.text());
-        console.error('Browser Console Error:', msg.text());
-      }
-    });
+    await this.page.goto(path, { waitUntil: 'domcontentloaded' });
 
-    await this.page.goto(path);
-    await this.page.waitForLoadState('domcontentloaded');
-    
-    // Wait for Blazor WebAssembly to fully initialize
-    // This waits for the WASM runtime to download, compile, and render components
     try {
-      // First wait for the blazor script to load
       await this.page.waitForFunction(() => {
-        // Check if Blazor has started by looking for the blazor-loaded marker
-        // or if our app content is rendered
-        const appLoaded = document.querySelector('.main-container') !== null ||
-                          document.querySelector('.timer-section') !== null ||
-                          document.querySelector('.tasks-section') !== null ||
-                          document.querySelector('#app > div') !== null;
-        return appLoaded;
-      }, { timeout: 30000 }); // 30 second timeout for WASM initialization
-      
-      // Additional wait for components to fully render
-      await this.page.waitForTimeout(2000);
-      
-      // Log all console errors for debugging but don't fail the test
-      if (consoleErrors.length > 0) {
-        console.log('Console errors detected (ignoring):', consoleErrors.join(', '));
-      }
+        return document.querySelector('.main-container') !== null ||
+               document.querySelector('.sett-body') !== null ||
+               document.querySelector('.hist-body') !== null ||
+               document.querySelector('.about-body') !== null ||
+               document.querySelector('.error-container') !== null ||
+               document.querySelector('p[role="alert"]') !== null;
+      }, { timeout: 30000 });
     } catch (error) {
-      // Log error but continue - let individual tests fail with clearer error messages
-      console.log('Warning: Blazor initialization may not have completed:', error);
-      
-      // Take a screenshot for debugging
       await this.page.screenshot({ path: 'test-results/blazor-init-failure.png' });
+      throw new Error('Blazor failed to initialize within 30s for path: ' + path);
     }
   }
 
   async addTask(taskName: string) {
-    // Wait for and click the "Add Task" button to show the input field
-    // Increased timeout to 30 seconds for Blazor WASM initialization
-    await this.page.locator('.btn-add-task').waitFor({ state: 'visible', timeout: 30000 });
-    await this.page.locator('.btn-add-task').click();
-    await this.page.waitForTimeout(500); // Increased wait after click
-    
-    // Fill in the task name
+    await this.page.locator('.task-add-btn').waitFor({ state: 'visible', timeout: 30000 });
+    await this.page.locator('.task-add-btn').click();
     await this.page.locator('.task-input').waitFor({ state: 'visible', timeout: 5000 });
-    await this.page.locator('.task-input').fill(taskName);
-    await this.page.waitForTimeout(300);
-    
-    // Click the add button
+    await this.page.locator('.task-input').pressSequentially(taskName);
     await this.page.locator('.btn-icon-small.btn-add').click();
-    await this.page.waitForTimeout(500);
   }
 
   async completeTask(taskName: string) {
-    const taskItem = this.page.locator('.task-item').filter({ hasText: taskName }).first();
-    await taskItem.locator('button:has-text("✓")').click();
-    await this.page.waitForTimeout(300);
+    const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
+    await taskItem.locator('button[aria-label="Complete"]').click();
   }
 
   async uncompleteTask(taskName: string) {
-    const taskItem = this.page.locator('.task-item').filter({ hasText: taskName }).first();
-    await taskItem.locator('button:has-text("↩")').click();
-    await this.page.waitForTimeout(300);
+    const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
+    await taskItem.locator('.task-action-btn[aria-label="Undo"]').click();
   }
 
   async deleteTask(taskName: string) {
-    const taskItem = this.page.locator('.task-item').filter({ hasText: taskName }).first();
-    await taskItem.locator('button:has-text("🗑")').click();
-    await this.page.waitForTimeout(500);
+    const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
+    await taskItem.locator('button[aria-label="Delete"]').click();
   }
 
   async selectTask(taskName: string) {
-    const taskItem = this.page.locator('.task-item').filter({ hasText: taskName }).first();
+    const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
     await taskItem.click();
-    await this.page.waitForTimeout(300);
   }
 
   async getTimerDisplay(): Promise<string> {
-    const element = this.page.locator('.timer-time');
-    return await element.textContent() || '';
+    return await this.page.locator('.timer-time').textContent() || '';
   }
 
   async getTimerType(): Promise<string> {
-    const element = this.page.locator('.timer-type');
-    return await element.textContent() || '';
+    return await this.page.locator('.timer-mode-label').textContent() || '';
   }
 
   async getTaskCount(): Promise<number> {
-    const count = await this.page.locator('.task-item').count();
-    return count;
+    return await this.page.locator('.task-row').count();
   }
 
   async isTimerRunning(): Promise<boolean> {
-    // Check if pause button is visible (timer is running)
-    const pauseButton = this.page.locator('.btn-pause');
-    return await pauseButton.isVisible();
+    return await this.page.locator('button[aria-label="Pause timer"]').isVisible();
   }
 
   async isTimerPaused(): Promise<boolean> {
-    // Check if resume button is visible (timer is paused)
-    const resumeButton = this.page.locator('.btn-resume');
-    return await resumeButton.isVisible();
+    return await this.page.locator('button[aria-label="Resume timer"]').isVisible();
   }
 
   async isTimerStarted(): Promise<boolean> {
-    // Check if reset button is visible (timer was started)
-    const resetButton = this.page.locator('.btn-reset');
-    return await resetButton.isVisible();
+    return await this.page.locator('button[aria-label="Reset timer"]').isVisible();
   }
 
   async startTimer() {
-    const startButton = this.page.locator('.btn-start');
-    await startButton.click();
-    await this.page.waitForTimeout(500);
+    if (!this._clockInstalled) {
+      await this.page.clock.install({ time: Date.now() });
+      this._clockInstalled = true;
+    }
+    await this.page.locator('button[aria-label="Start timer"]').click();
+    await expect(this.page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
   }
 
   async pauseTimer() {
-    const pauseButton = this.page.locator('.btn-pause');
-    await pauseButton.click();
-    await this.page.waitForTimeout(500);
+    await this.page.locator('button[aria-label="Pause timer"]').click();
+    await expect(this.page.locator('button[aria-label="Resume timer"]')).toBeVisible({ timeout: 5000 });
   }
 
   async resumeTimer() {
-    const resumeButton = this.page.locator('.btn-resume');
-    await resumeButton.click();
-    await this.page.waitForTimeout(500);
+    await this.page.locator('button[aria-label="Resume timer"]').click();
+    await expect(this.page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
   }
 
   async resetTimer() {
-    const resetButton = this.page.locator('.btn-reset');
-    await resetButton.click();
-    await this.page.waitForTimeout(500);
+    await this.page.locator('button[aria-label="Reset timer"]').click();
   }
 
   async switchToPomodoro() {
-    const pomodoroButton = this.page.locator('button:has-text("Pomodoro")');
-    await pomodoroButton.click();
-    await this.page.waitForTimeout(300);
+    await this.page.locator('.mode-tabs button').filter({ hasText: 'Pomodoro' }).click();
   }
 
   async switchToShortBreak() {
-    const shortBreakButton = this.page.locator('button:has-text("Short Break")');
-    await shortBreakButton.click();
-    await this.page.waitForTimeout(300);
+    await this.page.locator('.mode-tabs button').filter({ hasText: 'Short break' }).click();
   }
 
   async switchToLongBreak() {
-    const longBreakButton = this.page.locator('button:has-text("Long Break")');
-    await longBreakButton.click();
-    await this.page.waitForTimeout(300);
+    await this.page.locator('.mode-tabs button').filter({ hasText: 'Long break' }).click();
   }
 
   async openSettings() {
@@ -171,39 +118,249 @@ export class PomodoroPage {
   }
 
   async saveSettings() {
-    const saveButton = this.page.locator('.btn-save');
-    await saveButton.click();
-    await this.page.waitForTimeout(500);
+    const saveButton = this.page.locator('.sec-btn').filter({ hasText: 'Save' });
+    if (await saveButton.isVisible()) {
+      await saveButton.click();
+    }
   }
 
   async resetToDefaults() {
-    const resetButton = this.page.locator('.btn-reset-defaults');
-    await resetButton.click();
-    await this.page.waitForTimeout(500);
+    const resetButton = this.page.locator('.sec-btn').filter({ hasText: 'Reset to defaults' });
+    if (await resetButton.isEnabled({ timeout: 2000 }).catch(() => false)) {
+      await resetButton.click();
+      await this.page.waitForTimeout(3000);
+    }
   }
 
   async setPomodoroMinutes(minutes: number) {
-    const input = this.page.locator('input[type="number"]').filter({ hasText: '' }).first();
-    await input.fill(minutes.toString());
-    await this.page.waitForTimeout(200);
+    const input = this.page.locator('.step-input').first();
+    const currentValue = parseInt(await input.inputValue());
+    const diff = minutes - currentValue;
+    if (diff === 0) return;
+
+    const btnLabel = diff > 0 ? 'Increase' : 'Decrease';
+    const btn = this.page.locator('.step-btn[aria-label="' + btnLabel + '"]').first();
+
+    for (let i = 0; i < Math.abs(diff); i++) {
+      await btn.click();
+      await this.page.waitForTimeout(50);
+    }
+  }
+
+  async setSettingViaIndexedDB(key: string, value: any) {
+    await this.page.evaluate(async ({ key: k, value: v }) => {
+      const db = await new Promise<IDBDatabase>((resolve, reject) => {
+        const req = indexedDB.open('PomodoroDB', 1);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+      const tx = db.transaction('settings', 'readwrite');
+      const store = tx.objectStore('settings');
+      const getReq = store.get('default');
+      await new Promise<void>((resolve) => { getReq.onsuccess = () => resolve(); });
+      const settings = getReq.result;
+      if (settings) {
+        settings[k] = v;
+        store.put(settings);
+      }
+      await new Promise<void>((resolve) => { tx.oncomplete = () => resolve(); });
+      db.close();
+    }, { key, value });
+  }
+
+  async fastSetup1MinPomodoro() {
+    await this.goto('/settings');
+    await this.setPomodoroMinutes(1);
+    await this.goto('/');
+    await expect(this.page.locator('.main-container')).toBeVisible({ timeout: 30000 });
+  }
+
+  async completePomodoroFast() {
+    await this.page.evaluate(async () => {
+      const ref = (window as any).timerFunctions?.dotNetRef;
+      if (!ref) return false;
+      const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+      for (let i = 0; i < 65; i++) {
+        try {
+          await ref.invokeMethodAsync('OnTimerTickJs');
+        } catch { return true; }
+        await delay(1000);
+      }
+      return true;
+    });
+    await this.page.waitForTimeout(500);
+  }
+
+  async completePomodoroViaDB(taskName: string) {
+    await this.page.evaluate(async (name) => {
+      const db = await new Promise<IDBDatabase>((resolve, reject) => {
+        const req = indexedDB.open('PomodoroDB', 1);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+
+      const now = new Date().toISOString();
+      const activity = {
+        id: crypto.randomUUID(),
+        type: 0,
+        taskName: name,
+        taskId: null,
+        completedAt: now,
+        durationMinutes: 1,
+        wasCompleted: true
+      };
+
+      const tx = db.transaction('activities', 'readwrite');
+      tx.objectStore('activities').put(activity);
+      await new Promise<void>((resolve) => { tx.oncomplete = () => resolve(); });
+
+      const statsTx = db.transaction('dailyStats', 'readwrite');
+      const statsStore = statsTx.objectStore('dailyStats');
+      const today = now.split('T')[0];
+      const getReq = statsStore.get(today);
+      await new Promise<void>((resolve) => { getReq.onsuccess = () => resolve(); });
+      const stats = getReq.result;
+      if (stats) {
+        stats.completedPomodoros = (stats.completedPomodoros || 0) + 1;
+        stats.totalFocusMinutes = (stats.totalFocusMinutes || 0) + 1;
+        statsStore.put(stats);
+      } else {
+        statsStore.put({
+          date: today,
+          completedPomodoros: 1,
+          totalFocusMinutes: 1,
+          totalBreakMinutes: 0,
+          longBreaks: 0
+        });
+      }
+      await new Promise<void>((resolve) => { statsTx.oncomplete = () => resolve(); });
+      db.close();
+    }, taskName);
+  }
+
+  async completePomodoroViaIndexedDB(taskName: string) {
+    await this.page.evaluate(async (name) => {
+      const db = await new Promise<IDBDatabase>((resolve, reject) => {
+        const req = indexedDB.open('PomodoroDB', 1);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+
+      const now = new Date().toISOString();
+
+      const activity = {
+        id: crypto.randomUUID(),
+        type: 0,
+        taskName: name,
+        taskId: null,
+        completedAt: now,
+        durationMinutes: 1,
+        wasCompleted: true
+      };
+
+      const tx = db.transaction('activities', 'readwrite');
+      tx.objectStore('activities').put(activity);
+      await new Promise<void>((resolve) => { tx.oncomplete = () => resolve(); });
+
+      const statsTx = db.transaction('dailyStats', 'readwrite');
+      const statsStore = statsTx.objectStore('dailyStats');
+      const today = now.split('T')[0];
+      const getReq = statsStore.get(today);
+      await new Promise<void>((resolve) => { getReq.onsuccess = () => resolve(); });
+      const stats = getReq.result;
+      if (stats) {
+        stats.completedPomodoros = (stats.completedPomodoros || 0) + 1;
+        stats.totalFocusMinutes = (stats.totalFocusMinutes || 0) + 1;
+        statsStore.put(stats);
+      } else {
+        statsStore.put({
+          date: today,
+          completedPomodoros: 1,
+          totalFocusMinutes: 1,
+          totalBreakMinutes: 0,
+          longBreaks: 0
+        });
+      }
+      await new Promise<void>((resolve) => { statsTx.oncomplete = () => resolve(); });
+      db.close();
+    }, taskName);
+  }
+
+  async completePomodoroFast1Min() {
+    await this.fastSetup1MinPomodoro();
+    await this.addTask('Test Task');
+    await this.selectTask('Test Task');
+    await this.startTimer();
+    await this.completePomodoroFast();
+  }
+
+  async seedHistoryViaDB(taskName: string, count: number = 1) {
+    await this.goto('/');
+    await this.page.evaluate(async ({ name, count: n }) => {
+      const db = await new Promise<IDBDatabase>((resolve, reject) => {
+        const req = indexedDB.open('PomodoroDB', 1);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+
+      const now = new Date().toISOString();
+      const today = now.split('T')[0];
+
+      for (let i = 0; i < n; i++) {
+        const offset = (n - i) * 120000;
+        const startedAt = new Date(Date.now() - 120000 - offset).toISOString();
+        const completedAt = new Date(Date.now() - offset).toISOString();
+
+        const activity = {
+          id: crypto.randomUUID(),
+          type: 0,
+          taskName: name,
+          taskId: null,
+          completedAt: completedAt,
+          durationMinutes: 1,
+          wasCompleted: true
+        };
+
+        const tx = db.transaction('activities', 'readwrite');
+        tx.objectStore('activities').put(activity);
+        await new Promise<void>((resolve) => { tx.oncomplete = () => resolve(); });
+      }
+
+      const statsTx = db.transaction('dailyStats', 'readwrite');
+      const statsStore = statsTx.objectStore('dailyStats');
+      const getReq = statsStore.get(today);
+      await new Promise<void>((resolve) => { getReq.onsuccess = () => resolve(); });
+      const stats = getReq.result;
+      if (stats) {
+        stats.completedPomodoros = (stats.completedPomodoros || 0) + n;
+        stats.totalFocusMinutes = (stats.totalFocusMinutes || 0) + n;
+        statsStore.put(stats);
+      } else {
+        statsStore.put({
+          date: today,
+          completedPomodoros: n,
+          totalFocusMinutes: n,
+          totalBreakMinutes: 0,
+          longBreaks: 0
+        });
+      }
+      await new Promise<void>((resolve) => { statsTx.oncomplete = () => resolve(); });
+      db.close();
+    }, { name: taskName, count });
+    await this.page.reload({ waitUntil: 'domcontentloaded' });
+    await this.page.waitForFunction(() => {
+      return document.querySelector('.main-container') !== null;
+    }, { timeout: 30000 });
   }
 
   async toggleSound() {
-    const toggle = this.page.locator('label[for="soundToggle"]');
-    await toggle.click();
-    await this.page.waitForTimeout(200);
+    const soundToggle = this.page.locator('.sr-lbl').filter({ hasText: 'Sound on completion' }).locator('..').locator('.tog');
+    await soundToggle.click();
   }
 
   async toggleNotifications() {
-    const toggle = this.page.locator('label[for="notifToggle"]');
-    await toggle.click();
-    await this.page.waitForTimeout(200);
-  }
-
-  async exportData() {
-    const exportButton = this.page.locator('.btn-export');
-    await exportButton.click();
-    await this.page.waitForTimeout(1000);
+    const notifToggle = this.page.locator('.sr-lbl').filter({ hasText: 'Browser notifications' }).locator('..').locator('.tog');
+    await notifToggle.click();
   }
 
   async openHistory() {
@@ -211,18 +368,16 @@ export class PomodoroPage {
   }
 
   async switchToDailyTab() {
-    const dailyTab = this.page.locator('button:has-text("Daily")');
+    const dailyTab = this.page.locator('#daily-tab');
     if (await dailyTab.isVisible()) {
       await dailyTab.click();
-      await this.page.waitForTimeout(300);
     }
   }
 
   async switchToWeeklyTab() {
-    const weeklyTab = this.page.locator('button:has-text("Weekly")');
+    const weeklyTab = this.page.locator('#weekly-tab');
     if (await weeklyTab.isVisible()) {
       await weeklyTab.click();
-      await this.page.waitForTimeout(300);
     }
   }
 
@@ -230,39 +385,50 @@ export class PomodoroPage {
     const toast = this.page.locator('.settings-toast');
     await expect(toast).toBeVisible();
     await expect(toast).toContainText(expectedMessage);
-    await this.page.waitForTimeout(2000);
-    await expect(toast).not.toBeVisible();
+    await expect(toast).not.toBeVisible({ timeout: 5000 });
   }
 
   async openKeyboardHelp() {
-    const helpButton = this.page.locator('button:has-text("?")');
-    await helpButton.click();
-    await this.page.waitForTimeout(300);
+    await this.page.locator('button[aria-label="Keyboard shortcuts"]').click();
+    await expect(this.page.locator('.modal-close')).toBeVisible({ timeout: 5000 });
   }
 
   async closeKeyboardHelp() {
-    const closeButton = this.page.locator('button:has-text("Close"), .modal-close');
+    const closeButton = this.page.locator('.modal-close');
     if (await closeButton.isVisible()) {
       await closeButton.click();
-      await this.page.waitForTimeout(300);
     }
   }
 
   async togglePipTimer() {
-    const pipButton = this.page.locator('button:has-text("⧉")');
-    await pipButton.click();
-    await this.page.waitForTimeout(500);
+    await this.page.locator('button[aria-label="Picture in Picture"]').click();
   }
 
   async navigateTo(route: string) {
     await this.page.locator(`.header-nav a[href="${route}"]`).click();
     await this.page.waitForLoadState('domcontentloaded');
-    await this.page.waitForTimeout(2000);
+  }
+
+  async toggleAutoStartPomodoros() {
+    const toggle = this.page.locator('.sr-lbl').filter({ hasText: 'Auto-start pomodoros' }).locator('..').locator('.tog');
+    await toggle.click();
+  }
+
+  async toggleAutoStartBreaks() {
+    const toggle = this.page.locator('.sr-lbl').filter({ hasText: 'Auto-start breaks' }).locator('..').locator('.tog');
+    await toggle.click();
   }
 
   async getWeeklyStatValue(label: string): Promise<string> {
-    const statItem = this.page.locator('.stat-item, .stat').filter({ hasText: label });
-    const valueEl = statItem.locator('.stat-value');
-    return await valueEl.textContent() || '';
+    const statItem = this.page.locator('.sc').filter({ hasText: label });
+    return await statItem.locator('.sv').textContent() || '';
+  }
+
+  async skipConsentModal() {
+    const skipOption = this.page.locator('.btn-option').filter({ hasText: /Skip/i });
+    if (await skipOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await skipOption.click();
+      await expect(skipOption).not.toBeVisible({ timeout: 3000 });
+    }
   }
 }

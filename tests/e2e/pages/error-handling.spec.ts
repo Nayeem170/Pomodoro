@@ -54,8 +54,8 @@ test.describe('Error Handling', () => {
 
   test('should recover from JS interop failure gracefully', async ({ page }) => {
     // Verify the app remains functional even if JS interop has issues
-    await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
     await expect(page.locator('.tasks-section')).toBeVisible();
-    await expect(page.locator('.session-tabs')).toBeVisible();
+    await expect(page.locator('.mode-tabs')).toBeVisible();
   });
 });

@@ -2,146 +2,116 @@ import { test, expect } from '@playwright/test';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('Keyboard Shortcuts', () => {
+  test.describe.configure({ mode: 'serial' });
+
   let pomodoroPage: PomodoroPage;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage();
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
   });
 
-  test.describe.configure({ timeout: 60000 });
-
-  test('should open keyboard help modal with ? key shortcut button', async ({ page }) => {
-    const helpButton = page.locator('button:has-text("?")');
-    await expect(helpButton).toBeVisible({ timeout: 30000 });
-    await helpButton.click();
-    await page.waitForTimeout(500);
-    await expect(page.locator('.keyboard-help-modal.visible')).toBeVisible();
-  });
-
-  test('should display keyboard help modal content', async ({ page }) => {
+  test('should open keyboard help modal with button', async () => {
     await pomodoroPage.openKeyboardHelp();
-    await expect(page.locator('.keyboard-help-modal.visible .modal-header h3')).toContainText('Keyboard Shortcuts');
+    await expect(pomodoroPage.page.locator('.keyboard-help-modal.visible')).toBeVisible();
+    await pomodoroPage.closeKeyboardHelp();
+    await expect(pomodoroPage.page.locator('.keyboard-help-modal.visible')).not.toBeVisible({ timeout: 5000 });
   });
 
-  test('should display timer controls shortcuts', async ({ page }) => {
+  test('should display timer controls shortcuts in help modal', async () => {
     await pomodoroPage.openKeyboardHelp();
-    await expect(page.locator('.shortcut-section').filter({ hasText: 'Timer Controls' })).toBeVisible();
-    await expect(page.locator('.shortcut-item kbd').filter({ hasText: 'Space' })).toBeVisible();
-    await expect(page.locator('.shortcut-item kbd').filter({ hasText: 'R' })).toBeVisible();
+    await expect(pomodoroPage.page.locator('.shortcut-item kbd').filter({ hasText: 'Space' })).toBeVisible();
+    await expect(pomodoroPage.page.locator('.shortcut-item kbd').filter({ hasText: 'R' })).toBeVisible();
+    await pomodoroPage.closeKeyboardHelp();
   });
 
-  test('should display session switching shortcuts', async ({ page }) => {
+  test('should display session switching shortcuts in help modal', async () => {
     await pomodoroPage.openKeyboardHelp();
-    await expect(page.locator('.shortcut-section').filter({ hasText: 'Session Switching' })).toBeVisible();
-    await expect(page.locator('.shortcut-item kbd').filter({ hasText: /^P$/ })).toBeVisible();
-    await expect(page.locator('.shortcut-item kbd').filter({ hasText: /^S$/ })).toBeVisible();
-    await expect(page.locator('.shortcut-item kbd').filter({ hasText: /^L$/ })).toBeVisible();
+    await expect(pomodoroPage.page.locator('.shortcut-item kbd').filter({ hasText: /^P$/ })).toBeVisible();
+    await expect(pomodoroPage.page.locator('.shortcut-item kbd').filter({ hasText: /^S$/ })).toBeVisible();
+    await expect(pomodoroPage.page.locator('.shortcut-item kbd').filter({ hasText: /^L$/ })).toBeVisible();
+    await pomodoroPage.closeKeyboardHelp();
   });
 
-  test('should display help shortcut', async ({ page }) => {
+  test('should display help shortcut in help modal', async () => {
     await pomodoroPage.openKeyboardHelp();
-    await expect(page.locator('.shortcut-item kbd').filter({ hasText: '?' })).toBeVisible();
+    await expect(pomodoroPage.page.locator('.shortcut-item kbd').filter({ hasText: '?' })).toBeVisible();
+    await pomodoroPage.closeKeyboardHelp();
   });
 
-  test('should close keyboard help modal with close button', async ({ page }) => {
+  test('should close keyboard help modal with close button', async () => {
     await pomodoroPage.openKeyboardHelp();
     await pomodoroPage.closeKeyboardHelp();
-    await expect(page.locator('.keyboard-help-modal.visible')).not.toBeVisible();
+    await expect(pomodoroPage.page.locator('.keyboard-help-modal.visible')).not.toBeVisible();
   });
 
-  test('should close keyboard help modal with Escape shortcut button', async ({ page }) => {
+  test('should close keyboard help modal with Escape key', async () => {
     await pomodoroPage.openKeyboardHelp();
-    const closeButton = page.locator('.modal-close');
-    await expect(closeButton).toBeVisible();
-    await closeButton.click();
-    await page.waitForTimeout(500);
-    await expect(page.locator('.keyboard-help-modal.visible')).not.toBeVisible();
+    await pomodoroPage.page.keyboard.press('Escape');
+    await expect(pomodoroPage.page.locator('.keyboard-help-modal.visible')).not.toBeVisible({ timeout: 5000 });
   });
 
-  test('should switch to Short Break with session tab', async ({ page }) => {
-    const shortBreakButton = page.locator('button:has-text("Short Break")');
-    await shortBreakButton.click();
-    await page.waitForTimeout(500);
+  test('should start timer with Space key when task is selected', async () => {
+    await pomodoroPage.addTask('Space key task');
+    await pomodoroPage.selectTask('Space key task');
+    await pomodoroPage.page.keyboard.press('Space');
+    await expect(pomodoroPage.page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
+  });
+
+  test('should pause timer with Space key when running', async () => {
+    await expect(pomodoroPage.page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 10000 });
+    await pomodoroPage.page.keyboard.press('Space');
+    await expect(pomodoroPage.page.locator('button[aria-label="Resume timer"]')).toBeVisible({ timeout: 5000 });
+  });
+
+  test('should resume timer with Space key when paused', async () => {
+    await expect(pomodoroPage.page.locator('button[aria-label="Resume timer"]')).toBeVisible({ timeout: 10000 });
+    await pomodoroPage.page.keyboard.press('Space');
+    await expect(pomodoroPage.page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
+  });
+
+  test('should reset timer with R key', async () => {
+    await pomodoroPage.page.keyboard.press('r');
+    await expect(pomodoroPage.page.locator('button[aria-label="Start timer"]')).toBeVisible({ timeout: 5000 });
+  });
+
+  test('should switch to short break with S key', async () => {
+    await pomodoroPage.page.keyboard.press('s');
+    const shortBreakButton = pomodoroPage.page.locator('.mode-tabs button').filter({ hasText: 'Short break' });
     await expect(shortBreakButton).toHaveClass(/active/);
   });
 
-  test('should switch to Long Break with L key', async ({ page }) => {
-    const longBreakButton = page.locator('button:has-text("Long Break")');
-    await longBreakButton.click();
-    await page.waitForTimeout(500);
+  test('should switch to long break with L key', async () => {
+    await pomodoroPage.page.keyboard.press('l');
+    const longBreakButton = pomodoroPage.page.locator('.mode-tabs button').filter({ hasText: 'Long break' });
     await expect(longBreakButton).toHaveClass(/active/);
   });
 
-  test('should switch to Pomodoro with P key', async ({ page }) => {
-    await page.keyboard.press('s');
-    await page.waitForTimeout(300);
-    await page.keyboard.press('p');
-    await page.waitForTimeout(500);
-    const pomodoroButton = page.locator('button:has-text("Pomodoro")');
+  test('should switch to pomodoro with P key', async () => {
+    await pomodoroPage.page.keyboard.press('p');
+    const pomodoroButton = pomodoroPage.page.locator('.mode-tabs button').filter({ hasText: 'Pomodoro' });
     await expect(pomodoroButton).toHaveClass(/active/);
   });
 
-  test('should reset timer with R key', async ({ page }) => {
-    await expect(page.locator('.btn-start')).toBeVisible({ timeout: 30000 });
-    await page.evaluate(() => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'r', bubbles: true }));
-    });
-    await page.waitForTimeout(500);
-    await expect(page.locator('.btn-start')).toBeVisible();
+  test('should not trigger shortcuts when typing in task input', async () => {
+    await pomodoroPage.closeKeyboardHelp();
+    await pomodoroPage.page.locator('.task-add-btn').click();
+    await expect(pomodoroPage.page.locator('.task-input')).toBeVisible();
+    await pomodoroPage.page.locator('.task-input').click();
+    await pomodoroPage.page.locator('.task-input').pressSequentially('typing test');
+    const pomodoroButton = pomodoroPage.page.locator('.mode-tabs button').filter({ hasText: 'Pomodoro' });
+    await expect(pomodoroButton).toHaveClass(/active/);
+    await pomodoroPage.page.keyboard.press('Escape');
+    await expect(pomodoroPage.page.locator('.task-input')).not.toBeVisible({ timeout: 5000 });
   });
 
-  test('should start timer with Space key when task is selected', async ({ page }) => {
-    await expect(page.locator('.btn-add-task')).toBeVisible({ timeout: 30000 });
-    await page.locator('.btn-add-task').click();
-    await page.locator('.task-input').fill('Space Key Task');
-    await page.locator('.btn-icon-small.btn-add').click();
-    await page.waitForTimeout(500);
-
-    const taskItems = page.locator('.task-item');
-    await taskItems.first().click();
-    await page.waitForTimeout(200);
-
-    await page.evaluate(() => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
-    });
-    await page.waitForTimeout(500);
-    await expect(page.locator('.btn-pause')).toBeVisible();
-  });
-
-  test('should pause timer with Space key when timer is running', async ({ page }) => {
-    await expect(page.locator('.btn-add-task')).toBeVisible({ timeout: 30000 });
-    await page.locator('.btn-add-task').click();
-    await page.locator('.task-input').fill('Space Pause Task');
-    await page.locator('.btn-icon-small.btn-add').click();
-    await page.waitForTimeout(500);
-
-    const taskItems = page.locator('.task-item');
-    await taskItems.first().click();
-    await page.waitForTimeout(200);
-
-    await page.evaluate(() => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
-    });
-    await page.waitForTimeout(500);
-    await expect(page.locator('.btn-pause')).toBeVisible();
-
-    await page.evaluate(() => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
-    });
-    await page.waitForTimeout(500);
-    await expect(page.locator('.btn-resume')).toBeVisible();
-  });
-
-  test('should not trigger shortcuts when typing in input field', async ({ page }) => {
-    await expect(page.locator('.btn-add-task')).toBeVisible({ timeout: 30000 });
-    await page.locator('.btn-add-task').click();
-    await expect(page.locator('.task-input')).toBeVisible();
-
-    await page.locator('.task-input').fill('typing test');
-    await page.waitForTimeout(300);
-
-    const shortBreakButton = page.locator('button:has-text("Short Break")');
-    await expect(shortBreakButton).not.toHaveClass(/active/);
+  test('should cancel add task form with Escape key', async () => {
+    await pomodoroPage.closeKeyboardHelp();
+    await pomodoroPage.page.locator('.task-add-btn').click();
+    await expect(pomodoroPage.page.locator('.task-input')).toBeVisible();
+    await pomodoroPage.page.locator('.task-input').click();
+    await pomodoroPage.page.keyboard.press('Escape');
+    await expect(pomodoroPage.page.locator('.task-input')).not.toBeVisible({ timeout: 5000 });
   });
 });

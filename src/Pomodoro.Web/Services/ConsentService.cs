@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
@@ -107,7 +108,7 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
         }
     }
 
-    private bool TryGetNotificationSettings(out TimerSettings? settings)
+    private bool TryGetNotificationSettings([NotNullWhen(true)] out TimerSettings? settings)
     {
         settings = _appState?.Settings;
         return _notificationService != null && settings != null;

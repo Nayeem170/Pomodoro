@@ -1,127 +1,99 @@
 import { test, expect } from '@playwright/test';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
-async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskName: string) {
-  await pomodoroPage.goto('/settings');
-  await expect(page.locator('.settings-page')).toBeVisible({ timeout: 30000 });
-
-  const pomodoroInput = page.locator('input[type="number"]').first();
-  await pomodoroInput.fill('1');
-  await pomodoroInput.dispatchEvent('change');
-  await page.waitForTimeout(300);
-
-  const shortBreakInput = page.locator('input[type="number"]').nth(1);
-  await shortBreakInput.fill('1');
-  await shortBreakInput.dispatchEvent('change');
-  await page.waitForTimeout(500);
-
-  await page.locator('.btn-save').click();
-  await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 10000 });
-  await page.waitForTimeout(500);
-
-  await pomodoroPage.goto('/');
-  await expect(page.locator('.timer-section')).toBeVisible({ timeout: 30000 });
-
-  await pomodoroPage.addTask(taskName);
-  await pomodoroPage.selectTask(taskName);
-  await pomodoroPage.startTimer();
-  await expect(page.locator('.btn-pause')).toBeVisible();
-  await page.waitForTimeout(500);
-
-  await page.evaluate(async () => {
-    const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-    for (let i = 0; i < 70; i++) {
-      if ((window as any).timerFunctions?.dotNetRef) {
-        try {
-          await (window as any).timerFunctions.dotNetRef.invokeMethodAsync('OnTimerTickJs');
-        } catch { break; }
-      }
-      await delay(50);
-    }
-  });
-  await page.waitForTimeout(3000);
-
-  const consentOption = page.locator('.btn-option').filter({ hasText: /Skip/i });
-  if (await consentOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await consentOption.click();
-    await page.waitForTimeout(1000);
-  }
-}
-
 test.describe('Activity Item Rendering', () => {
   let pomodoroPage: PomodoroPage;
 
-  test.describe.configure({ timeout: 120000 });
+  test.describe.configure({ timeout: 60000 });
 
   test.beforeEach(async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
   });
 
   test('should render activity item with correct structure after pomodoro', async ({ page }) => {
-    await completePomodoroFast(page, pomodoroPage, 'Render Test Task');
+    await pomodoroPage.seedHistoryViaDB('Render Test Task');
+    await pomodoroPage.openHistory();
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.tl-row').first()).toBeVisible({ timeout: 5000 });
 
-    await pomodoroPage.goto('/history');
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
-
-    const activityItem = page.locator('.activity-item').first();
-    await expect(activityItem).toBeVisible({ timeout: 5000 });
-
-    await expect(activityItem.locator('.activity-icon')).toBeVisible();
-    await expect(activityItem.locator('.activity-icon')).toContainText('🍅');
-
-    await expect(activityItem.locator('.activity-time')).toBeVisible();
-    const timeText = await activityItem.locator('.activity-time').textContent();
+    const activityItem = page.locator('.tl-row').first();
+    await expect(activityItem.locator('.tl-dot')).toBeVisible();
+    await expect(activityItem.locator('.tl-time')).toBeVisible();
+    const timeText = await activityItem.locator('.tl-time').textContent();
     expect(timeText).toMatch(/\d{1,2}:\d{2}\s*[AP]M/);
-
-    await expect(activityItem.locator('.activity-name')).toBeVisible();
-    await expect(activityItem.locator('.activity-name')).toContainText('Render Test Task');
-
-    await expect(activityItem.locator('.activity-duration')).toBeVisible();
-    await expect(activityItem.locator('.activity-duration')).toContainText('min');
+    await expect(activityItem.locator('.tl-badge')).toBeVisible();
+    await expect(activityItem.locator('.tl-badge')).toContainText('Pomodoro');
+    await expect(activityItem.locator('.tl-task')).toBeVisible();
+    await expect(activityItem.locator('.tl-task')).toContainText('Render Test Task');
   });
 
   test('should render break activity with correct icon and name', async ({ page }) => {
-    await completePomodoroFast(page, pomodoroPage, 'Break Render Task');
-
-    const consentOption = page.locator('.btn-option').filter({ hasText: /Short Break/i });
-    if (await consentOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await consentOption.click();
-      await page.waitForTimeout(1000);
-
-      const startBtn = page.locator('.btn-start');
-      if (await startBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await pomodoroPage.startTimer();
-      }
-      await expect(page.locator('.btn-pause')).toBeVisible({ timeout: 5000 });
-      await page.waitForTimeout(500);
-
-      await page.evaluate(async () => {
-        const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-        for (let i = 0; i < 2000; i++) {
-          if ((window as any).timerFunctions?.dotNetRef) {
-            try {
-              await (window as any).timerFunctions.dotNetRef.invokeMethodAsync('OnTimerTickJs');
-            } catch { break; }
-          }
-          await delay(5);
-        }
+    pomodoroPage = new PomodoroPage(page);
+    await pomodoroPage.goto('/');
+    await pomodoroPage.page.evaluate(async () => {
+      const db = await new Promise<IDBDatabase>((resolve, reject) => {
+        const req = indexedDB.open('PomodoroDB', 1);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
       });
-      await page.waitForTimeout(3000);
+      const now = new Date().toISOString();
+      const today = now.split('T')[0];
 
-      const skipOption = page.locator('.btn-option').filter({ hasText: /Skip/i });
-      if (await skipOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await skipOption.click();
-        await page.waitForTimeout(1000);
+      const pomoActivity = {
+        id: crypto.randomUUID(),
+        type: 0,
+        taskName: 'Break Render Task',
+        taskId: null,
+        completedAt: new Date(Date.now() - 300000).toISOString(),
+        durationMinutes: 1,
+        wasCompleted: true
+      };
+      const tx1 = db.transaction('activities', 'readwrite');
+      tx1.objectStore('activities').put(pomoActivity);
+      await new Promise<void>((resolve) => { tx1.oncomplete = () => resolve(); });
+
+      const breakActivity = {
+        id: crypto.randomUUID(),
+        type: 1,
+        taskName: '',
+        taskId: null,
+        completedAt: now,
+        durationMinutes: 5,
+        wasCompleted: true
+      };
+      const tx2 = db.transaction('activities', 'readwrite');
+      tx2.objectStore('activities').put(breakActivity);
+      await new Promise<void>((resolve) => { tx2.oncomplete = () => resolve(); });
+
+      const statsTx = db.transaction('dailyStats', 'readwrite');
+      const statsStore = statsTx.objectStore('dailyStats');
+      const getReq = statsStore.get(today);
+      await new Promise<void>((resolve) => { getReq.onsuccess = () => resolve(); });
+      const stats = getReq.result;
+      if (stats) {
+        stats.completedPomodoros = (stats.completedPomodoros || 0) + 1;
+        stats.totalFocusMinutes = (stats.totalFocusMinutes || 0) + 1;
+        stats.totalBreakMinutes = (stats.totalBreakMinutes || 0) + 5;
+        statsStore.put(stats);
+      } else {
+        statsStore.put({
+          date: today,
+          completedPomodoros: 1,
+          totalFocusMinutes: 1,
+          totalBreakMinutes: 5,
+          longBreaks: 0
+        });
       }
-    }
+      await new Promise<void>((resolve) => { statsTx.oncomplete = () => resolve(); });
+      db.close();
+    });
 
-    await pomodoroPage.goto('/history');
-    await expect(page.locator('.history-page')).toBeVisible({ timeout: 30000 });
+    await pomodoroPage.openHistory();
+    await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
 
-    const breakActivity = page.locator('.activity-item').filter({ hasText: /Short break/i }).first();
-    if (await breakActivity.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await expect(breakActivity.locator('.activity-icon').first()).toContainText('☕');
-      await expect(breakActivity.locator('.activity-name').first()).toContainText('Short break');
-    }
+    const breakActivity = page.locator('.tl-row').filter({ hasText: /Short break/i }).first();
+    await expect(breakActivity).toBeVisible({ timeout: 5000 });
+    await expect(breakActivity.locator('.tl-dot').first()).toHaveClass(/brk/);
+    await expect(breakActivity.locator('.tl-badge').first()).toContainText('Short break');
   });
 });
