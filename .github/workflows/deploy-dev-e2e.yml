@@ -1,0 +1,87 @@
+name: Dev E2E Tests
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-dev-e2e
+  cancel-in-progress: true
+
+jobs:
+  build-e2e:
+    name: Build E2E App
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: 'npm'
+
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-chromium-${{ hashFiles('package-lock.json') }}
+
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+      - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
+      - run: rm -f bin/e2e-publish/wwwroot/_redirects bin/e2e-publish/wwwroot/_headers
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e2e-publish
+          path: bin/e2e-publish
+          retention-days: 1
+
+  e2e:
+    name: E2E (${{ matrix.shard }}/16)
+    needs: build-e2e
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: 'npm'
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-chromium-${{ hashFiles('package-lock.json') }}
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+      - uses: actions/download-artifact@v4
+        with:
+          name: e2e-publish
+          path: bin/e2e-publish
+      - run: npx playwright test --shard=${{ matrix.shard }}/16 --reporter=list,html
+        env:
+          CI: true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-report-shard-${{ matrix.shard }}
+          path: playwright-report
+          retention-days: 7
