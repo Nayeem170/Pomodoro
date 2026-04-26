@@ -8,7 +8,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,11 +16,6 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
 
       - uses: actions/cache@v4
         with:
@@ -31,6 +26,35 @@ jobs:
       - run: dotnet restore Pomodoro.sln
       - run: dotnet format Pomodoro.sln --verify-no-changes
       - run: dotnet build Pomodoro.sln --configuration Release --no-restore
+
+      - uses: actions/cache@v4
+        with:
+          path: ./src/Pomodoro.Web/bin/Release
+          key: build-${{ runner.os }}-${{ hashFiles('src/**', '**/*.csproj') }}
+
+  unit-test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - uses: actions/cache@v4
+        with:
+          path: ./src/Pomodoro.Web/bin/Release
+          key: build-${{ runner.os }}-${{ hashFiles('src/**', '**/*.csproj') }}
+
+      - run: dotnet build Pomodoro.sln --configuration Release --no-restore
+
       - run: dotnet test Pomodoro.sln --configuration Release --no-restore --verbosity normal
             --collect:"XPlat Code Coverage" --results-directory ./coverage
 
@@ -40,6 +64,7 @@ jobs:
           fail_ci_if_error: false
 
   e2e:
+    needs: build
     uses: ./.github/workflows/e2e.yml
     with:
       app_source: 'build'

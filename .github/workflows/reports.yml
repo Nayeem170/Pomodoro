@@ -19,7 +19,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
+
+      - run: rm -f bin/e2e-publish/wwwroot/_redirects bin/e2e-publish/wwwroot/_headers
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e2e-publish
+          path: bin/e2e-publish
+          retention-days: 1
+
   coverage:
+    needs: build
     name: Unit Test Coverage
     runs-on: ubuntu-latest
     steps:
@@ -61,31 +81,8 @@ jobs:
           path: ./coverage-summary.json
           retention-days: 90
 
-  build-e2e:
-    name: Build E2E App
-    runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.run_e2e == 'true' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.0.x'
-
-      - uses: ./.github/actions/setup-e2e
-
-      - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
-
-      - run: rm -f bin/e2e-publish/wwwroot/_redirects bin/e2e-publish/wwwroot/_headers
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: e2e-publish
-          path: bin/e2e-publish
-          retention-days: 1
-
   e2e:
-    needs: build-e2e
+    needs: build
     if: ${{ github.event.inputs.run_e2e == 'true' }}
     uses: ./.github/workflows/e2e.yml
     with:
