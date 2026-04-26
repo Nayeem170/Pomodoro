@@ -40,7 +40,6 @@ jobs:
           fail_ci_if_error: false
 
   e2e:
-    needs: build-and-test
     uses: ./.github/workflows/e2e.yml
     with:
       app_source: 'build'
