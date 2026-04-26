@@ -27,10 +27,14 @@ jobs:
       - run: dotnet format Pomodoro.sln --verify-no-changes
       - run: dotnet build Pomodoro.sln --configuration Release --no-restore
 
-      - uses: actions/cache@v4
+      - run: dotnet publish src/Pomodoro.Web -c Release -o ./bin/e2e-publish
+      - run: rm -f bin/e2e-publish/wwwroot/_redirects bin/e2e-publish/wwwroot/_headers
+
+      - uses: actions/upload-artifact@v4
         with:
-          path: ./src/Pomodoro.Web/bin/Release
-          key: build-${{ runner.os }}-${{ hashFiles('src/**', '**/*.csproj') }}
+          name: e2e-publish
+          path: bin/e2e-publish
+          retention-days: 1
 
   unit-test:
     needs: build
@@ -48,14 +52,8 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
 
-      - uses: actions/cache@v4
-        with:
-          path: ./src/Pomodoro.Web/bin/Release
-          key: build-${{ runner.os }}-${{ hashFiles('src/**', '**/*.csproj') }}
-
-      - run: dotnet build Pomodoro.sln --configuration Release --no-restore
-
-      - run: dotnet test Pomodoro.sln --configuration Release --no-restore --verbosity normal
+      - run: dotnet restore Pomodoro.sln
+      - run: dotnet test Pomodoro.sln --configuration Release --verbosity normal
             --collect:"XPlat Code Coverage" --results-directory ./coverage
 
       - uses: codecov/codecov-action@v4
@@ -67,5 +65,5 @@ jobs:
     needs: build
     uses: ./.github/workflows/e2e.yml
     with:
-      app_source: 'build'
+      app_source: 'download'
       reporter: 'list'
