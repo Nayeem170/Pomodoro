@@ -67,3 +67,12 @@ jobs:
     with:
       app_source: 'download'
       reporter: 'list'
+
+  e2e-gate:
+    needs: e2e
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - run: exit 1
+        if: needs.e2e.result != 'success'
+      - run: echo "All E2E tests passed"
