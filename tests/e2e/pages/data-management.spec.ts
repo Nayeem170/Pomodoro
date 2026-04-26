@@ -21,7 +21,7 @@ test.describe('Data Management', () => {
   test('should display warning text in confirmation modal', async ({ page }) => {
     await page.locator('.danger-btn').filter({ hasText: 'Clear' }).click();
     await page.waitForTimeout(1000);
-    await expect(page.locator('.confirmation-content')).toContainText('permanently delete');
+    await expect(page.locator('.confirmation-content')).toContainText('Delete all activities, tasks, and settings');
     await expect(page.locator('.confirmation-content')).toContainText('cannot be undone');
   });
 

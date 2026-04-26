@@ -6,18 +6,12 @@ test.describe('404 Page Content', () => {
 
   test.describe.configure({ timeout: 60000 });
 
-  test('should display not found content on invalid route', async ({ page }) => {
+  test('should display not found message on invalid route', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/non-existent-page');
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(3000);
 
-    const hasNotFoundText = await page.locator('text=/not found/i').first().isVisible().catch(() => false);
-    const hasErrorContainer = await page.locator('.error-container').first().isVisible().catch(() => false);
-    const hasAppContent = await page.locator('.main-container').first().isVisible().catch(() => false);
-    const hasAppHeader = await page.locator('.app-header').first().isVisible().catch(() => false);
-
-    expect(hasNotFoundText || hasErrorContainer || hasAppContent || hasAppHeader).toBe(true);
+    const notFoundText = page.locator('p[role="alert"]');
+    await expect(notFoundText).toContainText("Sorry, there's nothing at this address.");
   });
 
   test('should display error display component with retry and reload buttons on error', async ({ page }) => {
@@ -33,24 +27,20 @@ test.describe('404 Page Content', () => {
     await page.waitForTimeout(1000);
 
     const hasErrorContent = await page.locator('.error-container').isVisible().catch(() => false);
-    const hasRetryBtn = await page.locator('.btn-primary').isVisible().catch(() => false);
-    const hasReloadBtn = await page.locator('.btn-secondary').isVisible().catch(() => false);
     const hasAppContent = await page.locator('.main-container').isVisible().catch(() => false);
 
     expect(hasErrorContent || hasAppContent).toBe(true);
     if (hasErrorContent) {
-      expect(hasRetryBtn || hasReloadBtn).toBe(true);
+      await expect(page.locator('.btn-primary')).toBeVisible();
+      await expect(page.locator('.btn-secondary')).toBeVisible();
     }
   });
 
   test('should have valid page title on 404 route', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/this-page-does-not-exist');
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(3000);
 
     const title = await page.title();
-    expect(title).toBeTruthy();
-    expect(title.length).toBeGreaterThan(0);
+    expect(title).toBe('Not found');
   });
 });

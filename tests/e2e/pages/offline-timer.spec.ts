@@ -53,7 +53,7 @@ test.describe('Offline Timer', () => {
 
     await pomodoroPage.switchToPomodoro();
     const timerTypePom = await pomodoroPage.getTimerType();
-    expect(timerTypePom.toUpperCase()).toContain('POMODORO');
+    expect(timerTypePom.toUpperCase()).toContain('FOCUSING');
 
     await page.unroute('**/*');
   });
@@ -67,7 +67,7 @@ test.describe('Offline Timer', () => {
 
     await page.route('**/*', route => route.abort());
 
-    await expect(page.locator('.task-card')).toBeVisible();
+    await expect(page.locator('.tasks-section')).toBeVisible();
     await expect(page.locator('.task-row').filter({ hasText: 'Offline Task' })).toBeVisible();
 
     await page.unroute('**/*');

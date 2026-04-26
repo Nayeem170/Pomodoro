@@ -13,28 +13,34 @@ test.describe('Settings Toast On Change', () => {
   test.describe.configure({ timeout: 60000 });
 
   test('should show toast when reset to defaults is clicked', async ({ page }) => {
-    await pomodoroPage.setPomodoroMinutes(10);
-    await page.waitForTimeout(500);
-
     const input = page.locator('.step-input').first();
-    await expect(input).toHaveValue('10');
+    const currentValue = await input.inputValue();
+    if (currentValue === '25') {
+      await pomodoroPage.setPomodoroMinutes(10);
+      await page.waitForTimeout(500);
+    }
 
-    await pomodoroPage.resetToDefaults();
-    await page.waitForTimeout(300);
+    const resetButton = page.locator('.sec-btn').filter({ hasText: 'Reset to defaults' });
+    await expect(resetButton).toBeEnabled({ timeout: 3000 });
+    await resetButton.click();
 
-    await expect(page.locator('.settings-toast')).toBeVisible();
+    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 3000 });
     await expect(page.locator('.settings-toast')).toContainText('Settings reset to defaults!');
   });
 
   test('toast should disappear after a few seconds', async ({ page }) => {
-    await pomodoroPage.setPomodoroMinutes(10);
-    await page.waitForTimeout(500);
+    const input = page.locator('.step-input').first();
+    const currentValue = await input.inputValue();
+    if (currentValue === '25') {
+      await pomodoroPage.setPomodoroMinutes(10);
+      await page.waitForTimeout(500);
+    }
 
-    await pomodoroPage.resetToDefaults();
-    await page.waitForTimeout(300);
+    const resetButton = page.locator('.sec-btn').filter({ hasText: 'Reset to defaults' });
+    await expect(resetButton).toBeEnabled({ timeout: 3000 });
+    await resetButton.click();
 
-    await expect(page.locator('.settings-toast')).toBeVisible();
-    await page.waitForTimeout(3000);
-    await expect(page.locator('.settings-toast')).not.toBeVisible();
+    await expect(page.locator('.settings-toast')).toBeVisible({ timeout: 3000 });
+    await expect(page.locator('.settings-toast')).not.toBeVisible({ timeout: 10000 });
   });
 });

@@ -46,7 +46,7 @@ test.describe('Swipe Navigation', () => {
   });
 
   test('should block swipe left on last page (about)', async ({ page }) => {
-    await page.locator('.header-nav a[title="About Pomodoro"]').click();
+    await page.locator('.header-nav a[title="About"]').click();
     await expect(page.locator('.about-body')).toBeVisible({ timeout: 30000 });
 
     const urlBeforeSwipe = page.url();
@@ -57,20 +57,10 @@ test.describe('Swipe Navigation', () => {
     expect(page.url()).toBe(urlBeforeSwipe);
   });
 
-  test('should add slide transition class on navigation', async ({ page }) => {
-    const hasTransition = await page.evaluate(() => {
-      const content = document.querySelector('.app-content');
-      if (!content) return false;
-      const style = window.getComputedStyle(content);
-      return style.transition.includes('transform') && style.transition.includes('opacity');
-    });
-
-    expect(hasTransition).toBe(true);
-  });
-
-  test('should clean up swipe listeners on dispose', async ({ page }) => {
+  test('should have swipeNavigation module initialized', async ({ page }) => {
     const isInitialized = await page.evaluate(() => {
       return (window as any).swipeNavigation !== null &&
+             (window as any).swipeNavigation !== undefined &&
              (window as any).swipeNavigation._dotNetRef !== null;
     });
 

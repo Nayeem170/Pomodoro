@@ -35,16 +35,13 @@ test.describe('IndexedDB Persistence', () => {
     await pomodoroPage.openSettings();
     await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    const input = page.locator('.step-input').first();
-    await input.click({ clickCount: 3 });
-    await input.pressSequentially('30');
-    await input.dispatchEvent('input');
-    await page.waitForTimeout(500);
+    await pomodoroPage.setPomodoroMinutes(30);
 
     await page.reload();
     await pomodoroPage.openSettings();
     await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
+    const input = page.locator('.step-input').first();
     await expect(input).toHaveValue('30');
 
     await pomodoroPage.resetToDefaults();

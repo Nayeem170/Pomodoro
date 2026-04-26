@@ -49,12 +49,9 @@ test.describe('Page Title', () => {
   test('should have not found title on non-existent route', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/non-existent-page');
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(3000);
 
     const title = await page.title();
-    expect(title).toBeTruthy();
-    expect(title.toLowerCase()).toContain('not found');
+    expect(title).toBe('Not found');
   });
 
   test('should keep same title when navigating between pages', async ({ page }) => {

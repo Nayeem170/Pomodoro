@@ -48,7 +48,9 @@ test.describe('Task Validation', () => {
     await expect(page.locator('.task-add-btn')).toBeVisible({ timeout: 30000 });
 
     await pomodoroPage.addTask('Duplicate Task');
+    await expect(page.locator('.task-row').filter({ hasText: 'Duplicate Task' })).toBeVisible({ timeout: 5000 });
     await pomodoroPage.addTask('Duplicate Task');
+    await expect(page.locator('.task-row').filter({ hasText: 'Duplicate Task' }).nth(1)).toBeVisible({ timeout: 5000 });
 
     const taskCount = await page.locator('.task-row').filter({ hasText: 'Duplicate Task' }).count();
     expect(taskCount).toBe(2);

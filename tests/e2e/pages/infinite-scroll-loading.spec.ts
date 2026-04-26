@@ -4,16 +4,14 @@ import { PomodoroPage } from '../fixtures/pomodoro.page';
 test.describe('Infinite Scroll Loading', () => {
   let pomodoroPage: PomodoroPage;
 
-  test.describe.configure({ timeout: 120000 });
+  test.describe.configure({ timeout: 60000 });
 
   test('should create IntersectionObserver for scroll sentinel', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.openHistory();
     await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
 
-    const observerSupported = await page.evaluate(() => {
-      return 'IntersectionObserver' in window;
-    });
+    const observerSupported = await page.evaluate(() => 'IntersectionObserver' in window);
     expect(observerSupported).toBe(true);
 
     const infiniteScrollSupported = await page.evaluate(() => {
@@ -33,20 +31,15 @@ test.describe('Infinite Scroll Loading', () => {
 
     if (hasSentinel > 0) {
       const scrollContainer = page.locator('.timeline-scroll-container');
-      const isScrollable = await scrollContainer.evaluate(el => {
-        return el.scrollHeight > el.clientHeight;
-      });
+      const isScrollable = await scrollContainer.evaluate(el => el.scrollHeight > el.clientHeight);
 
       if (isScrollable) {
-        await scrollContainer.evaluate(el => {
-          el.scrollTop = el.scrollHeight;
-        });
+        await scrollContainer.evaluate(el => { el.scrollTop = el.scrollHeight; });
         await page.waitForTimeout(1000);
 
         const loadingVisible = await page.locator('.loading-indicator').isVisible().catch(() => false);
         const endOfListVisible = await page.locator('.end-of-list').isVisible().catch(() => false);
         const emptyVisible = await page.locator('.empty-state').isVisible().catch(() => false);
-
         expect(loadingVisible || endOfListVisible || emptyVisible).toBe(true);
       }
     }
@@ -54,32 +47,11 @@ test.describe('Infinite Scroll Loading', () => {
 
   test('should display multiple activity rows after completing pomodoros', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
-    await pomodoroPage.goto('/');
-    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
-
-    await pomodoroPage.addTask('Scroll Task A');
-    await pomodoroPage.selectTask('Scroll Task A');
-    await pomodoroPage.startTimer();
-    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
-    await pomodoroPage.completePomodoroFast();
-    await pomodoroPage.skipConsentModal();
-
-    await pomodoroPage.resetTimer();
-    await page.waitForTimeout(500);
-
-    await pomodoroPage.addTask('Scroll Task B');
-    await pomodoroPage.selectTask('Scroll Task B');
-    await pomodoroPage.startTimer();
-    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
-    await pomodoroPage.completePomodoroFast();
-    await pomodoroPage.skipConsentModal();
-
+    await pomodoroPage.seedHistoryViaDB('Scroll Task A');
+    await pomodoroPage.seedHistoryViaDB('Scroll Task B');
     await pomodoroPage.openHistory();
     await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
-    await page.waitForTimeout(2000);
-
-    const activityCount = await page.locator('.tl-row').count();
-    expect(activityCount).toBeGreaterThanOrEqual(1);
+    await expect(page.locator('.tl-row').first()).toBeVisible({ timeout: 5000 });
   });
 
   test('should destroy observer when navigating away from history', async ({ page }) => {
@@ -131,7 +103,6 @@ test.describe('Infinite Scroll Loading', () => {
         }
       });
       await page.waitForTimeout(1000);
-
       await expect(page.locator('.hist-body')).toBeVisible();
     }
   });

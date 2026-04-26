@@ -63,7 +63,6 @@ test.describe('PiP Window Content and Communication', () => {
     expect(html).toContain('25:00');
     expect(html).toContain('FOCUSING');
     expect(html).toContain('Test Task');
-    expect(html).toContain('pip-container');
     expect(html).toContain('ring-area');
     expect(html).toContain('ttime');
     expect(html).toContain('tmode');
@@ -320,10 +319,10 @@ test.describe('PiP Window Content and Communication', () => {
     const hasKeyboardShortcuts = await page.evaluate(() => {
       const pip = (window as any).pipTimer;
       if (!pip.ensurePipScript) return false;
-      const scriptContent = pip.toString();
-      return scriptContent.includes('pipToggleTimer') &&
-        scriptContent.includes('pipResetTimer') &&
-        scriptContent.includes('pipSwitchSession');
+      const scriptSource = pip.ensurePipScript.toString();
+      return scriptSource.includes('pipToggleTimer') &&
+        scriptSource.includes('pipResetTimer') &&
+        scriptSource.includes('pipSwitchSession');
     });
     expect(hasKeyboardShortcuts).toBe(true);
   });

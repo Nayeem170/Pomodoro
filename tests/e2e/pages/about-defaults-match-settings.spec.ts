@@ -17,6 +17,10 @@ test.describe('About Page Defaults Match Settings', () => {
     await pomodoroPage.goto('/about');
     await expect(page.locator('.about-body')).toBeVisible();
 
+    const toggle = page.locator('.collapse-toggle').filter({ hasText: 'Default Timer' });
+    await toggle.click();
+    await page.waitForTimeout(300);
+
     const timeCardValue = await page.locator('.time-card.pomodoro .time-value').textContent();
     expect(timeCardValue).toContain(pomodoroDefault);
   });
@@ -32,6 +36,10 @@ test.describe('About Page Defaults Match Settings', () => {
     await pomodoroPage.goto('/about');
     await expect(page.locator('.about-body')).toBeVisible();
 
+    const toggle = page.locator('.collapse-toggle').filter({ hasText: 'Default Timer' });
+    await toggle.click();
+    await page.waitForTimeout(300);
+
     const timeCardValue = await page.locator('.time-card.short-break .time-value').textContent();
     expect(timeCardValue).toContain(shortBreakDefault);
   });
@@ -46,6 +54,10 @@ test.describe('About Page Defaults Match Settings', () => {
 
     await pomodoroPage.goto('/about');
     await expect(page.locator('.about-body')).toBeVisible();
+
+    const toggle = page.locator('.collapse-toggle').filter({ hasText: 'Default Timer' });
+    await toggle.click();
+    await page.waitForTimeout(300);
 
     const timeCardValue = await page.locator('.time-card.long-break .time-value').textContent();
     expect(timeCardValue).toContain(longBreakDefault);

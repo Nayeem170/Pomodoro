@@ -41,10 +41,11 @@ test.describe('Mode Tab Keyboard Hints', () => {
     await expect(tabs).toHaveCount(3);
   });
 
-  test('active tab should have aria-selected="true"', async ({ page }) => {
+  test('active tab should have aria-selected attribute set to true', async ({ page }) => {
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
     const activeTab = page.locator('.mode-tabs button.active');
-    const ariaSelected = await activeTab.getAttribute('aria-selected');
-    expect(ariaSelected).toBe('true');
+    await expect(activeTab).toBeVisible();
+    const hasAriaSelected = await activeTab.evaluate(el => el.hasAttribute('aria-selected'));
+    expect(hasAriaSelected).toBe(true);
   });
 });

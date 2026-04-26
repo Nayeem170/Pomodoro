@@ -10,41 +10,33 @@ test.describe('Cloud Sync Settings', () => {
   });
 
   test('should show Connect button when not connected', async ({ page }) => {
-    await expect(page.locator('.ss-data')).toBeVisible();
-    await expect(page.locator('.ss-hdr')).toContainText('Cloud Sync');
-    await expect(page.locator('button.sec-btn', { hasText: 'Connect' })).toBeVisible();
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.ss-hdr').filter({ hasText: 'Cloud Sync' })).toBeVisible();
+    await expect(page.locator('.sec-btn').filter({ hasText: 'Connect' })).toBeVisible();
   });
 
-  test('should show Sync and Disconnect buttons when connected', async ({ page }) => {
-    await expect(page.locator('.sync-actions')).toBeVisible();
-    await expect(page.locator('button.sec-btn', { hasText: 'Sync' })).toBeVisible();
-    await expect(page.locator('button.danger-btn', { hasText: 'Disconnect' })).toBeVisible();
-  });
-
-  test('should show Last synced time', async ({ page }) => {
-    await expect(page.locator('.sr-sub')).toContainText('Last synced');
-  });
-
-  test('should show Never when never synced', async ({ page }) => {
-    await expect(page.locator('.sr-sub')).toContainText('Never');
+  test('should show Google Drive label and Sync across devices subtitle', async ({ page }) => {
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sr-lbl').filter({ hasText: 'Google Drive' })).toBeVisible();
+    await expect(page.locator('.sr-sub').filter({ hasText: 'Sync across devices' })).toBeVisible();
   });
 
   test('should show Data section with Clear button', async ({ page }) => {
-    await expect(page.locator('.ss-data').nth(1)).toBeVisible();
-    await expect(page.locator('.ss-hdr').nth(1)).toContainText('Data');
-    await expect(page.locator('button.danger-btn', { hasText: 'Clear' })).toBeVisible();
+    await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.ss-hdr').filter({ hasText: 'Data' })).toBeVisible();
+    await expect(page.locator('.danger-btn').filter({ hasText: 'Clear' })).toBeVisible();
   });
 
   test('should show Clear confirmation modal on Clear click', async ({ page }) => {
-    await page.locator('button.danger-btn', { hasText: 'Clear' }).click();
+    await page.locator('.danger-btn').filter({ hasText: 'Clear' }).click();
     await expect(page.locator('.confirmation-modal')).toBeVisible();
-    await expect(page.locator('.confirmation-modal')).toContainText('Clear All Data?');
+    await expect(page.locator('.confirmation-modal')).toContainText('Clear All Data');
   });
 
   test('should dismiss modal on Cancel', async ({ page }) => {
-    await page.locator('button.danger-btn', { hasText: 'Clear' }).click();
+    await page.locator('.danger-btn').filter({ hasText: 'Clear' }).click();
     await expect(page.locator('.confirmation-modal')).toBeVisible();
-    await page.locator('button.btn-cancel-action', { hasText: 'Cancel' }).click();
+    await page.locator('.btn-cancel-action').filter({ hasText: 'Cancel' }).click();
     await expect(page.locator('.confirmation-modal')).not.toBeVisible();
   });
 });

@@ -11,24 +11,9 @@ async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskN
   await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
   await page.waitForTimeout(500);
 
-  await page.evaluate(async () => {
-    const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-    for (let i = 0; i < 2000; i++) {
-      if ((window as any).timerFunctions?.dotNetRef) {
-        try {
-          await (window as any).timerFunctions.dotNetRef.invokeMethodAsync('OnTimerTickJs');
-        } catch { break; }
-      }
-      await delay(5);
-    }
-  });
-  await page.waitForTimeout(3000);
+  await pomodoroPage.completePomodoroFast();
 
-  const consentOption = page.locator('.btn-option').filter({ hasText: /Skip/i });
-  if (await consentOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await consentOption.click();
-    await page.waitForTimeout(1000);
-  }
+  await pomodoroPage.skipConsentModal();
 }
 
 test.describe('Consent Auto-Continue', () => {
@@ -47,37 +32,21 @@ test.describe('Consent Auto-Continue', () => {
     await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible();
     await page.waitForTimeout(500);
 
-    await page.evaluate(async () => {
-      const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-      for (let i = 0; i < 2000; i++) {
-        if ((window as any).timerFunctions?.dotNetRef) {
-          try {
-            await (window as any).timerFunctions.dotNetRef.invokeMethodAsync('OnTimerTickJs');
-          } catch { break; }
-        }
-        await delay(5);
-      }
-    });
-    await page.waitForTimeout(3000);
+    await pomodoroPage.completePomodoroFast();
 
     const consentModal = page.locator('.consent-modal-overlay');
     const isModalVisible = await consentModal.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (isModalVisible) {
-      const countdownText = page.locator('.auto-continue-row span');
+      const countdownText = page.locator('.auto-continue-row strong');
       const text = await countdownText.textContent();
-      const match = text?.match(/(\d+)\s*seconds/);
+      const seconds = parseInt(text || '10');
 
-      if (match) {
-        const seconds = parseInt(match[1]);
-        await page.waitForTimeout((seconds + 3) * 1000);
-      } else {
-        await page.waitForTimeout(15000);
-      }
+      await page.waitForTimeout((seconds + 3) * 1000);
     }
 
     await expect(page.locator('.consent-modal-overlay')).not.toBeVisible({ timeout: 20000 });
     const timerType = await pomodoroPage.getTimerType();
-    expect(timerType.toUpperCase()).toContain('POMODORO');
+    expect(timerType.toUpperCase()).toContain('FOCUSING');
   });
 });
