@@ -85,8 +85,7 @@ public class ExportServiceExportToStringTests
     {
         _mockActivityRepo.Setup(r => r.GetAllAsync()).ThrowsAsync(new Exception("Test error"));
 
-        try { await _service.ExportToJsonStringAsync(); Assert.True(false); }
-        catch { }
+        await Assert.ThrowsAsync<Exception>(() => _service.ExportToJsonStringAsync());
 
         _mockLogger.Verify(
             x => x.Log(LogLevel.Error, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(),
