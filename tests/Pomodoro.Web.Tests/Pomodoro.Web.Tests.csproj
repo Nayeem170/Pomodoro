@@ -20,6 +20,7 @@
     <CoverletCollectCoverage>true</CoverletCollectCoverage>
     <ExcludeByAttribute>System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
     <IncludeByAttribute>System.Diagnostics.CodeAnalysis.CoverageExcludeAttribute</IncludeByAttribute>
+    <NoWarn>BL0005</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
