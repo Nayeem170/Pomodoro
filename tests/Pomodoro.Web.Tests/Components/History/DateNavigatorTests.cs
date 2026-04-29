@@ -279,7 +279,7 @@ public class DateNavigatorTests : TestContext
         await (Task)method!.Invoke(cut.Instance, null)!;
 
         Assert.NotNull(receivedDate);
-        Assert.Equal(DateTime.Now.Date, receivedDate.Value.Date);
+        Assert.Equal(DateTime.Now.Date, receivedDate.Value);
     }
 
     #endregion

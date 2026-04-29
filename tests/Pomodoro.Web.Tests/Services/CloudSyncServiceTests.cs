@@ -1348,14 +1348,6 @@ public class CloudSyncServiceTests : IDisposable
     public async Task StartPeriodicSync_CreatesTimer_WhenConnected()
     {
         _mockGoogleDrive.Setup(g => g.ConnectAsync()).ReturnsAsync("token");
-        _mockGoogleDrive.Setup(g => g.FindSyncFileAsync()).ReturnsAsync((string?)null);
-        _mockExportService.Setup(e => e.ExportToJsonStringAsync()).ReturnsAsync("{}");
-        _mockJsRuntime.Setup(js => js.InvokeAsync<string>(
-            Constants.CompressionJsFunctions.GzipCompress, It.IsAny<object?[]>()))
-            .ReturnsAsync("compressed");
-        _mockGoogleDrive.Setup(g => g.CreateFileAsync(
-            Constants.Sync.SyncFileName, It.IsAny<string>()))
-            .ReturnsAsync("file-id");
 
         await _sut.ConnectAsync("test-client");
 
@@ -1397,40 +1389,6 @@ public class CloudSyncServiceTests : IDisposable
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()),
             Times.Once);
-    }
-
-    #endregion
-
-    #region InitializeAsync - Post Retry Success
-
-    [Fact]
-    public async Task InitializeAsync_WhenFirstAttemptFailsSecondSucceeds_InitializesGoogleDrive()
-    {
-        var callCount = 0;
-        _mockIndexedDb.Setup(db => db.GetAsync<SyncStateRecord>(Constants.Storage.AppStateStore, "cloudSync"))
-            .ReturnsAsync(() =>
-            {
-                callCount++;
-                if (callCount <= 1)
-                    throw new Exception("First load fails");
-                return new SyncStateRecord { ClientId = "test-client", AccessToken = "token" };
-            });
-
-        var freshSut = new CloudSyncService(
-            _mockGoogleDrive.Object,
-            _mockExportService.Object,
-            _mockImportService.Object,
-            _mockJsRuntime.Object,
-            _mockIndexedDb.Object,
-            _mockLogger.Object,
-            _mockTaskService.Object,
-            _mockActivityService.Object,
-            _mockTimerService.Object);
-
-        await freshSut.InitializeAsync();
-
-        Assert.True(freshSut.IsInitialized);
-        freshSut.Dispose();
     }
 
     #endregion

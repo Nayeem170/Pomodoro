@@ -51,8 +51,7 @@ public class StatisticsServiceCoverageTests
         var weekStart = new DateTime(2024, 6, 15);
 
         _mockRepository
-            .SetupSequence(r => r.GetByDateRangeAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-            .ReturnsAsync(new List<ActivityRecord>())
+            .Setup(r => r.GetByDateRangeAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(new List<ActivityRecord>());
 
         var service = CreateService();
@@ -104,6 +103,6 @@ public class StatisticsServiceCoverageTests
         var service = CreateService();
         var result = await service.GetWeeklyStatsAsync(weekStart);
 
-        Assert.True(result.WeekOverWeekChange < 0);
+        Assert.Equal(-50.0, result.WeekOverWeekChange);
     }
 }
