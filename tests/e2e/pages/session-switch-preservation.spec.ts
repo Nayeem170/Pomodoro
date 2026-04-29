@@ -7,6 +7,7 @@ test.describe('Session Switch Preservation', () => {
   test('should preserve paused state and remaining time when switching session type mid-timer', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.fastSetup1MinPomodoro();
+    await pomodoroPage.resetTimer();
     await pomodoroPage.startTimer();
 
     await page.waitForTimeout(3000);
@@ -30,16 +31,17 @@ test.describe('Session Switch Preservation', () => {
     expect(timeAfterSwitch).toBe(timeBeforeSwitch);
   });
 
-  test('should show reset button (not start button) after switching back to original session type', async ({ page }) => {
+  test('should show resume button (not start button) after switching back to original session type', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.fastSetup1MinPomodoro();
+    await pomodoroPage.resetTimer();
     await pomodoroPage.startTimer();
     await page.waitForTimeout(2000);
 
     await pomodoroPage.switchToShortBreak();
     await pomodoroPage.switchToPomodoro();
 
-    const isResetVisible = await pomodoroPage.isTimerStarted();
-    expect(isResetVisible).toBe(true);
+    const isResumeVisible = await pomodoroPage.isTimerPaused();
+    expect(isResumeVisible).toBe(true);
   });
 });
