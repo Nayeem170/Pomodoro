@@ -320,6 +320,26 @@ public class TaskListTests : TestContext
         Assert.DoesNotContain("selected", cut.Markup);
     }
 
+    [Fact]
+    public void TaskList_ClickTask_InvokesOnTaskSelectCallback()
+    {
+        var selectedTaskId = Guid.Empty;
+        var taskId = Guid.NewGuid();
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = taskId, Name = "Active Task", IsCompleted = false }
+        };
+
+        var cut = RenderComponent<TaskList>(parameters => parameters
+            .Add(p => p.Tasks, tasks)
+            .Add(p => p.CurrentTaskId, null)
+            .Add(p => p.OnTaskSelect, EventCallback.Factory.Create<Guid>(this, id => selectedTaskId = id)));
+
+        cut.Find(".task-row").Click();
+
+        Assert.Equal(taskId, selectedTaskId);
+    }
+
     #endregion
 
     #region Sorting Tests

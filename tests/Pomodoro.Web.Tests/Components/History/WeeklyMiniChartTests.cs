@@ -599,5 +599,34 @@ public partial class WeeklyMiniChartTests : TestContext
     }
 
     #endregion
+
+    #region Tests for DictionariesEqual branch coverage
+
+    [Fact]
+    public Task WeeklyMiniChart_OnParametersSetAsync_DetectsChangedValues()
+    {
+        var jsRuntimeMock = new Mock<IJSRuntime>();
+        Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton(new ChartDataFormatter());
+
+        var weekStart = DateTime.Today;
+        var cut = RenderComponent<WeeklyMiniChart>(parameters => parameters
+            .Add(p => p.DailyFocusMinutes, new Dictionary<DateTime, int> { { weekStart, 100 } })
+            .Add(p => p.BreakDailyMinutes, new Dictionary<DateTime, int> { { weekStart, 20 } })
+            .Add(p => p.WeekStartDate, weekStart));
+
+        var initialCallCount = jsRuntimeMock.Invocations.Count;
+
+        cut.SetParametersAndRender(parameters => parameters
+            .Add(p => p.DailyFocusMinutes, new Dictionary<DateTime, int> { { weekStart, 200 } })
+            .Add(p => p.BreakDailyMinutes, new Dictionary<DateTime, int> { { weekStart, 40 } })
+            .Add(p => p.WeekStartDate, weekStart));
+
+        Assert.True(jsRuntimeMock.Invocations.Count > initialCallCount);
+        return Task.CompletedTask;
+    }
+
+    #endregion
 }
 
