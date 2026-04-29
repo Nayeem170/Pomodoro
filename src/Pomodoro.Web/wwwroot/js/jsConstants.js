@@ -224,10 +224,8 @@ window.pomodoroConstants = {
         chartNotLoaded: 'Chart.js is not loaded. Make sure Chart.js CDN is included in index.html',
         chartNotLoadedShort: 'Chart.js is not loaded!',
         canvasNotFound: 'Canvas not found:',
-        pipWindowOpened: '[PiP] Document PiP window opened',
         pipFailed: '[PiP] Document PiP failed:',
         pipPopupBlocked: '[PiP] Popup blocked',
-        pipPopupOpened: '[PiP] Popup window opened',
         timerTickError: 'Timer tick error: ',
         serviceWorkerError: '[ServiceWorker] Error:',
         chartInteropPrefix: '[ChartInterop]',
@@ -237,18 +235,8 @@ window.pomodoroConstants = {
         chartInteropNotLoaded: '[ChartInterop] Chart.js is not loaded!',
         indexedDbPrefix: '[IndexedDB]',
         indexedDbOpenFailed: '[IndexedDB] Failed to open database:',
-        indexedDbOpened: '[IndexedDB] Database opened successfully',
-        indexedDbUpgrading: '[IndexedDB] Upgrading database schema...',
-        indexedDbCreatedTasksStore: '[IndexedDB] Created tasks store',
         keyboardShortcutsAlreadyInitialized: 'Keyboard shortcuts already initialized',
-        keyboardShortcutsInitialized: 'Keyboard shortcuts initialized',
-        keyboardShortcutsDisposed: 'Keyboard shortcuts disposed',
-        audioContextUnlocked: 'AudioContext unlocked successfully',
         audioContextUnlockFailed: 'Failed to unlock AudioContext:',
-        indexedDbCreatedActivitiesStore: '[IndexedDB] Created activities store',
-        indexedDbCreatedDailyStatsStore: '[IndexedDB] Created dailyStats store',
-        indexedDbCreatedSettingsStore: '[IndexedDB] Created settings store',
-        indexedDbCreatedAppStateStore: '[IndexedDB] Created appState store',
         indexedDbErrorPuttingItem: '[IndexedDB] Error putting item in',
         indexedDbExceptionPutItem: '[IndexedDB] Exception in putItem:',
         indexedDbErrorGettingItem: '[IndexedDB] Error getting item from',
@@ -312,7 +300,6 @@ window.pomodoroConstants = {
                 this.defaultLongBreakMinutes = settings.longBreakMinutes;
             }
         }
-        console.log('Pomodoro constants initialized:', this.defaultPomodoroMinutes, 'min pomodoro');
     },
     
     /**

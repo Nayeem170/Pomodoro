@@ -154,6 +154,16 @@ public class GoogleDriveServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task FindSyncFileAsync_ReturnsNull_WhenFileNotFound()
+    {
+        _jsRuntime.NextResult = (string?)null;
+
+        var fileId = await _service.FindSyncFileAsync();
+
+        Assert.Null(fileId);
+    }
+
+    [Fact]
     public async Task ReadFileAsync_InvokesJs()
     {
         _jsRuntime.NextResult = "file-content";

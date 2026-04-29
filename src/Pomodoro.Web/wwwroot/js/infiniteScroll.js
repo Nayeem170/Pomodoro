@@ -86,7 +86,6 @@ window.infiniteScrollInterop = {
         observer.observe(sentinel);
         this.observers.set(sentinelId, observer);
         
-        console.log('InfiniteScroll: Observer created for', sentinelId);
         return true;
     },
     
@@ -112,7 +111,6 @@ window.infiniteScrollInterop = {
             observer.disconnect();
             this.observers.delete(sentinelId);
             this.loadingSentinels.delete(sentinelId);
-            console.log('InfiniteScroll: Observer destroyed for', sentinelId);
         }
     },
     
@@ -123,7 +121,6 @@ window.infiniteScrollInterop = {
         });
         this.observers.clear();
         this.loadingSentinels.clear();
-        console.log('InfiniteScroll: All observers destroyed');
     },
     
     // Check if Intersection Observer API is supported

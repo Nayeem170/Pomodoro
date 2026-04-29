@@ -1293,6 +1293,106 @@ public class CloudSyncServiceTests : IDisposable
 
     #endregion
 
+    #region SyncInBackgroundAsync - Connected Path
+
+    [Fact]
+    public async Task SyncInBackgroundAsync_WhenInitializedAndConnected_Syncs()
+    {
+        await _sut.InitializeAsync();
+        _mockGoogleDrive.Setup(g => g.IsConnected).Returns(true);
+        _mockGoogleDrive.Setup(g => g.FindSyncFileAsync()).ReturnsAsync((string?)null);
+        _mockExportService.Setup(e => e.ExportToJsonStringAsync()).ReturnsAsync("{}");
+        _mockJsRuntime.Setup(js => js.InvokeAsync<string>(
+            Constants.CompressionJsFunctions.GzipCompress, It.IsAny<object?[]>()))
+            .ReturnsAsync("compressed");
+        _mockGoogleDrive.Setup(g => g.CreateFileAsync(
+            Constants.Sync.SyncFileName, It.IsAny<string>()))
+            .ReturnsAsync("file-id");
+
+        await _sut.SyncInBackgroundAsync();
+
+        await Task.Delay(500);
+
+        _mockGoogleDrive.Verify(g => g.FindSyncFileAsync(), Times.Once);
+    }
+
+    #endregion
+
+    #region ScheduleSyncAsync - Exception Path
+
+    [Fact]
+    public async Task ScheduleSyncAsync_WhenPushFails_LogsError()
+    {
+        _mockGoogleDrive.Setup(g => g.IsConnected).Returns(true);
+        _mockExportService.Setup(e => e.ExportToJsonStringAsync())
+            .ThrowsAsync(new Exception("Export failed"));
+
+        await _sut.ScheduleSyncAsync();
+
+        await Task.Delay(Constants.Sync.DebounceDelayMs + 500);
+
+        _mockLogger.Verify(
+            l => l.Log(It.Is<Microsoft.Extensions.Logging.LogLevel>(ll => ll == LogLevel.Error),
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((o, t) => true),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            Times.Once);
+    }
+
+    #endregion
+
+    #region StartPeriodicSync - Timer Callback
+
+    [Fact]
+    public async Task StartPeriodicSync_CreatesTimer_WhenConnected()
+    {
+        _mockGoogleDrive.Setup(g => g.ConnectAsync()).ReturnsAsync("token");
+
+        await _sut.ConnectAsync("test-client");
+
+        var field = typeof(CloudSyncService).GetField("_periodicSyncTimer",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        var timer = (Timer?)field?.GetValue(_sut);
+
+        Assert.NotNull(timer);
+        timer!.Dispose();
+    }
+
+    #endregion
+
+    #region SaveSyncStateAsync - Exception Path
+
+    [Fact]
+    public async Task SaveSyncStateAsync_WhenIndexedDbFails_LogsWarning()
+    {
+        await _sut.InitializeAsync();
+        _mockGoogleDrive.Setup(g => g.IsConnected).Returns(true);
+        _mockGoogleDrive.Setup(g => g.FindSyncFileAsync()).ReturnsAsync((string?)null);
+        _mockExportService.Setup(e => e.ExportToJsonStringAsync()).ReturnsAsync("{}");
+        _mockJsRuntime.Setup(js => js.InvokeAsync<string>(
+            Constants.CompressionJsFunctions.GzipCompress, It.IsAny<object?[]>()))
+            .ReturnsAsync("compressed");
+        _mockGoogleDrive.Setup(g => g.CreateFileAsync(
+            Constants.Sync.SyncFileName, It.IsAny<string>()))
+            .ReturnsAsync("file-id");
+
+        _mockIndexedDb.Setup(db => db.PutAsync(Constants.Storage.AppStateStore, It.IsAny<SyncStateRecord>()))
+            .ThrowsAsync(new Exception("DB write failed"));
+
+        await _sut.SyncNowAsync();
+
+        _mockLogger.Verify(
+            l => l.Log(It.Is<Microsoft.Extensions.Logging.LogLevel>(ll => ll == LogLevel.Warning),
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((o, t) => true),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            Times.Once);
+    }
+
+    #endregion
+
     #region Dispose
 
     [Fact]
