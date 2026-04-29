@@ -21,6 +21,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     private readonly SemaphoreSlim _timerCompleteLock = new(Constants.Threading.SemaphoreInitialCount, Constants.Threading.SemaphoreMaxCount);
     private readonly object _timerTickLock = new();
     private bool _isDisposed;
+    private readonly Dictionary<SessionType, TimerSession> _pausedSessions = new();
 
     // ITimerEventPublisher events
     public event Func<TimerCompletedEventArgs, Task>? OnTimerCompleted;
@@ -193,25 +194,36 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
     public async Task SwitchSessionTypeAsync(SessionType sessionType)
     {
-        // Stop current timer
         await _jsTimerInterop.StopAsync();
 
-        // Get duration for the new session type using helper method
-        var durationSeconds = _appState.Settings.GetDurationSeconds(sessionType);
-
-        // Create new session (not running, just prepared)
-        _appState.CurrentSession = new TimerSession
+        if (_appState.CurrentSession != null)
         {
-            Id = Guid.NewGuid(),
-            TaskId = _appState.CurrentSession?.TaskId,
-            Type = sessionType,
-            StartedAt = DateTime.UtcNow,
-            DurationSeconds = durationSeconds,
-            RemainingSeconds = durationSeconds,
-            IsRunning = false,
-            IsCompleted = false,
-            EndAt = null
-        };
+            _appState.CurrentSession.IsRunning = false;
+            _appState.CurrentSession.EndAt = null;
+            _pausedSessions[_appState.CurrentSession.Type] = _appState.CurrentSession;
+        }
+
+        if (_pausedSessions.TryGetValue(sessionType, out var pausedSession))
+        {
+            _appState.CurrentSession = pausedSession;
+            _pausedSessions.Remove(sessionType);
+        }
+        else
+        {
+            var durationSeconds = _appState.Settings.GetDurationSeconds(sessionType);
+            _appState.CurrentSession = new TimerSession
+            {
+                Id = Guid.NewGuid(),
+                TaskId = null,
+                Type = sessionType,
+                StartedAt = DateTime.UtcNow,
+                DurationSeconds = durationSeconds,
+                RemainingSeconds = durationSeconds,
+                IsRunning = false,
+                IsCompleted = false,
+                EndAt = null
+            };
+        }
 
         NotifyStateChanged();
     }
@@ -243,8 +255,8 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     {
         await _jsTimerInterop.StopAsync();
 
-        // Reset tick count to prevent potential overflow
         TickCount = 0;
+        _pausedSessions.Clear();
 
         if (_appState.CurrentSession != null)
         {
@@ -297,6 +309,8 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         session.IsRunning = false;
         session.IsCompleted = true;
         session.EndAt = null;
+
+        _pausedSessions.Remove(session.Type);
 
         // Reset remaining seconds back to full duration for display
         session.RemainingSeconds = session.DurationSeconds;
