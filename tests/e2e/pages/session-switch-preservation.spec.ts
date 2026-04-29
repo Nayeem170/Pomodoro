@@ -7,6 +7,8 @@ test.describe('Session Switch Preservation', () => {
     await pomodoroPage.goto('/');
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
+    await pomodoroPage.addTask('Switch Test');
+    await pomodoroPage.selectTask('Switch Test');
     await page.locator('button[aria-label="Start timer"]').click();
     await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
 
@@ -40,6 +42,8 @@ test.describe('Session Switch Preservation', () => {
       await pomodoroPage.goto('/');
       await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
+      await pomodoroPage.addTask('Switch Test 2');
+      await pomodoroPage.selectTask('Switch Test 2');
       await page.locator('button[aria-label="Start timer"]').click();
       await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
 
