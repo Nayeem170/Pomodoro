@@ -257,7 +257,7 @@ public class SwitchSessionPreservationTests : TimerServiceTests
     }
 
     [Fact]
-    public async Task ResetAsync_ClearsPausedSessions()
+    public async Task ResetAsync_OnlyClearsCurrentSessionPausedState()
     {
         var service = CreateService();
         await service.InitializeAsync();
@@ -268,8 +268,8 @@ public class SwitchSessionPreservationTests : TimerServiceTests
         await service.ResetAsync();
         await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
 
-        Assert.Equal(service.Settings.GetDurationSeconds(SessionType.Pomodoro), service.RemainingSeconds);
-        Assert.False(service.IsPaused);
+        Assert.Equal(1200, service.RemainingSeconds);
+        Assert.True(service.IsPaused);
     }
 
     [Fact]
