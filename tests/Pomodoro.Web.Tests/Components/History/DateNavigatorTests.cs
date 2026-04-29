@@ -262,4 +262,25 @@ public class DateNavigatorTests : TestContext
     }
 
     #endregion
+
+    #region GoToToday Tests
+
+    [Fact]
+    public async Task GoToToday_InvokesCallbackWithLocalDate()
+    {
+        var currentDate = new DateTime(2026, 3, 15);
+        DateTime? receivedDate = null;
+
+        var cut = RenderComponent<DateNavigator>(parameters => parameters
+            .Add(p => p.SelectedDate, currentDate)
+            .Add(p => p.OnDateChanged, EventCallback.Factory.Create<DateTime>(this, d => receivedDate = d)));
+
+        var method = typeof(DateNavigatorBase).GetMethod("GoToToday", BindingFlags.Instance | BindingFlags.NonPublic);
+        await (Task)method!.Invoke(cut.Instance, null)!;
+
+        Assert.NotNull(receivedDate);
+        Assert.Equal(DateTime.Now.Date, receivedDate.Value);
+    }
+
+    #endregion
 }
