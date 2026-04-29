@@ -8,8 +8,11 @@ test.describe('Session Switch Preservation', () => {
     await pomodoroPage.setSettingViaIndexedDB('pomodoroMinutes', 1);
     await page.reload();
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
-    await pomodoroPage.startTimer();
 
+    await page.locator('button[aria-label="Start timer"]').click();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
+
+    await page.clock.install({ time: Date.now() });
     await page.clock.fastForward(3000);
 
     const timeBeforeSwitch = await pomodoroPage.getTimerDisplay();
@@ -33,14 +36,18 @@ test.describe('Session Switch Preservation', () => {
 
   test('should show resume button after switching back to original session type', async ({ browser }) => {
     const context = await browser.newContext();
-    const page = await context.newPage();
     try {
+      const page = await context.newPage();
       const pomodoroPage = new PomodoroPage(page);
       await pomodoroPage.goto('/');
       await pomodoroPage.setSettingViaIndexedDB('pomodoroMinutes', 1);
       await page.reload();
       await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
-      await pomodoroPage.startTimer();
+
+      await page.locator('button[aria-label="Start timer"]').click();
+      await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
+
+      await page.clock.install({ time: Date.now() });
       await page.clock.fastForward(2000);
 
       await pomodoroPage.switchToShortBreak();
