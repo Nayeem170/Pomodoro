@@ -9,19 +9,17 @@ test.describe('Reset Session Isolation', () => {
 
     await pomodoroPage.addTask('Reset Test');
     await pomodoroPage.selectTask('Reset Test');
-    await page.locator('button[aria-label="Start timer"]').click();
-    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
+    await pomodoroPage.startTimer();
 
     await pomodoroPage.pauseTimer();
 
     const pomodoroTime = await pomodoroPage.getTimerDisplay();
 
     await pomodoroPage.switchToShortBreak();
-    await page.locator('button[aria-label="Start timer"]').click();
-    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
+    await pomodoroPage.startTimer();
 
     await pomodoroPage.pauseTimer();
-    await page.locator('button[aria-label="Reset timer"]').click();
+    await pomodoroPage.resetTimer();
 
     await pomodoroPage.switchToPomodoro();
 
