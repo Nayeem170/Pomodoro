@@ -31,7 +31,6 @@ window.indexedDbInterop = {
             
             request.onsuccess = () => {
                 this.db = request.result;
-                console.log(pomodoroConstants.messages.indexedDbOpened);
                 resolve(true);
             };
             
@@ -39,7 +38,6 @@ window.indexedDbInterop = {
                 const db = event.target.result;
                 const storage = pomodoroConstants.storage;
                 const indexes = storage.indexes;
-                console.log(pomodoroConstants.messages.indexedDbUpgrading);
                 
                 // Tasks store
                 if (!db.objectStoreNames.contains(storage.tasksStore)) {
@@ -49,7 +47,6 @@ window.indexedDbInterop = {
                     taskStore.createIndex(indexes.isCompleted, indexes.isCompleted, { unique: false });
                     taskStore.createIndex(indexes.lastWorkedOn, indexes.lastWorkedOn, { unique: false });
                     taskStore.createIndex(indexes.isDeleted, indexes.isDeleted, { unique: false });
-                    console.log(pomodoroConstants.messages.indexedDbCreatedTasksStore);
                 }
                 
                 // Activities store
@@ -58,25 +55,21 @@ window.indexedDbInterop = {
                     activityStore.createIndex(indexes.type, indexes.type, { unique: false });
                     activityStore.createIndex(indexes.taskId, indexes.taskId, { unique: false });
                     activityStore.createIndex(indexes.completedAt, indexes.completedAt, { unique: false });
-                    console.log(pomodoroConstants.messages.indexedDbCreatedActivitiesStore);
                 }
                 
                 // Daily stats store
                 if (!db.objectStoreNames.contains(storage.dailyStatsStore)) {
                     db.createObjectStore(storage.dailyStatsStore, { keyPath: indexes.date });
-                    console.log(pomodoroConstants.messages.indexedDbCreatedDailyStatsStore);
                 }
                 
                 // Settings store
                 if (!db.objectStoreNames.contains(storage.settingsStore)) {
                     db.createObjectStore(storage.settingsStore, { keyPath: indexes.id });
-                    console.log(pomodoroConstants.messages.indexedDbCreatedSettingsStore);
                 }
                 
                 // App state store
                 if (!db.objectStoreNames.contains(storage.appStateStore)) {
                     db.createObjectStore(storage.appStateStore, { keyPath: indexes.id });
-                    console.log(pomodoroConstants.messages.indexedDbCreatedAppStateStore);
                 }
             };
         });
