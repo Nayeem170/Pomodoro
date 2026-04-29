@@ -65,11 +65,21 @@ dotnet format Pomodoro.sln --verify-no-changes
 npx playwright test tests/e2e/pages/
 ```
 
-## CI Pipeline (pull-request.yml)
+## CI Pipeline (ci.yml)
 
-1. `dotnet restore` → `dotnet format --verify-no-changes` → `dotnet build` → `dotnet test` (with coverage)
-2. Generate coverage report → Upload artifact → Publish to Codecov
-3. E2E smoke tests (navigation, timer, settings, index, about)
+1. `build` → publishes app artifact once
+2. `unit-test` ∥ `e2e` (parallel, both download build artifact)
+3. `e2e-gate` — depends on all 16 E2E shards, creates single check for branch protection
+4. 95% line coverage threshold enforced in unit-test job
+
+### E2E Shards (16 total)
+`timer-flow`, `timer-ring`, `long-break`, `tasks`, `settings`, `history`, `consent-modal`, `consent-auto-continue`, `today-summary`, `pip`, `cloud`, `persistence`, `sound`, `mobile`, `about`, `navigation`
+
+### Workflow Files
+- `ci.yml` — PR pipeline (build → unit-test ∥ e2e → e2e-gate)
+- `e2e.yml` — Reusable E2E workflow with 16-shard matrix
+- `deploy.yml` — build → deploy to Cloudflare Pages (push to main)
+- `reports.yml` — Manual trigger, generates coverage/E2E reports as GitHub Pages
 
 ## Coverage
 
@@ -78,6 +88,8 @@ npx playwright test tests/e2e/pages/
 
 ## Known Issues
 
-- E2E smoke tests use outdated selectors from before UI redesign (`.btn-start`, `.settings-header`, `.footer`, etc.) — these need updating to match current CSS classes
 - `NavigationManager` cannot be mocked with Moq (non-virtual properties) — use `TestNavigationManager` subclass instead
 - `IJSRuntime.InvokeAsync<T>` is an extension method — cannot be mocked with Moq, use custom `IJSRuntime` test double
+- `page.clock.install()` must be called AFTER the timer is started in E2E tests — installing it before Blazor initialization can freeze `DateTime.UtcNow` and prevent the app from loading
+- Timer Start button requires a task to be selected first (`IsStartDisabled` is true by default) — E2E tests must call `addTask()` + `selectTask()` before `startTimer()`
+- `BL0005` warnings from Blazor analyzer are suppressed in test project via `<NoWarn>BL0005</NoWarn>` (intentional parameter setting in tests)
