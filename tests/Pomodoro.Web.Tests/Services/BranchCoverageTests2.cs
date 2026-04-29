@@ -115,7 +115,7 @@ public class ImportServiceDuplicateTests
             exportDate = DateTime.UtcNow.ToString("O"),
             tasks = new[]
             {
-                new { id = Guid.NewGuid().ToString(), name = "Same Task", createdAt = createdAt.ToString("O") }
+                new { id = Guid.Empty.ToString(), name = "Same Task", createdAt = createdAt.ToString("O") }
             },
             activities = Array.Empty<object>(),
             settings = new { pomodoroDuration = 25, shortBreakDuration = 5, longBreakDuration = 15 }

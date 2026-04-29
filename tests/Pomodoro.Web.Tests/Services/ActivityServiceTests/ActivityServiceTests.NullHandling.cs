@@ -93,7 +93,7 @@ public partial class ActivityServiceTests
             // Assert - Should use FocusTimeLabel for null task names
             Assert.Equal(2, result.Count);
             Assert.True(result.ContainsKey(Constants.Activity.FocusTimeLabel));
-            Assert.Equal(50, result[Constants.Activity.FocusTimeLabel]); // 25 + 25 minutes
+            Assert.Equal(50, result[Constants.Activity.FocusTimeLabel]);
             Assert.Equal(5, result[Constants.Activity.BreaksLabel]);
         }
 
@@ -150,9 +150,9 @@ public partial class ActivityServiceTests
 
             // Assert - Should group null under FocusTimeLabel, and valid tasks separately
             Assert.Equal(3, result.Count);
-            Assert.Equal(50, result[Constants.Activity.FocusTimeLabel]); // 25 + 25 minutes (null values)
-            Assert.Equal(50, result["Task A"]); // 25 + 25 minutes
-            Assert.Equal(25, result["Task B"]); // 25 minutes
+            Assert.Equal(50, result[Constants.Activity.FocusTimeLabel]);
+            Assert.Equal(50, result["Task A"]);
+            Assert.Equal(25, result["Task B"]);
         }
 
         [Fact]
@@ -178,7 +178,7 @@ public partial class ActivityServiceTests
 
             // Assert - Should only have combined break label
             Assert.Single(result);
-            Assert.Equal(25, result[Constants.Activity.BreaksLabel]); // 5 + 5 + 15 minutes
+            Assert.Equal(25, result[Constants.Activity.BreaksLabel]);
         }
 
         [Fact]

@@ -18,7 +18,7 @@ public partial class ActivityServiceTests
             var service = CreateService();
             await service.InitializeAsync();
 
-            Assert.NotNull(service);
+            Assert.Empty(service.GetAllActivities());
         }
     }
 
@@ -42,6 +42,7 @@ public partial class ActivityServiceTests
 
             Assert.Contains(result, kvp => kvp.Key == Constants.Activity.BreaksLabel);
             Assert.Single(result);
+            Assert.Equal(5, result[Constants.Activity.BreaksLabel]);
         }
     }
 }

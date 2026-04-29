@@ -150,15 +150,15 @@ public partial class ActivityServiceTests
             var result = service.GetTimeDistribution(testDate);
 
             Assert.NotNull(result);
-            Assert.Equal(4, result.Count); // "Valid Task", "Focus time", "", and "Breaks"
+            Assert.Equal(4, result.Count);
             Assert.Contains("Valid Task", result.Keys);
-            Assert.Contains("Focus time", result.Keys);
+            Assert.Contains(Constants.Activity.FocusTimeLabel, result.Keys);
             Assert.Contains("", result.Keys);
-            Assert.Contains("Breaks", result.Keys);
+            Assert.Contains(Constants.Activity.BreaksLabel, result.Keys);
             Assert.Equal(25, result["Valid Task"]);
-            Assert.Equal(25, result["Focus time"]);
+            Assert.Equal(25, result[Constants.Activity.FocusTimeLabel]);
             Assert.Equal(25, result[""]);
-            Assert.Equal(5, result["Breaks"]);
+            Assert.Equal(5, result[Constants.Activity.BreaksLabel]);
         }
 
         [Fact]
@@ -203,13 +203,13 @@ public partial class ActivityServiceTests
             var result = service.GetTimeDistribution(testDate);
 
             Assert.NotNull(result);
-            Assert.Equal(3, result.Count); // "Valid Task", "", and "Breaks" (combined short + long)
+            Assert.Equal(3, result.Count);
             Assert.Contains("Valid Task", result.Keys);
             Assert.Contains("", result.Keys);
-            Assert.Contains("Breaks", result.Keys);
+            Assert.Contains(Constants.Activity.BreaksLabel, result.Keys);
             Assert.Equal(25, result["Valid Task"]);
             Assert.Equal(25, result[""]);
-            Assert.Equal(20, result["Breaks"]); // 5 + 15
+            Assert.Equal(20, result[Constants.Activity.BreaksLabel]);
         }
 
         [Fact]
@@ -248,11 +248,11 @@ public partial class ActivityServiceTests
             var result = service.GetTimeDistribution(testDate);
 
             Assert.NotNull(result);
-            Assert.Equal(2, result.Count); // "Focus time" and "Breaks"
-            Assert.Contains("Focus time", result.Keys);
-            Assert.Contains("Breaks", result.Keys);
-            Assert.Equal(50, result["Focus time"]);
-            Assert.Equal(5, result["Breaks"]);
+            Assert.Equal(2, result.Count);
+            Assert.Contains(Constants.Activity.FocusTimeLabel, result.Keys);
+            Assert.Contains(Constants.Activity.BreaksLabel, result.Keys);
+            Assert.Equal(50, result[Constants.Activity.FocusTimeLabel]);
+            Assert.Equal(5, result[Constants.Activity.BreaksLabel]);
         }
     }
 }
