@@ -198,9 +198,7 @@ window.notificationFunctions = {
     unlockAudio: function() {
         const ctx = initAudioContext();
         if (ctx && ctx.state === 'suspended') {
-            ctx.resume().then(() => {
-                console.log(pomodoroConstants.messages.audioContextUnlocked);
-            }).catch(err => {
+            ctx.resume().catch(err => {
                 console.warn(pomodoroConstants.messages.audioContextUnlockFailed, err);
             });
         }
