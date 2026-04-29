@@ -5,9 +5,9 @@ test.describe('Session Switch Preservation', () => {
   test('should preserve paused state and remaining time when switching session type mid-timer', async ({ page }) => {
     const pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
-    await pomodoroPage.setSettingViaIndexedDB('pomodoroMinutes', 1);
-    await page.reload();
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
+
+    await pomodoroPage.resetTimer();
 
     await page.locator('button[aria-label="Start timer"]').click();
     await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
@@ -40,9 +40,9 @@ test.describe('Session Switch Preservation', () => {
       const page = await context.newPage();
       const pomodoroPage = new PomodoroPage(page);
       await pomodoroPage.goto('/');
-      await pomodoroPage.setSettingViaIndexedDB('pomodoroMinutes', 1);
-      await page.reload();
       await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
+
+      await pomodoroPage.resetTimer();
 
       await page.locator('button[aria-label="Start timer"]').click();
       await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
