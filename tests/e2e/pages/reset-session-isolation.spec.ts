@@ -12,8 +12,7 @@ test.describe('Reset Session Isolation', () => {
     await page.locator('button[aria-label="Start timer"]').click();
     await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
 
-    await page.clock.install({ time: Date.now() });
-    await page.clock.fastForward(3000);
+    await pomodoroPage.pauseTimer();
 
     const timeBeforeSwitch = await pomodoroPage.getTimerDisplay();
 
