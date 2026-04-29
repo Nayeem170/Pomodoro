@@ -70,7 +70,7 @@ npx playwright test tests/e2e/pages/
 1. `build` → publishes app artifact once
 2. `unit-test` ∥ `e2e` (parallel, both download build artifact)
 3. `e2e-gate` — depends on all 16 E2E shards, creates single check for branch protection
-4. 98% line coverage threshold configured in codecov.yml; coverage reported to Codecov via codecov-action
+4. 98% line coverage threshold enforced via codecov.yml — PRs will be rejected if coverage drops below 98% (project and patch)
 
 ### E2E Shards (16 total)
 `timer-flow`, `timer-ring`, `long-break`, `tasks`, `settings`, `history`, `consent-modal`, `consent-auto-continue`, `today-summary`, `pip`, `cloud`, `persistence`, `sound`, `mobile`, `about`, `navigation`
