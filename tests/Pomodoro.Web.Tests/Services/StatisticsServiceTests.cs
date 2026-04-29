@@ -153,4 +153,26 @@ public class StatisticsServiceTests
         Assert.Equal(0, result.PreviousWeekFocusMinutes);
         Assert.Equal(0, result.WeekOverWeekChange);
     }
+
+    [Fact]
+    public async Task GetWeeklyStatsAsync_WhenPreviousWeekEmpty_ReturnsWeekOverWeekChange100()
+    {
+        var weekStart = new DateTime(2024, 6, 15);
+
+        var currentWeekActivities = new List<ActivityRecord>
+        {
+            new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, CompletedAt = weekStart.AddDays(1), DurationMinutes = 25, TaskName = "Task A" }
+        };
+
+        _mockRepository
+            .SetupSequence(r => r.GetByDateRangeAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            .ReturnsAsync(currentWeekActivities)
+            .ReturnsAsync(new List<ActivityRecord>());
+
+        var service = CreateService();
+        var result = await service.GetWeeklyStatsAsync(weekStart);
+
+        Assert.Equal(100.0, result.WeekOverWeekChange);
+        Assert.Equal(0, result.PreviousWeekFocusMinutes);
+    }
 }

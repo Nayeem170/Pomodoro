@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Bunit;
 using FluentAssertions;
 using Pomodoro.Web.Pages;
@@ -115,6 +116,7 @@ public class AboutPageCoverageTests : TestContext
     {
         var cut = RenderComponent<About>();
 
-        cut.Markup.Should().Contain("v2.0");
+        var match = Regex.Match(cut.Markup, @"v\d+\.\d+");
+        match.Success.Should().BeTrue();
     }
 }

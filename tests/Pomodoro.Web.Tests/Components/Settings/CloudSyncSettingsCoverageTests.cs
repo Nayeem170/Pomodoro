@@ -34,7 +34,7 @@ public class CloudSyncSettingsCoverageTests : TestContext
 
         var cut = RenderComponent<CloudSyncSettings>();
 
-        cut.Find("button").Click();
+        cut.Find("button.sec-btn").Click();
 
         _cloudSyncServiceMock.Verify(x => x.ConnectAsync("custom-client-id"), Times.Once);
     }
@@ -51,7 +51,7 @@ public class CloudSyncSettingsCoverageTests : TestContext
         var cut = RenderComponent<CloudSyncSettings>(p =>
             p.Add(x => x.OnShowToast, EventCallback.Factory.Create<string>(this, msg => toastMessage = msg)));
 
-        cut.Find("button").Click();
+        cut.Find("button.sec-btn").Click();
 
         cut.WaitForAssertion(() => toastMessage.Should().Be(Constants.SyncMessages.InitFailed));
     }
@@ -173,9 +173,24 @@ public class CloudSyncSettingsCoverageTests : TestContext
         _cloudSyncServiceMock.SetupGet(x => x.IsConnected).Returns(false);
 
         var cut = RenderComponent<CloudSyncSettings>();
+        var before = cut.RenderCount;
 
         _cloudSyncServiceMock.Raise(x => x.OnSyncStatusChanged += null);
 
-        cut.WaitForAssertion(() => cut.Markup.Should().NotBeNullOrEmpty());
+        cut.WaitForAssertion(() => cut.RenderCount.Should().BeGreaterThan(before));
+    }
+
+    [Fact]
+    public void Dispose_UnsubscribesFromSyncStatusChanged()
+    {
+        _cloudSyncServiceMock.SetupGet(x => x.IsConnected).Returns(false);
+
+        var cut = RenderComponent<CloudSyncSettings>();
+
+        cut.Instance.Dispose();
+
+        var ex = Record.Exception(() =>
+            _cloudSyncServiceMock.Raise(x => x.OnSyncStatusChanged += null));
+        Assert.Null(ex);
     }
 }

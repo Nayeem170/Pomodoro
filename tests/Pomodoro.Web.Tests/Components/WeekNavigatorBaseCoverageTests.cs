@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Components;
 using Pomodoro.Web.Components.History;
 using Xunit;
+using System.Reflection;
 
 namespace Pomodoro.Web.Tests.Components;
 
@@ -71,5 +72,20 @@ public class WeekNavigatorBaseCoverageTests : TestContext
         cut.FindAll("button.nav-arr")[1].Click();
 
         weekChanged.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GoToThisWeek_InvokesCallbackWithCurrentWeekStart()
+    {
+        var receivedWeekStart = new DateTime?();
+        var cut = RenderComponent<WeekNavigator>(parameters => parameters
+            .Add(p => p.SelectedWeekStart, new DateTime(2026, 1, 1))
+            .Add(p => p.OnWeekChanged, EventCallback.Factory.Create<DateTime>(this, d => receivedWeekStart = d)));
+
+        var method = typeof(WeekNavigatorBase).GetMethod("GoToThisWeek", BindingFlags.Instance | BindingFlags.NonPublic);
+        await (Task)method!.Invoke(cut.Instance, null)!;
+
+        var thisWeekStart = WeekNavigatorBase.GetWeekStart(DateTime.Now.Date);
+        receivedWeekStart.Should().Be(thisWeekStart);
     }
 }

@@ -195,6 +195,22 @@ public class SettingsPageBaseCoverageTests : TestContext
         Assert.False(component.TestIsImporting);
     }
 
+    [Fact]
+    public void MarkDirty_CatchesException_WhenUpdateSettingsFails()
+    {
+        _mockTimerService.Setup(x => x.UpdateSettingsAsync(It.IsAny<TimerSettings>()))
+            .ThrowsAsync(new Exception("Save failed"));
+
+        var renderedComponent = RenderComponent<TestableSettingsPageBase2>();
+        var component = renderedComponent.Instance;
+        component.SetTimerService(_mockTimerService.Object);
+
+        var ex = Record.Exception(() => component.TestMarkDirty());
+
+        Assert.Null(ex);
+        _mockTimerService.Verify(x => x.UpdateSettingsAsync(It.IsAny<TimerSettings>()), Times.Once);
+    }
+
     public class TestableSettingsPageBase2 : SettingsPageBase
     {
         public TimerSettings TestSettings { get => Settings; set => Settings = value; }

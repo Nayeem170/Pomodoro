@@ -76,13 +76,13 @@ namespace Pomodoro.Web.Tests.Pages
         #region HandleTaskAdd Tests
 
         [Fact]
-        public void HandleTaskAdd_WhenServiceThrowsException_SetsErrorMessage()
+        public async Task HandleTaskAdd_WhenServiceThrowsException_SetsErrorMessage()
         {
             TaskServiceMock.Setup(x => x.AddTaskAsync(It.IsAny<string>()))
                 .ThrowsAsync(new InvalidOperationException("Cannot add task"));
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            _ = cut.Instance.HandleTaskAdd("New Task");
+            await cut.InvokeAsync(async () => await cut.Instance.HandleTaskAdd("New Task"));
 
             var errorMessage = cut.Instance.ErrorMessage;
             errorMessage.Should().Contain("Cannot add task");
@@ -268,14 +268,14 @@ namespace Pomodoro.Web.Tests.Pages
         }
 
         [Fact]
-        public void HandleTimerStart_WhenServiceThrowsException_SetsErrorMessage()
+        public async Task HandleTimerStart_WhenServiceThrowsException_SetsErrorMessage()
         {
             TimerServiceMock.Setup(x => x.StartShortBreakAsync())
                 .ThrowsAsync(new InvalidOperationException("Timer error"));
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             cut.Instance.CurrentSessionType = SessionType.ShortBreak;
 
-            _ = cut.Instance.HandleTimerStart();
+            await cut.InvokeAsync(async () => await cut.Instance.HandleTimerStart());
 
             var errorMessage = cut.Instance.ErrorMessage;
             errorMessage.Should().Contain("Timer error");
@@ -296,13 +296,13 @@ namespace Pomodoro.Web.Tests.Pages
         }
 
         [Fact]
-        public void HandleTimerPause_WhenServiceThrowsException_SetsErrorMessage()
+        public async Task HandleTimerPause_WhenServiceThrowsException_SetsErrorMessage()
         {
             TimerServiceMock.Setup(x => x.PauseAsync())
                 .ThrowsAsync(new InvalidOperationException("Cannot pause"));
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            _ = cut.Instance.HandleTimerPause();
+            await cut.InvokeAsync(async () => await cut.Instance.HandleTimerPause());
 
             var errorMessage = cut.Instance.ErrorMessage;
             errorMessage.Should().Contain("Cannot pause");
@@ -323,13 +323,13 @@ namespace Pomodoro.Web.Tests.Pages
         }
 
         [Fact]
-        public void HandleTimerResume_WhenServiceThrowsException_SetsErrorMessage()
+        public async Task HandleTimerResume_WhenServiceThrowsException_SetsErrorMessage()
         {
             TimerServiceMock.Setup(x => x.ResumeAsync())
                 .ThrowsAsync(new InvalidOperationException("Cannot resume"));
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            _ = cut.Instance.HandleTimerResume();
+            await cut.InvokeAsync(async () => await cut.Instance.HandleTimerResume());
 
             var errorMessage = cut.Instance.ErrorMessage;
             errorMessage.Should().Contain("Cannot resume");
@@ -350,13 +350,13 @@ namespace Pomodoro.Web.Tests.Pages
         }
 
         [Fact]
-        public void HandleTimerReset_WhenServiceThrowsException_SetsErrorMessage()
+        public async Task HandleTimerReset_WhenServiceThrowsException_SetsErrorMessage()
         {
             TimerServiceMock.Setup(x => x.ResetAsync())
                 .ThrowsAsync(new InvalidOperationException("Cannot reset"));
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            _ = cut.Instance.HandleTimerReset();
+            await cut.InvokeAsync(async () => await cut.Instance.HandleTimerReset());
 
             var errorMessage = cut.Instance.ErrorMessage;
             errorMessage.Should().Contain("Cannot reset");
@@ -377,13 +377,13 @@ namespace Pomodoro.Web.Tests.Pages
         }
 
         [Fact]
-        public void HandleSessionSwitch_WhenServiceThrowsException_SetsErrorMessage()
+        public async Task HandleSessionSwitch_WhenServiceThrowsException_SetsErrorMessage()
         {
             TimerServiceMock.Setup(x => x.SwitchSessionTypeAsync(It.IsAny<SessionType>()))
                 .ThrowsAsync(new InvalidOperationException("Cannot switch"));
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            _ = cut.Instance.HandleSessionSwitch(SessionType.LongBreak);
+            await cut.InvokeAsync(async () => await cut.Instance.HandleSessionSwitch(SessionType.LongBreak));
 
             var errorMessage = cut.Instance.ErrorMessage;
             errorMessage.Should().Contain("Cannot switch");
@@ -419,17 +419,30 @@ namespace Pomodoro.Web.Tests.Pages
         }
 
         [Fact]
-        public void HandleTogglePip_WhenServiceThrowsException_SetsErrorMessage()
+        public async Task HandleTogglePip_WhenServiceThrowsException_SetsErrorMessage()
         {
             PipTimerServiceMock.SetupGet(x => x.IsOpen).Returns(false);
             PipTimerServiceMock.Setup(x => x.OpenAsync())
                 .ThrowsAsync(new InvalidOperationException("Cannot open PiP"));
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            _ = cut.Instance.HandleTogglePip();
+            await cut.InvokeAsync(async () => await cut.Instance.HandleTogglePip());
 
             var errorMessage = cut.Instance.ErrorMessage;
             errorMessage.Should().Contain("Cannot open PiP");
+        }
+
+        [Fact]
+        public async Task HandleTogglePip_WhenOpenAsyncReturnsFalse_SetsErrorMessage()
+        {
+            PipTimerServiceMock.SetupGet(x => x.IsOpen).Returns(false);
+            PipTimerServiceMock.Setup(x => x.OpenAsync()).ReturnsAsync(false);
+            var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+            await cut.InvokeAsync(async () => await cut.Instance.HandleTogglePip());
+
+            cut.Instance.ErrorMessage.Should().Be(Constants.Messages.PipPopupBlocked);
+            cut.Instance.IsPipOpen.Should().BeFalse();
         }
 
         #endregion

@@ -367,6 +367,15 @@ public class ImportServiceTests
         Assert.Equal(Constants.Messages.ImportErrorFailed, result.ErrorMessage);
     }
 
+    [Fact]
+    public async Task ImportFromJsonAsync_NullJson_ReturnsInvalidFormat()
+    {
+        var result = await _service.ImportFromJsonAsync("null");
+
+        Assert.False(result.Success);
+        Assert.Equal(Constants.Messages.ImportErrorInvalidFormat, result.ErrorMessage);
+    }
+
     #endregion
 
     #region Helpers

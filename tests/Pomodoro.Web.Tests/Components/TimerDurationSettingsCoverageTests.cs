@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Pomodoro.Web.Components.Settings;
 using Pomodoro.Web.Models;
 using Xunit;
+using System.Reflection;
 
 namespace Pomodoro.Web.Tests.Components;
 
@@ -16,9 +17,13 @@ public class TimerDurationSettingsCoverageTests : TestContext
         var cut = RenderComponent<TimerDurationSettings>(parameters => parameters
             .Add(p => p.Settings, settings));
 
-        cut.FindAll(".step-input")[0].TriggerEvent("onfocusout", new FocusEventArgs());
+        var field = typeof(TimerDurationSettings).GetField("pomodoroInput", BindingFlags.Instance | BindingFlags.NonPublic);
+        field!.SetValue(cut.Instance, "30");
 
-        Assert.Equal(25, settings.PomodoroMinutes);
+        var method = typeof(TimerDurationSettings).GetMethod("ValidatePomodoro", BindingFlags.Instance | BindingFlags.NonPublic);
+        method!.Invoke(cut.Instance, null);
+
+        Assert.Equal(30, settings.PomodoroMinutes);
     }
 
     [Fact]
@@ -28,9 +33,14 @@ public class TimerDurationSettingsCoverageTests : TestContext
         var cut = RenderComponent<TimerDurationSettings>(parameters => parameters
             .Add(p => p.Settings, settings));
 
-        cut.FindAll(".step-input")[0].TriggerEvent("onfocusout", new FocusEventArgs());
+        var field = typeof(TimerDurationSettings).GetField("pomodoroInput", BindingFlags.Instance | BindingFlags.NonPublic);
+        field!.SetValue(cut.Instance, "abc");
+
+        var method = typeof(TimerDurationSettings).GetMethod("ValidatePomodoro", BindingFlags.Instance | BindingFlags.NonPublic);
+        method!.Invoke(cut.Instance, null);
 
         Assert.Equal(25, settings.PomodoroMinutes);
+        Assert.Equal("25", field.GetValue(cut.Instance));
     }
 
     [Fact]
@@ -40,9 +50,13 @@ public class TimerDurationSettingsCoverageTests : TestContext
         var cut = RenderComponent<TimerDurationSettings>(parameters => parameters
             .Add(p => p.Settings, settings));
 
-        cut.FindAll(".step-input")[1].TriggerEvent("onfocusout", new FocusEventArgs());
+        var field = typeof(TimerDurationSettings).GetField("shortBreakInput", BindingFlags.Instance | BindingFlags.NonPublic);
+        field!.SetValue(cut.Instance, "10");
 
-        Assert.Equal(5, settings.ShortBreakMinutes);
+        var method = typeof(TimerDurationSettings).GetMethod("ValidateShortBreak", BindingFlags.Instance | BindingFlags.NonPublic);
+        method!.Invoke(cut.Instance, null);
+
+        Assert.Equal(10, settings.ShortBreakMinutes);
     }
 
     [Fact]
@@ -52,9 +66,14 @@ public class TimerDurationSettingsCoverageTests : TestContext
         var cut = RenderComponent<TimerDurationSettings>(parameters => parameters
             .Add(p => p.Settings, settings));
 
-        cut.FindAll(".step-input")[1].TriggerEvent("onfocusout", new FocusEventArgs());
+        var field = typeof(TimerDurationSettings).GetField("shortBreakInput", BindingFlags.Instance | BindingFlags.NonPublic);
+        field!.SetValue(cut.Instance, "xyz");
+
+        var method = typeof(TimerDurationSettings).GetMethod("ValidateShortBreak", BindingFlags.Instance | BindingFlags.NonPublic);
+        method!.Invoke(cut.Instance, null);
 
         Assert.Equal(5, settings.ShortBreakMinutes);
+        Assert.Equal("5", field.GetValue(cut.Instance));
     }
 
     [Fact]
@@ -64,9 +83,13 @@ public class TimerDurationSettingsCoverageTests : TestContext
         var cut = RenderComponent<TimerDurationSettings>(parameters => parameters
             .Add(p => p.Settings, settings));
 
-        cut.FindAll(".step-input")[2].TriggerEvent("onfocusout", new FocusEventArgs());
+        var field = typeof(TimerDurationSettings).GetField("longBreakInput", BindingFlags.Instance | BindingFlags.NonPublic);
+        field!.SetValue(cut.Instance, "20");
 
-        Assert.Equal(15, settings.LongBreakMinutes);
+        var method = typeof(TimerDurationSettings).GetMethod("ValidateLongBreak", BindingFlags.Instance | BindingFlags.NonPublic);
+        method!.Invoke(cut.Instance, null);
+
+        Assert.Equal(20, settings.LongBreakMinutes);
     }
 
     [Fact]
@@ -76,9 +99,14 @@ public class TimerDurationSettingsCoverageTests : TestContext
         var cut = RenderComponent<TimerDurationSettings>(parameters => parameters
             .Add(p => p.Settings, settings));
 
-        cut.FindAll(".step-input")[2].TriggerEvent("onfocusout", new FocusEventArgs());
+        var field = typeof(TimerDurationSettings).GetField("longBreakInput", BindingFlags.Instance | BindingFlags.NonPublic);
+        field!.SetValue(cut.Instance, "bad");
+
+        var method = typeof(TimerDurationSettings).GetMethod("ValidateLongBreak", BindingFlags.Instance | BindingFlags.NonPublic);
+        method!.Invoke(cut.Instance, null);
 
         Assert.Equal(15, settings.LongBreakMinutes);
+        Assert.Equal("15", field.GetValue(cut.Instance));
     }
 
     [Fact]
@@ -88,9 +116,13 @@ public class TimerDurationSettingsCoverageTests : TestContext
         var cut = RenderComponent<TimerDurationSettings>(parameters => parameters
             .Add(p => p.Settings, settings));
 
-        cut.FindAll(".step-input")[3].TriggerEvent("onfocusout", new FocusEventArgs());
+        var field = typeof(TimerDurationSettings).GetField("dailyGoalInput", BindingFlags.Instance | BindingFlags.NonPublic);
+        field!.SetValue(cut.Instance, "12");
 
-        Assert.Equal(8, settings.DailyGoal);
+        var method = typeof(TimerDurationSettings).GetMethod("ValidateDailyGoal", BindingFlags.Instance | BindingFlags.NonPublic);
+        method!.Invoke(cut.Instance, null);
+
+        Assert.Equal(12, settings.DailyGoal);
     }
 
     [Fact]
@@ -100,9 +132,14 @@ public class TimerDurationSettingsCoverageTests : TestContext
         var cut = RenderComponent<TimerDurationSettings>(parameters => parameters
             .Add(p => p.Settings, settings));
 
-        cut.FindAll(".step-input")[3].TriggerEvent("onfocusout", new FocusEventArgs());
+        var field = typeof(TimerDurationSettings).GetField("dailyGoalInput", BindingFlags.Instance | BindingFlags.NonPublic);
+        field!.SetValue(cut.Instance, "notanumber");
+
+        var method = typeof(TimerDurationSettings).GetMethod("ValidateDailyGoal", BindingFlags.Instance | BindingFlags.NonPublic);
+        method!.Invoke(cut.Instance, null);
 
         Assert.Equal(8, settings.DailyGoal);
+        Assert.Equal("8", field.GetValue(cut.Instance));
     }
 
     [Fact]
@@ -267,5 +304,73 @@ public class TimerDurationSettingsCoverageTests : TestContext
         cut.FindAll(".step-btn[aria-label=\"Decrease\"]")[3].Click();
 
         Assert.Equal(7, settings.DailyGoal);
+    }
+
+    [Fact]
+    public void HandlePomodoroKey_EnterKey_Validate()
+    {
+        var settings = new TimerSettings { PomodoroMinutes = 25 };
+        var cut = RenderComponent<TimerDurationSettings>(parameters => parameters
+            .Add(p => p.Settings, settings));
+
+        var field = typeof(TimerDurationSettings).GetField("pomodoroInput", BindingFlags.Instance | BindingFlags.NonPublic);
+        field!.SetValue(cut.Instance, "abc");
+
+        var method = typeof(TimerDurationSettings).GetMethod("HandlePomodoroKey", BindingFlags.Instance | BindingFlags.NonPublic);
+        method!.Invoke(cut.Instance, new object[] { new KeyboardEventArgs { Key = "Enter" } });
+
+        var value = (string)field.GetValue(cut.Instance)!;
+        Assert.Equal("25", value);
+    }
+
+    [Fact]
+    public void HandleShortBreakKey_EnterKey_Validate()
+    {
+        var settings = new TimerSettings { ShortBreakMinutes = 5 };
+        var cut = RenderComponent<TimerDurationSettings>(parameters => parameters
+            .Add(p => p.Settings, settings));
+
+        var field = typeof(TimerDurationSettings).GetField("shortBreakInput", BindingFlags.Instance | BindingFlags.NonPublic);
+        field!.SetValue(cut.Instance, "xyz");
+
+        var method = typeof(TimerDurationSettings).GetMethod("HandleShortBreakKey", BindingFlags.Instance | BindingFlags.NonPublic);
+        method!.Invoke(cut.Instance, new object[] { new KeyboardEventArgs { Key = "Enter" } });
+
+        var value = (string)field.GetValue(cut.Instance)!;
+        Assert.Equal("5", value);
+    }
+
+    [Fact]
+    public void HandleLongBreakKey_EnterKey_Validate()
+    {
+        var settings = new TimerSettings { LongBreakMinutes = 15 };
+        var cut = RenderComponent<TimerDurationSettings>(parameters => parameters
+            .Add(p => p.Settings, settings));
+
+        var field = typeof(TimerDurationSettings).GetField("longBreakInput", BindingFlags.Instance | BindingFlags.NonPublic);
+        field!.SetValue(cut.Instance, "bad");
+
+        var method = typeof(TimerDurationSettings).GetMethod("HandleLongBreakKey", BindingFlags.Instance | BindingFlags.NonPublic);
+        method!.Invoke(cut.Instance, new object[] { new KeyboardEventArgs { Key = "Enter" } });
+
+        var value = (string)field.GetValue(cut.Instance)!;
+        Assert.Equal("15", value);
+    }
+
+    [Fact]
+    public void HandleDailyGoalKey_EnterKey_Validate()
+    {
+        var settings = new TimerSettings { DailyGoal = 8 };
+        var cut = RenderComponent<TimerDurationSettings>(parameters => parameters
+            .Add(p => p.Settings, settings));
+
+        var field = typeof(TimerDurationSettings).GetField("dailyGoalInput", BindingFlags.Instance | BindingFlags.NonPublic);
+        field!.SetValue(cut.Instance, "nope");
+
+        var method = typeof(TimerDurationSettings).GetMethod("HandleDailyGoalKey", BindingFlags.Instance | BindingFlags.NonPublic);
+        method!.Invoke(cut.Instance, new object[] { new KeyboardEventArgs { Key = "Enter" } });
+
+        var value = (string)field.GetValue(cut.Instance)!;
+        Assert.Equal("8", value);
     }
 }

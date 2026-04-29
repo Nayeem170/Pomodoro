@@ -4,7 +4,9 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
+using Pomodoro.Web.Pages;
 using Xunit;
+using System.Reflection;
 
 namespace Pomodoro.Web.Tests.Pages;
 
@@ -85,5 +87,65 @@ public class HistoryPageCoverageTests : TestHelper
 
         cut.Markup.Should().Contain("Previous week");
         cut.Markup.Should().Contain("Next week");
+    }
+
+    [Fact]
+    public void HistoryPage_GoToToday_ResetsDate()
+    {
+        SetupHistoryMocks();
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
+
+        cut.Find("button.nav-qbtn").Click();
+
+        ActivityServiceMock.Verify(x => x.GetActivitiesPagedAsync(
+            It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>()), Times.AtLeast(2));
+    }
+
+    [Fact]
+    public void HistoryPage_GoToNextDay_NavigatesForward()
+    {
+        SetupHistoryMocks();
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
+
+        var arrows = cut.FindAll("button.nav-arr");
+        arrows[1].Click();
+
+        ActivityServiceMock.Verify(x => x.GetActivitiesPagedAsync(
+            It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>()), Times.AtLeast(2));
+    }
+
+    [Fact]
+    public void HistoryPage_GoToThisWeek_NavigatesToCurrentWeek()
+    {
+        SetupHistoryMocks();
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
+        cut.Find("#weekly-tab").Click();
+
+        cut.Find("button.nav-qbtn").Click();
+
+        ActivityServiceMock.Verify(x => x.GetDailyFocusMinutes(
+            It.IsAny<DateTime>(), It.IsAny<DateTime>()), Times.AtLeast(2));
+    }
+
+    [Fact]
+    public async Task HistoryPage_UpdateFormattedDate_YesterdayBranch()
+    {
+        SetupHistoryMocks();
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
+
+        var selectedDateProp = typeof(HistoryBase).GetProperty("SelectedDate", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        selectedDateProp!.SetValue(cut.Instance, DateTime.Now.Date.AddDays(-1));
+
+        var method = typeof(HistoryBase).GetMethod("UpdateFormattedDate", BindingFlags.Instance | BindingFlags.NonPublic);
+        method!.Invoke(cut.Instance, null);
+
+        var formattedDateProp = typeof(HistoryBase).GetProperty("FormattedSelectedDate", BindingFlags.Instance | BindingFlags.NonPublic);
+        var formattedDate = (string)formattedDateProp!.GetValue(cut.Instance)!;
+
+        formattedDate.Should().StartWith("Yesterday,");
     }
 }

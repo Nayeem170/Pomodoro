@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Pomodoro.Web.Components.Tasks;
 using Pomodoro.Web.Models;
 using Xunit;
+using System.Reflection;
 
 namespace Pomodoro.Web.Tests.Components;
 
@@ -17,16 +18,17 @@ public class TaskItemBaseCoverageTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters => parameters
             .Add(p => p.Item, new TaskItem { Name = "Test", IsCompleted = true }));
 
-        cut.Markup.Should().NotBeNullOrEmpty();
+        cut.Find(".task-checkbox").ClassList.Should().Contain("completed");
+        cut.Find(".task-text").ClassList.Should().Contain("completed");
     }
 
     [Fact]
     public void GetStatusIcon_TaskWithPomodoros()
     {
         var cut = RenderComponent<TaskItemComponent>(parameters => parameters
-            .Add(p => p.Item, new TaskItem { Name = "Test", PomodoroCount = 3 }));
+            .Add(p => p.Item, new TaskItem { Name = "Test", PomodoroCount = 3, TotalFocusMinutes = 75 }));
 
-        cut.Markup.Should().NotBeNullOrEmpty();
+        cut.Find(".task-pomo-count").TextContent.Should().Contain("1h 15m");
     }
 
     [Fact]
@@ -35,7 +37,8 @@ public class TaskItemBaseCoverageTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters => parameters
             .Add(p => p.Item, new TaskItem { Name = "Test" }));
 
-        cut.Markup.Should().NotBeNullOrEmpty();
+        cut.Find(".task-checkbox").ClassList.Should().NotContain("completed");
+        cut.Find(".task-pomo-count").TextContent.Should().Be("0m");
     }
 
     [Fact]
@@ -136,5 +139,41 @@ public class TaskItemBaseCoverageTests : TestContext
         cut.Find(".task-action-btn[aria-label=\"Delete\"]").Click();
 
         deleted.Should().BeTrue();
+    }
+
+    [Fact]
+    public void GetStatusIcon_ViaReflection_CompletedTask()
+    {
+        var cut = RenderComponent<TaskItemComponent>(parameters => parameters
+            .Add(p => p.Item, new TaskItem { Name = "Test", IsCompleted = true }));
+
+        var method = typeof(TaskItemBase).GetMethod("GetStatusIcon", BindingFlags.Instance | BindingFlags.NonPublic);
+        var result = (string)method!.Invoke(cut.Instance, null)!;
+
+        result.Should().Be(Constants.Tasks.CompletedEmoji);
+    }
+
+    [Fact]
+    public void GetStatusIcon_ViaReflection_TaskWithPomodoros()
+    {
+        var cut = RenderComponent<TaskItemComponent>(parameters => parameters
+            .Add(p => p.Item, new TaskItem { Name = "Test", PomodoroCount = 3 }));
+
+        var method = typeof(TaskItemBase).GetMethod("GetStatusIcon", BindingFlags.Instance | BindingFlags.NonPublic);
+        var result = (string)method!.Invoke(cut.Instance, null)!;
+
+        result.Should().Be(Constants.Tasks.HasPomodorosEmoji);
+    }
+
+    [Fact]
+    public void GetStatusIcon_ViaReflection_DefaultTask()
+    {
+        var cut = RenderComponent<TaskItemComponent>(parameters => parameters
+            .Add(p => p.Item, new TaskItem { Name = "Test" }));
+
+        var method = typeof(TaskItemBase).GetMethod("GetStatusIcon", BindingFlags.Instance | BindingFlags.NonPublic);
+        var result = (string)method!.Invoke(cut.Instance, null)!;
+
+        result.Should().Be(Constants.Tasks.DefaultEmoji);
     }
 }
