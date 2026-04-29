@@ -196,11 +196,15 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     {
         await _jsTimerInterop.StopAsync();
 
-        if (_appState.CurrentSession != null)
+        if (_appState.CurrentSession is { WasStarted: true, IsCompleted: false } currentSession)
         {
-            _appState.CurrentSession.IsRunning = false;
-            _appState.CurrentSession.EndAt = null;
-            _pausedSessions[_appState.CurrentSession.Type] = _appState.CurrentSession;
+            currentSession.IsRunning = false;
+            currentSession.EndAt = null;
+            _pausedSessions[currentSession.Type] = currentSession;
+        }
+        else if (_appState.CurrentSession != null)
+        {
+            _pausedSessions.Remove(_appState.CurrentSession.Type);
         }
 
         if (_pausedSessions.TryGetValue(sessionType, out var pausedSession))

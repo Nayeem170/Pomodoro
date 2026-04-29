@@ -7,7 +7,7 @@ test.describe('Session Switch Preservation', () => {
     await pomodoroPage.fastSetup1MinPomodoro();
     await pomodoroPage.startTimer();
 
-    await page.waitForTimeout(3000);
+    await page.clock.fastForward(3000);
 
     const timeBeforeSwitch = await pomodoroPage.getTimerDisplay();
 
@@ -34,7 +34,7 @@ test.describe('Session Switch Preservation', () => {
     const pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.fastSetup1MinPomodoro();
     await pomodoroPage.startTimer();
-    await page.waitForTimeout(2000);
+    await page.clock.fastForward(2000);
 
     await pomodoroPage.switchToShortBreak();
     await pomodoroPage.switchToPomodoro();

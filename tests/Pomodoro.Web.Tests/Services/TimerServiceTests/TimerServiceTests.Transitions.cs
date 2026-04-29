@@ -234,7 +234,7 @@ public class SwitchSessionPreservationTests : TimerServiceTests
         var service = CreateService();
         await service.InitializeAsync();
         var taskId = Guid.NewGuid();
-        AppState.CurrentSession!.TaskId = taskId;
+        await service.StartPomodoroAsync(taskId);
 
         await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
         await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
