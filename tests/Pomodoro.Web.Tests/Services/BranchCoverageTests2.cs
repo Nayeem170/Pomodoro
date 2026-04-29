@@ -94,7 +94,7 @@ public class ImportServiceDuplicateTests
     }
 
     [Fact]
-    public async Task ImportFromJsonAsync_WithDuplicateTaskAndEmptyId_LogsWarning()
+    public async Task ImportFromJsonAsync_WithDuplicateTaskAndEmptyId_SkipsMapping()
     {
         var mockActivityRepo = new Mock<IActivityRepository>();
         var mockTaskRepo = new Mock<ITaskRepository>();
@@ -127,6 +127,7 @@ public class ImportServiceDuplicateTests
         var result = await service.ImportFromJsonAsync(json);
 
         Assert.True(result.Success);
+        Assert.True(result.TasksSkipped > 0);
     }
 }
 
@@ -671,6 +672,7 @@ public class TimeDistributionChartBreaksLabelTests : TestContext
 
         Assert.Single(cut.Instance.Segments);
         Assert.Equal(Constants.Activity.BreaksLabel, cut.Instance.Segments[0].Label);
+        Assert.Equal("#1D9E75", cut.Instance.Segments[0].Color);
     }
 }
 
