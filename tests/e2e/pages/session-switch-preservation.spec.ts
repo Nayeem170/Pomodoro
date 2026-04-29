@@ -2,12 +2,9 @@ import { test, expect } from '@playwright/test';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('Session Switch Preservation', () => {
-  let pomodoroPage: PomodoroPage;
-
   test('should preserve paused state and remaining time when switching session type mid-timer', async ({ page }) => {
-    pomodoroPage = new PomodoroPage(page);
+    const pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.fastSetup1MinPomodoro();
-    await pomodoroPage.resetTimer();
     await pomodoroPage.startTimer();
 
     await page.waitForTimeout(3000);
@@ -31,10 +28,11 @@ test.describe('Session Switch Preservation', () => {
     expect(timeAfterSwitch).toBe(timeBeforeSwitch);
   });
 
-  test('should show resume button (not start button) after switching back to original session type', async ({ page }) => {
-    pomodoroPage = new PomodoroPage(page);
+  test('should show resume button after switching back to original session type', async ({ browser }) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.fastSetup1MinPomodoro();
-    await pomodoroPage.resetTimer();
     await pomodoroPage.startTimer();
     await page.waitForTimeout(2000);
 
@@ -43,5 +41,7 @@ test.describe('Session Switch Preservation', () => {
 
     const isResumeVisible = await pomodoroPage.isTimerPaused();
     expect(isResumeVisible).toBe(true);
+
+    await context.close();
   });
 });
