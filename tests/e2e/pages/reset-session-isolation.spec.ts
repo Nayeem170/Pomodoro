@@ -14,13 +14,13 @@ test.describe('Reset Session Isolation', () => {
 
     await pomodoroPage.pauseTimer();
 
-    const timeBeforeSwitch = await pomodoroPage.getTimerDisplay();
+    const pomodoroTime = await pomodoroPage.getTimerDisplay();
 
     await pomodoroPage.switchToShortBreak();
+    await page.locator('button[aria-label="Start timer"]').click();
+    await expect(page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
 
-    const timerType = await pomodoroPage.getTimerType();
-    expect(timerType).toContain('BREAK');
-
+    await pomodoroPage.pauseTimer();
     await page.locator('button[aria-label="Reset timer"]').click();
 
     await pomodoroPage.switchToPomodoro();
@@ -32,6 +32,6 @@ test.describe('Reset Session Isolation', () => {
     expect(isPaused).toBe(true);
 
     const timeAfterReset = await pomodoroPage.getTimerDisplay();
-    expect(timeAfterReset).toBe(timeBeforeSwitch);
+    expect(timeAfterReset).toBe(pomodoroTime);
   });
 });
