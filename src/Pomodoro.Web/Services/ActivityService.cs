@@ -265,24 +265,13 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
                 result[kvp.Key] = kvp.Value;
             }
 
-            // Aggregate short breaks
-            var shortBreakMinutes = dayActivities
-                .Where(a => a.Type == SessionType.ShortBreak)
+            var totalBreakMinutes = dayActivities
+                .Where(a => a.Type == SessionType.ShortBreak || a.Type == SessionType.LongBreak)
                 .Sum(a => a.DurationMinutes);
 
-            if (shortBreakMinutes > 0)
+            if (totalBreakMinutes > 0)
             {
-                result[Constants.Activity.ShortBreaksLabel] = shortBreakMinutes;
-            }
-
-            // Aggregate long breaks
-            var longBreakMinutes = dayActivities
-                .Where(a => a.Type == SessionType.LongBreak)
-                .Sum(a => a.DurationMinutes);
-
-            if (longBreakMinutes > 0)
-            {
-                result[Constants.Activity.LongBreaksLabel] = longBreakMinutes;
+                result[Constants.Activity.BreaksLabel] = totalBreakMinutes;
             }
 
             _timeDistributionCache[targetDate] = result;

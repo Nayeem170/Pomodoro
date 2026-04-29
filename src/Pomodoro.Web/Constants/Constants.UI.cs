@@ -13,6 +13,7 @@ public static partial class Constants
         public const string FocusTimeLabel = "Focus time";
         public const string ShortBreaksLabel = "Short Breaks";
         public const string LongBreaksLabel = "Long Breaks";
+        public const string BreaksLabel = "Breaks";
     }
 
     /// <summary>

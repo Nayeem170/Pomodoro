@@ -19,8 +19,7 @@ public class WeeklyTimeDistributionBase : ComponentBase, IDisposable
     [Parameter]
     public DateTime WeekStart { get; set; }
 
-    private static readonly string ShortBreakColor = "#1D9E75";
-    private static readonly string LongBreakColor = "#378ADD";
+    private static readonly string BreakColor = "#1D9E75";
     private static readonly string[] TaskColors = { "#D85A30", "#E8913A", "#C75B9B", "#7B68EE", "#20B2AA", "#CD853F", "#6B8E23", "#DB7093" };
 
     public List<ChartSegment> Segments { get; set; } = new();
@@ -94,24 +93,14 @@ public class WeeklyTimeDistributionBase : ComponentBase, IDisposable
             taskIndex++;
         }
 
-        var shortBreakMin = weekActivities
-            .Where(a => a.Type == SessionType.ShortBreak)
+        var totalBreakMin = weekActivities
+            .Where(a => a.Type == SessionType.ShortBreak || a.Type == SessionType.LongBreak)
             .Sum(a => a.DurationMinutes);
 
-        if (shortBreakMin > 0)
+        if (totalBreakMin > 0)
         {
-            segments.Add(new ChartSegment(Constants.Activity.ShortBreaksLabel, ShortBreakColor, 0));
-            TotalMinutes += shortBreakMin;
-        }
-
-        var longBreakMin = weekActivities
-            .Where(a => a.Type == SessionType.LongBreak)
-            .Sum(a => a.DurationMinutes);
-
-        if (longBreakMin > 0)
-        {
-            segments.Add(new ChartSegment(Constants.Activity.LongBreaksLabel, LongBreakColor, 0));
-            TotalMinutes += longBreakMin;
+            segments.Add(new ChartSegment(Constants.Activity.BreaksLabel, BreakColor, 0));
+            TotalMinutes += totalBreakMin;
         }
 
         segments = segments.Select(s => s with
@@ -124,10 +113,8 @@ public class WeeklyTimeDistributionBase : ComponentBase, IDisposable
 
     private static int GetSegmentMinutes(string label, List<Models.ActivityRecord> activities)
     {
-        if (label == Constants.Activity.ShortBreaksLabel)
-            return activities.Where(a => a.Type == SessionType.ShortBreak).Sum(a => a.DurationMinutes);
-        if (label == Constants.Activity.LongBreaksLabel)
-            return activities.Where(a => a.Type == SessionType.LongBreak).Sum(a => a.DurationMinutes);
+        if (label == Constants.Activity.BreaksLabel)
+            return activities.Where(a => a.Type == SessionType.ShortBreak || a.Type == SessionType.LongBreak).Sum(a => a.DurationMinutes);
         return activities
             .Where(a => a.Type == SessionType.Pomodoro && (a.TaskName ?? Constants.Activity.FocusTimeLabel) == label)
             .Sum(a => a.DurationMinutes);

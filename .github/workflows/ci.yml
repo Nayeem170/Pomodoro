@@ -56,6 +56,25 @@ jobs:
       - run: dotnet test Pomodoro.sln --configuration Release --verbosity normal
             --collect:"XPlat Code Coverage" --results-directory ./coverage
 
+      - name: Check branch coverage
+        run: |
+          COVERAGE_FILE=$(find ./coverage -name "coverage.cobertura.xml" | head -1)
+          COVERED=$(grep -oP 'branches-covered="\K[0-9]+' "$COVERAGE_FILE" | head -1)
+          TOTAL=$(grep -oP 'branches-valid="\K[0-9]+' "$COVERAGE_FILE" | head -1)
+          if [ -z "$COVERED" ] || [ -z "$TOTAL" ] || [ "$TOTAL" -eq 0 ]; then
+            echo "Could not parse branch coverage from report"
+            exit 1
+          fi
+          PERCENTAGE=$(awk "BEGIN {printf \"%.1f\", ($COVERED/$TOTAL)*100}")
+          echo "Branch coverage: $COVERED/$TOTAL ($PERCENTAGE%)"
+          THRESHOLD=98.0
+          PASS=$(awk "BEGIN {print ($PERCENTAGE >= $THRESHOLD) ? 1 : 0}")
+          if [ "$PASS" -eq 0 ]; then
+            echo "::error::Branch coverage ${PERCENTAGE}% is below threshold ${THRESHOLD}%"
+            exit 1
+          fi
+          echo "Branch coverage meets threshold"
+
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

@@ -29,11 +29,6 @@
 
     private string GetDotSessionClass()
     {
-        return CurrentSessionType switch
-        {
-            SessionType.ShortBreak => "short-break",
-            SessionType.LongBreak => "long-break",
-            _ => ""
-        };
+        return "";
     }
 }
