@@ -4,7 +4,10 @@ import { PomodoroPage } from '../fixtures/pomodoro.page';
 test.describe('Session Switch Preservation', () => {
   test('should preserve paused state and remaining time when switching session type mid-timer', async ({ page }) => {
     const pomodoroPage = new PomodoroPage(page);
-    await pomodoroPage.fastSetup1MinPomodoro();
+    await pomodoroPage.goto('/');
+    await pomodoroPage.setSettingViaIndexedDB('pomodoroMinutes', 1);
+    await page.reload();
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
     await pomodoroPage.startTimer();
 
     await page.clock.fastForward(3000);
@@ -31,17 +34,22 @@ test.describe('Session Switch Preservation', () => {
   test('should show resume button after switching back to original session type', async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-    const pomodoroPage = new PomodoroPage(page);
-    await pomodoroPage.fastSetup1MinPomodoro();
-    await pomodoroPage.startTimer();
-    await page.clock.fastForward(2000);
+    try {
+      const pomodoroPage = new PomodoroPage(page);
+      await pomodoroPage.goto('/');
+      await pomodoroPage.setSettingViaIndexedDB('pomodoroMinutes', 1);
+      await page.reload();
+      await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
+      await pomodoroPage.startTimer();
+      await page.clock.fastForward(2000);
 
-    await pomodoroPage.switchToShortBreak();
-    await pomodoroPage.switchToPomodoro();
+      await pomodoroPage.switchToShortBreak();
+      await pomodoroPage.switchToPomodoro();
 
-    const isResumeVisible = await pomodoroPage.isTimerPaused();
-    expect(isResumeVisible).toBe(true);
-
-    await context.close();
+      const isResumeVisible = await pomodoroPage.isTimerPaused();
+      expect(isResumeVisible).toBe(true);
+    } finally {
+      await context.close();
+    }
   });
 });
