@@ -156,7 +156,7 @@ jobs:
           for f in ./e2e-summaries/e2e-summary-shard-*/shard-summary.json; do
             if [ -f "$f" ]; then
               SHARD_NAME=$(node -e "const d=require('$f');console.log(d.shard_name)")
-              SHARD_LABEL=$(node -e "console.log(d.shard_name.charAt(0).toUpperCase() + d.shard_name.slice(1))")
+              SHARD_LABEL=$(node -e "const d=require('$f');console.log(d.shard_name.charAt(0).toUpperCase() + d.shard_name.slice(1))")
               PASSED=$(node -e "const d=require('$f');console.log(d.passed)")
               FAILED=$(node -e "const d=require('$f');console.log(d.failed)")
               SKIPPED=$(node -e "const d=require('$f');console.log(d.skipped)")
