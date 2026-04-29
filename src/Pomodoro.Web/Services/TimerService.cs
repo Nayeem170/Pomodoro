@@ -260,11 +260,11 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         await _jsTimerInterop.StopAsync();
 
         TickCount = 0;
-        _pausedSessions.Clear();
 
         if (_appState.CurrentSession != null)
         {
-            // Use helper method to get duration for current session type
+            _pausedSessions.Remove(_appState.CurrentSession.Type);
+
             var durationSeconds = _appState.Settings.GetDurationSeconds(_appState.CurrentSession.Type);
 
             _appState.CurrentSession.DurationSeconds = durationSeconds;
