@@ -61,7 +61,6 @@ window.keyboardShortcuts = (function() {
             dotNetRef = dotNetReference;
             document.addEventListener('keydown', handleKeyDown);
             isInitialized = true;
-            console.log(pomodoroConstants.messages.keyboardShortcutsInitialized);
         },
         
         dispose: function() {
@@ -70,7 +69,6 @@ window.keyboardShortcuts = (function() {
             document.removeEventListener('keydown', handleKeyDown);
             dotNetRef = null;
             isInitialized = false;
-            console.log(pomodoroConstants.messages.keyboardShortcutsDisposed);
         }
     };
 })();

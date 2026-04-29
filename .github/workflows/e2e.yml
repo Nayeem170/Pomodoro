@@ -32,7 +32,7 @@ jobs:
       matrix:
         shard:
           - name: "timer-flow"
-            tests: "tests/e2e/pages/timer.spec.ts tests/e2e/pages/timer-completion.spec.ts tests/e2e/pages/timer-countdown.spec.ts tests/e2e/pages/timer-reload-contract.spec.ts tests/e2e/pages/session-switch-preservation.spec.ts"
+            tests: "tests/e2e/pages/timer.spec.ts tests/e2e/pages/timer-completion.spec.ts tests/e2e/pages/timer-countdown.spec.ts tests/e2e/pages/timer-reload-contract.spec.ts tests/e2e/pages/session-switch-preservation.spec.ts tests/e2e/pages/reset-session-isolation.spec.ts"
           - name: "timer-ring"
             tests: "tests/e2e/pages/timer-ring-progress.spec.ts tests/e2e/pages/timer-theme.spec.ts tests/e2e/pages/timer-visibility-sync.spec.ts"
           - name: "long-break"

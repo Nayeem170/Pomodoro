@@ -46,7 +46,6 @@ window.pipTimer = {
                 this.renderTimer(timerState);
                 this.setupBroadcastChannel();
                 
-                console.log(pomodoroConstants.messages.pipWindowOpened);
                 return true;
             } catch (e) {
                 console.warn(pomodoroConstants.messages.pipFailed, e.message);
@@ -83,7 +82,6 @@ window.pipTimer = {
         this.setupCloseHandler();
         this.setupBroadcastChannel();
         
-        console.log(pomodoroConstants.messages.pipPopupOpened);
         return true;
     },
     

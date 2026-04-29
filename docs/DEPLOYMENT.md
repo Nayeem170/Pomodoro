@@ -40,6 +40,7 @@ This project uses **GitHub Actions** for CI/CD and **Cloudflare Pages** for host
 |--------|-------------|
 | `CLOUDFLARE_API_TOKEN` | Cloudflare API token with **Cloudflare Pages: Edit** permission |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID |
+| `CODECOV_TOKEN` | Codecov upload token for coverage reports |
 
 ## Cloudflare Pages Config
 
