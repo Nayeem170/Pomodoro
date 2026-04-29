@@ -55,7 +55,7 @@ public class ConsentServiceBreakCompletionTests
 public class ImportServiceDuplicateTests
 {
     [Fact]
-    public async Task ImportFromJsonAsync_WithDuplicateTaskAndValidId_MapsId()
+    public async Task ImportFromJsonAsync_WithDuplicateTaskAndValidId_SkipsImport()
     {
         var mockActivityRepo = new Mock<IActivityRepository>();
         var mockTaskRepo = new Mock<ITaskRepository>();
