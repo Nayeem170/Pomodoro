@@ -66,7 +66,7 @@ public class ConsentModalTests : TestContext
             .Add(p => p.IsVisible, true)
             .Add(p => p.CompletedSessionType, SessionType.Pomodoro)
             .Add(p => p.CountdownSeconds, 30)
-            .Add(p => p.Options, (List<ConsentOption>)null));
+            .Add(p => p.Options, (List<ConsentOption>?)null));
 
         // Assert - Modal renders but no option buttons
         Assert.NotNull(cut.Find(".consent-modal"));

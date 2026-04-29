@@ -62,7 +62,7 @@ public partial class ConsentServiceTests
 
         var appState = new AppState
         {
-            Settings = null
+            Settings = null!
         };
 
         sessionOptionsServiceMock
@@ -145,7 +145,7 @@ public partial class ConsentServiceTests
         // AppState exists but Settings is null
         var appState = new AppState
         {
-            Settings = null
+            Settings = null!
         };
 
         sessionOptionsServiceMock

@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Moq;
 using Pomodoro.Web.Models;
-using Pomodoro.Web.Pages;
 using Pomodoro.Web.Services;
 using Pomodoro.Web.Services.Formatters;
 using Xunit;
@@ -637,7 +636,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            cut.Instance.IndexPagePresenterService = null;
+            cut.Instance.IndexPagePresenterService = null!;
 
             await cut.Instance.OnTimerCompleted(new TimerCompletedEventArgs(SessionType.Pomodoro, null, null, 25, true, DateTime.UtcNow));
 
@@ -963,7 +962,7 @@ namespace Pomodoro.Web.Tests.Pages
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             var instance = cut.Instance;
 
-            instance.Logger = null;
+            instance.Logger = null!;
 
             var exception = Record.Exception(() => instance.Dispose());
 
@@ -991,7 +990,7 @@ namespace Pomodoro.Web.Tests.Pages
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
             var instance = cut.Instance;
 
-            instance.Logger = null;
+            instance.Logger = null!;
 
             var exception = Record.Exception(() => cut.Dispose());
             Assert.Null(exception);

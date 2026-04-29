@@ -633,7 +633,7 @@ public class ApplicationStartupServiceTests
             object rootComponentsInstance;
             try
             {
-                rootComponentsInstance = Activator.CreateInstance(rootComponentsType, true);
+                rootComponentsInstance = Activator.CreateInstance(rootComponentsType, true)!;
             }
             catch
             {

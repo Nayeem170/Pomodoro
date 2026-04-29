@@ -91,7 +91,7 @@ public partial class TimerServiceTests
                 Date = todayKey,
                 TotalFocusMinutes = 10,
                 PomodoroCount = 1,
-                TaskIdsWorkedOn = null
+                TaskIdsWorkedOn = null!
             };
 
             MockSettingsRepository.Setup(x => x.GetAsync()).ReturnsAsync((TimerSettings?)null);

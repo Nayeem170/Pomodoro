@@ -270,7 +270,7 @@ public class GoogleDriveServiceTests : IDisposable
             if (_exceptions.Count > _callIndex)
             {
                 _callIndex++;
-                throw _exceptions[_callIndex - 1];
+                throw _exceptions[_callIndex - 1]!;
             }
 
             var result = _results.Count > _callIndex ? _results[_callIndex] : default;

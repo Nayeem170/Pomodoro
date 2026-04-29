@@ -77,7 +77,7 @@ public partial class TaskServiceTests
 
         MockTaskRepository.SetupSequence(r => r.GetAllIncludingDeletedAsync())
             .ReturnsAsync(initialTasks)
-            .ReturnsAsync((List<TaskItem>?)null);
+            .ReturnsAsync((List<TaskItem>)null!);
 
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);

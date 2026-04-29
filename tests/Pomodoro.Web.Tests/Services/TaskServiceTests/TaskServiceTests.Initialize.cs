@@ -83,7 +83,7 @@ public partial class TaskServiceTests
     public async Task InitializeAsync_WithNullTasksFromRepository_LoadsEmptyList()
     {
         // Arrange
-        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync((List<TaskItem>?)null);
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync((List<TaskItem>)null!);
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
 
