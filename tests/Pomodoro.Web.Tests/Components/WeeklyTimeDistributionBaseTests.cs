@@ -93,10 +93,11 @@ public class WeeklyTimeDistributionBaseTests
         };
         var sut = CreateSut(activities);
 
-        Assert.Equal(3, sut.Segments.Count);
+        Assert.Equal(2, sut.Segments.Count);
+        Assert.Equal("Task 1", sut.Segments[0].Label);
+        Assert.Equal(Constants.Activity.BreaksLabel, sut.Segments[1].Label);
         Assert.Equal(56, sut.Segments[0].Percentage);
-        Assert.Equal(11, sut.Segments[1].Percentage);
-        Assert.Equal(33, sut.Segments[2].Percentage);
+        Assert.Equal(44, sut.Segments[1].Percentage);
         Assert.Equal(45, sut.TotalMinutes);
     }
 

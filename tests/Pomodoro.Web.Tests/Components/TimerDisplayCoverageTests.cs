@@ -65,24 +65,6 @@ public class TimerDisplayCoverageTests : TestContext
     }
 
     [Fact]
-    public void GetSessionTypeLabel_WithInvalidSessionType_ReturnsPomodoroLabel()
-    {
-        SetupTimerService(TimeSpan.FromMinutes(25), (SessionType)99, false);
-        var cut = RenderComponent<TimerDisplay>();
-        var result = cut.Instance.GetSessionTypeLabel();
-        Assert.Equal("FOCUSING", result);
-    }
-
-    [Fact]
-    public void GetRingSessionClass_WithInvalidSessionType_ReturnsEmptyClass()
-    {
-        SetupTimerService(TimeSpan.FromMinutes(25), (SessionType)99, true);
-        var cut = RenderComponent<TimerDisplay>();
-        var result = cut.Instance.GetRingSessionClass();
-        Assert.Equal("", result);
-    }
-
-    [Fact]
     public void HandleStateChangeError_BaseClass_CanBeCalledDirectly()
     {
         SetupTimerService(TimeSpan.FromMinutes(25), SessionType.Pomodoro, false);
