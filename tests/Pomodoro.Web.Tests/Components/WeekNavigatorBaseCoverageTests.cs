@@ -77,6 +77,7 @@ public class WeekNavigatorBaseCoverageTests : TestContext
     [Fact]
     public async Task GoToThisWeek_InvokesCallbackWithCurrentWeekStart()
     {
+        var expectedWeekStart = WeekNavigatorBase.GetWeekStart(DateTime.Now.Date);
         var receivedWeekStart = new DateTime?();
         var cut = RenderComponent<WeekNavigator>(parameters => parameters
             .Add(p => p.SelectedWeekStart, new DateTime(2026, 1, 1))
@@ -85,7 +86,6 @@ public class WeekNavigatorBaseCoverageTests : TestContext
         var method = typeof(WeekNavigatorBase).GetMethod("GoToThisWeek", BindingFlags.Instance | BindingFlags.NonPublic);
         await (Task)method!.Invoke(cut.Instance, null)!;
 
-        var thisWeekStart = WeekNavigatorBase.GetWeekStart(DateTime.Now.Date);
-        receivedWeekStart.Should().Be(thisWeekStart);
+        receivedWeekStart.Should().Be(expectedWeekStart);
     }
 }

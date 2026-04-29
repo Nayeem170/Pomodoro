@@ -68,7 +68,7 @@ npx playwright test tests/e2e/pages/
 ## CI Pipeline (ci.yml)
 
 1. `build` → publishes app artifact once
-2. `unit-test` ∥ `e2e` (parallel, both download build artifact)
+2. `unit-test` ∥ `e2e` (parallel; `unit-test` runs from source, `e2e` downloads build artifact)
 3. `e2e-gate` — depends on all 16 E2E shards, creates single check for branch protection
 4. 98% line coverage threshold configured in codecov.yml; coverage reported to Codecov via codecov-action
 

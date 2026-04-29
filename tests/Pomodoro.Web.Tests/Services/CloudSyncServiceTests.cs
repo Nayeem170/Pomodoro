@@ -1336,7 +1336,7 @@ public class CloudSyncServiceTests : IDisposable
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((o, t) => true),
                 It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
     }
 
@@ -1387,7 +1387,7 @@ public class CloudSyncServiceTests : IDisposable
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((o, t) => true),
                 It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
     }
 

@@ -186,11 +186,11 @@ public class CloudSyncSettingsCoverageTests : TestContext
         _cloudSyncServiceMock.SetupGet(x => x.IsConnected).Returns(false);
 
         var cut = RenderComponent<CloudSyncSettings>();
+        var renderCountBefore = cut.RenderCount;
 
         cut.Instance.Dispose();
 
-        var ex = Record.Exception(() =>
-            _cloudSyncServiceMock.Raise(x => x.OnSyncStatusChanged += null));
-        Assert.Null(ex);
+        _cloudSyncServiceMock.Raise(x => x.OnSyncStatusChanged += null);
+        cut.WaitForAssertion(() => cut.RenderCount.Should().Be(renderCountBefore));
     }
 }

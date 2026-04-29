@@ -268,6 +268,7 @@ public class DateNavigatorTests : TestContext
     [Fact]
     public async Task GoToToday_InvokesCallbackWithLocalDate()
     {
+        var expectedToday = DateTime.Now.Date;
         var currentDate = new DateTime(2026, 3, 15);
         DateTime? receivedDate = null;
 
@@ -279,7 +280,7 @@ public class DateNavigatorTests : TestContext
         await (Task)method!.Invoke(cut.Instance, null)!;
 
         Assert.NotNull(receivedDate);
-        Assert.Equal(DateTime.Now.Date, receivedDate.Value);
+        Assert.Equal(expectedToday, receivedDate.Value);
     }
 
     #endregion

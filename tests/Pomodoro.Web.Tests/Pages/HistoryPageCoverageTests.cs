@@ -26,8 +26,8 @@ public class HistoryPageCoverageTests : TestHelper
             .Returns(new Dictionary<DateTime, int>());
         ActivityServiceMock.Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .Returns(new Dictionary<DateTime, int>());
-        StatisticsServiceMock.Setup<Task<WeeklyStats?>>(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
-            .ReturnsAsync((WeeklyStats?)null);
+        StatisticsServiceMock.Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
+            .ReturnsAsync(null!);
     }
 
     [Fact]
