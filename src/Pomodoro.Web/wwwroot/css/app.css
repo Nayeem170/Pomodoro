@@ -107,6 +107,7 @@ input, textarea, [contenteditable="true"] {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 4px;
     padding: 5px 9px;
     font-size: 12px;
     font-weight: 400;
@@ -117,6 +118,11 @@ input, textarea, [contenteditable="true"] {
     background: transparent;
     cursor: pointer;
     transition: background 0.15s;
+}
+
+.nav-icon {
+    font-size: 14px;
+    line-height: 1;
 }
 
 .header-nav a.active {
@@ -228,6 +234,28 @@ input, textarea, [contenteditable="true"] {
     .mobile-nav {
         display: flex;
     }
+
+    .app-content {
+        padding-bottom: 60px;
+    }
+
+    .header-content-wrapper {
+        justify-content: center;
+    }
+}
+
+.mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--color-background-primary);
+    border-top: 0.5px solid var(--color-border-tertiary);
+    z-index: 100;
+    padding: 6px 0;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+}
 
     .app-content {
         padding-bottom: 60px;
