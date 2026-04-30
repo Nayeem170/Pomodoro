@@ -44,7 +44,7 @@ test.describe('Mobile Nav Menu', () => {
 });
 
 test.describe('Mobile Header Responsive', () => {
-  test.describe.configure({ timeout: 60000 });
+  test.describe.configure({ mode: 'serial', timeout: 60000 });
 
   test('should render app title inside header-title', async ({ page }) => {
     const pomodoroPage = new PomodoroPage(page);
