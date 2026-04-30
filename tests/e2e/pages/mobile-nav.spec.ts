@@ -72,8 +72,8 @@ test.describe('Mobile Header Responsive', () => {
     await pomodoroPage.goto('/');
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const navLink = page.locator('.header-nav a').first();
-    await expect(navLink).toBeVisible();
+    const mobileTab = page.locator('.mobile-tab').first();
+    await expect(mobileTab).toBeVisible();
   });
 });
 

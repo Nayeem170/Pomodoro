@@ -58,9 +58,10 @@ test.describe('Mobile Viewport (375x812)', () => {
     await expect(page.locator('.step-input').first()).toBeVisible();
   });
 
-  test('should show navigation links on mobile', async ({ page }) => {
+  test('should show navigation on mobile', async ({ page }) => {
     await pomodoroPage.goto('/');
-    await expect(page.locator('.header-nav')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.mobile-nav')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.mobile-tab')).toHaveCount(4);
   });
 });
 
