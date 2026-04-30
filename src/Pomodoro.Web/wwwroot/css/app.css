@@ -244,24 +244,6 @@ input, textarea, [contenteditable="true"] {
     }
 }
 
-.mobile-nav {
-    display: none;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--color-background-primary);
-    border-top: 0.5px solid var(--color-border-tertiary);
-    z-index: 100;
-    padding: 6px 0;
-    padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
-}
-
-    .app-content {
-        padding-bottom: 60px;
-    }
-}
-
 /* Session Mode Tabs - Segmented Control */
 .mode-tabs {
     display: flex;

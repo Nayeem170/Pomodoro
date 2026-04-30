@@ -40,7 +40,7 @@ test.describe('Mobile Viewport (375x812)', () => {
 
   test('should navigate to about on mobile', async ({ page }) => {
     await pomodoroPage.goto('/');
-    await expect(page.locator('.mobile-tab')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.mobile-tab').first()).toBeVisible({ timeout: 30000 });
     await page.locator('.mobile-tab[href="/about"]').click();
     await expect(page.locator('.about-body')).toBeVisible({ timeout: 30000 });
   });
