@@ -236,7 +236,7 @@ input, textarea, [contenteditable="true"] {
     }
 
     .app-content {
-        padding-bottom: 60px;
+        padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
     }
 
     .header-content-wrapper {
