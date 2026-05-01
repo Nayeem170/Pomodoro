@@ -334,11 +334,11 @@
 /* Chart Row */
 .chart-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 180px 1fr;
     gap: 10px;
     align-items: center;
     justify-items: center;
-    max-width: 360px;
+    max-width: 75%;
     margin: 0 auto;
 }
 
