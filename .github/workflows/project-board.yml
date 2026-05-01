@@ -1,0 +1,52 @@
+name: Project Board - Issues Only
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+
+jobs:
+  remove-prs:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove PR from project board
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NODE_ID=$(gh api graphql -f query='
+            query($owner: String!, $name: String!, $number: Int!) {
+              repository(owner: $owner, name: $name) {
+                pullRequest(number: $number) { id }
+              }
+            }
+          ' -f owner="${{ github.repository_owner }}" -f name="${{ github.repository_name }}" -f number="${{ github.event.pull_request.number }}" --jq '.data.repository.pullRequest.id')
+
+          PROJECT_ITEMS=$(gh api graphql -f query='
+            query($owner: String!, $number: Int!) {
+              user(login: $owner) {
+                projectV2(number: $number) {
+                  items(first: 100) {
+                    nodes {
+                      id
+                      content {
+                        ... on PullRequest { number }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ' -f owner="${{ github.repository_owner }}" -f number=4 --jq '.data.user.projectV2.items.nodes[] | select(.content.number == '"${{ github.event.pull_request.number }}"') | .id')
+
+          for ITEM_ID in $PROJECT_ITEMS; do
+            gh api graphql -f query='
+              mutation($projectId: ID!, $itemId: ID!) {
+                deleteProjectV2Item(input: { projectId: $projectId, itemId: $itemId }) {
+                  deletedItemId
+                }
+              }
+            ' -f projectId="PVT_kwHOAJBk4M4BWD1D" -f itemId="$ITEM_ID"
+            echo "Removed PR #${{ github.event.pull_request.number }} from project board"
+          done
