@@ -8,9 +8,12 @@ jobs:
   enforce-issue-link:
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       pull-requests: read
       repository-projects: write
     steps:
+      - uses: actions/checkout@v4
+
       - name: Check PR body for issue reference
         id: check
         env:
@@ -55,7 +58,7 @@ jobs:
           ' -f owner="${{ github.repository_owner }}" -f number=4)
 
           PROJECT_ID=$(echo "$RESULT" | jq -r '.data.user.projectV2.id')
-          ITEM_IDS=$(echo "$RESULT" | jq -r '.data.user.projectV2.items.nodes[] | select(.content.number == '"${{ github.event.pull_request.number }}"') | .id')
+          ITEM_IDS=$(echo "$RESULT" | jq -r --arg pr_num "${{ github.event.pull_request.number }}" '.data.user.projectV2.items.nodes[] | select(.content.number == ($pr_num | tonumber)) | .id')
 
           for ITEM_ID in $ITEM_IDS; do
             gh api graphql -f query='
