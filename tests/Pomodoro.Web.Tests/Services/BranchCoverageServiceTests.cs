@@ -8,6 +8,7 @@ namespace Pomodoro.Web.Tests.Services;
 [Trait("Category", "Service")]
 public partial class ActivityServiceTests
 {
+    [Trait("Category", "Service")]
     public class NullActivitiesBranchTests : ActivityServiceTests
     {
         [Fact]
@@ -22,12 +23,13 @@ public partial class ActivityServiceTests
         }
     }
 
+    [Trait("Category", "Service")]
     public class ShortBreakOnlyDistributionTests : ActivityServiceTests
     {
         [Fact]
         public async Task GetTimeDistribution_OnlyShortBreaks_NoLongBreakEntry()
         {
-            var date = new DateTime(2024, 6, 15);
+            var date = new DateTime(2024, 6, 15, 12, 0, 0, DateTimeKind.Local);
             var activities = new List<ActivityRecord>
             {
                 new() { Id = Guid.NewGuid(), Type = SessionType.ShortBreak, CompletedAt = date, DurationMinutes = 5 }
@@ -50,6 +52,7 @@ public partial class ActivityServiceTests
 [Trait("Category", "Service")]
 public partial class TaskServiceTests
 {
+    [Trait("Category", "Service")]
     public class MaxLengthNameTests : TaskServiceTests
     {
         [Fact]

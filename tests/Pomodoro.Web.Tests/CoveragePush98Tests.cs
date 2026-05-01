@@ -244,8 +244,8 @@ public class CloudSyncSettingsPullBranchTests : TestContext
 
         cut.Find("button.sec-btn").Click();
 
-        await Task.Delay(100);
-        toastMessage.Should().Be(Constants.SyncMessages.AlreadyUpToDate);
+        cut.WaitForAssertion(() =>
+            toastMessage.Should().Be(Constants.SyncMessages.AlreadyUpToDate));
     }
 }
 

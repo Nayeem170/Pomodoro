@@ -286,9 +286,9 @@ public class CloudSyncSettingsBranchTests : TestContext
 
         var cut = RenderComponent<Pomodoro.Web.Components.Settings.CloudSyncSettings>();
 
-        await cut.InvokeAsync(() => cut.Instance.GetType()
+        await cut.InvokeAsync(() => (Task)cut.Instance.GetType()
             .GetMethod("SyncNow", BindingFlags.Instance | BindingFlags.NonPublic)!
-            .Invoke(cut.Instance, null));
+            .Invoke(cut.Instance, null)!);
 
         _cloudSyncServiceMock.Verify(x => x.SyncNowAsync(), Times.Once);
     }
@@ -303,9 +303,9 @@ public class CloudSyncSettingsBranchTests : TestContext
 
         var cut = RenderComponent<Pomodoro.Web.Components.Settings.CloudSyncSettings>();
 
-        await cut.InvokeAsync(() => cut.Instance.GetType()
+        await cut.InvokeAsync(() => (Task)cut.Instance.GetType()
             .GetMethod("SyncNow", BindingFlags.Instance | BindingFlags.NonPublic)!
-            .Invoke(cut.Instance, null));
+            .Invoke(cut.Instance, null)!);
 
         _cloudSyncServiceMock.Verify(x => x.SyncNowAsync(), Times.Once);
     }
@@ -320,9 +320,9 @@ public class CloudSyncSettingsBranchTests : TestContext
 
         var cut = RenderComponent<Pomodoro.Web.Components.Settings.CloudSyncSettings>();
 
-        await cut.InvokeAsync(() => cut.Instance.GetType()
+        await cut.InvokeAsync(() => (Task)cut.Instance.GetType()
             .GetMethod("SyncNow", BindingFlags.Instance | BindingFlags.NonPublic)!
-            .Invoke(cut.Instance, null));
+            .Invoke(cut.Instance, null)!);
 
         _cloudSyncServiceMock.Verify(x => x.SyncNowAsync(), Times.Once);
     }
@@ -340,9 +340,9 @@ public class CloudSyncSettingsBranchTests : TestContext
 
         var cut = RenderComponent<Pomodoro.Web.Components.Settings.CloudSyncSettings>();
 
-        await cut.InvokeAsync(() => cut.Instance.GetType()
+        await cut.InvokeAsync(() => (Task)cut.Instance.GetType()
             .GetMethod("SyncNow", BindingFlags.Instance | BindingFlags.NonPublic)!
-            .Invoke(cut.Instance, null));
+            .Invoke(cut.Instance, null)!);
 
         _cloudSyncServiceMock.Verify(x => x.ConnectAsync(It.IsAny<string>()), Times.Once);
         _cloudSyncServiceMock.Verify(x => x.SyncNowAsync(), Times.Exactly(2));
@@ -361,9 +361,9 @@ public class CloudSyncSettingsBranchTests : TestContext
 
         var cut = RenderComponent<Pomodoro.Web.Components.Settings.CloudSyncSettings>();
 
-        await cut.InvokeAsync(() => cut.Instance.GetType()
+        await cut.InvokeAsync(() => (Task)cut.Instance.GetType()
             .GetMethod("SyncNow", BindingFlags.Instance | BindingFlags.NonPublic)!
-            .Invoke(cut.Instance, null));
+            .Invoke(cut.Instance, null)!);
 
         _cloudSyncServiceMock.Verify(x => x.ConnectAsync(It.IsAny<string>()), Times.Once);
         _cloudSyncServiceMock.Verify(x => x.SyncNowAsync(), Times.Exactly(2));
