@@ -57,8 +57,8 @@ input, textarea, [contenteditable="true"] {
 /* Header - Minimal Topnav */
 .app-header {
     width: 100%;
-    background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-background-secondary) 100%);
-    border-bottom: 1px solid #2d4a6f;
+    background: var(--color-background-primary);
+    border-bottom: 0.5px solid var(--color-border-tertiary);
     padding: 0;
     position: sticky;
     top: 0;
@@ -69,7 +69,7 @@ input, textarea, [contenteditable="true"] {
     max-width: 360px;
     width: 100%;
     margin: 0 auto;
-    padding: 5px 8px;
+    padding: 10px 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -87,16 +87,16 @@ input, textarea, [contenteditable="true"] {
 }
 
 .header-text {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--color-text-primary);
 }
 
 .header-icon {
-    font-size: 16px;
+    font-size: 14px;
 }
 
-/* Header Navigation - Text pill buttons */
+/* Header Navigation - Desktop */
 .header-nav {
     display: flex;
     align-items: center;
@@ -107,8 +107,9 @@ input, textarea, [contenteditable="true"] {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 5px 8px;
-    font-size: 16px;
+    gap: 4px;
+    padding: 5px 9px;
+    font-size: 12px;
     font-weight: 400;
     color: var(--color-text-secondary);
     text-decoration: none;
@@ -119,9 +120,55 @@ input, textarea, [contenteditable="true"] {
     transition: background 0.15s;
 }
 
+.nav-icon {
+    font-size: 14px;
+    line-height: 1;
+}
+
 .header-nav a.active {
     background: var(--color-background-secondary);
     color: var(--color-text-primary);
+    font-weight: 500;
+}
+
+/* Mobile Bottom Navigation */
+.mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--color-background-primary);
+    border-top: 0.5px solid var(--color-border-tertiary);
+    z-index: 100;
+    padding: 6px 0;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+}
+
+.mobile-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    flex: 1;
+    padding: 4px 0;
+    text-decoration: none;
+    color: var(--color-text-tertiary);
+    transition: color 0.15s;
+}
+
+.mobile-tab.active {
+    color: var(--pomodoro-color);
+}
+
+.mobile-tab-icon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.mobile-tab-label {
+    font-size: 10px;
     font-weight: 500;
 }
 
@@ -175,6 +222,25 @@ input, textarea, [contenteditable="true"] {
     }
     .header-content-wrapper {
         max-width: 960px;
+    }
+}
+
+/* Mobile: bottom nav, hide desktop nav */
+@media (max-width: 767px) {
+    .desktop-nav {
+        display: none;
+    }
+
+    .mobile-nav {
+        display: flex;
+    }
+
+    .app-content {
+        padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .header-content-wrapper {
+        justify-content: center;
     }
 }
 

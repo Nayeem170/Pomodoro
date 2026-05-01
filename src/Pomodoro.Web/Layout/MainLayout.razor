@@ -7,14 +7,14 @@
         <div class="header-content-wrapper">
             <div class="header-left">
                 <div class="header-title">
-                    <span class="header-icon">@Constants.Layout.AppIcon</span>
                     <span class="header-text">@Constants.Layout.AppTitle</span>
                 </div>
             </div>
-            <nav class="header-nav">
+            <nav class="header-nav desktop-nav">
                 @foreach (var navLink in LayoutPresenter.GetNavigationLinks())
                 {
                     <NavLink @key="navLink.Href" href="@navLink.Href" Match="@navLink.Match" title="@navLink.Title">
+                        <span class="nav-icon">@navLink.Icon</span>
                         @navLink.Title
                     </NavLink>
                 }
@@ -32,6 +32,16 @@
             </ErrorContent>
         </ErrorBoundary>
     </main>
+
+    <nav class="mobile-nav">
+        @foreach (var navLink in LayoutPresenter.GetNavigationLinks())
+        {
+            <NavLink class="mobile-tab" @key="navLink.Href" href="@navLink.Href" Match="@navLink.Match">
+                <span class="mobile-tab-icon">@navLink.Icon</span>
+                <span class="mobile-tab-label">@navLink.Title</span>
+            </NavLink>
+        }
+    </nav>
 </div>
 
 @code {
