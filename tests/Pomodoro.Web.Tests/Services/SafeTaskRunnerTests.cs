@@ -25,7 +25,7 @@ public class SafeTaskRunnerTests
             var completed = await Task.WhenAny(tcs.Task, Task.Delay(5000));
 
             Assert.True(completed == tcs.Task);
-            Assert.True(await tcs.Task);
+            Assert.True(tcs.Task.Result);
         }
 
         [Fact]
