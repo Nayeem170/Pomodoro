@@ -1,28 +1,47 @@
 name: Project Board - Issues Only
 
 on:
-  issues:
-    types: [opened]
   pull_request:
-    types: [opened]
+    types: [opened, edited, synchronize]
 
 jobs:
-  remove-prs:
-    if: github.event_name == 'pull_request'
+  enforce-issue-link:
     runs-on: ubuntu-latest
     steps:
+      - name: Check PR body for issue reference
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BODY=$(gh pr view ${{ github.event.pull_request.number }} --json body --jq '.body')
+          if echo "$BODY" | grep -qiP '(closes|fixes|resolves)\s+#\d+'; then
+            echo "linked=true" >> $GITHUB_OUTPUT
+            echo "PR is linked to an issue."
+          else
+            echo "linked=false" >> $GITHUB_OUTPUT
+            echo "PR is NOT linked to an issue."
+          fi
+
+      - name: Comment on PR if no issue linked
+        if: steps.check.outputs.linked == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "⚠️ **This PR is not linked to an issue.**
+
+          Every PR must be part of an issue card on the project board.
+
+          Please update the PR body to include an issue reference:
+          - \`Closes #XX\`
+          - \`Fixes #XX\`
+          - \`Resolves #XX\`
+
+          If no issue exists yet, [create one](https://github.com/Nayeem170/Pomodoro/issues/new) first."
+
       - name: Remove PR from project board
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PR_NODE_ID=$(gh api graphql -f query='
-            query($owner: String!, $name: String!, $number: Int!) {
-              repository(owner: $owner, name: $name) {
-                pullRequest(number: $number) { id }
-              }
-            }
-          ' -f owner="${{ github.repository_owner }}" -f name="${{ github.repository_name }}" -f number="${{ github.event.pull_request.number }}" --jq '.data.repository.pullRequest.id')
-
           PROJECT_ITEMS=$(gh api graphql -f query='
             query($owner: String!, $number: Int!) {
               user(login: $owner) {
