@@ -7,6 +7,9 @@ on:
 jobs:
   enforce-issue-link:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      repository-projects: write
     steps:
       - name: Check PR body for issue reference
         id: check
@@ -29,13 +32,15 @@ jobs:
           exit 1
 
       - name: Remove PR from project board
+        if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PROJECT_ITEMS=$(gh api graphql -f query='
+          RESULT=$(gh api graphql -f query='
             query($owner: String!, $number: Int!) {
               user(login: $owner) {
                 projectV2(number: $number) {
+                  id
                   items(first: 100) {
                     nodes {
                       id
@@ -47,15 +52,18 @@ jobs:
                 }
               }
             }
-          ' -f owner="${{ github.repository_owner }}" -f number=4 --jq '.data.user.projectV2.items.nodes[] | select(.content.number == '"${{ github.event.pull_request.number }}"') | .id')
+          ' -f owner="${{ github.repository_owner }}" -f number=4)
 
-          for ITEM_ID in $PROJECT_ITEMS; do
+          PROJECT_ID=$(echo "$RESULT" | jq -r '.data.user.projectV2.id')
+          ITEM_IDS=$(echo "$RESULT" | jq -r '.data.user.projectV2.items.nodes[] | select(.content.number == '"${{ github.event.pull_request.number }}"') | .id')
+
+          for ITEM_ID in $ITEM_IDS; do
             gh api graphql -f query='
               mutation($projectId: ID!, $itemId: ID!) {
                 deleteProjectV2Item(input: { projectId: $projectId, itemId: $itemId }) {
                   deletedItemId
                 }
               }
-            ' -f projectId="PVT_kwHOAJBk4M4BWD1D" -f itemId="$ITEM_ID"
+            ' -f projectId="$PROJECT_ID" -f itemId="$ITEM_ID"
             echo "Removed PR #${{ github.event.pull_request.number }} from project board"
           done
