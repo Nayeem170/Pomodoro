@@ -100,24 +100,16 @@ public class TimerDisplayBase : ComponentBase, IDisposable
     internal string GetSessionTypeLabel()
     {
         var sessionType = CurrentSessionType;
-        return sessionType switch
-        {
-            Models.SessionType.Pomodoro => "FOCUSING",
-            Models.SessionType.ShortBreak => "SHORT BREAK",
-            Models.SessionType.LongBreak => "LONG BREAK",
-            _ => "FOCUSING"
-        };
+        if (sessionType == Models.SessionType.Pomodoro) return "FOCUSING";
+        if (sessionType == Models.SessionType.ShortBreak) return "SHORT BREAK";
+        return "LONG BREAK";
     }
 
     internal string GetRingSessionClass()
     {
-        return CurrentSessionType switch
-        {
-            Models.SessionType.Pomodoro => "",
-            Models.SessionType.ShortBreak => "short-break",
-            Models.SessionType.LongBreak => "long-break",
-            _ => ""
-        };
+        if (CurrentSessionType == Models.SessionType.Pomodoro) return "";
+        if (CurrentSessionType == Models.SessionType.ShortBreak) return "short-break";
+        return "long-break";
     }
 
     internal string GetDashOffset()

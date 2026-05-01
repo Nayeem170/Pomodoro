@@ -1,7 +1,7 @@
 @if (CurrentSessionType == SessionType.Pomodoro)
 {
     <div class="active-task">
-        <div class="task-dot @GetDotSessionClass()"></div>
+        <div class="task-dot"></div>
         @if (CurrentTaskId.HasValue)
         {
             var currentTask = Tasks.FirstOrDefault(t => t.Id == CurrentTaskId.Value);
@@ -26,14 +26,4 @@
 
     [Parameter]
     public List<TaskItem> Tasks { get; set; } = new();
-
-    private string GetDotSessionClass()
-    {
-        return CurrentSessionType switch
-        {
-            SessionType.ShortBreak => "short-break",
-            SessionType.LongBreak => "long-break",
-            _ => ""
-        };
-    }
 }
