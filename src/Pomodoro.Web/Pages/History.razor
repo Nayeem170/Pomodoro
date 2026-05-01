@@ -16,14 +16,14 @@ else
         {
             <div class="period-nav">
                 <div class="nav-top">
+                    <HistoryTabs ActiveTab="ActiveTab" OnTabChanged="HandleTabChanged" />
+                    <button class="nav-qbtn @(IsSelectedDateToday ? "active" : "")" @onclick="GoToToday">Today</button>
                     <div class="nav-arrows">
                         <button class="nav-arr" @onclick="GoToPreviousDay" title="Previous day" aria-label="Previous day">&#8592;</button>
                         <span class="period-lbl">@FormattedSelectedDate</span>
                         <button class="nav-arr" @onclick="GoToNextDay" title="Next day" disabled="@IsSelectedDateToday" aria-label="Next day">&#8594;</button>
                     </div>
-                    <HistoryTabs ActiveTab="ActiveTab" OnTabChanged="HandleTabChanged" />
                 </div>
-                <button class="nav-qbtn @(IsSelectedDateToday ? "active" : "")" @onclick="GoToToday">Today</button>
             </div>
 
             <ErrorBoundary @ref="_dailyViewErrorBoundary">
@@ -48,14 +48,14 @@ else
         {
             <div class="period-nav">
                 <div class="nav-top">
+                    <HistoryTabs ActiveTab="ActiveTab" OnTabChanged="HandleTabChanged" />
+                    <button class="nav-qbtn @(IsSelectedWeekCurrent ? "active" : "")" @onclick="GoToThisWeek">This week</button>
                     <div class="nav-arrows">
                         <button class="nav-arr" @onclick="GoToPreviousWeek" title="Previous week" aria-label="Previous week">&#8592;</button>
                         <span class="period-lbl">@FormattedWeekRange</span>
                         <button class="nav-arr" @onclick="GoToNextWeek" title="Next week" disabled="@IsSelectedWeekCurrent" aria-label="Next week">&#8594;</button>
                     </div>
-                    <HistoryTabs ActiveTab="ActiveTab" OnTabChanged="HandleTabChanged" />
                 </div>
-                <button class="nav-qbtn @(IsSelectedWeekCurrent ? "active" : "")" @onclick="GoToThisWeek">This week</button>
             </div>
 
             <ErrorBoundary @ref="_weeklyViewErrorBoundary">

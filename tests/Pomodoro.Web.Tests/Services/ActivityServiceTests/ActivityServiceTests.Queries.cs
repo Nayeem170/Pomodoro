@@ -365,10 +365,12 @@ public partial class ActivityServiceTests
         // Assert
         Assert.True(result.TryGetValue("Task A", out var taskATime));
         Assert.True(result.TryGetValue("Task B", out var taskBTime));
-        Assert.True(result.TryGetValue(Constants.Activity.BreaksLabel, out var breaks));
-        Assert.Equal(50, taskATime);
+        Assert.True(result.TryGetValue("Short Breaks", out var shortBreaks));
+        Assert.True(result.TryGetValue("Long Breaks", out var longBreaks));
+        Assert.Equal(50, taskATime); // 25 + 25
         Assert.Equal(30, taskBTime);
-        Assert.Equal(20, breaks);
+        Assert.Equal(5, shortBreaks);
+        Assert.Equal(15, longBreaks);
     }
 
     [Fact]

@@ -10,7 +10,7 @@
     top: 0;
     z-index: 50;
     background: var(--color-background-secondary);
-    padding: 14px 0 0;
+    padding: 12px 0;
     margin-bottom: 4px;
 }
 
@@ -19,11 +19,18 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    position: relative;
+}
+
+.nav-top .nav-qbtn {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .nav-arrows {
     display: flex;
-    gap: 4px;
+    gap: 8px;
     align-items: center;
 }
 
@@ -35,7 +42,7 @@
     background: var(--color-background-primary);
     color: var(--color-text-secondary);
     cursor: pointer;
-    font-size: 13px;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -54,16 +61,15 @@
 }
 
 .nav-qbtn {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--color-text-secondary);
     border: 0.5px solid var(--color-border-secondary);
     background: transparent;
     border-radius: var(--border-radius-md);
-    padding: 4px 10px;
+    padding: 2px 6px;
     cursor: pointer;
     font-family: var(--font-sans);
     transition: background 0.15s, color 0.15s;
-    margin-top: 10px;
 }
 
 .nav-qbtn:hover {
@@ -82,10 +88,10 @@
 }
 
 .period-lbl {
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 500;
     color: var(--color-text-primary);
-    margin: 0 6px;
+    margin: 0 4px;
     min-width: 140px;
     text-align: center;
 }
