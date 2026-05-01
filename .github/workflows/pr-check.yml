@@ -37,34 +37,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          RESULT=$(gh api graphql -f query='
-            query($owner: String!, $number: Int!) {
-              user(login: $owner) {
-                projectV2(number: $number) {
-                  id
-                  items(first: 100) {
-                    nodes {
-                      id
-                      content {
-                        ... on PullRequest { number }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          ' -f owner="${{ github.repository_owner }}" -f number=4)
+          RESULT=$(echo '{"query":"query($owner: String!, $number: Int!) { user(login: $owner) { projectV2(number: $number) { id items(first: 100) { nodes { id content { ... on PullRequest { number } } } } } } }","variables":{"owner":"'"${{ github.repository_owner }}"'","number":4}}' | gh api graphql --input -)
 
           PROJECT_ID=$(echo "$RESULT" | jq -r '.data.user.projectV2.id')
           ITEM_IDS=$(echo "$RESULT" | jq -r --arg pr_num "${{ github.event.pull_request.number }}" '.data.user.projectV2.items.nodes[] | select(.content.number == ($pr_num | tonumber)) | .id')
 
           for ITEM_ID in $ITEM_IDS; do
-            gh api graphql -f query='
-              mutation($projectId: ID!, $itemId: ID!) {
-                deleteProjectV2Item(input: { projectId: $projectId, itemId: $itemId }) {
-                  deletedItemId
-                }
-              }
-            ' -f projectId="$PROJECT_ID" -f itemId="$ITEM_ID"
+            echo '{"query":"mutation($projectId: ID!, $itemId: ID!) { deleteProjectV2Item(input: { projectId: $projectId, itemId: $itemId }) { deletedItemId } }","variables":{"projectId":"'"$PROJECT_ID"'","itemId":"'"$ITEM_ID"'"}}' | gh api graphql --input -
             echo "Removed PR #${{ github.event.pull_request.number }} from project board"
           done
