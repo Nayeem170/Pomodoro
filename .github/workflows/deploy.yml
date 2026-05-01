@@ -3,13 +3,18 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy as preview'
+        required: true
+        default: 'develop'
 
 permissions:
   contents: read
   deployments: write
 
 concurrency:
-  group: deploy-production
+  group: deploy-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -17,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.branch || github.ref }}
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -41,9 +48,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: ${{ steps.deploy.outputs.deployment-url }}
+    environment: ${{ github.event_name == 'push' && 'production' || 'preview' }}
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -57,5 +62,5 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: pomodoro
-          branch: main
+          branch: ${{ github.event_name == 'push' && 'main' || inputs.branch }}
           directory: publish/wwwroot
