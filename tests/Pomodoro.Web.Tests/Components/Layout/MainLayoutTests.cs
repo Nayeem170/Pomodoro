@@ -150,19 +150,23 @@ namespace Pomodoro.Web.Tests.Layout
         [Fact]
         public void MainLayout_RendersCompleteHeaderStructure()
         {
+            // Arrange
             _mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(Array.Empty<NavLinkData>());
             _mockLayoutPresenter.Setup(x => x.GetCurrentYear()).Returns(2023);
 
+            // Act
             var component = RenderComponent<MainLayout>();
 
+            // Assert - Verify complete header structure is rendered (covers lines9,12,22)
             var headerTitle = component.Find(".header-title");
             Assert.NotNull(headerTitle);
 
             var headerNav = component.Find(".header-nav");
             Assert.NotNull(headerNav);
 
+            // Verify the header-title contains both icon and text spans
             var headerTitleSpans = headerTitle.QuerySelectorAll("span");
-            Assert.True(headerTitleSpans.Length >= 1);
+            Assert.True(headerTitleSpans.Length >= 2);
         }
 
         [Fact]
@@ -243,14 +247,21 @@ namespace Pomodoro.Web.Tests.Layout
         [Fact]
         public void MainLayout_RendersHeaderIconAndTitle()
         {
+            // Arrange
             _mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(Array.Empty<NavLinkData>());
             _mockLayoutPresenter.Setup(x => x.GetCurrentYear()).Returns(2023);
 
+            // Act
             var component = RenderComponent<MainLayout>();
 
+            // Assert - Verify header icon and title spans (covers lines9-12)
+            // Use actual icon from Constants (🍅)
+            var headerIcon = component.Find(".header-icon");
             var headerText = component.Find(".header-text");
 
+            Assert.NotNull(headerIcon);
             Assert.NotNull(headerText);
+            Assert.Contains("🍅", headerIcon.TextContent);
             Assert.Contains("Pomodoro", headerText.TextContent);
         }
 

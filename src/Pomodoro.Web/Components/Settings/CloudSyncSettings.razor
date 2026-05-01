@@ -102,14 +102,14 @@
 
             if (result.Success)
             {
-                string message;
-                if (result.Action == SyncAction.Pushed)
-                    message = Constants.SyncMessages.SyncPushSuccess;
-                else if (result.Action == SyncAction.Pulled)
-                    message = string.Format(Constants.SyncMessages.SyncPullSuccess,
-                        result.ActivitiesImported, result.TasksImported);
-                else
-                    message = Constants.SyncMessages.AlreadyUpToDate;
+                var message = result.Action switch
+                {
+                    SyncAction.Pushed => Constants.SyncMessages.SyncPushSuccess,
+                    SyncAction.Pulled => string.Format(Constants.SyncMessages.SyncPullSuccess,
+                        result.ActivitiesImported, result.TasksImported),
+                    SyncAction.UpToDate => Constants.SyncMessages.AlreadyUpToDate,
+                    _ => Constants.SyncMessages.SyncComplete
+                };
                 await ShowToast(message);
             }
             else if (result.ErrorMessage == Constants.SyncMessages.ReconnectRequired)
@@ -121,14 +121,14 @@
                     result = await CloudSyncService.SyncNowAsync();
                     if (result.Success)
                     {
-                        string message;
-                        if (result.Action == SyncAction.Pushed)
-                            message = Constants.SyncMessages.SyncPushSuccess;
-                        else if (result.Action == SyncAction.Pulled)
-                            message = string.Format(Constants.SyncMessages.SyncPullSuccess,
-                                result.ActivitiesImported, result.TasksImported);
-                        else
-                            message = Constants.SyncMessages.AlreadyUpToDate;
+                        var message = result.Action switch
+                        {
+                            SyncAction.Pushed => Constants.SyncMessages.SyncPushSuccess,
+                            SyncAction.Pulled => string.Format(Constants.SyncMessages.SyncPullSuccess,
+                                result.ActivitiesImported, result.TasksImported),
+                            SyncAction.UpToDate => Constants.SyncMessages.AlreadyUpToDate,
+                            _ => Constants.SyncMessages.SyncComplete
+                        };
                         await ShowToast(message);
                     }
                     else

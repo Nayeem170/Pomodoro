@@ -17,15 +17,20 @@
 {
     @foreach (var activity in allActivities)
     {
-        string iconBg;
-        if (activity.Type == SessionType.Pomodoro) iconBg = "#FAECE7";
-        else if (activity.Type == SessionType.ShortBreak) iconBg = "#E1F5EE";
-        else iconBg = "#E6F1FB";
-
-        string name;
-        if (activity.Type == SessionType.Pomodoro) name = "Pomodoro completed";
-        else if (activity.Type == SessionType.ShortBreak) name = "Short break";
-        else name = "Long break";
+        var iconBg = activity.Type switch
+        {
+            SessionType.Pomodoro => "#FAECE7",
+            SessionType.ShortBreak => "#E1F5EE",
+            SessionType.LongBreak => "#E6F1FB",
+            _ => "var(--color-background-secondary)"
+        };
+        var name = activity.Type switch
+        {
+            SessionType.Pomodoro => "Pomodoro completed",
+            SessionType.ShortBreak => "Short break",
+            SessionType.LongBreak => "Long break",
+            _ => "Session"
+        };
         var meta = string.IsNullOrEmpty(activity.TaskName)
             ? activity.CompletedAt.ToLocalTime().ToString("MMM d, h:mm tt")
             : $"{activity.TaskName} · {activity.CompletedAt.ToLocalTime().ToString("MMM d, h:mm tt")}";

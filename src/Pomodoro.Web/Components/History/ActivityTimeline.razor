@@ -14,20 +14,26 @@ else
         {
             var activity = Activities[i];
             var isLast = i == Activities.Count - 1;
-            string dotClass;
-            if (activity.Type == SessionType.ShortBreak) dotClass = "brk";
-            else if (activity.Type == SessionType.LongBreak) dotClass = "lng";
-            else dotClass = string.Empty;
-
-            string badgeClass;
-            if (activity.Type == SessionType.Pomodoro) badgeClass = "f";
-            else if (activity.Type == SessionType.ShortBreak) badgeClass = "s";
-            else badgeClass = "l";
-
-            string badgeText;
-            if (activity.Type == SessionType.Pomodoro) badgeText = "Pomodoro";
-            else if (activity.Type == SessionType.ShortBreak) badgeText = "Short break";
-            else badgeText = "Long break";
+            var dotClass = activity.Type switch
+            {
+                SessionType.ShortBreak => "brk",
+                SessionType.LongBreak => "lng",
+                _ => ""
+            };
+            var badgeClass = activity.Type switch
+            {
+                SessionType.Pomodoro => "f",
+                SessionType.ShortBreak => "s",
+                SessionType.LongBreak => "l",
+                _ => ""
+            };
+            var badgeText = activity.Type switch
+            {
+                SessionType.Pomodoro => "Pomodoro",
+                SessionType.ShortBreak => "Short break",
+                SessionType.LongBreak => "Long break",
+                _ => "Session"
+            };
 
             <div class="tl-row">
                 <div class="tl-left">
