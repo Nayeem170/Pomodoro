@@ -6,9 +6,6 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Services.ConsentServiceTests;
 
-/// <summary>
-/// Tests for ConsentService timer completion handling.
-/// </summary>
 [Trait("Category", "Service")]
 public partial class ConsentServiceTests
 {
@@ -16,9 +13,8 @@ public partial class ConsentServiceTests
         new(sessionType, null, null, 25, true, DateTime.UtcNow);
 
     [Fact]
-    public async Task HandleTimerCompletedAsync_WhenAutoStartBreaksEnabled_ShowsConsentModal()
+    public async Task HandleTimerCompletedAsync_WhenAutoStartSessionEnabled_ShowsConsentModal()
     {
-        // Arrange
         var timerServiceMock = new Mock<ITimerService>();
         var taskServiceMock = new Mock<ITaskService>();
         var notificationServiceMock = new Mock<INotificationService>();
@@ -28,8 +24,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true,
-                AutoStartBreaks = true,
+                AutoStartSession = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = false,
                 NotificationsEnabled = false
@@ -55,17 +50,14 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
 
-        // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
 
-        // Assert
         Assert.True(service.IsModalVisible);
     }
 
     [Fact]
-    public async Task HandleTimerCompletedAsync_WhenAutoStartBreaksDisabled_DoesNotShowConsentModal()
+    public async Task HandleTimerCompletedAsync_WhenAutoStartSessionDisabled_DoesNotShowConsentModal()
     {
-        // Arrange
         var timerServiceMock = new Mock<ITimerService>();
         var taskServiceMock = new Mock<ITaskService>();
         var notificationServiceMock = new Mock<INotificationService>();
@@ -75,9 +67,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = false,
-                AutoStartBreaks = false,
-                AutoStartDelaySeconds = 5,
+                AutoStartSession = false,
                 SoundEnabled = false,
                 NotificationsEnabled = false
             }
@@ -98,17 +88,14 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
 
-        // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
 
-        // Assert
         Assert.False(service.IsModalVisible);
     }
 
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenSoundEnabled_PlaysTimerCompleteSound()
     {
-        // Arrange
         var timerServiceMock = new Mock<ITimerService>();
         var taskServiceMock = new Mock<ITaskService>();
         var notificationServiceMock = new Mock<INotificationService>();
@@ -118,8 +105,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = false,
-                AutoStartBreaks = false,
+                AutoStartSession = false,
                 SoundEnabled = true,
                 NotificationsEnabled = false
             }
@@ -137,17 +123,14 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
 
-        // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
 
-        // Assert
         notificationServiceMock.Verify(x => x.PlayTimerCompleteSoundAsync(), Times.Once);
     }
 
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenSoundEnabled_PlaysBreakCompleteSound()
     {
-        // Arrange
         var timerServiceMock = new Mock<ITimerService>();
         var taskServiceMock = new Mock<ITaskService>();
         var notificationServiceMock = new Mock<INotificationService>();
@@ -157,8 +140,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = false,
-                AutoStartBreaks = false,
+                AutoStartSession = false,
                 SoundEnabled = true,
                 NotificationsEnabled = false
             }
@@ -176,17 +158,14 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
 
-        // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.ShortBreak));
 
-        // Assert
         notificationServiceMock.Verify(x => x.PlayBreakCompleteSoundAsync(), Times.Once);
     }
 
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenNotificationsEnabled_ShowsPomodoroNotification()
     {
-        // Arrange
         var timerServiceMock = new Mock<ITimerService>();
         var taskServiceMock = new Mock<ITaskService>();
         var notificationServiceMock = new Mock<INotificationService>();
@@ -196,8 +175,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = false,
-                AutoStartBreaks = false,
+                AutoStartSession = false,
                 SoundEnabled = false,
                 NotificationsEnabled = true
             }
@@ -215,10 +193,8 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
 
-        // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
 
-        // Assert
         notificationServiceMock.Verify(
             x => x.ShowNotificationAsync(
                 It.Is<string>(s => s.Contains("🍅")),
@@ -231,7 +207,6 @@ public partial class ConsentServiceTests
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenNotificationsEnabled_ShowsBreakNotification()
     {
-        // Arrange
         var timerServiceMock = new Mock<ITimerService>();
         var taskServiceMock = new Mock<ITaskService>();
         var notificationServiceMock = new Mock<INotificationService>();
@@ -241,8 +216,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = false,
-                AutoStartBreaks = false,
+                AutoStartSession = false,
                 SoundEnabled = false,
                 NotificationsEnabled = true
             }
@@ -260,10 +234,8 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
 
-        // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.ShortBreak));
 
-        // Assert
         notificationServiceMock.Verify(
             x => x.ShowNotificationAsync(
                 It.Is<string>(s => s.Contains("⏱️")),
@@ -276,7 +248,6 @@ public partial class ConsentServiceTests
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenSoundDisabled_DoesNotPlaySound()
     {
-        // Arrange
         var timerServiceMock = new Mock<ITimerService>();
         var taskServiceMock = new Mock<ITaskService>();
         var notificationServiceMock = new Mock<INotificationService>();
@@ -286,8 +257,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = false,
-                AutoStartBreaks = false,
+                AutoStartSession = false,
                 SoundEnabled = false,
                 NotificationsEnabled = false
             }
@@ -305,10 +275,8 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
 
-        // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
 
-        // Assert
         notificationServiceMock.Verify(x => x.PlayTimerCompleteSoundAsync(), Times.Never);
         notificationServiceMock.Verify(x => x.PlayBreakCompleteSoundAsync(), Times.Never);
     }
@@ -316,7 +284,6 @@ public partial class ConsentServiceTests
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenNotificationsDisabled_DoesNotShowNotification()
     {
-        // Arrange
         var timerServiceMock = new Mock<ITimerService>();
         var taskServiceMock = new Mock<ITaskService>();
         var notificationServiceMock = new Mock<INotificationService>();
@@ -326,8 +293,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = false,
-                AutoStartBreaks = false,
+                AutoStartSession = false,
                 SoundEnabled = false,
                 NotificationsEnabled = false
             }
@@ -345,10 +311,8 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
 
-        // Act
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
 
-        // Assert
         notificationServiceMock.Verify(
             x => x.ShowNotificationAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SessionType>(), It.IsAny<string?>()),
             Times.Never);
@@ -357,7 +321,6 @@ public partial class ConsentServiceTests
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenSettingsNull_DoesNotThrow()
     {
-        // Arrange
         var timerServiceMock = new Mock<ITimerService>();
         var taskServiceMock = new Mock<ITaskService>();
         var notificationServiceMock = new Mock<INotificationService>();
@@ -376,14 +339,12 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
 
-        // Act & Assert - Should not throw
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
     }
 
     [Fact]
     public async Task HandleTimerCompletedAsync_WhenNotificationServiceNull_DoesNotThrow()
     {
-        // Arrange
         var timerServiceMock = new Mock<ITimerService>();
         var taskServiceMock = new Mock<ITaskService>();
         var sessionOptionsServiceMock = new Mock<ISessionOptionsService>();
@@ -392,8 +353,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = false,
-                AutoStartBreaks = false,
+                AutoStartSession = false,
                 SoundEnabled = true,
                 NotificationsEnabled = true
             }
@@ -411,14 +371,12 @@ public partial class ConsentServiceTests
             sessionOptionsServiceMock.Object,
             loggerMock.Object);
 
-        // Act & Assert - Should not throw
         await service.HandleTimerCompletedAsync(CreateArgs(SessionType.Pomodoro));
     }
 
     [Fact]
     public void OnCountdownTick_FiresWhenCountdownDecrements()
     {
-        // Arrange
         var timerServiceMock = new Mock<ITimerService>();
         var taskServiceMock = new Mock<ITaskService>();
         var notificationServiceMock = new Mock<INotificationService>();
@@ -428,8 +386,7 @@ public partial class ConsentServiceTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true,
-                AutoStartBreaks = true,
+                AutoStartSession = true,
                 AutoStartDelaySeconds = 3,
                 SoundEnabled = false,
                 NotificationsEnabled = false
@@ -458,14 +415,10 @@ public partial class ConsentServiceTests
         var countdownTicks = new List<int>();
         service.OnCountdownTick += () => countdownTicks.Add(service.CountdownSeconds);
 
-        // Act
         service.ShowConsentModal(SessionType.Pomodoro);
 
-        // Wait for countdown to tick
         Thread.Sleep(1500);
 
-        // Assert - Countdown should have decreased
         Assert.Contains(countdownTicks, t => t < 3);
     }
 }
-

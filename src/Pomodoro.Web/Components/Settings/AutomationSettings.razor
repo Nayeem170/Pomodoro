@@ -2,15 +2,8 @@
     <div class="ss-hdr">Automation</div>
     
     <div class="sr">
-        <span class="sr-lbl">Auto-start pomodoros</span>
-        <div class="tog @(Settings.AutoStartPomodoros ? "on" : "")" @onclick="ToggleAutoStartPomodoros">
-            <div class="tog-k"></div>
-        </div>
-    </div>
-    
-    <div class="sr">
-        <span class="sr-lbl">Auto-start breaks</span>
-        <div class="tog @(Settings.AutoStartBreaks ? "on" : "")" @onclick="ToggleAutoStartBreaks">
+        <span class="sr-lbl">Auto-start session</span>
+        <div class="tog @(Settings.AutoStartSession ? "on" : "")" @onclick="ToggleAutoStartSession">
             <div class="tog-k"></div>
         </div>
     </div>
@@ -23,15 +16,9 @@
     [Parameter]
     public EventCallback OnChanged { get; set; }
 
-    private async Task ToggleAutoStartPomodoros()
+    private async Task ToggleAutoStartSession()
     {
-        Settings.AutoStartPomodoros = !Settings.AutoStartPomodoros;
-        await OnChanged.InvokeAsync();
-    }
-
-    private async Task ToggleAutoStartBreaks()
-    {
-        Settings.AutoStartBreaks = !Settings.AutoStartBreaks;
+        Settings.AutoStartSession = !Settings.AutoStartSession;
         await OnChanged.InvokeAsync();
     }
 }

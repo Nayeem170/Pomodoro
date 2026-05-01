@@ -166,18 +166,18 @@ public class AutomationSettingsTests : TestContext
     }
 
     [Fact]
-    public void Render_BindsAutoStartPomodorosAndBreaks()
+    public void Render_BindsAutoStartSession()
     {
-        var settings = new TimerSettings { AutoStartPomodoros = true, AutoStartBreaks = true };
+        var settings = new TimerSettings { AutoStartSession = true };
         var cut = RenderComponent<AutomationSettings>(p => p.Add(x => x.Settings, settings));
 
-        cut.FindAll(".tog.on").Should().HaveCount(2);
+        cut.FindAll(".tog.on").Should().HaveCount(1);
     }
 
     [Fact]
     public void ToggleAutoStart_InvokesOnChanged()
     {
-        var settings = new TimerSettings { AutoStartPomodoros = true, AutoStartBreaks = true };
+        var settings = new TimerSettings { AutoStartSession = true };
         var callbackInvoked = false;
         var cut = RenderComponent<AutomationSettings>(p => p
             .Add(x => x.Settings, settings)
@@ -186,16 +186,16 @@ public class AutomationSettingsTests : TestContext
         cut.Find(".tog").Click();
 
         callbackInvoked.Should().BeTrue();
-        settings.AutoStartPomodoros.Should().BeFalse();
+        settings.AutoStartSession.Should().BeFalse();
     }
 
     [Fact]
-    public void Render_ShowsAutoStartBreaksToggle()
+    public void Render_ShowsAutoStartSessionToggle()
     {
         var settings = new TimerSettings();
         var cut = RenderComponent<AutomationSettings>(p => p.Add(x => x.Settings, settings));
 
-        cut.FindAll(".tog").Should().HaveCount(2);
+        cut.FindAll(".tog").Should().HaveCount(1);
     }
 }
 

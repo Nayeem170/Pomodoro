@@ -26,8 +26,7 @@ public partial class SettingsRepositoryTests
             LongBreakMinutes = 20,
             SoundEnabled = false,
             NotificationsEnabled = true,
-            AutoStartPomodoros = false,
-            AutoStartBreaks = false,
+            AutoStartSession = false,
             AutoStartDelaySeconds = 20
         };
 

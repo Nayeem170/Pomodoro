@@ -96,7 +96,7 @@ test.describe('Consent Modal', () => {
     await pomodoroPage.goto('/settings');
     await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    const toggle = page.locator('.sr-lbl').filter({ hasText: 'Auto-start pomodoros' }).locator('..').locator('.tog');
+    const toggle = page.locator('.sr-lbl').filter({ hasText: 'Auto-start session' }).locator('..').locator('.tog');
     const isOn = await toggle.evaluate(el => el.classList.contains('on'));
     if (!isOn) {
       await toggle.click();
