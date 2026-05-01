@@ -62,13 +62,12 @@ test.describe('PiP Window Content and Communication', () => {
 
     expect(html).toContain('25:00');
     expect(html).toContain('FOCUSING');
-    expect(html).toContain('Test Task');
     expect(html).toContain('ring-area');
     expect(html).toContain('ttime');
     expect(html).toContain('tmode');
     expect(html).toContain('mode-tab');
-    expect(html).toContain('active-task');
-    expect(html).toContain('ctrl-row');
+    expect(html).not.toContain('active-task');
+    expect(html).not.toContain('ctrl-row');
   });
 
   test('should generate correct HTML for short break session', async ({ page }) => {
@@ -112,7 +111,7 @@ test.describe('PiP Window Content and Communication', () => {
     expect(html).toContain('15:00');
     expect(html).toContain('LONG BREAK');
     expect(html).toContain('long-break');
-    expect(html).toContain('Break Task');
+    expect(html).not.toContain('Break Task');
   });
 
   test('should generate correct ring progress for partially elapsed timer', async ({ page }) => {
@@ -193,10 +192,10 @@ test.describe('PiP Window Content and Communication', () => {
     expect(themes.unknown).toBe('pomodoro-theme');
   });
 
-  test('should show play icon when timer is paused and pause icon when running', async ({ page }) => {
+  test('should not contain interactive buttons in simplified PiP design', async ({ page }) => {
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const runningHtml = await page.evaluate(() => {
+    const html = await page.evaluate(() => {
       const pip = (window as any).pipTimer;
       return pip.generateTimerHTML({
         sessionType: 0,
@@ -209,54 +208,11 @@ test.describe('PiP Window Content and Communication', () => {
       });
     });
 
-    const pausedHtml = await page.evaluate(() => {
-      const pip = (window as any).pipTimer;
-      return pip.generateTimerHTML({
-        sessionType: 0,
-        remainingSeconds: 1500,
-        totalDurationSeconds: 1500,
-        isRunning: false,
-        isStarted: true,
-        showReset: true,
-        taskName: null
-      });
-    });
-
-    expect(runningHtml).toContain('\u23F8');
-    expect(pausedHtml).toContain('\u25B6');
-  });
-
-  test('should show reset button only when showReset is true', async ({ page }) => {
-    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
-
-    const withReset = await page.evaluate(() => {
-      const pip = (window as any).pipTimer;
-      return pip.generateTimerHTML({
-        sessionType: 0,
-        remainingSeconds: 1500,
-        totalDurationSeconds: 1500,
-        isRunning: false,
-        isStarted: true,
-        showReset: true,
-        taskName: null
-      });
-    });
-
-    const withoutReset = await page.evaluate(() => {
-      const pip = (window as any).pipTimer;
-      return pip.generateTimerHTML({
-        sessionType: 0,
-        remainingSeconds: 1500,
-        totalDurationSeconds: 1500,
-        isRunning: false,
-        isStarted: false,
-        showReset: false,
-        taskName: null
-      });
-    });
-
-    expect(withReset).toContain('pipResetTimer');
-    expect(withoutReset).not.toContain('pipResetTimer');
+    expect(html).not.toContain('pipToggleTimer');
+    expect(html).not.toContain('pipResetTimer');
+    expect(html).not.toContain('active-task');
+    expect(html).not.toContain('ctrl-row');
+    expect(html).not.toContain('card-footer');
   });
 
   test('should handle PiP toggle timer callback without error', async ({ page }) => {
@@ -313,16 +269,14 @@ test.describe('PiP Window Content and Communication', () => {
     expect(noError).toBe(true);
   });
 
-  test('should include keyboard shortcuts in PiP window script', async ({ page }) => {
+  test('should include session switch keyboard shortcuts in PiP window script', async ({ page }) => {
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     const hasKeyboardShortcuts = await page.evaluate(() => {
       const pip = (window as any).pipTimer;
       if (!pip.ensurePipScript) return false;
       const scriptSource = pip.ensurePipScript.toString();
-      return scriptSource.includes('pipToggleTimer') &&
-        scriptSource.includes('pipResetTimer') &&
-        scriptSource.includes('pipSwitchSession');
+      return scriptSource.includes('pipSwitchSession');
     });
     expect(hasKeyboardShortcuts).toBe(true);
   });
