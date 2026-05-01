@@ -36,7 +36,7 @@ public partial class ConsentServiceTests
             .ThrowsAsync(new InvalidOperationException("Audio error"));
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption> { new() { SessionType = SessionType.ShortBreak } });
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
@@ -80,7 +80,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption> { new() { SessionType = SessionType.ShortBreak } });
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
@@ -125,7 +125,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption> { new() { SessionType = SessionType.ShortBreak } });
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
@@ -175,7 +175,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption> { new() { SessionType = SessionType.ShortBreak } });
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
@@ -225,7 +225,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption> { new() { SessionType = SessionType.ShortBreak } });
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(It.IsAny<SessionType>()))
@@ -275,7 +275,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption> { new() { SessionType = SessionType.ShortBreak } });
         sessionOptionsServiceMock
             .Setup(x => x.GetDefaultOption(SessionType.Pomodoro))
@@ -352,7 +352,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption> { new() { SessionType = SessionType.ShortBreak } });
 
         var service = new ConsentService(
