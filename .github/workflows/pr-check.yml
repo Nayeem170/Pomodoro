@@ -10,7 +10,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-      repository-projects: write
     steps:
       - uses: actions/checkout@v4
 
@@ -34,8 +33,9 @@ jobs:
 
       - name: Remove PR from project board
         if: always()
+        continue-on-error: true
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PROJECT_PAT }}
         run: |
           PROJECT_ID="PVT_kwHOAJBk4M4BWD1D"
 
