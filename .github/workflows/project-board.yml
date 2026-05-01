@@ -22,21 +22,11 @@ jobs:
             echo "PR is NOT linked to an issue."
           fi
 
-      - name: Comment on PR if no issue linked
+      - name: Fail if no issue linked
         if: steps.check.outputs.linked == 'false'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr comment ${{ github.event.pull_request.number }} --body "⚠️ **This PR is not linked to an issue.**
-
-          Every PR must be part of an issue card on the project board.
-
-          Please update the PR body to include an issue reference:
-          - \`Closes #XX\`
-          - \`Fixes #XX\`
-          - \`Resolves #XX\`
-
-          If no issue exists yet, [create one](https://github.com/Nayeem170/Pomodoro/issues/new) first."
+          echo "::error::PR #${{ github.event.pull_request.number }} is not linked to an issue. Every PR must reference an issue using 'Closes #XX', 'Fixes #XX', or 'Resolves #XX' in the PR body."
+          exit 1
 
       - name: Remove PR from project board
         env:
