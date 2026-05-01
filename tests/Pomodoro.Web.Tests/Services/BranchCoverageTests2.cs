@@ -549,10 +549,7 @@ public partial class TimerServiceCloudSyncTests
 
         timerService.OnTimerTickJs();
 
-        for (var i = 0; i < 10; i++)
-        {
-            await Task.Delay(100);
-        }
+        await Task.Delay(200);
 
         mockCloudSync.Verify(c => c.ScheduleSyncAsync(), Times.Once);
     }

@@ -91,6 +91,16 @@
         }
     }
 
+    private static string GetSyncSuccessMessage(SyncResult result)
+    {
+        if (result.Action == SyncAction.Pushed)
+            return Constants.SyncMessages.SyncPushSuccess;
+        if (result.Action == SyncAction.Pulled)
+            return string.Format(Constants.SyncMessages.SyncPullSuccess,
+                result.ActivitiesImported, result.TasksImported);
+        return Constants.SyncMessages.AlreadyUpToDate;
+    }
+
     private async Task SyncNow()
     {
         _isSyncing = true;
@@ -102,15 +112,7 @@
 
             if (result.Success)
             {
-                string message;
-                if (result.Action == SyncAction.Pushed)
-                    message = Constants.SyncMessages.SyncPushSuccess;
-                else if (result.Action == SyncAction.Pulled)
-                    message = string.Format(Constants.SyncMessages.SyncPullSuccess,
-                        result.ActivitiesImported, result.TasksImported);
-                else
-                    message = Constants.SyncMessages.AlreadyUpToDate;
-                await ShowToast(message);
+                await ShowToast(GetSyncSuccessMessage(result));
             }
             else if (result.ErrorMessage == Constants.SyncMessages.ReconnectRequired)
             {
@@ -121,15 +123,7 @@
                     result = await CloudSyncService.SyncNowAsync();
                     if (result.Success)
                     {
-                        string message;
-                        if (result.Action == SyncAction.Pushed)
-                            message = Constants.SyncMessages.SyncPushSuccess;
-                        else if (result.Action == SyncAction.Pulled)
-                            message = string.Format(Constants.SyncMessages.SyncPullSuccess,
-                                result.ActivitiesImported, result.TasksImported);
-                        else
-                            message = Constants.SyncMessages.AlreadyUpToDate;
-                        await ShowToast(message);
+                        await ShowToast(GetSyncSuccessMessage(result));
                     }
                     else
                     {
