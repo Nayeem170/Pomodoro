@@ -162,7 +162,7 @@ namespace Pomodoro.Web.Tests.Layout
             Assert.NotNull(headerNav);
 
             var headerTitleSpans = headerTitle.QuerySelectorAll("span");
-            Assert.Equal(1, headerTitleSpans.Length);
+            Assert.Equal(2, headerTitleSpans.Length);
         }
 
         [Fact]
