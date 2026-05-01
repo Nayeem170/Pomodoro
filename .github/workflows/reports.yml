@@ -1,4 +1,4 @@
-name: Reports
+name: Generate Coverage & E2E Reports
 on:
   workflow_dispatch:
     inputs:
