@@ -547,9 +547,14 @@ public partial class TimerServiceCloudSyncTests
         appState.CurrentSession!.RemainingSeconds = 1;
         appState.CurrentSession!.EndAt = DateTime.UtcNow.AddSeconds(1);
 
+        var syncCalled = new TaskCompletionSource<bool>();
+        mockCloudSync.Setup(c => c.ScheduleSyncAsync())
+            .Callback(() => syncCalled.TrySetResult(true))
+            .Returns(Task.CompletedTask);
+
         timerService.OnTimerTickJs();
 
-        await Task.Delay(200);
+        await syncCalled.Task;
 
         mockCloudSync.Verify(c => c.ScheduleSyncAsync(), Times.Once);
     }

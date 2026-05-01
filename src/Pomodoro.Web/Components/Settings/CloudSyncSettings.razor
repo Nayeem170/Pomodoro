@@ -96,8 +96,9 @@
         if (result.Action == SyncAction.Pushed)
             return Constants.SyncMessages.SyncPushSuccess;
         if (result.Action == SyncAction.Pulled)
-            return string.Format(Constants.SyncMessages.SyncPullSuccess,
-                result.ActivitiesImported, result.TasksImported);
+            return Constants.SyncMessages.SyncPullSuccess
+                .Replace("{ActivityCount}", result.ActivitiesImported.ToString())
+                .Replace("{TaskCount}", result.TasksImported.ToString());
         return Constants.SyncMessages.AlreadyUpToDate;
     }
 
