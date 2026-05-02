@@ -25,7 +25,7 @@ public partial class ConsentServiceTests
         var appState = (AppState?)null;
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = false },
@@ -66,7 +66,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = false },
@@ -105,7 +105,7 @@ public partial class ConsentServiceTests
         var appState = (AppState?)null;
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = false },
@@ -149,7 +149,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = false },
@@ -198,7 +198,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = false },
@@ -256,7 +256,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = false },
@@ -303,7 +303,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = false },
@@ -350,7 +350,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = false },
@@ -397,7 +397,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = false },
@@ -449,7 +449,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = false },
@@ -506,7 +506,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = false },
@@ -559,7 +559,7 @@ public partial class ConsentServiceTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.ShortBreak, Label = "Short Break", Duration = "5 min", IsDefault = false },

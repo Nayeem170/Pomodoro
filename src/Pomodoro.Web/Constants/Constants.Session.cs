@@ -61,6 +61,7 @@ public static partial class Constants
         public const string LongBreak = "Long Break";
         public const string AnotherPomodoro = "Another Pomodoro";
         public const string StartPomodoro = "Start Pomodoro";
+        public const string ResumePomodoro = "Resume Pomodoro";
     }
 
     /// <summary>

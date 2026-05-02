@@ -454,7 +454,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            _ = cut.Instance.HandleConsentOptionSelect(SessionType.ShortBreak);
+            _ = cut.Instance.HandleConsentOptionSelect(new ConsentOption { SessionType = SessionType.ShortBreak });
 
             ConsentServiceMock.Verify(x => x.SelectOptionAsync(SessionType.ShortBreak), Times.Once);
         }
@@ -464,7 +464,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            _ = cut.Instance.HandleConsentOptionSelect(SessionType.LongBreak);
+            _ = cut.Instance.HandleConsentOptionSelect(new ConsentOption { SessionType = SessionType.LongBreak });
 
             ConsentServiceMock.Verify(x => x.SelectOptionAsync(SessionType.LongBreak), Times.Once);
         }
@@ -474,7 +474,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            _ = cut.Instance.HandleConsentOptionSelect(SessionType.Pomodoro);
+            _ = cut.Instance.HandleConsentOptionSelect(new ConsentOption { SessionType = SessionType.Pomodoro });
 
             ConsentServiceMock.Verify(x => x.SelectOptionAsync(SessionType.Pomodoro), Times.Once);
         }
@@ -486,7 +486,7 @@ namespace Pomodoro.Web.Tests.Pages
                 .ThrowsAsync(new InvalidOperationException("Invalid session type"));
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            _ = cut.Instance.HandleConsentOptionSelect(SessionType.ShortBreak);
+            _ = cut.Instance.HandleConsentOptionSelect(new ConsentOption { SessionType = SessionType.ShortBreak });
 
             var errorMessage = cut.Instance.ErrorMessage;
             errorMessage.Should().Contain("Invalid session type");
