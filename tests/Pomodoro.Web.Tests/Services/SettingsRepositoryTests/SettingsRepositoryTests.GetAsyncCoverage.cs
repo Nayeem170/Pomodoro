@@ -239,5 +239,121 @@ public partial class SettingsRepositoryTests
                 Assert.NotNull(result);
             }
         }
+
+        [Fact]
+        public async Task GetAsync_LegacyRecord_AutoStartSessionNull_AutoStartPomodorosTrue_Migrates()
+        {
+            var record = new TimerSettingsRecord
+            {
+                Id = Constants.Storage.DefaultSettingsId,
+                PomodoroMinutes = 25,
+                ShortBreakMinutes = 5,
+                LongBreakMinutes = 15,
+                SoundEnabled = true,
+                NotificationsEnabled = true,
+                AutoStartSession = null,
+                AutoStartPomodoros = true,
+                AutoStartBreaks = null
+            };
+
+            MockIndexedDb
+                .Setup(x => x.GetAsync<TimerSettingsRecord>(
+                    Constants.Storage.SettingsStore,
+                    Constants.Storage.DefaultSettingsId))
+                .ReturnsAsync(record);
+
+            var repository = CreateRepository();
+            var result = await repository.GetAsync();
+
+            Assert.NotNull(result);
+            Assert.True(result.AutoStartSession);
+        }
+
+        [Fact]
+        public async Task GetAsync_LegacyRecord_AutoStartSessionNull_AutoStartPomodorosFalse_AutoStartBreaksFalse_Migrates()
+        {
+            var record = new TimerSettingsRecord
+            {
+                Id = Constants.Storage.DefaultSettingsId,
+                PomodoroMinutes = 25,
+                ShortBreakMinutes = 5,
+                LongBreakMinutes = 15,
+                SoundEnabled = true,
+                NotificationsEnabled = true,
+                AutoStartSession = null,
+                AutoStartPomodoros = false,
+                AutoStartBreaks = false
+            };
+
+            MockIndexedDb
+                .Setup(x => x.GetAsync<TimerSettingsRecord>(
+                    Constants.Storage.SettingsStore,
+                    Constants.Storage.DefaultSettingsId))
+                .ReturnsAsync(record);
+
+            var repository = CreateRepository();
+            var result = await repository.GetAsync();
+
+            Assert.NotNull(result);
+            Assert.False(result.AutoStartSession);
+        }
+
+        [Fact]
+        public async Task GetAsync_LegacyRecord_AutoStartSessionNull_AutoStartPomodorosNull_AutoStartBreaksTrue_Migrates()
+        {
+            var record = new TimerSettingsRecord
+            {
+                Id = Constants.Storage.DefaultSettingsId,
+                PomodoroMinutes = 25,
+                ShortBreakMinutes = 5,
+                LongBreakMinutes = 15,
+                SoundEnabled = true,
+                NotificationsEnabled = true,
+                AutoStartSession = null,
+                AutoStartPomodoros = null,
+                AutoStartBreaks = true
+            };
+
+            MockIndexedDb
+                .Setup(x => x.GetAsync<TimerSettingsRecord>(
+                    Constants.Storage.SettingsStore,
+                    Constants.Storage.DefaultSettingsId))
+                .ReturnsAsync(record);
+
+            var repository = CreateRepository();
+            var result = await repository.GetAsync();
+
+            Assert.NotNull(result);
+            Assert.True(result.AutoStartSession);
+        }
+
+        [Fact]
+        public async Task GetAsync_LegacyRecord_AllAutoStartFieldsNull_DefaultsToTrue()
+        {
+            var record = new TimerSettingsRecord
+            {
+                Id = Constants.Storage.DefaultSettingsId,
+                PomodoroMinutes = 25,
+                ShortBreakMinutes = 5,
+                LongBreakMinutes = 15,
+                SoundEnabled = true,
+                NotificationsEnabled = true,
+                AutoStartSession = null,
+                AutoStartPomodoros = null,
+                AutoStartBreaks = null
+            };
+
+            MockIndexedDb
+                .Setup(x => x.GetAsync<TimerSettingsRecord>(
+                    Constants.Storage.SettingsStore,
+                    Constants.Storage.DefaultSettingsId))
+                .ReturnsAsync(record);
+
+            var repository = CreateRepository();
+            var result = await repository.GetAsync();
+
+            Assert.NotNull(result);
+            Assert.True(result.AutoStartSession);
+        }
     }
 }
