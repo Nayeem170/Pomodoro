@@ -630,9 +630,9 @@ public partial class WeeklyMiniChartTests : TestContext
     [Fact]
     public Task WeeklyMiniChart_OnParametersSetAsync_SameData_SkipsReRender()
     {
-        var jsRuntimeMock = new Mock<IJSRuntime>();
-        Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
-        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
+        var testJsRuntime = new TestJsRuntime();
+        Services.AddSingleton<IJSRuntime>(testJsRuntime);
+        Services.AddSingleton<IChartService>(new ChartService(testJsRuntime));
         Services.AddSingleton(new ChartDataFormatter());
 
         var weekStart = DateTime.Today;
@@ -644,17 +644,40 @@ public partial class WeeklyMiniChartTests : TestContext
             .Add(p => p.BreakDailyMinutes, breakData)
             .Add(p => p.WeekStartDate, weekStart));
 
-        var initialCallCount = jsRuntimeMock.Invocations.Count;
+        var initialCallCount = testJsRuntime.InvokeCount;
 
         cut.SetParametersAndRender(parameters => parameters
             .Add(p => p.DailyFocusMinutes, new Dictionary<DateTime, int> { { weekStart, 100 } })
             .Add(p => p.BreakDailyMinutes, new Dictionary<DateTime, int> { { weekStart, 20 } })
             .Add(p => p.WeekStartDate, weekStart));
 
-        Assert.Equal(initialCallCount, jsRuntimeMock.Invocations.Count);
+        Assert.Equal(initialCallCount, testJsRuntime.InvokeCount);
         return Task.CompletedTask;
     }
 
     #endregion
+}
+
+internal class TestJsRuntime : IJSRuntime
+{
+    public int InvokeCount { get; private set; }
+
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken = default)
+    {
+        InvokeCount++;
+        return default;
+    }
+
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+    {
+        InvokeCount++;
+        return default;
+    }
+
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+    {
+        InvokeCount++;
+        return default;
+    }
 }
 

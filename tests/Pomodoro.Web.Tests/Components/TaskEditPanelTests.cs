@@ -37,7 +37,8 @@ public class TaskEditPanelTests : TestContext
         var cut = RenderComponent<TaskEditPanel>(parameters =>
             parameters.Add(p => p.Task, task));
 
-        cut.Markup.Should().Contain("Daily");
+        var select = cut.Find("select.tep-select");
+        select.GetAttribute("value").Should().Be(RepeatType.Daily.ToString());
         cut.Markup.Should().Contain("Pause");
     }
 

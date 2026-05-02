@@ -41,7 +41,7 @@ public class HistoryCoverageTests : TestHelper
 
         var formattedProp = typeof(HistoryBase).GetProperty("FormattedSelectedDate", BindingFlags.Instance | BindingFlags.NonPublic);
         var todayProp = typeof(HistoryBase).GetProperty("IsSelectedDateToday", BindingFlags.Instance | BindingFlags.NonPublic);
-        formattedProp!.GetValue(cut.Instance).Should().Be("Jan 5");
+        formattedProp!.GetValue(cut.Instance).Should().Be(new DateTime(2023, 1, 5).ToString("MMM d"));
         todayProp!.GetValue(cut.Instance).Should().Be(false);
     }
 

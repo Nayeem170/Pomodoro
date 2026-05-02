@@ -589,7 +589,7 @@ public class TaskItemComponentTests : TestContext
 
         var badge = cut.Find(".task-badge");
         badge.GetAttribute("title").Should().Be("Daily");
-        badge.ClassList.Should().NotContain("paused");
+        badge.ClassList.Should().NotContain("repeat-paused");
     }
 
     [Fact]

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Models;
 
-[Trait("Category", "Model")]
+[Trait("Category", "Service")]
 public class TaskItemRepeatTests
 {
     [Fact]

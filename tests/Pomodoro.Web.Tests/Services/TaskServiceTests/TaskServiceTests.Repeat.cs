@@ -134,13 +134,14 @@ public partial class TaskServiceTests
     [Fact]
     public async Task CompleteTaskAsync_RecurringNextAfterEnd_DoesNotSetNextOccurrence()
     {
+        var today = DateTime.UtcNow.Date;
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: false);
         task.Repeat = new RepeatRule
         {
             Type = RepeatType.Daily,
-            EndDate = DateTime.UtcNow.Date,
-            LastCompletedDate = DateTime.UtcNow.Date
+            EndDate = today,
+            LastCompletedDate = today
         };
 
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
@@ -294,6 +295,7 @@ public partial class TaskServiceTests
     [Fact]
     public async Task CompleteTaskAsync_RecurringCustomZeroDays_UsesDefault()
     {
+        var today = DateTime.UtcNow.Date;
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: false);
         task.Repeat = new RepeatRule { Type = RepeatType.Custom, CustomDays = 0 };
@@ -308,12 +310,13 @@ public partial class TaskServiceTests
         await service.CompleteTaskAsync(taskId);
 
         var next = service.AllTasks[0].Repeat.NextOccurrence!.Value;
-        Assert.Equal(DateTime.UtcNow.Date.AddDays(Constants.Repeat.DefaultCustomDays), next.Date);
+        Assert.Equal(today.AddDays(Constants.Repeat.DefaultCustomDays), next.Date);
     }
 
     [Fact]
     public async Task CompleteTaskAsync_RecurringWeeklyEmptyWeekdays_UsesFallback()
     {
+        var today = DateTime.UtcNow.Date;
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: false);
         task.Repeat = new RepeatRule { Type = RepeatType.Weekly, Weekdays = [] };
@@ -328,6 +331,6 @@ public partial class TaskServiceTests
         await service.CompleteTaskAsync(taskId);
 
         var next = service.AllTasks[0].Repeat.NextOccurrence!.Value;
-        Assert.Equal(DateTime.UtcNow.Date.AddDays(7), next.Date);
+        Assert.Equal(today.AddDays(7), next.Date);
     }
 }

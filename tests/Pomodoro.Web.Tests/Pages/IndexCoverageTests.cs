@@ -1,5 +1,7 @@
 using Bunit;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Moq;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Pages;
@@ -30,7 +32,6 @@ public class IndexCoverageTests : TestHelper
         ActivityServiceMock.Setup(x => x.InitializeAsync()).Returns(Task.CompletedTask);
         TodayStatsServiceMock.Setup(x => x.GetTodayStats()).Returns((120, 4, 2));
         KeyboardShortcutServiceMock.Setup(x => x.RegisterShortcut(It.IsAny<string>(), It.IsAny<Action>(), It.IsAny<string>()));
-        JSRuntimeMock.Setup(x => x.InvokeAsync<string?>(It.IsAny<string>(), It.IsAny<object[]>())).ReturnsAsync((string?)null);
     }
 
     [Fact]
@@ -117,8 +118,7 @@ public class IndexCoverageTests : TestHelper
     [Fact]
     public async Task CheckPendingNotificationActionAsync_Exception_LogsError()
     {
-        JSRuntimeMock.Setup(x => x.InvokeAsync<string>(It.IsAny<string>(), It.IsAny<object[]>()))
-            .ThrowsAsync(new Exception("js error"));
+        Services.AddSingleton<IJSRuntime>(new ThrowingTestIndexJsRuntime());
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         await cut.Instance.CheckPendingNotificationActionAsync();
@@ -368,4 +368,18 @@ public class IndexCoverageTests : TestHelper
 
         cut.Instance.ErrorMessage.Should().Contain("uncomplete error");
     }
+}
+
+file sealed class TestIndexJsRuntime : IJSRuntime
+{
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken = default) => default;
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => default;
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => default;
+}
+
+file sealed class ThrowingTestIndexJsRuntime : IJSRuntime
+{
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken = default) => throw new Exception("js error");
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => throw new Exception("js error");
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => throw new Exception("js error");
 }
