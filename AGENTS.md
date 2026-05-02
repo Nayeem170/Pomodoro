@@ -48,6 +48,28 @@ src/Pomodoro.Web/
 - `main` — production, `develop` — integration
 - Feature branches: `feature/description` or `fix/description`
 - PRs target `develop`, merge to `main` after
+- Every PR must reference an issue via `Closes #XX` / `Fixes #XX` / `Resolves #XX`
+
+### Development Cycle
+When the user says "next item", follow this cycle:
+1. Pick the next item from the board: **In Progress** first, then **Todo**
+2. Set its status to **In Progress** on the board
+3. Create a feature branch from `develop`: `feature/description` or `fix/description`
+4. Implement the changes
+5. Run `dotnet format Pomodoro.sln --verify-no-changes` and `dotnet test`
+6. Commit and push to the feature branch
+7. Create PR targeting `develop` with `Closes #XX` in the body
+8. Merge all open PRs that have passing CI + CodeRabbit review (`gh pr merge <number> --merge --admin`)
+9. Set merged issue statuses to **Review** on the board
+10. Repeat from step 1 until no In Progress or Todo items remain
+
+### Project Board Rules
+- **In Progress** — set when starting work on an issue
+- **Review** — set after PR is merged
+- **Done** — manual only, set by user when they verify the change
+- Only issues (cards) on the board — PRs are auto-removed by `pr-check.yml`
+- Board node ID: `PVT_kwHOAJBk4M4BWD1D`, Status field ID: `PVTSSF_lAHOAJBk4M4BWD1DzhRbEOY`
+- Status options: Todo (`0cdfd9a0`), In Progress (`ae38fc2d`), Review (`10a3102c`), Done (`a881df4c`)
 
 ### DI Registration
 All services registered in `Program.cs`. When adding a new service:
@@ -76,10 +98,11 @@ npx playwright test tests/e2e/pages/
 `timer-flow`, `timer-ring`, `long-break`, `tasks`, `settings`, `history`, `consent-modal`, `consent-auto-continue`, `today-summary`, `pip`, `cloud`, `persistence`, `sound`, `mobile`, `about`, `navigation`
 
 ### Workflow Files
-- `ci.yml` — PR pipeline (build → unit-test ∥ e2e → e2e-gate)
-- `e2e.yml` — Reusable E2E workflow with 16-shard matrix
-- `deploy.yml` — build → deploy to Cloudflare Pages (push to main)
-- `reports.yml` — Manual trigger, generates coverage/E2E reports as GitHub Pages
+- `ci.yml` — Build, Test & Coverage (PR pipeline: build → unit-test ∥ e2e → e2e-gate)
+- `e2e.yml` — E2E Tests (reusable workflow with 16-shard matrix)
+- `deploy.yml` — Deploy to Cloudflare Pages (auto on main push, manual preview for any branch)
+- `pr-check.yml` — PR Rules (enforce issue linkage, auto-remove PRs from board)
+- `reports.yml` — Generate Coverage & E2E Reports (manual trigger)
 
 ## Coverage
 

@@ -33,4 +33,5 @@ public class ConsentOption
     public string Label { get; set; } = string.Empty;
     public string Duration { get; set; } = string.Empty;
     public bool IsDefault { get; set; }
+    public bool IsResume { get; set; }
 }
