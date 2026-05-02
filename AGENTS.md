@@ -66,8 +66,13 @@ When the user says "next item", follow this cycle:
    e. Commit and push to the feature branch
    f. Create PR targeting `develop` with `Closes #XX` in the body
    g. Repeat from step 1
-4. After all items are implemented and PRs are merged, set all merged issue statuses to **Review**
-5. **Never set an issue to Review unless its PR is merged** — if a PR is still open/unmerged, the issue must remain In Progress
+4. After all items are implemented and PRs are merged, resolve all CodeRabbit review comments before setting issues to **Review**:
+   a. Read CodeRabbit inline comments from each merged PR (`gh api repos/Nayeem170/Pomodoro/pulls/<number>/reviews`)
+   b. Fix all actionable feedback on a single branch targeting `develop`
+   c. Commit, push, and create a PR
+   d. Merge the feedback PR
+   e. Then set all merged issue statuses to **Review**
+5. **Never set an issue to Review unless its PR is merged AND all CodeRabbit feedback is resolved** — if a PR is still open/unmerged, or CodeRabbit feedback is unresolved, the issue must remain In Progress
 
 ### Project Board Rules
 - **In Progress** — set when starting work on an issue
