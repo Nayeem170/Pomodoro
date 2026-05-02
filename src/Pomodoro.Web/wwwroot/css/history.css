@@ -334,11 +334,79 @@
 .chart-row {
     display: grid;
     grid-template-columns: 180px 1fr;
-    gap: 10px;
+    gap: 16px;
     align-items: center;
-    justify-items: center;
     max-width: 75%;
     margin: 0 auto;
+}
+
+.donut-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 180px;
+    aspect-ratio: 1;
+    margin: 0 auto;
+}
+
+.donut-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.donut-val {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    letter-spacing: -0.02em;
+}
+
+.donut-lbl {
+    font-size: 10px;
+    color: var(--color-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 1px;
+}
+
+.legend {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.leg-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.leg-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.leg-txt {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.leg-pct {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    flex-shrink: 0;
+    min-width: 36px;
+    text-align: right;
 }
 
 .donut-wrap {
