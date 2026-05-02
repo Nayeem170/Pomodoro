@@ -30,6 +30,15 @@ public class TaskItemBase : ComponentBase
     [Parameter]
     public EventCallback<Guid> OnUncomplete { get; set; }
 
+    [Parameter]
+    public EventCallback<TaskItem> OnEdit { get; set; }
+
+    #endregion
+
+    #region State
+
+    protected bool IsEditing { get; set; }
+
     #endregion
 
     #region Business Logic Methods
@@ -65,6 +74,27 @@ public class TaskItemBase : ComponentBase
         if (Item.IsCompleted) return Constants.Tasks.CompletedEmoji;
         if (Item.PomodoroCount > 0) return Constants.Tasks.HasPomodorosEmoji;
         return Constants.Tasks.DefaultEmoji;
+    }
+
+    protected string GetRepeatBadgeClass()
+    {
+        if (Item.Repeat?.IsPaused == true) return $"{Constants.Repeat.RepeatCssClass} {Constants.Repeat.PausedCssClass}";
+        return Constants.Repeat.RepeatCssClass;
+    }
+
+    protected string GetRepeatTooltip()
+    {
+        if (Item.Repeat == null) return string.Empty;
+        var typeLabel = Item.Repeat.Type switch
+        {
+            RepeatType.Daily => "Daily",
+            RepeatType.Weekly => "Weekly",
+            RepeatType.Custom => $"Every {Item.Repeat.CustomDays} days",
+            RepeatType.Monthly => $"Monthly (day {Item.Repeat.MonthlyDay})",
+            _ => "Repeats"
+        };
+        if (Item.Repeat.IsPaused) return $"{typeLabel} (paused)";
+        return typeLabel;
     }
 
     /// <summary>
@@ -108,6 +138,22 @@ public class TaskItemBase : ComponentBase
         {
             await HandleSelect();
         }
+    }
+
+    protected void HandleEdit()
+    {
+        IsEditing = true;
+    }
+
+    protected async Task HandleEditSave(TaskItem updatedTask)
+    {
+        await OnEdit.InvokeAsync(updatedTask);
+        IsEditing = false;
+    }
+
+    protected void HandleEditCancel()
+    {
+        IsEditing = false;
     }
 
     #endregion

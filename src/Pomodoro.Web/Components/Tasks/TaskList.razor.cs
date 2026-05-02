@@ -33,6 +33,9 @@ public class TaskListBase : ComponentBase
     [Parameter]
     public EventCallback<Guid> OnTaskUncomplete { get; set; }
 
+    [Parameter]
+    public EventCallback<TaskItem> OnTaskEdit { get; set; }
+
     #endregion
 
     #region State
@@ -137,6 +140,11 @@ public class TaskListBase : ComponentBase
     protected async Task HandleTaskUncomplete(Guid taskId)
     {
         await OnTaskUncomplete.InvokeAsync(taskId);
+    }
+
+    protected async Task HandleTaskEdit(TaskItem task)
+    {
+        await OnTaskEdit.InvokeAsync(task);
     }
 
     #endregion

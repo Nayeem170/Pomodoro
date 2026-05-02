@@ -1,10 +1,34 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Pomodoro.Web.Models;
 
-/// <summary>
-/// Represents a task that can be worked on during pomodoro sessions
-/// </summary>
+public class RepeatRule
+{
+    public RepeatType Type { get; set; } = RepeatType.None;
+    public int CustomDays { get; set; }
+    public DayOfWeek[] Weekdays { get; set; } = [];
+    public int? MonthlyDay { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public bool IsPaused { get; set; }
+    public DateTime? LastCompletedDate { get; set; }
+
+    [JsonIgnore]
+    public DateTime? NextOccurrence { get; set; }
+
+    public bool IsActive => Type != RepeatType.None && !IsPaused;
+}
+
+public enum RepeatType
+{
+    None,
+    Daily,
+    Weekly,
+    Custom,
+    Monthly
+}
+
 public class TaskItem
 {
     public Guid Id { get; set; } = Guid.NewGuid();
@@ -18,13 +42,16 @@ public class TaskItem
     public int PomodoroCount { get; set; }
     public DateTime? LastWorkedOn { get; set; }
 
-    /// <summary>
-    /// Soft delete flag - when true, task is hidden from active lists but preserved for history
-    /// </summary>
     public bool IsDeleted { get; set; }
-
-    /// <summary>
-    /// Timestamp when the task was soft-deleted
-    /// </summary>
     public DateTime? DeletedAt { get; set; }
+
+    public RepeatRule? Repeat { get; set; }
+
+    public DateTime? ScheduledDate { get; set; }
+
+    public bool IsScheduled => ScheduledDate.HasValue;
+
+    public bool IsRecurring => Repeat is { Type: not RepeatType.None };
+
+    public bool IsVisible => !IsDeleted && (!IsScheduled || ScheduledDate <= DateTime.UtcNow.Date);
 }

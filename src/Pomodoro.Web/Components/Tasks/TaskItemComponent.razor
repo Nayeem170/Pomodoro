@@ -13,6 +13,14 @@
         <button class="task-checkbox" @onclick="HandleComplete" @onclick:stopPropagation="true" aria-label="Complete"></button>
     }
     <span class="task-text @(Item.IsCompleted ? "completed" : "")">@Item.Name</span>
+    @if (Item.IsRecurring)
+    {
+        <span class="task-badge @GetRepeatBadgeClass()" title="@GetRepeatTooltip()">@Constants.Repeat.RepeatIcon</span>
+    }
+    @if (Item.ScheduledDate.HasValue)
+    {
+        <span class="task-badge @Constants.Repeat.ScheduleCssClass" title="Scheduled for @Item.ScheduledDate.Value:MMM d">@Constants.Repeat.ScheduleIcon</span>
+    }
     <div class="task-actions">
         @if (Item.IsCompleted)
         {
@@ -20,9 +28,16 @@
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 2l6 4-6 4V2z" fill="currentColor" transform="rotate(180 6 6)"/></svg>
             </button>
         }
+        <button class="task-action-btn" @onclick="HandleEdit" @onclick:stopPropagation="true" title="Edit" aria-label="Edit task">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8.5 1.5l2 2L4 10H2V8l6.5-6.5z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
         <button class="task-action-btn delete" @onclick="HandleDelete" @onclick:stopPropagation="true" title="Delete" aria-label="Delete">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         </button>
     </div>
     <span class="task-pomo-count">@FormatTime(Item.TotalFocusMinutes)</span>
 </div>
+@if (IsEditing)
+{
+    <TaskEditPanel Task="Item" OnSave="HandleEditSave" OnCancel="HandleEditCancel" />
+}

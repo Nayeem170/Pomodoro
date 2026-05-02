@@ -32,25 +32,23 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
     public async Task InitializeAsync()
     {
-        // Load tasks from repository
         var tasks = await _taskRepository.GetAllIncludingDeletedAsync();
         if (tasks != null && tasks.Count > 0)
         {
             _appState.Tasks = tasks;
         }
 
-        // Load current task from app state store
         var appState = await _indexedDb.GetAsync<AppStateRecord>(Constants.Storage.AppStateStore, Constants.Storage.DefaultSettingsId);
         if (appState?.CurrentTaskId.HasValue == true)
         {
             var taskId = appState.CurrentTaskId.Value;
-            // Use thread-safe access to check if task exists
             if (_appState.Tasks.Any(t => t.Id == taskId))
             {
                 _appState.CurrentTaskId = taskId;
             }
         }
 
+        ActivateDueRecurringAndScheduledTasks();
         NotifyStateChanged();
     }
 
@@ -120,7 +118,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         var existingTask = _appState.FindTaskById(task.Id);
         if (existingTask == null) return;
 
-        // Persist first to ensure cache and storage stay consistent
         var taskToSave = new TaskItem
         {
             Id = existingTask.Id,
@@ -131,7 +128,9 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             PomodoroCount = existingTask.PomodoroCount,
             LastWorkedOn = existingTask.LastWorkedOn,
             IsDeleted = existingTask.IsDeleted,
-            DeletedAt = existingTask.DeletedAt
+            DeletedAt = existingTask.DeletedAt,
+            Repeat = existingTask.Repeat,
+            ScheduledDate = existingTask.ScheduledDate
         };
         await SaveTaskAsync(taskToSave);
 
@@ -146,7 +145,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         var existingTask = _appState.FindTaskById(taskId);
         if (existingTask == null) return;
 
-        // Persist first to ensure cache and storage stay consistent
         var taskToSave = new TaskItem
         {
             Id = existingTask.Id,
@@ -157,14 +155,15 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             PomodoroCount = existingTask.PomodoroCount,
             LastWorkedOn = existingTask.LastWorkedOn,
             IsDeleted = true,
-            DeletedAt = DateTime.UtcNow
+            DeletedAt = DateTime.UtcNow,
+            Repeat = existingTask.Repeat,
+            ScheduledDate = existingTask.ScheduledDate
         };
         await SaveTaskAsync(taskToSave);
 
         // Update in-memory state only after successful persistence
         _appState.UpdateTask(taskId, t =>
         {
-            // Soft delete - mark as deleted but keep for history
             t.IsDeleted = true;
             t.DeletedAt = DateTime.UtcNow;
         });
@@ -184,7 +183,30 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         var existingTask = _appState.FindTaskById(taskId);
         if (existingTask == null) return;
 
-        // Persist first to ensure cache and storage stay consistent
+        var isRecurring = existingTask.IsRecurring && existingTask.Repeat is { IsActive: true };
+
+        if (isRecurring)
+        {
+            existingTask.Repeat!.LastCompletedDate = DateTime.UtcNow;
+            var nextOccurrence = ComputeNextOccurrence(existingTask.Repeat!);
+            existingTask.Repeat.NextOccurrence = nextOccurrence;
+
+            if (nextOccurrence.HasValue)
+            {
+                existingTask.IsCompleted = true;
+                await SaveTaskAsync(existingTask);
+                _appState.UpdateTask(taskId, t =>
+                {
+                    t.IsCompleted = true;
+                    t.Repeat!.LastCompletedDate = DateTime.UtcNow;
+                    t.Repeat.NextOccurrence = nextOccurrence;
+                });
+                NotifyStateChanged();
+                MarkDirty();
+                return;
+            }
+        }
+
         var taskToSave = new TaskItem
         {
             Id = existingTask.Id,
@@ -195,11 +217,12 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             PomodoroCount = existingTask.PomodoroCount,
             LastWorkedOn = existingTask.LastWorkedOn,
             IsDeleted = existingTask.IsDeleted,
-            DeletedAt = existingTask.DeletedAt
+            DeletedAt = existingTask.DeletedAt,
+            Repeat = existingTask.Repeat,
+            ScheduledDate = existingTask.ScheduledDate
         };
         await SaveTaskAsync(taskToSave);
 
-        // Update in-memory state only after successful persistence
         _appState.UpdateTask(taskId, t => t.IsCompleted = true);
         NotifyStateChanged();
         MarkDirty();
@@ -210,7 +233,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         var existingTask = _appState.FindTaskById(taskId);
         if (existingTask == null) return;
 
-        // Persist first to ensure cache and storage stay consistent
         var taskToSave = new TaskItem
         {
             Id = existingTask.Id,
@@ -221,7 +243,9 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             PomodoroCount = existingTask.PomodoroCount,
             LastWorkedOn = existingTask.LastWorkedOn,
             IsDeleted = existingTask.IsDeleted,
-            DeletedAt = existingTask.DeletedAt
+            DeletedAt = existingTask.DeletedAt,
+            Repeat = existingTask.Repeat,
+            ScheduledDate = existingTask.ScheduledDate
         };
         await SaveTaskAsync(taskToSave);
 
@@ -304,19 +328,84 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         await AddTimeToTaskAsync(args.TaskId.Value, args.DurationMinutes);
     }
 
-    /// <summary>
-    /// Sanitizes task name by trimming and HTML-encoding to prevent XSS attacks.
-    /// Blazor generally escapes content automatically, but this provides defense-in-depth.
-    /// </summary>
-    private static string SanitizeTaskName(string name)
+    private static DateTime? ComputeNextOccurrence(RepeatRule rule)
     {
-        if (string.IsNullOrEmpty(name)) return string.Empty;
+        if (rule.Type == RepeatType.None) return null;
+        if (rule.EndDate.HasValue && rule.EndDate.Value < DateTime.UtcNow.Date) return null;
 
-        // Trim whitespace
-        var trimmed = name.Trim();
+        var baseDate = rule.LastCompletedDate ?? DateTime.UtcNow.Date;
 
-        // HTML encode to prevent XSS (defense-in-depth, Blazor escapes automatically)
-        return HttpUtility.HtmlEncode(trimmed);
+        return rule.Type switch
+        {
+            RepeatType.Daily => baseDate.AddDays(1),
+            RepeatType.Weekly => ComputeNextWeekday(baseDate, rule.Weekdays),
+            RepeatType.Custom => baseDate.AddDays(rule.CustomDays > 0 ? rule.CustomDays : Constants.Repeat.DefaultCustomDays),
+            RepeatType.Monthly => ComputeNextMonthly(baseDate, rule.MonthlyDay),
+            _ => null
+        };
+    }
+
+    private static DateTime ComputeNextWeekday(DateTime baseDate, DayOfWeek[] weekdays)
+    {
+        if (weekdays.Length == 0) return baseDate.AddDays(7);
+
+        var sorted = weekdays.OrderBy(d => d).ToArray();
+        var current = baseDate.DayOfWeek;
+
+        for (var i = 0; i < 14; i++)
+        {
+            var candidate = baseDate.AddDays(i + 1);
+            if (sorted.Contains(candidate.DayOfWeek))
+                return candidate;
+        }
+
+        return baseDate.AddDays(7);
+    }
+
+    private static DateTime ComputeNextMonthly(DateTime baseDate, int? monthlyDay)
+    {
+        var day = monthlyDay ?? Constants.Repeat.DefaultMonthlyDay;
+        var nextMonth = baseDate.AddMonths(1);
+        var daysInMonth = DateTime.DaysInMonth(nextMonth.Year, nextMonth.Month);
+        var actualDay = Math.Min(day, daysInMonth);
+        return new DateTime(nextMonth.Year, nextMonth.Month, actualDay);
+    }
+
+    private void ActivateDueRecurringAndScheduledTasks()
+    {
+        var today = DateTime.UtcNow.Date;
+        var changed = false;
+
+        foreach (var task in _appState.Tasks)
+        {
+            if (task.IsDeleted) continue;
+
+            if (task.IsRecurring && task.IsCompleted && task.Repeat is { IsActive: true })
+            {
+                var nextOccurrence = ComputeNextOccurrence(task.Repeat);
+                task.Repeat.NextOccurrence = nextOccurrence;
+
+                if (nextOccurrence.HasValue && nextOccurrence.Value <= today)
+                {
+                    task.IsCompleted = false;
+                    task.TotalFocusMinutes = Constants.Tasks.InitialFocusMinutes;
+                    task.PomodoroCount = Constants.Tasks.InitialPomodoroCount;
+                    task.LastWorkedOn = null;
+                    changed = true;
+                }
+            }
+
+            if (task.IsScheduled && task.IsCompleted && task.ScheduledDate.HasValue && task.ScheduledDate.Value <= today)
+            {
+                task.IsCompleted = false;
+                changed = true;
+            }
+        }
+
+        if (changed)
+        {
+            _ = SaveAsync();
+        }
     }
 
     private void NotifyStateChanged()
@@ -330,6 +419,12 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     {
         _cloudSyncService ??= _serviceProvider.GetService<ICloudSyncService>();
         _cloudSyncService?.ScheduleSyncAsync();
+    }
+
+    private static string SanitizeTaskName(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return string.Empty;
+        return HttpUtility.HtmlEncode(name.Trim());
     }
 
     /// <summary>

@@ -85,5 +85,15 @@ public partial class IndexBase
         }, Constants.Messages.ErrorUncompletingTask);
     }
 
+    public async Task HandleTaskEdit(Pomodoro.Web.Models.TaskItem task)
+    {
+        await TryExecuteAsync(async () =>
+        {
+            await TaskService.UpdateTaskAsync(task);
+            UpdateState();
+            StateHasChanged();
+        }, Constants.Messages.ErrorUpdatingTask);
+    }
+
     #endregion
 }

@@ -40,7 +40,8 @@
                 OnSelect="HandleTaskSelect"
                 OnComplete="HandleTaskComplete"
                 OnDelete="HandleTaskDelete"
-                OnUncomplete="HandleTaskUncomplete" />
+                OnUncomplete="HandleTaskUncomplete"
+                OnEdit="HandleTaskEdit" />
         }
         
         @if (HasCompletedTasks)
@@ -55,7 +56,8 @@
                         OnSelect="HandleTaskSelect"
                         OnComplete="HandleTaskComplete"
                         OnDelete="HandleTaskDelete"
-                        OnUncomplete="HandleTaskUncomplete" />
+                        OnUncomplete="HandleTaskUncomplete"
+                        OnEdit="HandleTaskEdit" />
                 }
             </div>
         }
