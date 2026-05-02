@@ -150,7 +150,7 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
         var settings = _appState?.Settings;
         CountdownSeconds = settings?.AutoStartDelaySeconds ?? Constants.UI.DefaultConsentCountdownSeconds;
 
-        AvailableOptions = _sessionOptionsService.GetOptionsForSessionType(completedSessionType);
+        AvailableOptions = _sessionOptionsService.GetOptionsForSessionType(completedSessionType, _timerService?.InterruptedPomodoro);
         IsModalVisible = true;
 
         StartCountdown();
@@ -164,7 +164,6 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
 
     public async Task HandleTimeoutAsync()
     {
-        // Get the default option based on completed session type
         var defaultOption = _sessionOptionsService.GetDefaultOption(CompletedSessionType);
         await HideModalAndStartSessionAsync(defaultOption);
     }
@@ -180,7 +179,7 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
     {
         if (IsModalVisible)
         {
-            AvailableOptions = _sessionOptionsService.GetOptionsForSessionType(CompletedSessionType);
+            AvailableOptions = _sessionOptionsService.GetOptionsForSessionType(CompletedSessionType, _timerService?.InterruptedPomodoro);
             OnConsentRequired?.Invoke();
         }
     }

@@ -23,7 +23,7 @@ public class SessionOptionsBranchTests
             Settings = new TimerSettings { LongBreakInterval = 4 },
             TodayPomodoroCount = 4
         };
-        var service = new SessionOptionsService(appState);
+        var service = new SessionOptionsService(appState, Mock.Of<ITimerService>());
 
         var result = service.GetDefaultOption(SessionType.Pomodoro);
 
@@ -38,7 +38,7 @@ public class SessionOptionsBranchTests
             Settings = new TimerSettings { LongBreakInterval = 4 },
             TodayPomodoroCount = 3
         };
-        var service = new SessionOptionsService(appState);
+        var service = new SessionOptionsService(appState, Mock.Of<ITimerService>());
 
         var result = service.GetDefaultOption(SessionType.Pomodoro);
 
@@ -69,7 +69,7 @@ public class ConsentServiceBranchTests
         };
 
         sessionOptionsServiceMock
-            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+            .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
             .Returns(new List<ConsentOption>
             {
                 new() { SessionType = SessionType.Pomodoro, Label = "Start Pomodoro", Duration = "25 min", IsDefault = true }
