@@ -172,7 +172,7 @@ public class IndexCoverageTests : TestHelper
         TimerServiceMock.Setup(x => x.StartPomodoroAsync(taskId)).Returns(Task.CompletedTask);
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-        await cut.Instance.HandleTimerStart();
+        await cut.InvokeAsync(() => cut.Instance.HandleTimerStart());
 
         TimerServiceMock.Verify(x => x.StartPomodoroAsync(taskId), Times.Once);
     }
@@ -184,7 +184,7 @@ public class IndexCoverageTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
         cut.Instance.CurrentSessionType = SessionType.ShortBreak;
 
-        await cut.Instance.HandleTimerStart();
+        await cut.InvokeAsync(() => cut.Instance.HandleTimerStart());
 
         TimerServiceMock.Verify(x => x.StartShortBreakAsync(), Times.Once);
     }
@@ -196,7 +196,7 @@ public class IndexCoverageTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
         cut.Instance.CurrentSessionType = SessionType.LongBreak;
 
-        await cut.Instance.HandleTimerStart();
+        await cut.InvokeAsync(() => cut.Instance.HandleTimerStart());
 
         TimerServiceMock.Verify(x => x.StartLongBreakAsync(), Times.Once);
     }
@@ -208,7 +208,7 @@ public class IndexCoverageTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
         cut.Instance.CurrentSessionType = SessionType.ShortBreak;
 
-        await cut.Instance.HandleTimerStart();
+        await cut.InvokeAsync(() => cut.Instance.HandleTimerStart());
 
         cut.Instance.ErrorMessage.Should().Contain("start error");
     }
