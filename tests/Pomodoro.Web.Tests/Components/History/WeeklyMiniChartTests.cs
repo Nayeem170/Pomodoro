@@ -627,6 +627,57 @@ public partial class WeeklyMiniChartTests : TestContext
         return Task.CompletedTask;
     }
 
+    [Fact]
+    public Task WeeklyMiniChart_OnParametersSetAsync_SameData_SkipsReRender()
+    {
+        var testJsRuntime = new TestJsRuntime();
+        Services.AddSingleton<IJSRuntime>(testJsRuntime);
+        Services.AddSingleton<IChartService>(new ChartService(testJsRuntime));
+        Services.AddSingleton(new ChartDataFormatter());
+
+        var weekStart = DateTime.Today;
+        var focusData = new Dictionary<DateTime, int> { { weekStart, 100 } };
+        var breakData = new Dictionary<DateTime, int> { { weekStart, 20 } };
+
+        var cut = RenderComponent<WeeklyMiniChart>(parameters => parameters
+            .Add(p => p.DailyFocusMinutes, focusData)
+            .Add(p => p.BreakDailyMinutes, breakData)
+            .Add(p => p.WeekStartDate, weekStart));
+
+        var initialCallCount = testJsRuntime.InvokeCount;
+
+        cut.SetParametersAndRender(parameters => parameters
+            .Add(p => p.DailyFocusMinutes, new Dictionary<DateTime, int> { { weekStart, 100 } })
+            .Add(p => p.BreakDailyMinutes, new Dictionary<DateTime, int> { { weekStart, 20 } })
+            .Add(p => p.WeekStartDate, weekStart));
+
+        Assert.Equal(initialCallCount, testJsRuntime.InvokeCount);
+        return Task.CompletedTask;
+    }
+
     #endregion
+}
+
+internal class TestJsRuntime : IJSRuntime
+{
+    public int InvokeCount { get; private set; }
+
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken = default)
+    {
+        InvokeCount++;
+        return default;
+    }
+
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+    {
+        InvokeCount++;
+        return default;
+    }
+
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+    {
+        InvokeCount++;
+        return default;
+    }
 }
 
