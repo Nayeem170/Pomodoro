@@ -62,7 +62,7 @@ public partial class SettingsRepositoryTests
         int longBreakMinutes = 20,
         bool soundEnabled = true,
         bool notificationsEnabled = true,
-        bool autoStartSession = true,
+        bool? autoStartSession = true,
         int autoStartDelaySeconds = 15)
     {
         return new

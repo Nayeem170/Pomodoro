@@ -48,7 +48,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             }
         }
 
-        ActivateDueRecurringAndScheduledTasks();
+        await ActivateDueRecurringAndScheduledTasks();
         NotifyStateChanged();
     }
 
@@ -107,10 +107,9 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
     public async Task UpdateTaskAsync(TaskItem task)
     {
-        var sanitized = SanitizeTaskName(task.Name ?? string.Empty);
+        var name = (task.Name ?? string.Empty).Trim();
 
-        // Validate that the task name is not empty after sanitization and within length limit
-        if (string.IsNullOrEmpty(sanitized) || sanitized.Length > Constants.UI.MaxTaskNameLength)
+        if (string.IsNullOrEmpty(name) || name.Length > Constants.UI.MaxTaskNameLength)
         {
             return;
         }
@@ -121,7 +120,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         var taskToSave = new TaskItem
         {
             Id = existingTask.Id,
-            Name = sanitized,
+            Name = name,
             CreatedAt = existingTask.CreatedAt,
             IsCompleted = existingTask.IsCompleted,
             TotalFocusMinutes = existingTask.TotalFocusMinutes,
@@ -134,8 +133,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         };
         await SaveTaskAsync(taskToSave);
 
-        // Update in-memory state only after successful persistence
-        _appState.UpdateTask(task.Id, t => t.Name = sanitized);
+        _appState.UpdateTask(task.Id, t => t.Name = name);
         NotifyStateChanged();
         MarkDirty();
     }
@@ -335,14 +333,19 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
         var baseDate = rule.LastCompletedDate ?? DateTime.UtcNow.Date;
 
-        return rule.Type switch
+        var next = rule.Type switch
         {
             RepeatType.Daily => baseDate.AddDays(1),
             RepeatType.Weekly => ComputeNextWeekday(baseDate, rule.Weekdays),
             RepeatType.Custom => baseDate.AddDays(rule.CustomDays > 0 ? rule.CustomDays : Constants.Repeat.DefaultCustomDays),
             RepeatType.Monthly => ComputeNextMonthly(baseDate, rule.MonthlyDay),
-            _ => null
+            _ => (DateTime?)null
         };
+
+        if (next.HasValue && rule.EndDate.HasValue && next.Value > rule.EndDate.Value)
+            return null;
+
+        return next;
     }
 
     private static DateTime ComputeNextWeekday(DateTime baseDate, DayOfWeek[] weekdays)
@@ -371,7 +374,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         return new DateTime(nextMonth.Year, nextMonth.Month, actualDay);
     }
 
-    private void ActivateDueRecurringAndScheduledTasks()
+    private async Task ActivateDueRecurringAndScheduledTasks()
     {
         var today = DateTime.UtcNow.Date;
         var changed = false;
@@ -404,7 +407,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
         if (changed)
         {
-            _ = SaveAsync();
+            await SaveAsync();
         }
     }
 

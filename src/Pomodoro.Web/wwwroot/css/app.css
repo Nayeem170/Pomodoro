@@ -12,6 +12,7 @@
     --color-border-primary: rgba(45, 74, 111, 0.8);
     --color-surface-light: #1f3460;
     --border-radius-md: 8px;
+    --border-radius-sm: 6px;
     --border-radius-lg: 12px;
     --font-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     --font-mono: 'Courier New', monospace;
@@ -1248,6 +1249,21 @@ input, textarea, [contenteditable="true"] {
     }
     .btn-option {
         padding: 14px 12px;
+    }
+    .tep-row {
+        flex-wrap: wrap;
+    }
+    .tep-label {
+        min-width: 100%;
+        margin-bottom: 2px;
+    }
+    .tep-weekday-btn {
+        width: 36px;
+        height: 30px;
+        font-size: 12px;
+    }
+    .tep-input-sm {
+        width: 50px;
     }
 }
 

@@ -128,7 +128,7 @@ public partial class TimerServiceTests
 
             Assert.Null(exception);
             jsTimerLogger.Verify(
-                x => x.Log(LogLevel.Debug, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, _) => true), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                x => x.Log(LogLevel.Debug, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, _) => v != null), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -155,7 +155,7 @@ public partial class TimerServiceTests
             Assert.Null(exception);
             Assert.Equal(2, callCount);
             jsTimerLogger.Verify(
-                x => x.Log(LogLevel.Warning, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, _) => true), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                x => x.Log(LogLevel.Warning, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, _) => v != null), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -174,7 +174,7 @@ public partial class TimerServiceTests
 
             Assert.Null(exception);
             jsTimerLogger.Verify(
-                x => x.Log(LogLevel.Error, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, _) => true), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                x => x.Log(LogLevel.Error, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, _) => v != null), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -206,7 +206,7 @@ public partial class TimerServiceTests
 
             Assert.Null(exception);
             jsTimerLogger.Verify(
-                x => x.Log(LogLevel.Warning, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, _) => true), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                x => x.Log(LogLevel.Warning, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, _) => v != null), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }
 
@@ -323,7 +323,7 @@ public partial class TimerServiceTests
             await Task.Delay(3000);
 
             MockLogger.Verify(
-                x => x.Log(LogLevel.Error, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                x => x.Log(LogLevel.Error, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, _) => v != null), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.AtLeastOnce);
         }
 
@@ -474,7 +474,7 @@ public partial class TimerServiceTests
 
             await service.ResumeInterruptedPomodoroAsync();
 
-            Assert.False(AppState.CurrentSession?.IsRunning ?? true);
+            Assert.False(AppState.CurrentSession!.IsRunning);
         }
 
         [Fact]
@@ -490,8 +490,11 @@ public partial class TimerServiceTests
 
             await service.ResumeInterruptedPomodoroAsync();
 
-            Assert.True(AppState.CurrentSession?.IsRunning);
+            Assert.NotNull(AppState.CurrentSession);
+            Assert.True(AppState.CurrentSession!.IsRunning);
             Assert.Null(service.InterruptedPomodoro);
+
+            await service.DisposeAsync();
         }
 
         [Fact]

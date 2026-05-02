@@ -351,7 +351,7 @@ public class ImportServiceTests
     }
 
     [Fact]
-    public async Task ImportFromJsonAsync_DuplicateTaskWithEmptyId_LogsWarning()
+    public async Task ImportFromJsonAsync_DuplicateTaskWithEmptyId_SkipsImport()
     {
         var existingTask = new TaskItem
         {
@@ -377,7 +377,7 @@ public class ImportServiceTests
     }
 
     [Fact]
-    public async Task ImportFromJsonAsync_DuplicateTaskWithNonEmptyId_NotInLookup_LogsWarning()
+    public async Task ImportFromJsonAsync_DuplicateTaskWithNonEmptyId_ImportsAsNew()
     {
         var existingTask = new TaskItem
         {

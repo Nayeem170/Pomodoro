@@ -90,9 +90,6 @@ public class TimerSettings
     /// </summary>
     public bool NotificationsEnabled { get; set; } = true;
 
-    /// <summary>
-    /// Whether to automatically start the next session in the cycle without requiring consent
-    /// </summary>
     public bool AutoStartSession { get; set; } = true;
 
     private int _autoStartDelaySeconds = Constants.Timer.DefaultAutoStartDelaySeconds;
