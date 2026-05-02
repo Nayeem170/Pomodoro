@@ -153,7 +153,7 @@ public class ConsentModalTests : TestContext
             .Add(p => p.CompletedSessionType, SessionType.Pomodoro)
             .Add(p => p.CountdownSeconds, 30)
             .Add(p => p.Options, options)
-            .Add(p => p.OnOptionSelected, EventCallback.Factory.Create<SessionType>(this, st => selectedSessionType = st)));
+            .Add(p => p.OnOptionSelected, EventCallback.Factory.Create<ConsentOption>(this, option => selectedSessionType = option.SessionType)));
 
         // Act
         var button = cut.Find("button");
