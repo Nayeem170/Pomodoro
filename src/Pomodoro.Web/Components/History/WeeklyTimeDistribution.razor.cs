@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
@@ -108,7 +109,7 @@ public class WeeklyTimeDistributionBase : ComponentBase, IDisposable
             Percentage = TotalMinutes > 0 ? Math.Round((double)GetSegmentMinutes(s.Label, weekActivities) / TotalMinutes * 100) : 0
         }).ToList();
 
-        Segments = segments;
+        Segments = segments.OrderByDescending(s => s.Percentage).ToList();
     }
 
     private static int GetSegmentMinutes(string label, List<Models.ActivityRecord> activities)
