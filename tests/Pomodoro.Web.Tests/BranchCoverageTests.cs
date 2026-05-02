@@ -127,6 +127,15 @@ public class DataManagementSettingsBranchTests : TestHelper
 
         Assert.Contains("Import successful", cut.Markup);
     }
+
+    [Fact]
+    public void Render_WithIsImportingTrue_ShowsImportingText()
+    {
+        var cut = RenderComponent<Pomodoro.Web.Components.Settings.DataManagementSettings>(
+            parameters => parameters.Add(p => p.IsImporting, true));
+
+        Assert.Contains("Importing...", cut.Markup);
+    }
 }
 
 [Trait("Category", "Component")]

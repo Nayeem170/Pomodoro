@@ -135,6 +135,41 @@ public partial class TaskServiceTests
         Assert.True(eventFired);
     }
 
+    [Fact]
+    public async Task InitializeAsync_WithDueRecurringTask_ActivatesTask()
+    {
+        var task = CreateSampleTask();
+        task.IsCompleted = true;
+        task.Repeat = new RepeatRule { Type = RepeatType.Daily, IsPaused = false, LastCompletedDate = DateTime.UtcNow.Date.AddDays(-1) };
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        Assert.False(task.IsCompleted);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WithRecurringTaskNullLastCompleted_ComputesNextOccurrence()
+    {
+        var task = CreateSampleTask();
+        task.IsCompleted = true;
+        task.Repeat = new RepeatRule { Type = RepeatType.Daily, IsPaused = false, LastCompletedDate = null };
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        Assert.True(task.IsCompleted);
+        Assert.NotNull(task.Repeat.NextOccurrence);
+    }
+
     #endregion
 }
 

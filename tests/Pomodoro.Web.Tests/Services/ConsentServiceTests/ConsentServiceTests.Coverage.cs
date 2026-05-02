@@ -364,5 +364,43 @@ public partial class ConsentServiceTests
     }
 
     #endregion
+
+    #region RefreshOptions - modal not visible (line 182)
+
+    [Fact]
+    public void RefreshOptions_WhenModalNotVisible_DoesNotUpdateOptionsOrFireEvent()
+    {
+        var timerServiceMock = new Mock<ITimerService>();
+        var taskServiceMock = new Mock<ITaskService>();
+        var notificationServiceMock = new Mock<INotificationService>();
+        var sessionOptionsServiceMock = new Mock<ISessionOptionsService>();
+        var loggerMock = new Mock<ILogger<ConsentService>>();
+        var appState = new AppState
+        {
+            Settings = new TimerSettings
+            {
+                AutoStartSession = false,
+                SoundEnabled = false,
+                NotificationsEnabled = false
+            }
+        };
+
+        var service = new ConsentService(
+            timerServiceMock.Object, taskServiceMock.Object,
+            notificationServiceMock.Object, appState,
+            sessionOptionsServiceMock.Object, loggerMock.Object);
+
+        var eventFired = false;
+        service.OnConsentRequired += () => eventFired = true;
+
+        service.RefreshOptions();
+
+        Assert.False(eventFired);
+        sessionOptionsServiceMock.Verify(
+            x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()),
+            Times.Never);
+    }
+
+    #endregion
 }
 
