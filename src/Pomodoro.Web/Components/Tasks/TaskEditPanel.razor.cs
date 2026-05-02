@@ -55,13 +55,28 @@ public class TaskEditPanelBase : ComponentBase
         }
         else
         {
-            Task.Repeat ??= new RepeatRule();
-            Task.Repeat.Type = EditRepeatType;
-            Task.Repeat.Weekdays = EditWeekdays;
-            Task.Repeat.CustomDays = EditCustomDays;
-            Task.Repeat.MonthlyDay = EditMonthlyDay;
-            Task.Repeat.IsPaused = EditIsPaused;
-            Task.Repeat.NextOccurrence = null;
+            var repeat = Task.Repeat != null
+                ? new RepeatRule
+                {
+                    Type = EditRepeatType,
+                    Weekdays = EditWeekdays,
+                    CustomDays = EditCustomDays,
+                    MonthlyDay = EditMonthlyDay,
+                    IsPaused = EditIsPaused,
+                    StartDate = Task.Repeat.StartDate,
+                    EndDate = Task.Repeat.EndDate,
+                    LastCompletedDate = Task.Repeat.LastCompletedDate,
+                    NextOccurrence = null
+                }
+                : new RepeatRule
+                {
+                    Type = EditRepeatType,
+                    Weekdays = EditWeekdays,
+                    CustomDays = EditCustomDays,
+                    MonthlyDay = EditMonthlyDay,
+                    IsPaused = EditIsPaused
+                };
+            Task.Repeat = repeat;
         }
 
         Task.ScheduledDate = EditScheduledDate;

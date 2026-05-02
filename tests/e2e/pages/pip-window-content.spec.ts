@@ -201,10 +201,7 @@ test.describe('PiP Window Content and Communication', () => {
         sessionType: 0,
         remainingSeconds: 1500,
         totalDurationSeconds: 1500,
-        isRunning: true,
-        isStarted: true,
-        showReset: true,
-        taskName: null
+        isRunning: true
       });
     });
 
@@ -272,12 +269,14 @@ test.describe('PiP Window Content and Communication', () => {
   test('should include session switch keyboard shortcuts in PiP window script', async ({ page }) => {
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const hasKeyboardShortcuts = await page.evaluate(() => {
+    const scriptContent = await page.evaluate(() => {
       const pip = (window as any).pipTimer;
-      if (!pip.ensurePipScript) return false;
-      const scriptSource = pip.ensurePipScript.toString();
-      return scriptSource.includes('pipSwitchSession');
+      if (!pip.ensurePipScript) return null;
+      return pip.ensurePipScript.toString();
     });
-    expect(hasKeyboardShortcuts).toBe(true);
+    expect(scriptContent).not.toBeNull();
+    expect(scriptContent).toContain('pipSwitchSession');
+    expect(scriptContent).toContain('keydown');
+    expect(scriptContent).toContain('BroadcastChannel');
   });
 });

@@ -19,7 +19,7 @@
     }
     @if (Item.ScheduledDate.HasValue)
     {
-        <span class="task-badge @Constants.Repeat.ScheduleCssClass" title="Scheduled for @Item.ScheduledDate.Value:MMM d">@Constants.Repeat.ScheduleIcon</span>
+        <span class="task-badge @Constants.Repeat.ScheduleCssClass" title="Scheduled for @Item.ScheduledDate.Value.ToString("MMM d")">@Constants.Repeat.ScheduleIcon</span>
     }
     <div class="task-actions">
         @if (Item.IsCompleted)

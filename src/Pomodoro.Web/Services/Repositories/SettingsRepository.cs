@@ -37,7 +37,7 @@ public class SettingsRepository : ISettingsRepository
         }
         else if (record.AutoStartPomodoros.HasValue || record.AutoStartBreaks.HasValue)
         {
-            settings.AutoStartSession = (record.AutoStartPomodoros ?? true) || (record.AutoStartBreaks ?? true);
+            settings.AutoStartSession = (record.AutoStartPomodoros ?? true) && (record.AutoStartBreaks ?? true);
         }
 
         return settings;

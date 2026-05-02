@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import json, sys
 with open(sys.argv[1], encoding='utf-16') as f:
     data = json.load(f)

@@ -333,10 +333,10 @@
 /* Chart Row */
 .chart-row {
     display: grid;
-    grid-template-columns: 180px 1fr;
+    grid-template-columns: min(180px, 40%) 1fr;
     gap: 16px;
     align-items: center;
-    max-width: 75%;
+    max-width: min(75%, 600px);
     margin: 0 auto;
 }
 
@@ -407,6 +407,9 @@
     flex-shrink: 0;
     min-width: 36px;
     text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .donut-wrap {
@@ -467,6 +470,9 @@
     font-weight: 500;
     color: var(--color-text-primary);
     margin-left: auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .divider {
