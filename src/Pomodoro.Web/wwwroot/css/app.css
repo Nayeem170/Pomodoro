@@ -39,6 +39,7 @@ body {
     -moz-user-select: none;
     user-select: none;
     caret-color: transparent;
+    overflow-x: hidden;
 }
 
 input, textarea, [contenteditable="true"] {
@@ -88,13 +89,13 @@ input, textarea, [contenteditable="true"] {
 }
 
 .header-text {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     color: var(--color-text-primary);
 }
 
 .header-icon {
-    font-size: 14px;
+    font-size: 16px;
 }
 
 /* Header Navigation - Desktop */
@@ -109,8 +110,8 @@ input, textarea, [contenteditable="true"] {
     align-items: center;
     justify-content: center;
     gap: 4px;
-    padding: 5px 9px;
-    font-size: 12px;
+    padding: 5px 8px;
+    font-size: 16px;
     font-weight: 400;
     color: var(--color-text-secondary);
     text-decoration: none;
@@ -1042,14 +1043,58 @@ input, textarea, [contenteditable="true"] {
     .mode-tabs {
         margin: 8px 8px 7px;
     }
+    .mode-tabs button {
+        padding: 8px 0;
+        font-size: 14px;
+    }
     .timer-card {
         margin: 0 8px 8px;
+    }
+    .ring-area {
+        width: 150px;
+        height: 150px;
+    }
+    .timer-time {
+        font-size: 36px;
+    }
+    .timer-mode-label {
+        font-size: 13px;
+    }
+    .ibtn.lg {
+        width: 52px;
+        height: 52px;
     }
     .task-card {
         margin: 0 8px 8px;
     }
     .pip-btn {
         display: none;
+    }
+    .step-btn {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+    }
+    .tog {
+        width: 44px;
+        height: 24px;
+        border-radius: 12px;
+    }
+    .tog-k {
+        width: 18px;
+        height: 18px;
+        top: 2px;
+        left: 2px;
+    }
+    .tog.on .tog-k {
+        left: 22px;
+    }
+    .consent-modal {
+        max-width: 100%;
+        margin: 0 8px;
+    }
+    .btn-option {
+        padding: 14px 12px;
     }
 }
 
