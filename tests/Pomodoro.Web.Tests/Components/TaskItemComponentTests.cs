@@ -591,5 +591,44 @@ public class TaskItemComponentTests : TestContext
         badge.GetAttribute("title").Should().Be("Daily");
         badge.ClassList.Should().NotContain("paused");
     }
+
+    [Fact]
+    public void TaskItemComponent_WithNullRepeat_DoesNotShowBadge()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test Task",
+            TotalFocusMinutes = 25,
+            PomodoroCount = 2,
+            IsCompleted = false,
+            Repeat = null
+        };
+
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
+            parameters.Add(p => p.Item, task));
+
+        cut.FindAll(".task-badge").Count.Should().Be(0);
+    }
+
+    [Fact]
+    public void TaskItemComponent_WithPausedRepeat_ShowsPausedBadge()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test Task",
+            TotalFocusMinutes = 25,
+            PomodoroCount = 2,
+            IsCompleted = false,
+            Repeat = new RepeatRule { Type = RepeatType.Daily, IsPaused = true }
+        };
+
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
+            parameters.Add(p => p.Item, task));
+
+        var badge = cut.Find(".task-badge");
+        badge.ClassList.Should().Contain("repeat-paused");
+    }
 }
 
