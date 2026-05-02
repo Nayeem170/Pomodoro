@@ -217,6 +217,28 @@ public class CloudSyncServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task InitializeAsync_WhenGoogleDriveFailsAllRetries_StillSetsInitialized()
+    {
+        var state = new SyncStateRecord
+        {
+            ClientId = "test-client-id",
+            IsConnected = true,
+            AccessToken = "test-token"
+        };
+        _mockIndexedDb
+            .Setup(db => db.GetAsync<SyncStateRecord>(Constants.Storage.AppStateStore, "cloudSync"))
+            .ReturnsAsync(state);
+        _mockGoogleDrive
+            .Setup(g => g.InitializeAsync("test-client-id"))
+            .ThrowsAsync(new Exception("Google Drive init failed"));
+
+        await _sut.InitializeAsync();
+
+        Assert.True(_sut.IsInitialized);
+        _mockGoogleDrive.Verify(g => g.InitializeAsync("test-client-id"), Times.Exactly(3));
+    }
+
+    [Fact]
     public async Task InitializeAsync_DoesNotReinitialize()
     {
         await _sut.InitializeAsync();
