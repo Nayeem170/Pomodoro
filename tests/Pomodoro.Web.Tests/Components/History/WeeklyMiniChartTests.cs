@@ -627,6 +627,34 @@ public partial class WeeklyMiniChartTests : TestContext
         return Task.CompletedTask;
     }
 
+    [Fact]
+    public Task WeeklyMiniChart_OnParametersSetAsync_SameData_SkipsReRender()
+    {
+        var jsRuntimeMock = new Mock<IJSRuntime>();
+        Services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
+        Services.AddSingleton<IChartService>(new ChartService(jsRuntimeMock.Object));
+        Services.AddSingleton(new ChartDataFormatter());
+
+        var weekStart = DateTime.Today;
+        var focusData = new Dictionary<DateTime, int> { { weekStart, 100 } };
+        var breakData = new Dictionary<DateTime, int> { { weekStart, 20 } };
+
+        var cut = RenderComponent<WeeklyMiniChart>(parameters => parameters
+            .Add(p => p.DailyFocusMinutes, focusData)
+            .Add(p => p.BreakDailyMinutes, breakData)
+            .Add(p => p.WeekStartDate, weekStart));
+
+        var initialCallCount = jsRuntimeMock.Invocations.Count;
+
+        cut.SetParametersAndRender(parameters => parameters
+            .Add(p => p.DailyFocusMinutes, new Dictionary<DateTime, int> { { weekStart, 100 } })
+            .Add(p => p.BreakDailyMinutes, new Dictionary<DateTime, int> { { weekStart, 20 } })
+            .Add(p => p.WeekStartDate, weekStart));
+
+        Assert.Equal(initialCallCount, jsRuntimeMock.Invocations.Count);
+        return Task.CompletedTask;
+    }
+
     #endregion
 }
 

@@ -1,4 +1,5 @@
 using Bunit;
+using FluentAssertions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Pomodoro.Web.Components.Tasks;
@@ -568,6 +569,27 @@ public class TaskItemComponentTests : TestContext
         taskItem.KeyDown("Enter");
 
         Assert.False(selected);
+    }
+
+    [Fact]
+    public void TaskItemComponent_NonPausedRepeat_ShowsTooltipWithoutPaused()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test Task",
+            TotalFocusMinutes = 25,
+            PomodoroCount = 2,
+            IsCompleted = false,
+            Repeat = new RepeatRule { Type = RepeatType.Daily }
+        };
+
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
+            parameters.Add(p => p.Item, task));
+
+        var badge = cut.Find(".task-badge");
+        badge.GetAttribute("title").Should().Be("Daily");
+        badge.ClassList.Should().NotContain("paused");
     }
 }
 

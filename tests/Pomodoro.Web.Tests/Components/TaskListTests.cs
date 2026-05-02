@@ -446,6 +446,28 @@ public class TaskListTests : TestContext
         Assert.Equal(taskId, uncompletedTaskId);
     }
 
+    [Fact]
+    public void TaskList_EditButton_TriggersOnTaskEditCallback()
+    {
+        TaskItem? editedTask = null;
+        var taskId = Guid.NewGuid();
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = taskId, Name = "Active Task", IsCompleted = false }
+        };
+
+        var cut = RenderComponent<TaskList>(parameters => parameters
+            .Add(p => p.Tasks, tasks)
+            .Add(p => p.CurrentTaskId, null)
+            .Add(p => p.OnTaskEdit, EventCallback.Factory.Create<TaskItem>(this, t => editedTask = t)));
+
+        cut.Find("button[aria-label=\"Edit task\"]").Click();
+        cut.Find(".tep-save-btn").Click();
+
+        Assert.NotNull(editedTask);
+        Assert.Equal(taskId, editedTask!.Id);
+    }
+
     #endregion
 
     #region Task Item Header Tests

@@ -125,6 +125,22 @@ public class TimerDisplayCoverageTests : TestContext
         Assert.True(errorEvent.Wait(3000), "Logger.LogError should have been called from catch block");
     }
 
+    [Fact]
+    public void CurrentIsRunning_ReflectsTimerServiceState()
+    {
+        SetupTimerService(TimeSpan.FromMinutes(25), SessionType.Pomodoro, true);
+        var testable = new TestableTimerDisplay(
+            _timerServiceMock.Object, _mockLogger.Object);
+
+        Assert.True(testable.IsRunning);
+
+        SetupTimerService(TimeSpan.FromMinutes(25), SessionType.Pomodoro, false);
+        var testable2 = new TestableTimerDisplay(
+            _timerServiceMock.Object, _mockLogger.Object);
+
+        Assert.False(testable2.IsRunning);
+    }
+
     private class TestableTimerDisplay : TimerDisplayBase
     {
         public TestableTimerDisplay(ITimerService timerService, ILogger<TimerDisplayBase> logger)
@@ -132,6 +148,8 @@ public class TimerDisplayCoverageTests : TestContext
             TimerService = timerService;
             Logger = logger;
         }
+
+        public bool IsRunning => CurrentIsRunning;
     }
 }
 

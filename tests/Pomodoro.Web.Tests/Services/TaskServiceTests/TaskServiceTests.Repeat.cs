@@ -132,6 +132,31 @@ public partial class TaskServiceTests
     }
 
     [Fact]
+    public async Task CompleteTaskAsync_RecurringNextAfterEnd_DoesNotSetNextOccurrence()
+    {
+        var taskId = Guid.NewGuid();
+        var task = CreateSampleTask(id: taskId, isCompleted: false);
+        task.Repeat = new RepeatRule
+        {
+            Type = RepeatType.Daily,
+            EndDate = DateTime.UtcNow.Date,
+            LastCompletedDate = DateTime.UtcNow.Date
+        };
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
+        MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+        await service.CompleteTaskAsync(taskId);
+
+        Assert.True(service.AllTasks[0].IsCompleted);
+        Assert.Null(service.AllTasks[0].Repeat.NextOccurrence);
+    }
+
+    [Fact]
     public async Task CompleteTaskAsync_NonRecurring_CompletesNormally()
     {
         var taskId = Guid.NewGuid();
