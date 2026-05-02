@@ -67,6 +67,7 @@ When the user says "next item", follow this cycle:
    f. Create PR targeting `develop` with `Closes #XX` in the body
    g. Repeat from step 1
 4. After all items are implemented and PRs are merged, set all merged issue statuses to **Review**
+5. **Never set an issue to Review unless its PR is merged** — if a PR is still open/unmerged, the issue must remain In Progress
 
 ### Project Board Rules
 - **In Progress** — set when starting work on an issue
