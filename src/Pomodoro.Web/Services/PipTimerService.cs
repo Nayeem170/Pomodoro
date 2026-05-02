@@ -148,17 +148,10 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
     /// </summary>
     private object GetTimerState()
     {
-        var isRunning = _timerService.IsRunning;
-        var isStarted = _timerService.IsStarted;
-
         return new
         {
             remainingSeconds = _timerService.RemainingSeconds,
             sessionType = (int)_timerService.CurrentSessionType,
-            isRunning = isRunning,
-            isStarted = isStarted,
-            showReset = isRunning || isStarted,
-            taskName = _taskService.CurrentTask?.Name,
             totalDurationSeconds = _timerService.Settings.GetDurationSeconds(_timerService.CurrentSessionType)
         };
     }
