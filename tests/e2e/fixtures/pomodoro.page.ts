@@ -409,13 +409,8 @@ export class PomodoroPage {
     await this.page.waitForLoadState('domcontentloaded');
   }
 
-  async toggleAutoStartPomodoros() {
-    const toggle = this.page.locator('.sr-lbl').filter({ hasText: 'Auto-start pomodoros' }).locator('..').locator('.tog');
-    await toggle.click();
-  }
-
-  async toggleAutoStartBreaks() {
-    const toggle = this.page.locator('.sr-lbl').filter({ hasText: 'Auto-start breaks' }).locator('..').locator('.tog');
+  async toggleAutoStartSession() {
+    const toggle = this.page.locator('.sr-lbl').filter({ hasText: 'Auto-start session' }).locator('..').locator('.tog');
     await toggle.click();
   }
 

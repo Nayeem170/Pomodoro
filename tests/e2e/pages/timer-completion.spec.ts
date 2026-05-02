@@ -42,7 +42,7 @@ test.describe('Timer Completion', () => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/settings');
 
-    const toggle = page.locator('.sr-lbl').filter({ hasText: 'Auto-start pomodoros' }).locator('..').locator('.tog');
+    const toggle = page.locator('.sr-lbl').filter({ hasText: 'Auto-start session' }).locator('..').locator('.tog');
     const isOn = await toggle.evaluate(el => el.classList.contains('on'));
     if (!isOn) {
       await toggle.click();

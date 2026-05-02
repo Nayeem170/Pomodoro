@@ -350,6 +350,57 @@ public class ImportServiceTests
             It.Is<ActivityRecord>(a => a.TaskId == existingTask.Id)), Times.Once);
     }
 
+    [Fact]
+    public async Task ImportFromJsonAsync_DuplicateTaskWithEmptyId_LogsWarning()
+    {
+        var existingTask = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Shared Task",
+            CreatedAt = DateTime.UtcNow
+        };
+        var importTask = new TaskItem
+        {
+            Id = Guid.Empty,
+            Name = "Shared Task",
+            CreatedAt = existingTask.CreatedAt
+        };
+        var json = CreateValidJson(tasks: [importTask]);
+        _mockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        _mockTaskRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([existingTask]);
+
+        var result = await _service.ImportFromJsonAsync(json);
+
+        Assert.True(result.Success);
+        Assert.Equal(0, result.TasksImported);
+        Assert.Equal(1, result.TasksSkipped);
+    }
+
+    [Fact]
+    public async Task ImportFromJsonAsync_DuplicateTaskWithNonEmptyId_NotInLookup_LogsWarning()
+    {
+        var existingTask = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Shared Task",
+            CreatedAt = DateTime.UtcNow
+        };
+        var importTask = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Shared Task",
+            CreatedAt = existingTask.CreatedAt.AddDays(1)
+        };
+        var json = CreateValidJson(tasks: [importTask]);
+        _mockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        _mockTaskRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([existingTask]);
+
+        var result = await _service.ImportFromJsonAsync(json);
+
+        Assert.True(result.Success);
+        Assert.Equal(1, result.TasksImported);
+    }
+
     #endregion
 
     #region Error Handling

@@ -19,19 +19,28 @@ public class SettingsRepository : ISettingsRepository
         var record = await _indexedDb.GetAsync<TimerSettingsRecord>(Constants.Storage.SettingsStore, Constants.Storage.DefaultSettingsId);
         if (record == null) return null;
 
-        return new TimerSettings
+        var settings = new TimerSettings
         {
             PomodoroMinutes = record.PomodoroMinutes,
             ShortBreakMinutes = record.ShortBreakMinutes,
             LongBreakMinutes = record.LongBreakMinutes,
             SoundEnabled = record.SoundEnabled,
             NotificationsEnabled = record.NotificationsEnabled,
-            AutoStartPomodoros = record.AutoStartPomodoros,
-            AutoStartBreaks = record.AutoStartBreaks,
             AutoStartDelaySeconds = record.AutoStartDelaySeconds,
             LongBreakInterval = record.LongBreakInterval,
             DailyGoal = record.DailyGoal
         };
+
+        if (record.AutoStartSession.HasValue)
+        {
+            settings.AutoStartSession = record.AutoStartSession.Value;
+        }
+        else if (record.AutoStartPomodoros.HasValue || record.AutoStartBreaks.HasValue)
+        {
+            settings.AutoStartSession = (record.AutoStartPomodoros ?? true) || (record.AutoStartBreaks ?? true);
+        }
+
+        return settings;
     }
 
     public async Task<bool> SaveAsync(TimerSettings settings)
@@ -46,8 +55,7 @@ public class SettingsRepository : ISettingsRepository
             LongBreakMinutes = settings.LongBreakMinutes,
             SoundEnabled = settings.SoundEnabled,
             NotificationsEnabled = settings.NotificationsEnabled,
-            AutoStartPomodoros = settings.AutoStartPomodoros,
-            AutoStartBreaks = settings.AutoStartBreaks,
+            AutoStartSession = settings.AutoStartSession,
             AutoStartDelaySeconds = settings.AutoStartDelaySeconds,
             LongBreakInterval = settings.LongBreakInterval,
             DailyGoal = settings.DailyGoal
@@ -73,9 +81,14 @@ public class TimerSettingsRecord
     public int LongBreakMinutes { get; set; }
     public bool SoundEnabled { get; set; }
     public bool NotificationsEnabled { get; set; }
-    public bool AutoStartPomodoros { get; set; }
-    public bool AutoStartBreaks { get; set; }
+    public bool? AutoStartSession { get; set; }
     public int AutoStartDelaySeconds { get; set; }
     public int LongBreakInterval { get; set; }
     public int DailyGoal { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("AutoStartPomodoros")]
+    public bool? AutoStartPomodoros { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("AutoStartBreaks")]
+    public bool? AutoStartBreaks { get; set; }
 }
