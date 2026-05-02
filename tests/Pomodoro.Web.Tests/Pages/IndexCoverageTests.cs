@@ -383,3 +383,118 @@ file sealed class ThrowingTestIndexJsRuntime : IJSRuntime
     public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => throw new Exception("js error");
     public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => throw new Exception("js error");
 }
+
+[Trait("Category", "Page")]
+public class IndexPageRenderingTests : TestHelper
+{
+    public IndexPageRenderingTests()
+    {
+        NotificationServiceMock.Setup(x => x.InitializeAsync()).Returns(Task.CompletedTask);
+        PipTimerServiceMock.Setup(x => x.InitializeAsync()).Returns(Task.CompletedTask);
+        TaskServiceMock.Setup(x => x.InitializeAsync()).Returns(Task.CompletedTask);
+        TaskServiceMock.SetupGet(x => x.Tasks).Returns(new List<TaskItem>());
+        TaskServiceMock.SetupGet(x => x.AllTasks).Returns(new List<TaskItem>());
+        TaskServiceMock.SetupGet(x => x.CurrentTaskId).Returns((Guid?)null);
+        TaskServiceMock.SetupGet(x => x.CurrentTask).Returns((TaskItem?)null);
+        TimerServiceMock.Setup(x => x.InitializeAsync()).Returns(Task.CompletedTask);
+        TimerServiceMock.SetupGet(x => x.RemainingTime).Returns(TimeSpan.FromMinutes(25));
+        TimerServiceMock.SetupGet(x => x.CurrentSessionType).Returns(SessionType.Pomodoro);
+        TimerServiceMock.SetupGet(x => x.IsRunning).Returns(false);
+        TimerServiceMock.SetupGet(x => x.IsPaused).Returns(false);
+        TimerServiceMock.SetupGet(x => x.IsStarted).Returns(false);
+        TimerServiceMock.SetupGet(x => x.Settings).Returns(new TimerSettings());
+        ActivityServiceMock.Setup(x => x.InitializeAsync()).Returns(Task.CompletedTask);
+        TodayStatsServiceMock.Setup(x => x.GetTodayStats()).Returns((120, 4, 2));
+        KeyboardShortcutServiceMock.Setup(x => x.RegisterShortcut(It.IsAny<string>(), It.IsAny<Action>(), It.IsAny<string>()));
+    }
+
+    [Fact]
+    public void IndexPage_LoadingState_ShowsSpinner()
+    {
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var loadingProp = typeof(IndexBase).GetProperty("IsLoading", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        loadingProp!.SetValue(cut.Instance, true);
+        cut.Render();
+
+        cut.Markup.Should().Contain("loading-container");
+        cut.Markup.Should().Contain("Loading...");
+    }
+
+    [Fact]
+    public void IndexPage_ClickShortBreakTab_SwitchesSession()
+    {
+        TimerServiceMock.Setup(x => x.SwitchSessionTypeAsync(SessionType.ShortBreak)).Returns(Task.CompletedTask);
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        cut.Find("button[title='S']").Click();
+
+        TimerServiceMock.Verify(x => x.SwitchSessionTypeAsync(SessionType.ShortBreak), Times.Once);
+    }
+
+    [Fact]
+    public void IndexPage_ClickLongBreakTab_SwitchesSession()
+    {
+        TimerServiceMock.Setup(x => x.SwitchSessionTypeAsync(SessionType.LongBreak)).Returns(Task.CompletedTask);
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        cut.Find("button[title='L']").Click();
+
+        TimerServiceMock.Verify(x => x.SwitchSessionTypeAsync(SessionType.LongBreak), Times.Once);
+    }
+
+    [Fact]
+    public void IndexPage_ClickKeyboardHelp_ShowsModal()
+    {
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        cut.Find("button[aria-label='Keyboard shortcuts']").Click();
+
+        cut.Instance.ShowKeyboardHelp.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IndexPage_CloseKeyboardHelp_HidesModal()
+    {
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        cut.Instance.ShowKeyboardHelp = true;
+        cut.Render();
+
+        cut.Find("button.modal-close").Click();
+
+        cut.Instance.ShowKeyboardHelp.Should().BeFalse();
+    }
+}
+
+[Trait("Category", "Page")]
+public class HistoryPageRenderingTests : TestHelper
+{
+    public HistoryPageRenderingTests()
+    {
+        ActivityServiceMock.Setup(x => x.GetActivitiesPagedAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync(new List<ActivityRecord>());
+        ActivityServiceMock.Setup(x => x.GetActivitiesForDate(It.IsAny<DateTime>()))
+            .Returns(new List<ActivityRecord>());
+        ActivityServiceMock.Setup(x => x.GetActivityCountAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            .ReturnsAsync(0);
+        ActivityServiceMock.Setup(x => x.GetDailyFocusMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            .Returns(new Dictionary<DateTime, int>());
+        ActivityServiceMock.Setup(x => x.GetDailyBreakMinutes(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            .Returns(new Dictionary<DateTime, int>());
+        StatisticsServiceMock.Setup(x => x.GetWeeklyStatsAsync(It.IsAny<DateTime>()))
+            .ReturnsAsync(new WeeklyStats());
+        ActivityServiceMock.Setup(x => x.InitializeAsync()).Returns(Task.CompletedTask);
+        InfiniteScrollInteropMock.Setup(x => x.IsSupportedAsync()).ReturnsAsync(false);
+    }
+
+    [Fact]
+    public void HistoryPage_LoadingState_ShowsSpinner()
+    {
+        var cut = RenderComponent<Pomodoro.Web.Pages.History>();
+        var loadingProp = typeof(HistoryBase).GetProperty("IsLoading", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        loadingProp!.SetValue(cut.Instance, true);
+        cut.Render();
+
+        cut.Markup.Should().Contain("loading-container");
+        cut.Markup.Should().Contain("Loading history...");
+    }
+}
