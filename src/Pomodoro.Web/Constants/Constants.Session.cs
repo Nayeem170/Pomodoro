@@ -83,4 +83,20 @@ public static partial class Constants
         public const int InitialCount = 0;
         public const int InsertAtBeginning = 0;
     }
+
+    /// <summary>
+    /// Repeat/schedule task constants
+    /// </summary>
+    public static class Repeat
+    {
+        public const string RepeatIcon = "🔁";
+        public const string ScheduleIcon = "📅";
+        public const string PausedIcon = "⏸️";
+        public const string RepeatCssClass = "task-repeat";
+        public const string ScheduleCssClass = "task-scheduled";
+        public const string PausedCssClass = "repeat-paused";
+        public const int DefaultCustomDays = 1;
+        public const int DefaultMonthlyDay = 1;
+        public const int MaxCustomDays = 365;
+    }
 }

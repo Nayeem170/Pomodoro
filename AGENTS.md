@@ -59,9 +59,9 @@ When the user says "next item", follow this cycle:
 5. Run `dotnet format Pomodoro.sln --verify-no-changes` and `dotnet test`
 6. Commit and push to the feature branch
 7. Create PR targeting `develop` with `Closes #XX` in the body
-8. Merge all open PRs that have passing CI + CodeRabbit review (`gh pr merge <number> --merge --admin`)
-9. Set merged issue statuses to **Review** on the board
-10. Repeat from step 1 until no In Progress or Todo items remain
+8. **Do not wait for CI** — immediately repeat from step 1 for the next item
+9. After all items are implemented, merge all open PRs that have passing CI + CodeRabbit review (`gh pr merge <number> --merge`)
+10. Set merged issue statuses to **Review** on the board
 
 ### Project Board Rules
 - **In Progress** — set when starting work on an issue
@@ -98,11 +98,10 @@ npx playwright test tests/e2e/pages/
 `timer-flow`, `timer-ring`, `long-break`, `tasks`, `settings`, `history`, `consent-modal`, `consent-auto-continue`, `today-summary`, `pip`, `cloud`, `persistence`, `sound`, `mobile`, `about`, `navigation`
 
 ### Workflow Files
-- `ci.yml` — Build, Test & Coverage (PR pipeline: build → unit-test ∥ e2e → e2e-gate)
-- `e2e.yml` — E2E Tests (reusable workflow with 16-shard matrix)
-- `deploy.yml` — Deploy to Cloudflare Pages (auto on main push, manual preview for any branch)
-- `pr-check.yml` — PR Rules (enforce issue linkage, auto-remove PRs from board)
-- `reports.yml` — Generate Coverage & E2E Reports (manual trigger)
+- `ci.yml` — PR pipeline (build → unit-test ∥ e2e → e2e-gate)
+- `e2e.yml` — Reusable E2E workflow with 16-shard matrix
+- `deploy.yml` — build → deploy to Cloudflare Pages (push to main)
+- `reports.yml` — Manual trigger, generates coverage/E2E reports as GitHub Pages
 
 ## Coverage
 
