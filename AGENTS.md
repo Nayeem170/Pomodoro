@@ -62,10 +62,11 @@ When the user says "next item", follow this cycle:
 8. **Do not wait for CI** — immediately repeat from step 1 for the next item
 9. After all items are implemented, merge all open PRs that have passing CI + CodeRabbit review (`gh pr merge <number> --merge`)
 10. Set merged issue statuses to **Review** on the board
+11. **Never set an issue to Review unless its PR is merged** — if a PR is still open/unmerged, the issue must remain In Progress
 
 ### Project Board Rules
-- **In Progress** — set when starting work on an issue
-- **Review** — set after PR is merged
+- **In Progress** — set when starting work on an issue; remains here until PR is merged
+- **Review** — set only after PR is merged (never before)
 - **Done** — manual only, set by user when they verify the change
 - Only issues (cards) on the board — PRs are auto-removed by `pr-check.yml`
 - Board node ID: `PVT_kwHOAJBk4M4BWD1D`, Status field ID: `PVTSSF_lAHOAJBk4M4BWD1DzhRbEOY`
