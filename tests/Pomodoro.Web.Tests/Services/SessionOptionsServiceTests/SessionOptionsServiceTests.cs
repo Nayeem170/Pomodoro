@@ -118,4 +118,53 @@ public class SessionOptionsServiceTests
 
         Assert.Equal(SessionType.Pomodoro, defaultOption);
     }
+
+    [Fact]
+    public void GetOptionsForSessionType_WithInterruptedPomodoro_WithSeconds_ShowsMinutesColonSeconds()
+    {
+        var service = CreateService();
+        var interrupted = new TimerSession
+        {
+            Type = SessionType.Pomodoro,
+            RemainingSeconds = 90
+        };
+
+        var options = service.GetOptionsForSessionType(SessionType.ShortBreak, interrupted);
+
+        var resumeOption = Assert.Single(options, o => o.IsResume);
+        Assert.Contains("1:30", resumeOption.Duration);
+    }
+
+    [Fact]
+    public void GetOptionsForSessionType_WithInterruptedPomodoro_ZeroSeconds_ShowsMinutesOnly()
+    {
+        var service = CreateService();
+        var interrupted = new TimerSession
+        {
+            Type = SessionType.Pomodoro,
+            RemainingSeconds = 300
+        };
+
+        var options = service.GetOptionsForSessionType(SessionType.LongBreak, interrupted);
+
+        var resumeOption = Assert.Single(options, o => o.IsResume);
+        Assert.Contains("5m left", resumeOption.Duration);
+    }
+
+    [Fact]
+    public void GetOptionsForSessionType_WithInterruptedPomodoro_SetsAsDefault()
+    {
+        var service = CreateService();
+        var interrupted = new TimerSession
+        {
+            Type = SessionType.Pomodoro,
+            RemainingSeconds = 300
+        };
+
+        var options = service.GetOptionsForSessionType(SessionType.ShortBreak, interrupted);
+
+        var resumeOption = Assert.Single(options, o => o.IsResume);
+        Assert.True(resumeOption.IsDefault);
+        Assert.All(options.Where(o => !o.IsResume), o => Assert.False(o.IsDefault));
+    }
 }
