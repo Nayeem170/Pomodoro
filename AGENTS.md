@@ -53,20 +53,25 @@ src/Pomodoro.Web/
 ### Development Cycle
 When the user says "next item", follow this cycle:
 1. Pick the next item from the board: **In Progress** first, then **Todo**
-2. Set its status to **In Progress** on the board
-3. Create a feature branch from `develop`: `feature/description` or `fix/description`
-4. Implement the changes
-5. Run `dotnet format Pomodoro.sln --verify-no-changes` and `dotnet test`
-6. Commit and push to the feature branch
-7. Create PR targeting `develop` with `Closes #XX` in the body
-8. **Do not wait for CI** — immediately repeat from step 1 for the next item
-9. After all items are implemented, merge all open PRs that have passing CI + CodeRabbit review (`gh pr merge <number> --merge`)
-10. Set merged issue statuses to **Review** on the board
-11. **Never set an issue to Review unless its PR is merged** — if a PR is still open/unmerged, the issue must remain In Progress
+2. If the item is **In Progress** and already has an open PR:
+   a. Update the PR branch with latest `develop` if needed (`git merge develop`)
+   b. Try to merge the PR (`gh pr merge <number> --merge --admin`)
+   c. If merge succeeds, set issue to **Review** and repeat from step 1
+   d. If merge fails (CI pending/failing, API error), move to the next item and repeat from step 1
+3. If the item is **Todo** or **In Progress** without a PR, implement it:
+   a. Set its status to **In Progress** on the board
+   b. Create a feature branch from `develop`: `feature/description` or `fix/description`
+   c. Implement the changes
+   d. Run `dotnet format Pomodoro.sln --verify-no-changes` and `dotnet test`
+   e. Commit and push to the feature branch
+   f. Create PR targeting `develop` with `Closes #XX` in the body
+   g. Repeat from step 1
+4. After all items are implemented and PRs are merged, set all merged issue statuses to **Review**
+5. **Never set an issue to Review unless its PR is merged** — if a PR is still open/unmerged, the issue must remain In Progress
 
 ### Project Board Rules
-- **In Progress** — set when starting work on an issue; remains here until PR is merged
-- **Review** — set only after PR is merged (never before)
+- **In Progress** — set when starting work on an issue
+- **Review** — set after PR is merged
 - **Done** — manual only, set by user when they verify the change
 - Only issues (cards) on the board — PRs are auto-removed by `pr-check.yml`
 - Board node ID: `PVT_kwHOAJBk4M4BWD1D`, Status field ID: `PVTSSF_lAHOAJBk4M4BWD1DzhRbEOY`
@@ -99,10 +104,11 @@ npx playwright test tests/e2e/pages/
 `timer-flow`, `timer-ring`, `long-break`, `tasks`, `settings`, `history`, `consent-modal`, `consent-auto-continue`, `today-summary`, `pip`, `cloud`, `persistence`, `sound`, `mobile`, `about`, `navigation`
 
 ### Workflow Files
-- `ci.yml` — PR pipeline (build → unit-test ∥ e2e → e2e-gate)
-- `e2e.yml` — Reusable E2E workflow with 16-shard matrix
-- `deploy.yml` — build → deploy to Cloudflare Pages (push to main)
-- `reports.yml` — Manual trigger, generates coverage/E2E reports as GitHub Pages
+- `ci.yml` — Build, Test & Coverage (PR pipeline: build → unit-test ∥ e2e → e2e-gate)
+- `e2e.yml` — E2E Tests (reusable workflow with 16-shard matrix)
+- `deploy.yml` — Deploy to Cloudflare Pages (auto on main push, manual preview for any branch)
+- `pr-check.yml` — PR Rules (enforce issue linkage, auto-remove PRs from board)
+- `reports.yml` — Generate Coverage & E2E Reports (manual trigger)
 
 ## Coverage
 

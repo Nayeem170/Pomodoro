@@ -31,7 +31,7 @@ window.pipTimer = {
         }
         
         var width = Math.round(Math.min(window.innerWidth, 420) * 0.9);
-        var height = Math.round(width * 1.35 * 0.6) + 140;
+        var height = Math.round(width * 1.35 * 0.6) + 60;
         
         if (this.isSupported()) {
             try {
@@ -57,7 +57,7 @@ window.pipTimer = {
     
     openFallback: function(timerState) {
         var width = Math.round(Math.min(window.innerWidth, 420) * 0.9);
-        var height = Math.round(width * 1.35 * 0.6) + 140;
+        var height = Math.round(width * 1.35 * 0.6) + 60;
         
         const features = [
             'width=' + width,
@@ -207,69 +207,6 @@ window.pipTimer = {
                 margin-top: 3px;
                 letter-spacing: 0.06em;
             }
-            .active-task {
-                font-size: 16px;
-                color: #a0a0a0;
-                margin-top: 12px;
-                margin-bottom: 10px;
-                padding: 8px 12px;
-                background: #1f3460;
-                border-radius: 8px;
-                text-align: left;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                width: 100%;
-            }
-            .task-dot {
-                width: 6px;
-                height: 6px;
-                border-radius: 50%;
-                background: #e74c3c;
-                flex-shrink: 0;
-            }
-            .task-dot.short-break { background: #27ae60; }
-            .task-dot.long-break { background: #3498db; }
-            .ctrl-row {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 16px;
-            }
-            .ibtn {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 50%;
-                cursor: pointer;
-                border: 1px solid rgba(45, 74, 111, 0.6);
-                background: transparent;
-                color: #a0a0a0;
-                padding: 0;
-                transition: background 0.15s;
-            }
-            .ibtn.sm { width: 36px; height: 36px; font-size: 14px; }
-            .ibtn.lg { width: 50px; height: 50px; border: none; color: white; font-size: 16px; }
-            .ibtn.lg.pomodoro { background: #e74c3c; }
-            .ibtn.lg.short-break { background: #27ae60; }
-            .ibtn.lg.long-break { background: #3498db; }
-            .ibtn.lg:hover { opacity: 0.9; }
-            .ibtn.sm:hover { background: #1f3460; }
-            .card-footer {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 8px 14px;
-                border-top: 1px solid #2d4a6f;
-                background: #1f3460;
-            }
-            .session-info {
-                font-size: 16px;
-                color: #6e7a8a;
-            }
             .pip-container.pomodoro-theme .timer-card {
                 background: linear-gradient(135deg, rgba(231, 76, 60, 0.15) 0%, #16213e 100%);
                 border: 1px solid rgba(231, 76, 60, 0.3);
@@ -316,11 +253,6 @@ window.pipTimer = {
         var minutes = Math.floor(remainingSeconds / 60);
         var seconds = remainingSeconds % 60;
         var timeDisplay = minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
-        
-        var isRunning = state.isRunning || false;
-        var isStarted = state.isStarted || false;
-        var playPauseIcon = isRunning ? '\u23F8' : '\u25B6';
-        var showReset = state.showReset || false;
 
         var circumference = 2 * Math.PI * 81;
         var totalSeconds = state.totalDurationSeconds || remainingSeconds;
@@ -345,18 +277,6 @@ window.pipTimer = {
         html += '<div class="ttime">' + timeDisplay + '</div>';
         html += '<div class="tmode">' + modeLabel + '</div>';
         html += '</div></div>';
-        if (state.taskName) {
-            html += '<div class="active-task"><div class="task-dot ' + sessionClass + '"></div><span>' + state.taskName + '</span></div>';
-        }
-        html += '<div class="ctrl-row">';
-        html += '<button class="ibtn lg ' + sessionClass + '" onclick="window.pipToggleTimer()">' + playPauseIcon + '</button>';
-        if (showReset) {
-            html += '<button class="ibtn sm" onclick="window.pipResetTimer()">&#x21BA;</button>';
-        }
-        html += '</div></div>';
-        html += '<div class="card-footer">';
-        html += '<span class="session-info">' + modeLabel + '</span>';
-        html += '<span class="session-info">' + timeDisplay + '</span>';
         html += '</div></div>';
         
         return html;
@@ -416,9 +336,7 @@ window.pipTimer = {
             '    window.addEventListener("keydown", function(event) {',
             '        if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;',
             '        var key = event.key.toLowerCase();',
-            '        if (key === " " || event.code === "Space") { event.preventDefault(); event.stopPropagation(); window.pipToggleTimer(); }',
-            '        else if (key === "r") { event.preventDefault(); event.stopPropagation(); window.pipResetTimer(); }',
-            '        else if (key === "p") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(0); }',
+            '        if (key === "p") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(0); }',
             '        else if (key === "s") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(1); }',
             '        else if (key === "l") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(2); }',
             '    }, { capture: true });',
