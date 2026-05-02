@@ -38,7 +38,7 @@ public partial class ConsentServiceTests
             };
 
             sessionOptionsServiceMock
-                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
                 .Returns(new List<ConsentOption>());
 
             sessionOptionsServiceMock
@@ -80,7 +80,7 @@ public partial class ConsentServiceTests
             };
 
             sessionOptionsServiceMock
-                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
                 .Returns(new List<ConsentOption>());
 
             sessionOptionsServiceMock
@@ -127,7 +127,7 @@ public partial class ConsentServiceTests
             taskServiceMock.SetupGet(t => t.CurrentTaskId).Returns(taskId);
 
             sessionOptionsServiceMock
-                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
                 .Returns(new List<ConsentOption>());
 
             sessionOptionsServiceMock
@@ -171,7 +171,7 @@ public partial class ConsentServiceTests
             };
 
             sessionOptionsServiceMock
-                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
                 .Returns(new List<ConsentOption>());
 
             sessionOptionsServiceMock
@@ -215,7 +215,7 @@ public partial class ConsentServiceTests
             };
 
             sessionOptionsServiceMock
-                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
                 .Returns(new List<ConsentOption>());
 
             sessionOptionsServiceMock
@@ -267,7 +267,7 @@ public partial class ConsentServiceTests
             };
 
             sessionOptionsServiceMock
-                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
                 .Returns(new List<ConsentOption>());
 
             sessionOptionsServiceMock
@@ -309,7 +309,7 @@ public partial class ConsentServiceTests
             };
 
             sessionOptionsServiceMock
-                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
                 .Returns(new List<ConsentOption>());
 
             sessionOptionsServiceMock
@@ -351,7 +351,7 @@ public partial class ConsentServiceTests
             };
 
             sessionOptionsServiceMock
-                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
                 .Returns(new List<ConsentOption>());
 
             sessionOptionsServiceMock
@@ -393,7 +393,7 @@ public partial class ConsentServiceTests
             };
 
             sessionOptionsServiceMock
-                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
                 .Returns(new List<ConsentOption>());
 
             sessionOptionsServiceMock
@@ -434,7 +434,7 @@ public partial class ConsentServiceTests
             };
 
             sessionOptionsServiceMock
-                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>()))
+                .Setup(x => x.GetOptionsForSessionType(It.IsAny<SessionType>(), It.IsAny<TimerSession>()))
                 .Returns(new List<ConsentOption>());
 
             sessionOptionsServiceMock

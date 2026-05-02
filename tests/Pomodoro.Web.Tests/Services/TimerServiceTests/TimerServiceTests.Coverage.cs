@@ -438,6 +438,63 @@ public partial class TimerServiceTests
                 return default;
             }
         }
+
+        #region InterruptedPomodoro property
+
+        [Fact]
+        public void InterruptedPomodoro_WhenNoPausedSession_ReturnsNull()
+        {
+            var service = CreateService();
+            Assert.Null(service.InterruptedPomodoro);
+        }
+
+        [Fact]
+        public async Task InterruptedPomodoro_WhenPomodoroSwitchedAway_ReturnsSession()
+        {
+            var service = CreateService();
+            await service.InitializeAsync();
+            await service.StartPomodoroAsync();
+            await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
+
+            var interrupted = service.InterruptedPomodoro;
+            Assert.NotNull(interrupted);
+            Assert.Equal(SessionType.Pomodoro, interrupted.Type);
+            Assert.False(interrupted.IsRunning);
+        }
+
+        #endregion
+
+        #region ResumeInterruptedPomodoroAsync
+
+        [Fact]
+        public async Task ResumeInterruptedPomodoroAsync_WhenNoPausedSession_ReturnsImmediately()
+        {
+            var service = CreateService();
+            await service.InitializeAsync();
+
+            await service.ResumeInterruptedPomodoroAsync();
+
+            Assert.False(AppState.CurrentSession?.IsRunning ?? true);
+        }
+
+        [Fact]
+        public async Task ResumeInterruptedPomodoroAsync_WhenPausedSession_ResumesAndStarts()
+        {
+            var service = CreateService();
+            await service.InitializeAsync();
+            await service.StartPomodoroAsync();
+            await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
+
+            var pausedSession = service.InterruptedPomodoro;
+            Assert.NotNull(pausedSession);
+
+            await service.ResumeInterruptedPomodoroAsync();
+
+            Assert.True(AppState.CurrentSession?.IsRunning);
+            Assert.Null(service.InterruptedPomodoro);
+        }
+
+        #endregion
     }
 }
 
