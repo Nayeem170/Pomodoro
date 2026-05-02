@@ -5,9 +5,9 @@
     <div class="chart-row">
         <div class="donut-wrap">
             <svg viewBox="0 0 100 100" style="width:100%;height:100%">
-                <circle cx="50" cy="50" r="36" fill="none" stroke="var(--color-background-secondary)" stroke-width="14"/>
+                <circle cx="50" cy="50" r="38" fill="none" stroke="var(--color-background-secondary)" stroke-width="10"/>
                 @{
-                    var circumference = 2 * Math.PI * 36;
+                    var circumference = 2 * Math.PI * 38;
                     var offset = 0.0;
                 }
                 @foreach (var seg in Segments)
@@ -15,7 +15,7 @@
                     var segLen = (seg.Percentage / 100.0) * circumference;
                     var dashArray = $"{segLen:F0} {circumference:F0}";
                     var dashOffset = -offset;
-                    <circle cx="50" cy="50" r="36" fill="none" stroke="@seg.Color" stroke-width="14"
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="@seg.Color" stroke-width="10"
                             stroke-dasharray="@dashArray" stroke-dashoffset="@dashOffset:F0"
                             transform="rotate(-90 50 50)"/>
                     offset += segLen;

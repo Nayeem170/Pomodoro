@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
@@ -93,7 +94,7 @@ public class TimeDistributionChartBase : ComponentBase, IDisposable
             segments.Add(new ChartSegment(label, color, pct));
         }
 
-        Segments = segments;
+        Segments = segments.OrderByDescending(s => s.Percentage).ToList();
     }
 
     public void Dispose()
