@@ -53,15 +53,21 @@ src/Pomodoro.Web/
 ### Development Cycle
 When the user says "next item", follow this cycle:
 1. Pick the next item from the board: **In Progress** first, then **Todo**
-2. Set its status to **In Progress** on the board
-3. Create a feature branch from `develop`: `feature/description` or `fix/description`
-4. Implement the changes
-5. Run `dotnet format Pomodoro.sln --verify-no-changes` and `dotnet test`
-6. Commit and push to the feature branch
-7. Create PR targeting `develop` with `Closes #XX` in the body
-8. Merge all open PRs that have passing CI + CodeRabbit review (`gh pr merge <number> --merge --admin`)
-9. Set merged issue statuses to **Review** on the board
-10. Repeat from step 1 until no In Progress or Todo items remain
+2. If the item is **In Progress** and already has an open PR:
+   a. Update the PR branch with latest `develop` if needed (`git merge develop`)
+   b. Try to merge the PR (`gh pr merge <number> --merge --admin`)
+   c. If merge succeeds, set issue to **Review** and repeat from step 1
+   d. If merge fails (CI pending/failing, API error), move to the next item and repeat from step 1
+3. If the item is **Todo** or **In Progress** without a PR, implement it:
+   a. Set its status to **In Progress** on the board
+   b. Create a feature branch from `develop`: `feature/description` or `fix/description`
+   c. Implement the changes
+   d. Run `dotnet format Pomodoro.sln --verify-no-changes` and `dotnet test`
+   e. Commit and push to the feature branch
+   f. Create PR targeting `develop` with `Closes #XX` in the body
+   g. Repeat from step 1
+4. After all items are implemented and PRs are merged, set all merged issue statuses to **Review**
+5. **Never set an issue to Review unless its PR is merged** — if a PR is still open/unmerged, the issue must remain In Progress
 
 ### Project Board Rules
 - **In Progress** — set when starting work on an issue
