@@ -494,6 +494,22 @@ public partial class TimerServiceTests
             Assert.Null(service.InterruptedPomodoro);
         }
 
+        [Fact]
+        public async Task ResumeInterruptedPomodoroAsync_WhenDotNetRefAlreadySet_StillResumes()
+        {
+            var service = CreateService();
+            await service.InitializeAsync();
+            await service.StartPomodoroAsync();
+            await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
+            await service.ResumeInterruptedPomodoroAsync();
+
+            await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
+            await service.ResumeInterruptedPomodoroAsync();
+
+            Assert.True(AppState.CurrentSession?.IsRunning);
+            Assert.Null(service.InterruptedPomodoro);
+        }
+
         #endregion
     }
 }

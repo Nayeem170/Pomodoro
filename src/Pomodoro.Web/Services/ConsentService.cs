@@ -75,9 +75,7 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
 
             var settings = _appState?.Settings;
 
-            var shouldAutoStart = args.SessionType == SessionType.Pomodoro
-                ? settings?.AutoStartBreaks == true
-                : settings?.AutoStartPomodoros == true;
+            var shouldAutoStart = settings?.AutoStartSession == true;
 
             if (shouldAutoStart)
             {

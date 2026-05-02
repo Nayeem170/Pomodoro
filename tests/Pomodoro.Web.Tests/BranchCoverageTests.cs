@@ -50,7 +50,7 @@ public class SessionOptionsBranchTests
 public class ConsentServiceBranchTests
 {
     [Fact]
-    public async Task HandleTimerCompletedAsync_BreakCompletedWithAutoStartPomodoros_ShowsConsentModal()
+    public async Task HandleTimerCompletedAsync_BreakCompletedWithAutoStartSession_ShowsConsentModal()
     {
         var timerServiceMock = new Mock<ITimerService>();
         var taskServiceMock = new Mock<ITaskService>();
@@ -61,8 +61,7 @@ public class ConsentServiceBranchTests
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true,
-                AutoStartBreaks = false,
+                AutoStartSession = true,
                 AutoStartDelaySeconds = 5,
                 SoundEnabled = false,
                 NotificationsEnabled = false

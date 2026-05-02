@@ -91,14 +91,9 @@ public class TimerSettings
     public bool NotificationsEnabled { get; set; } = true;
 
     /// <summary>
-    /// Whether to automatically start pomodoros after a break completes
+    /// Whether to automatically start the next session in the cycle without requiring consent
     /// </summary>
-    public bool AutoStartPomodoros { get; set; } = true;
-
-    /// <summary>
-    /// Whether to automatically start breaks after a pomodoro completes
-    /// </summary>
-    public bool AutoStartBreaks { get; set; } = true;
+    public bool AutoStartSession { get; set; } = true;
 
     private int _autoStartDelaySeconds = Constants.Timer.DefaultAutoStartDelaySeconds;
 
@@ -124,8 +119,7 @@ public class TimerSettings
             && LongBreakInterval == other.LongBreakInterval
             && SoundEnabled == other.SoundEnabled
             && NotificationsEnabled == other.NotificationsEnabled
-            && AutoStartPomodoros == other.AutoStartPomodoros
-            && AutoStartBreaks == other.AutoStartBreaks
+            && AutoStartSession == other.AutoStartSession
             && AutoStartDelaySeconds == other.AutoStartDelaySeconds;
     }
 
@@ -156,7 +150,7 @@ public class TimerSettings
         LongBreakMinutes,
         DailyGoal,
         LongBreakInterval,
-        HashCode.Combine(SoundEnabled, NotificationsEnabled, AutoStartPomodoros, AutoStartBreaks, AutoStartDelaySeconds));
+        HashCode.Combine(SoundEnabled, NotificationsEnabled, AutoStartSession, AutoStartDelaySeconds));
 
     /// <summary>
     /// Creates a deep copy of this settings instance
@@ -171,8 +165,7 @@ public class TimerSettings
         LongBreakInterval = LongBreakInterval,
         SoundEnabled = SoundEnabled,
         NotificationsEnabled = NotificationsEnabled,
-        AutoStartPomodoros = AutoStartPomodoros,
-        AutoStartBreaks = AutoStartBreaks,
+        AutoStartSession = AutoStartSession,
         AutoStartDelaySeconds = AutoStartDelaySeconds
     };
 }

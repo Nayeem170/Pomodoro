@@ -29,14 +29,13 @@ public class ConsentServiceBreakCompletionTests
     }
 
     [Fact]
-    public async Task HandleTimerCompletedAsync_BreakCompletedWithAutoStartPomodoros_ShowsConsentModal()
+    public async Task HandleTimerCompletedAsync_BreakCompletedWithAutoStartSession_ShowsConsentModal()
     {
         var appState = new AppState
         {
             Settings = new TimerSettings
             {
-                AutoStartPomodoros = true,
-                AutoStartBreaks = false,
+                AutoStartSession = true,
                 SoundEnabled = false,
                 NotificationsEnabled = false
             }
