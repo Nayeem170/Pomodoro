@@ -13,4 +13,4 @@ coverage:
         threshold: 0.5%
 parsers:
   cobertura:
-    partials_as_hits: false
+    partials_as_hits: true

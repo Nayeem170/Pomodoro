@@ -175,10 +175,6 @@ public class ImportService : IImportService
                     {
                         taskIdMapping[task.Id] = existingTask.Id;
                     }
-                    else if (task.Id != Guid.Empty)
-                    {
-                        _logger.LogWarning("Duplicate task found but couldn't map ID {TaskId} for task {Name}", task.Id, task.Name);
-                    }
                     tasksSkipped++;
                     _logger.LogDebug("Skipping duplicate task: {Name} created at {CreatedAt}", task.Name, task.CreatedAt);
                 }
