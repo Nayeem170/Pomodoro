@@ -361,10 +361,10 @@ window.pipTimer = {
         }
 
         html += '<div class="pip-ctrl">';
-        html += '<button class="pip-reset" onclick="window.pipResetTimer()">';
+        html += '<button class="pip-reset" onclick="window.pipResetTimer()" aria-label="Reset timer">';
         html += '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5A5 5 0 1 0 4.2 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 2v2.5H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         html += '</button>';
-        html += '<button class="pip-play ' + sessionClass + '" onclick="window.pipToggleTimer()">';
+        html += '<button class="pip-play ' + sessionClass + '" onclick="window.pipToggleTimer()" aria-label="' + (isRunning ? 'Pause' : 'Play') + '">';
         html += playIcon;
         html += '</button>';
         html += '<div style="width:36px"></div>';
