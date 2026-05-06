@@ -79,6 +79,12 @@ window.pipTimer = {
         
         this.pipDocument = this.pipWindow.document;
         this.writePopupContent(timerState);
+        var container = this.pipDocument.getElementById('pip-container');
+        if (container) {
+            var themeClass = this.getThemeClass(timerState.sessionType || 0);
+            var runningClass = timerState.isRunning ? 'running' : '';
+            container.className = 'pip-container ' + themeClass + ' ' + runningClass;
+        }
         if (!this.pipScriptInitialized) {
             this.ensurePipScript();
             this.pipScriptInitialized = true;
