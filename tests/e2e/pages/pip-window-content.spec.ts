@@ -62,10 +62,17 @@ test.describe('PiP Window Content and Communication', () => {
 
     expect(html).toContain('25:00');
     expect(html).toContain('FOCUSING');
-    expect(html).toContain('ring-area');
-    expect(html).toContain('ttime');
-    expect(html).toContain('tmode');
-    expect(html).toContain('mode-tab');
+    expect(html).toContain('ring-wrap');
+    expect(html).toContain('ring-time');
+    expect(html).toContain('ring-label');
+    expect(html).toContain('pip-tab');
+    expect(html).toContain('pip-ctrl');
+    expect(html).toContain('pipToggleTimer');
+    expect(html).toContain('pipResetTimer');
+    expect(html).toContain('pip-task');
+    expect(html).toContain('Test Task');
+    expect(html).toContain('pip-footer');
+    expect(html).toContain('Ends at');
     expect(html).not.toContain('active-task');
     expect(html).not.toContain('ctrl-row');
   });
@@ -89,6 +96,8 @@ test.describe('PiP Window Content and Communication', () => {
     expect(html).toContain('05:00');
     expect(html).toContain('SHORT BREAK');
     expect(html).toContain('short-break');
+    expect(html).toContain('pip-ctrl');
+    expect(html).not.toContain('pip-task');
     expect(html).not.toContain('active-task');
   });
 
@@ -111,6 +120,7 @@ test.describe('PiP Window Content and Communication', () => {
     expect(html).toContain('15:00');
     expect(html).toContain('LONG BREAK');
     expect(html).toContain('long-break');
+    expect(html).not.toContain('pip-task');
     expect(html).not.toContain('Break Task');
   });
 
@@ -133,7 +143,7 @@ test.describe('PiP Window Content and Communication', () => {
     const dashOffsetMatch = html.match(/stroke-dashoffset:\s*([\d.]+)/);
     expect(dashOffsetMatch).not.toBeNull();
 
-    const circumference = 2 * Math.PI * 81;
+    const circumference = 2 * Math.PI * 88;
     const expectedOffset = circumference * 0.5;
     expect(parseFloat(dashOffsetMatch![1])).toBeCloseTo(expectedOffset, 1);
   });
@@ -192,7 +202,7 @@ test.describe('PiP Window Content and Communication', () => {
     expect(themes.unknown).toBe('pomodoro-theme');
   });
 
-  test('should not contain interactive buttons in simplified PiP design', async ({ page }) => {
+  test('should contain interactive controls in redesigned PiP', async ({ page }) => {
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     const html = await page.evaluate(() => {
@@ -201,12 +211,21 @@ test.describe('PiP Window Content and Communication', () => {
         sessionType: 0,
         remainingSeconds: 1500,
         totalDurationSeconds: 1500,
-        isRunning: true
+        isRunning: true,
+        isStarted: true,
+        taskName: 'Test Task',
+        endsAt: '10:47 AM'
       });
     });
 
-    expect(html).not.toContain('pipToggleTimer');
-    expect(html).not.toContain('pipResetTimer');
+    expect(html).toContain('pipToggleTimer');
+    expect(html).toContain('pipResetTimer');
+    expect(html).toContain('pip-ctrl');
+    expect(html).toContain('pip-task');
+    expect(html).toContain('Test Task');
+    expect(html).toContain('pip-footer');
+    expect(html).toContain('Ends at');
+    expect(html).toContain('10:47 AM');
     expect(html).not.toContain('active-task');
     expect(html).not.toContain('ctrl-row');
     expect(html).not.toContain('card-footer');

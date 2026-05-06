@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PiP Window — Redesigned</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #080d18; font-family: system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; gap: 40px; padding: 32px; }
+
+  .label { font-size: 10px; font-weight: 700; letter-spacing: .09em; color: #3a4060; text-align: center; margin-bottom: 10px; }
+
+  /* PiP outer chrome — browser window simulation */
+  .pip-chrome {
+    width: 340px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 24px 64px rgba(0,0,0,.7);
+  }
+
+  .pip-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 10px;
+    background: #1a1f30;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .pip-title-left { display: flex; align-items: center; gap: 6px; }
+  .pip-title-left span { font-size: 11px; color: rgba(255,255,255,0.45); }
+  .pip-title-btns { display: flex; gap: 5px; }
+  .pip-tbtn {
+    width: 16px; height: 16px; border-radius: 3px;
+    background: rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* PiP content */
+  .pip-body {
+    background: #162032;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Session tabs — compact */
+  .pip-tabs {
+    display: flex;
+    padding: 6px 10px 0;
+    gap: 2px;
+    background: #162032;
+  }
+  .pip-tab {
+    flex: 1; padding: 7px 0; border-radius: 7px 7px 0 0;
+    border: none; background: transparent;
+    font-size: 12px; font-weight: 400;
+    color: rgba(255,255,255,0.3);
+    cursor: pointer; font-family: system-ui;
+    border-bottom: 2px solid transparent;
+  }
+  .pip-tab.act {
+    color: #e8edf8; font-weight: 600;
+    border-bottom-color: #D85A30;
+  }
+
+  /* Timer area — ring fills the space */
+  .pip-timer-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 20px 16px;
+    gap: 14px;
+    background: linear-gradient(160deg, #1e2a50, #162032);
+  }
+
+  /* Ring */
+  .ring-wrap { position: relative; }
+  .ring-wrap svg { display: block; transform: rotate(-90deg); }
+  .ring-center {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .ring-time { font-size: 42px; font-weight: 700; color: #e8edf8; letter-spacing: -1px; line-height: 1; }
+  .ring-label { font-size: 11px; color: #8a97b8; letter-spacing: .1em; margin-top: 5px; }
+
+  /* Active task pill */
+  .pip-task {
+    width: 100%;
+    background: #1e2a40;
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pip-task-dot { width: 7px; height: 7px; border-radius: 50%; background: #D85A30; flex-shrink: 0; }
+  .pip-task-name { font-size: 13px; color: #e8edf8; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Controls */
+  .pip-ctrl { display: flex; align-items: center; justify-content: center; gap: 16px; }
+  .pip-play {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #D85A30; border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(216,90,48,.45);
+  }
+  .pip-reset {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 0.5px solid rgba(255,255,255,0.14);
+    background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #8a97b8;
+  }
+
+  /* Footer */
+  .pip-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 20px 14px;
+    background: #162032;
+  }
+  .pip-footer span { font-size: 11px; }
+  .pip-footer .lbl { color: #4a5470; }
+  .pip-footer .val { color: #8a97b8; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div>
+  <div class="pip-chrome">
+    <div class="pip-titlebar">
+      <div class="pip-title-left">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="0.5" y="0.5" width="11" height="11" rx="2" stroke="rgba(255,255,255,0.3)" stroke-width="1"/><rect x="3" y="5" width="4" height="3" rx="0.5" fill="rgba(255,255,255,0.5)"/></svg>
+        <span>pomodoro.bitops.bd</span>
+      </div>
+      <div class="pip-title-btns">
+        <div class="pip-tbtn"><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 1h2M5 1h2M1 5h2M5 5h2M1 7h2M5 7h2" stroke="rgba(255,255,255,0.5)" stroke-width="1" stroke-linecap="round"/></svg></div>
+        <div class="pip-tbtn"><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M2 2l4 4M6 2l-4 4" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+      </div>
+    </div>
+    <div class="pip-body">
+      <div class="pip-tabs">
+        <button class="pip-tab act">Pomodoro</button>
+        <button class="pip-tab">Short break</button>
+        <button class="pip-tab">Long break</button>
+      </div>
+
+      <!-- timer area: ring fills available width -->
+      <div class="pip-timer-area">
+
+        <!-- large ring — 220px, matches regular timer -->
+        <div class="ring-wrap">
+          <svg width="220" height="220" viewBox="0 0 220 220">
+            <circle cx="110" cy="110" r="88" fill="none" stroke="#1e2a40" stroke-width="14"/>
+            <circle cx="110" cy="110" r="88" fill="none" stroke="#D85A30" stroke-width="14" stroke-linecap="round" stroke-dasharray="553 553"/>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-time">25:00</div>
+            <div class="ring-label">FOCUSING</div>
+          </div>
+        </div>
+
+        <!-- active task -->
+        <div class="pip-task">
+          <div class="pip-task-dot"></div>
+          <span class="pip-task-name">website builder ai</span>
+        </div>
+
+        <!-- controls: reset left, play centre -->
+        <div class="pip-ctrl">
+          <button class="pip-reset">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5A5 5 0 1 0 4.2 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 2v2.5H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="pip-play">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M6 4l10 6-10 6V4z" fill="white"/></svg>
+          </button>
+          <!-- spacer to balance reset on left -->
+          <div style="width:36px"></div>
+        </div>
+
+      </div>
+
+      <div class="pip-footer">
+        <span class="lbl">Ends at</span>
+        <span class="val">10:47 AM</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

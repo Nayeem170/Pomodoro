@@ -7,7 +7,7 @@
             var currentTask = Tasks.FirstOrDefault(t => t.Id == CurrentTaskId.Value);
             if (currentTask != null)
             {
-                <span>@currentTask.Name</span>
+                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@currentTask.Name</span>
             }
         }
         else
