@@ -1,10 +1,12 @@
 name: CI
 on:
+  push:
+    branches: [develop]
   pull_request:
     branches: [main, develop]
 
 concurrency:
-  group: ci-${{ github.event.pull_request.number }}
+  group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -78,7 +80,7 @@ jobs:
           DISPLAY_PERCENT=$(awk "BEGIN {printf \"%.2f\", ($COVERED/$TOTAL)*100}")
           echo "Line coverage: $COVERED/$TOTAL ($DISPLAY_PERCENT%)"
           THRESHOLD=99.5
-          PASS=$(awk "BEGIN {print (($COVERED/$TOTAL)*100 >= $THRESHOLD) ? 1 : 0}")
+          PASS=$(awk "BEGIN {print (($COVERED/$TOTAL)*100 > $THRESHOLD) ? 1 : 0}")
           if [ "$PASS" -eq 0 ]; then
             echo "::error::Line coverage ${DISPLAY_PERCENT}% is below threshold ${THRESHOLD}%"
             exit 1

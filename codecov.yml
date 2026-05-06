@@ -6,11 +6,11 @@ coverage:
     project:
       default:
         target: 99.5%
-        threshold: 0.5%
+        threshold: 0%
     patch:
       default:
-        target: 99.5%
-        threshold: 0.5%
+        target: 100%
+        threshold: 0%
 parsers:
   cobertura:
     partials_as_hits: true
