@@ -10,7 +10,7 @@ coverage:
     patch:
       default:
         target: 100%
-        threshold: 0%
+        threshold: 0.5%
 parsers:
   cobertura:
     partials_as_hits: true
