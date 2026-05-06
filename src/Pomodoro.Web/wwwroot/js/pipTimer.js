@@ -79,18 +79,15 @@ window.pipTimer = {
         
         this.pipDocument = this.pipWindow.document;
         this.writePopupContent(timerState);
-        this.setupCloseHandler();
-        this.setupBroadcastChannel();
-        
-        return true;
-    },
-    
-    getThemeClass: function(sessionType) {
-        switch (sessionType) {
-            case 0: return 'pomodoro-theme';
-            case 1: return 'short-break-theme';
-            case 2: return 'long-break-theme';
-            default: return 'pomodoro-theme';
+        var container = this.pipDocument.getElementById('pip-container');
+        if (container) {
+            var themeClass = this.getThemeClass(timerState.sessionType || 0);
+            var runningClass = timerState.isRunning ? 'running' : '';
+            container.className = 'pip-container ' + themeClass + ' ' + runningClass;
+        }
+        if (!this.pipScriptInitialized) {
+            this.ensurePipScript();
+            this.pipScriptInitialized = true;
         }
     },
     
