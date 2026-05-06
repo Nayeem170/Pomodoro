@@ -14,8 +14,9 @@ src/Pomodoro.Web/
   Models/           # Data models (TaskItem, TimerSettings, Activity, etc.)
   Pages/            # Routeable pages (Index, Settings, About, History)
   Services/         # Business logic (ITimerService, ITaskService, ICloudSyncService, etc.)
+                    # ServiceRegistrationService.cs — centralized DI registration
   wwwroot/          # Static assets, JS interop files (googleDrive.js, compressionInterop.js)
-  Program.cs        # DI registration
+  Program.cs        # Entry point (delegates to ApplicationStartupService)
 ```
 
 ## Tech Stack
@@ -24,7 +25,7 @@ src/Pomodoro.Web/
 - **Testing (Unit):** xUnit, bUnit, Moq, FluentAssertions
 - **Testing (E2E):** Playwright (Chromium only), TypeScript
 - **Formatting:** `dotnet format Pomodoro.sln --verify-no-changes` (enforced in CI)
-- **CI:** GitHub Actions (`pull-request.yml`, `deploy.yml`)
+- **CI:** GitHub Actions (`ci.yml`, `deploy.yml`)
 
 ## Key Conventions
 
@@ -83,11 +84,17 @@ When the user says "next item", follow this cycle:
 - Status options: Todo (`0cdfd9a0`), In Progress (`ae38fc2d`), Review (`10a3102c`), Done (`a881df4c`)
 
 ### DI Registration
-All services registered in `Program.cs`. When adding a new service:
+All services registered as **Scoped** via `ServiceRegistrationService`. In Blazor WASM, Scoped is equivalent to Singleton (single browser tab = single scope). When adding a new service:
 1. Create interface in `Services/`
 2. Create implementation in `Services/`
-3. Register in `Program.cs`: `builder.Services.AddSingleton<IService, Service>()`
+3. Register in `ServiceRegistrationService.cs`: `services.AddScoped<IService, Service>()`
 4. Add mock to `TestHelper.cs` constructor
+
+### Cloud Sync Strategy
+- Google Drive sync uses **last-write-wins** based on `LastSyncedAt` timestamp comparison
+- No field-level or record-level merge — entire dataset is pushed or pulled as a unit
+- Sync is debounced (300ms) to coalesce rapid changes into a single push
+- Compression is applied before upload via `compressionInterop.js` (uses Compression Streams API)
 
 ## Common Commands
 

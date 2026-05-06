@@ -47,35 +47,57 @@ test.describe('PiP Window Content and Communication', () => {
   test('should generate correct timer HTML for PiP window', async ({ page }) => {
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const html = await page.evaluate(() => {
+    const checks = await page.evaluate(() => {
       const pip = (window as any).pipTimer;
-      return pip.generateTimerHTML({
+      const html = pip.generateTimerHTML({
         sessionType: 0,
         remainingSeconds: 1500,
         totalDurationSeconds: 1500,
         isRunning: true,
         isStarted: true,
         showReset: true,
-        taskName: 'Test Task'
+        taskName: 'Test Task',
+        endsAt: '10:47 AM'
       });
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      return {
+        ringWrap: !!doc.querySelector('.ring-wrap'),
+        ringTime: doc.querySelector('.ring-time')?.textContent ?? '',
+        ringLabel: doc.querySelector('.ring-label')?.textContent ?? '',
+        pipTabs: doc.querySelectorAll('.pip-tab').length,
+        pipCtrl: !!doc.querySelector('.pip-ctrl'),
+        toggleBtn: !!doc.querySelector('[onclick="window.pipToggleTimer()"]'),
+        resetBtn: !!doc.querySelector('[onclick="window.pipResetTimer()"]'),
+        pipTask: !!doc.querySelector('.pip-task'),
+        taskName: doc.querySelector('.pip-task-name')?.textContent ?? '',
+        pipFooter: !!doc.querySelector('.pip-footer'),
+        footerText: doc.querySelector('.pip-footer')?.textContent ?? '',
+        hasActiveTask: !!doc.querySelector('.active-task'),
+        hasCtrlRow: !!doc.querySelector('.ctrl-row'),
+      };
     });
 
-    expect(html).toContain('25:00');
-    expect(html).toContain('FOCUSING');
-    expect(html).toContain('ring-area');
-    expect(html).toContain('ttime');
-    expect(html).toContain('tmode');
-    expect(html).toContain('mode-tab');
-    expect(html).not.toContain('active-task');
-    expect(html).not.toContain('ctrl-row');
+    expect(checks.ringWrap).toBe(true);
+    expect(checks.ringTime).toBe('25:00');
+    expect(checks.ringLabel).toBe('FOCUSING');
+    expect(checks.pipTabs).toBe(3);
+    expect(checks.pipCtrl).toBe(true);
+    expect(checks.toggleBtn).toBe(true);
+    expect(checks.resetBtn).toBe(true);
+    expect(checks.pipTask).toBe(true);
+    expect(checks.taskName).toBe('Test Task');
+    expect(checks.pipFooter).toBe(true);
+    expect(checks.footerText).toContain('Ends at');
+    expect(checks.hasActiveTask).toBe(false);
+    expect(checks.hasCtrlRow).toBe(false);
   });
 
   test('should generate correct HTML for short break session', async ({ page }) => {
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const html = await page.evaluate(() => {
+    const checks = await page.evaluate(() => {
       const pip = (window as any).pipTimer;
-      return pip.generateTimerHTML({
+      const html = pip.generateTimerHTML({
         sessionType: 1,
         remainingSeconds: 300,
         totalDurationSeconds: 300,
@@ -84,20 +106,31 @@ test.describe('PiP Window Content and Communication', () => {
         showReset: true,
         taskName: null
       });
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      return {
+        ringTime: doc.querySelector('.ring-time')?.textContent ?? '',
+        ringLabel: doc.querySelector('.ring-label')?.textContent ?? '',
+        ringFill: !!doc.querySelector('.ring-fill.short-break'),
+        pipCtrl: !!doc.querySelector('.pip-ctrl'),
+        pipTask: !!doc.querySelector('.pip-task'),
+        hasActiveTask: !!doc.querySelector('.active-task'),
+      };
     });
 
-    expect(html).toContain('05:00');
-    expect(html).toContain('SHORT BREAK');
-    expect(html).toContain('short-break');
-    expect(html).not.toContain('active-task');
+    expect(checks.ringTime).toBe('05:00');
+    expect(checks.ringLabel).toBe('SHORT BREAK');
+    expect(checks.ringFill).toBe(true);
+    expect(checks.pipCtrl).toBe(true);
+    expect(checks.pipTask).toBe(false);
+    expect(checks.hasActiveTask).toBe(false);
   });
 
   test('should generate correct HTML for long break session', async ({ page }) => {
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const html = await page.evaluate(() => {
+    const checks = await page.evaluate(() => {
       const pip = (window as any).pipTimer;
-      return pip.generateTimerHTML({
+      const html = pip.generateTimerHTML({
         sessionType: 2,
         remainingSeconds: 900,
         totalDurationSeconds: 900,
@@ -106,12 +139,19 @@ test.describe('PiP Window Content and Communication', () => {
         showReset: false,
         taskName: 'Break Task'
       });
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      return {
+        ringTime: doc.querySelector('.ring-time')?.textContent ?? '',
+        ringLabel: doc.querySelector('.ring-label')?.textContent ?? '',
+        ringFill: !!doc.querySelector('.ring-fill.long-break'),
+        pipTask: !!doc.querySelector('.pip-task'),
+      };
     });
 
-    expect(html).toContain('15:00');
-    expect(html).toContain('LONG BREAK');
-    expect(html).toContain('long-break');
-    expect(html).not.toContain('Break Task');
+    expect(checks.ringTime).toBe('15:00');
+    expect(checks.ringLabel).toBe('LONG BREAK');
+    expect(checks.ringFill).toBe(true);
+    expect(checks.pipTask).toBe(false);
   });
 
   test('should generate correct ring progress for partially elapsed timer', async ({ page }) => {
@@ -133,7 +173,7 @@ test.describe('PiP Window Content and Communication', () => {
     const dashOffsetMatch = html.match(/stroke-dashoffset:\s*([\d.]+)/);
     expect(dashOffsetMatch).not.toBeNull();
 
-    const circumference = 2 * Math.PI * 81;
+    const circumference = 2 * Math.PI * 88;
     const expectedOffset = circumference * 0.5;
     expect(parseFloat(dashOffsetMatch![1])).toBeCloseTo(expectedOffset, 1);
   });
@@ -192,24 +232,46 @@ test.describe('PiP Window Content and Communication', () => {
     expect(themes.unknown).toBe('pomodoro-theme');
   });
 
-  test('should not contain interactive buttons in simplified PiP design', async ({ page }) => {
+  test('should contain interactive controls in redesigned PiP', async ({ page }) => {
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const html = await page.evaluate(() => {
+    const checks = await page.evaluate(() => {
       const pip = (window as any).pipTimer;
-      return pip.generateTimerHTML({
+      const html = pip.generateTimerHTML({
         sessionType: 0,
         remainingSeconds: 1500,
         totalDurationSeconds: 1500,
-        isRunning: true
+        isRunning: true,
+        isStarted: true,
+        taskName: 'Test Task',
+        endsAt: '10:47 AM'
       });
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      return {
+        toggleBtn: !!doc.querySelector('[onclick="window.pipToggleTimer()"]'),
+        resetBtn: !!doc.querySelector('[onclick="window.pipResetTimer()"]'),
+        pipCtrl: !!doc.querySelector('.pip-ctrl'),
+        pipTask: !!doc.querySelector('.pip-task'),
+        taskName: doc.querySelector('.pip-task-name')?.textContent ?? '',
+        pipFooter: !!doc.querySelector('.pip-footer'),
+        footerText: doc.querySelector('.pip-footer')?.textContent ?? '',
+        hasActiveTask: !!doc.querySelector('.active-task'),
+        hasCtrlRow: !!doc.querySelector('.ctrl-row'),
+        hasCardFooter: !!doc.querySelector('.card-footer'),
+      };
     });
 
-    expect(html).not.toContain('pipToggleTimer');
-    expect(html).not.toContain('pipResetTimer');
-    expect(html).not.toContain('active-task');
-    expect(html).not.toContain('ctrl-row');
-    expect(html).not.toContain('card-footer');
+    expect(checks.toggleBtn).toBe(true);
+    expect(checks.resetBtn).toBe(true);
+    expect(checks.pipCtrl).toBe(true);
+    expect(checks.pipTask).toBe(true);
+    expect(checks.taskName).toBe('Test Task');
+    expect(checks.pipFooter).toBe(true);
+    expect(checks.footerText).toContain('Ends at');
+    expect(checks.footerText).toContain('10:47 AM');
+    expect(checks.hasActiveTask).toBe(false);
+    expect(checks.hasCtrlRow).toBe(false);
+    expect(checks.hasCardFooter).toBe(false);
   });
 
   test('should handle PiP toggle timer callback without error', async ({ page }) => {
