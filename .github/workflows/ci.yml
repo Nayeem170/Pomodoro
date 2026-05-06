@@ -1,10 +1,12 @@
 name: CI
 on:
+  push:
+    branches: [develop]
   pull_request:
     branches: [main, develop]
 
 concurrency:
-  group: ci-${{ github.event.pull_request.number }}
+  group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -56,33 +58,45 @@ jobs:
       - run: dotnet test Pomodoro.sln --configuration Release --verbosity normal
             --collect:"XPlat Code Coverage" --results-directory ./coverage
 
-      - name: Check branch coverage
+      - name: Resolve coverage file
+        id: coverage
         run: |
-          COVERAGE_FILE=$(find ./coverage -name "coverage.cobertura.xml" | head -1)
-          if [ -z "$COVERAGE_FILE" ] || [ ! -f "$COVERAGE_FILE" ]; then
+          mapfile -t COVERAGE_FILES < <(find ./coverage -type f -name "coverage.cobertura.xml" | sort)
+          if [ "${#COVERAGE_FILES[@]}" -eq 0 ]; then
             echo "::error::No coverage report found"
             exit 1
           fi
-          COVERED=$(grep -oP 'branches-covered="\K[0-9]+' "$COVERAGE_FILE" | head -1)
-          TOTAL=$(grep -oP 'branches-valid="\K[0-9]+' "$COVERAGE_FILE" | head -1)
-          if [ -z "$COVERED" ] || [ -z "$TOTAL" ] || [ "$TOTAL" -eq 0 ]; then
-            echo "::error::Could not parse branch coverage from report"
+          if [ "${#COVERAGE_FILES[@]}" -gt 1 ]; then
+            echo "::error::Multiple coverage reports found:"
+            printf '%s\n' "${COVERAGE_FILES[@]}"
             exit 1
           fi
-          DISPLAY_PERCENT=$(awk "BEGIN {printf \"%.1f\", ($COVERED/$TOTAL)*100}")
-          echo "Branch coverage: $COVERED/$TOTAL ($DISPLAY_PERCENT%)"
-          THRESHOLD=98.0
+          COVERAGE_FILE="${COVERAGE_FILES[0]}"
+          echo "file=$COVERAGE_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Check line coverage
+        run: |
+          COVERAGE_FILE="${{ steps.coverage.outputs.file }}"
+          COVERED=$(grep -oP 'lines-covered="\K[0-9]+' "$COVERAGE_FILE" | head -1)
+          TOTAL=$(grep -oP 'lines-valid="\K[0-9]+' "$COVERAGE_FILE" | head -1)
+          if [ -z "$COVERED" ] || [ -z "$TOTAL" ] || [ "$TOTAL" -eq 0 ]; then
+            echo "::error::Could not parse line coverage from report"
+            exit 1
+          fi
+          DISPLAY_PERCENT=$(awk "BEGIN {printf \"%.2f\", ($COVERED/$TOTAL)*100}")
+          echo "Line coverage: $COVERED/$TOTAL ($DISPLAY_PERCENT%)"
+          THRESHOLD=99.5
           PASS=$(awk "BEGIN {print (($COVERED/$TOTAL)*100 >= $THRESHOLD) ? 1 : 0}")
           if [ "$PASS" -eq 0 ]; then
-            echo "::error::Branch coverage ${DISPLAY_PERCENT}% is below threshold ${THRESHOLD}%"
+            echo "::error::Line coverage ${DISPLAY_PERCENT}% is below threshold ${THRESHOLD}%"
             exit 1
           fi
-          echo "Branch coverage meets threshold"
+          echo "Line coverage meets threshold"
 
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/**/coverage.cobertura.xml
+          files: ${{ steps.coverage.outputs.file }}
           fail_ci_if_error: false
           verbose: true
 
