@@ -93,6 +93,13 @@ window.pipTimer = {
             default: return 'pomodoro-theme';
         }
     },
+
+    escapeHtml: function(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    },
     
     injectPipStyles: function() {
         if (!this.pipDocument) return;
@@ -339,7 +346,7 @@ window.pipTimer = {
         if (taskName) {
             html += '<div class="pip-task">';
             html += '<div class="pip-task-dot ' + sessionClass + '"></div>';
-            html += '<span class="pip-task-name">' + taskName + '</span>';
+            html += '<span class="pip-task-name">' + this.escapeHtml(taskName) + '</span>';
             html += '</div>';
         }
 
