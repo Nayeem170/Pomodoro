@@ -79,6 +79,10 @@ window.pipTimer = {
         
         this.pipDocument = this.pipWindow.document;
         this.writePopupContent(timerState);
+        if (!this.pipScriptInitialized) {
+            this.ensurePipScript();
+            this.pipScriptInitialized = true;
+        }
         this.setupCloseHandler();
         this.setupBroadcastChannel();
         
@@ -343,7 +347,7 @@ window.pipTimer = {
         html += '<div class="ring-label">' + modeLabel + '</div>';
         html += '</div></div>';
 
-        if (taskName) {
+        if (sessionType === 0 && taskName) {
             html += '<div class="pip-task">';
             html += '<div class="pip-task-dot ' + sessionClass + '"></div>';
             html += '<span class="pip-task-name">' + this.escapeHtml(taskName) + '</span>';

@@ -56,7 +56,8 @@ test.describe('PiP Window Content and Communication', () => {
         isRunning: true,
         isStarted: true,
         showReset: true,
-        taskName: 'Test Task'
+        taskName: 'Test Task',
+        endsAt: '10:47 AM'
       });
       const doc = new DOMParser().parseFromString(html, 'text/html');
       return {
