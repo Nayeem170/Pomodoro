@@ -5,16 +5,20 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to deploy as preview'
+        description: 'Branch to deploy'
         required: true
         default: 'develop'
+        type: choice
+        options:
+          - develop
+          - main
 
 permissions:
   contents: read
   deployments: write
 
 concurrency:
-  group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.branch || github.ref_name }}
+  group: deploy-${{ github.event_name == 'push' && github.ref_name || inputs.branch }}
   cancel-in-progress: true
 
 jobs:
@@ -23,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.branch || github.ref }}
+          ref: ${{ github.event_name == 'push' && github.ref || inputs.branch }}
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -48,7 +52,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    environment: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+    environment: ${{ ((github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'workflow_dispatch' && inputs.branch == 'main')) && 'production' || 'preview' }}
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -62,5 +66,5 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: pomodoro
-          branch: ${{ github.event_name == 'push' && 'main' || inputs.branch }}
+          branch: ${{ github.event_name == 'push' && github.ref_name || inputs.branch }}
           directory: publish/wwwroot
