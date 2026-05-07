@@ -317,7 +317,7 @@ test.describe('PiP Window Content and Communication', () => {
   test('should use monospace font for timer digits', async ({ page }) => {
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const fontFamily = await page.evaluate(() => {
+    const hasMonospace = await page.evaluate(() => {
       const pip = (window as any).pipTimer;
       const html = pip.generateTimerHTML({
         sessionType: 0,
@@ -328,11 +328,11 @@ test.describe('PiP Window Content and Communication', () => {
         taskName: null
       });
       const doc = new DOMParser().parseFromString(html, 'text/html');
-      const style = doc.querySelector('.ring-time');
-      return style?.getAttribute('style') ?? '';
+      const styleEl = doc.querySelector('style');
+      return styleEl?.textContent?.includes('.ring-time') && styleEl?.textContent?.includes('monospace');
     });
 
-    expect(fontFamily).toContain('monospace');
+    expect(hasMonospace).toBe(true);
   });
 
   test('should show paused hint and paused footer when paused', async ({ page }) => {
