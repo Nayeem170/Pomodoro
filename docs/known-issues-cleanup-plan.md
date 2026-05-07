@@ -2,7 +2,7 @@
 
 ## Objective
 
-Act on the findings from `docs/known-issues-analysis.md`: remove 2 incorrect Known Issues entries from AGENTS.md, consolidate 3 duplicate `NavigationManager` test subclasses, and remove dead `Mock<NavigationManager>` fields.
+Act on the findings from `docs/archive/known-issues-analysis.md`: remove 2 incorrect Known Issues entries from AGENTS.md, consolidate 3 duplicate `NavigationManager` test subclasses, and remove dead `Mock<NavigationManager>` fields.
 
 **This cleanup is intended to be behavior-preserving.** No production code changes. No intentional test behavior changes.
 
@@ -58,7 +58,7 @@ Move to `docs/archive/known-issues-analysis.md`. The analysis contains useful hi
 
 #### 3. TestHelper.cs — Add shared class
 
-**Status: See PR #[TBD].** Added `using Microsoft.AspNetCore.Components.Routing` and consolidated `TestNavigationManager` class at the bottom of the file. Constructor calls `Initialize("http://localhost/", "http://localhost/")` — matches 2 of 3 existing subclasses. The third (`MockNavigationManager` with `/settings` URI) has no tests reading `.Uri` or calling `ToAbsoluteUri()`, so the difference is irrelevant.
+**Status: See PR #79.** Added `using Microsoft.AspNetCore.Components.Routing` and consolidated `TestNavigationManager` class at the bottom of the file. Constructor calls `Initialize("http://localhost/", "http://localhost/")` — matches 2 of 3 existing subclasses. The third (`MockNavigationManager` with `/settings` URI) has no tests reading `.Uri` or calling `ToAbsoluteUri()`, so the difference is irrelevant.
 
 ### C. Dead registration removal
 
