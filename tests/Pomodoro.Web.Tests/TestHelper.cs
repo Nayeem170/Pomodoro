@@ -1,4 +1,5 @@
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -143,4 +144,14 @@ public abstract class TestHelper : TestContext
         }
         return activities;
     }
+}
+
+internal class TestNavigationManager : NavigationManager
+{
+    public TestNavigationManager()
+    {
+        Initialize("http://localhost/", "http://localhost/");
+    }
+
+    protected override void NavigateToCore(string uri, bool forceLoad) { }
 }
