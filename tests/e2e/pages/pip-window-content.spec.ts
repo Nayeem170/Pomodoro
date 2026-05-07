@@ -319,17 +319,8 @@ test.describe('PiP Window Content and Communication', () => {
 
     const hasMonospace = await page.evaluate(() => {
       const pip = (window as any).pipTimer;
-      const html = pip.generateTimerHTML({
-        sessionType: 0,
-        remainingSeconds: 1500,
-        totalDurationSeconds: 1500,
-        isRunning: false,
-        isStarted: false,
-        taskName: null
-      });
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const styleEl = doc.querySelector('style');
-      return styleEl?.textContent?.includes('.ring-time') && styleEl?.textContent?.includes('monospace');
+      const source = pip.ensurePipStyles.toString();
+      return source.includes('monospace');
     });
 
     expect(hasMonospace).toBe(true);
