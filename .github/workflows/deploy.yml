@@ -3,13 +3,19 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'develop'
+        type: string
 
 permissions:
   contents: read
   deployments: write
 
 concurrency:
-  group: deploy-${{ github.ref_name }}
+  group: deploy-${{ github.event_name == 'push' && github.ref_name || inputs.branch }}
   cancel-in-progress: true
 
 jobs:
@@ -17,6 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'push' && github.ref || inputs.branch }}
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -55,5 +63,5 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: pomodoro
-          branch: ${{ github.ref_name }}
+          branch: ${{ github.event_name == 'push' && github.ref_name || inputs.branch }}
           directory: publish/wwwroot
