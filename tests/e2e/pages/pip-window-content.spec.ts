@@ -65,8 +65,8 @@ test.describe('PiP Window Content and Communication', () => {
         ringLabel: doc.querySelector('.ring-label')?.textContent ?? '',
         pipTabs: doc.querySelectorAll('.pip-tab').length,
         pipCtrl: !!doc.querySelector('.pip-ctrl'),
-        toggleBtn: !!doc.querySelector('[onclick="window.pipToggleTimer()"]'),
-        resetBtn: !!doc.querySelector('[onclick="window.pipResetTimer()"]'),
+        toggleBtn: !!doc.querySelector('.pip-play'),
+        resetBtn: !!doc.querySelector('.pip-reset'),
         pipTask: !!doc.querySelector('.pip-task'),
         taskName: doc.querySelector('.pip-task-name')?.textContent ?? '',
         pipFooter: !!doc.querySelector('.pip-footer'),
@@ -111,7 +111,7 @@ test.describe('PiP Window Content and Communication', () => {
         ringLabel: doc.querySelector('.ring-label')?.textContent ?? '',
         ringFill: !!doc.querySelector('.ring-fill.short-break'),
         pipCtrl: !!doc.querySelector('.pip-ctrl'),
-        resetBtn: !!doc.querySelector('[onclick="window.pipResetTimer()"]'),
+        resetBtn: !!doc.querySelector('.pip-reset'),
         pipTask: !!doc.querySelector('.pip-task'),
         pipHint: doc.querySelector('.pip-hint')?.textContent ?? '',
         pipFooter: !!doc.querySelector('.pip-footer'),
@@ -254,8 +254,8 @@ test.describe('PiP Window Content and Communication', () => {
       });
       const doc = new DOMParser().parseFromString(html, 'text/html');
       return {
-        toggleBtn: !!doc.querySelector('[onclick="window.pipToggleTimer()"]'),
-        resetBtn: !!doc.querySelector('[onclick="window.pipResetTimer()"]'),
+        toggleBtn: !!doc.querySelector('.pip-play'),
+        resetBtn: !!doc.querySelector('.pip-reset'),
         pipCtrl: !!doc.querySelector('.pip-ctrl'),
         pipTask: !!doc.querySelector('.pip-task'),
         taskName: doc.querySelector('.pip-task-name')?.textContent ?? '',
@@ -296,7 +296,7 @@ test.describe('PiP Window Content and Communication', () => {
       const doc = new DOMParser().parseFromString(html, 'text/html');
       return {
         playBtn: !!doc.querySelector('.pip-play'),
-        resetBtn: !!doc.querySelector('[onclick="window.pipResetTimer()"]'),
+        resetBtn: !!doc.querySelector('.pip-reset'),
         pipHint: doc.querySelector('.pip-hint')?.textContent ?? '',
         pipFooter: !!doc.querySelector('.pip-footer'),
         footerText: doc.querySelector('.pip-footer')?.textContent ?? '',
@@ -319,8 +319,10 @@ test.describe('PiP Window Content and Communication', () => {
 
     const hasMonospace = await page.evaluate(() => {
       const pip = (window as any).pipTimer;
-      const source = pip.ensurePipStyles.toString();
-      return source.includes('monospace');
+      const source = pip.injectPipStyles.toString();
+      return source.includes("'Courier New'") &&
+             source.includes("'Lucida Console'") &&
+             source.includes('monospace');
     });
 
     expect(hasMonospace).toBe(true);
@@ -343,7 +345,7 @@ test.describe('PiP Window Content and Communication', () => {
       const doc = new DOMParser().parseFromString(html, 'text/html');
       return {
         playBtn: !!doc.querySelector('.pip-play'),
-        resetBtn: !!doc.querySelector('[onclick="window.pipResetTimer()"]'),
+        resetBtn: !!doc.querySelector('.pip-reset'),
         pipHint: doc.querySelector('.pip-hint')?.textContent ?? '',
         pipFooter: !!doc.querySelector('.pip-footer'),
         footerText: doc.querySelector('.pip-footer')?.textContent ?? '',
