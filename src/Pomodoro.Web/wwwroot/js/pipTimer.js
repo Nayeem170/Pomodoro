@@ -31,7 +31,7 @@ window.pipTimer = {
         }
         
         var width = Math.round(Math.min(window.innerWidth, 420) * 0.9);
-        var height = 460;
+        var height = 440;
         
         if (this.isSupported()) {
             try {
@@ -57,7 +57,7 @@ window.pipTimer = {
     
     openFallback: function(timerState) {
         var width = Math.round(Math.min(window.innerWidth, 420) * 0.9);
-        var height = 460;
+        var height = 440;
         
         const features = [
             'width=' + width,
@@ -145,7 +145,7 @@ window.pipTimer = {
                 border-radius: 7px 7px 0 0;
                 border: none;
                 background: transparent;
-                font-size: 12px;
+                font-size: 13px;
                 font-weight: 400;
                 color: rgba(255,255,255,0.3);
                 cursor: pointer;
@@ -167,13 +167,13 @@ window.pipTimer = {
                 gap: 14px;
             }
             .pip-container.pomodoro-theme .pip-timer-area {
-                background: linear-gradient(160deg, #1e2a50, #162032);
+                background: linear-gradient(180deg, rgba(231,76,60,.12), #162032);
             }
             .pip-container.short-break-theme .pip-timer-area {
-                background: linear-gradient(160deg, #1e2a50, #162032);
+                background: linear-gradient(180deg, rgba(39,174,96,.12), #162032);
             }
             .pip-container.long-break-theme .pip-timer-area {
-                background: linear-gradient(160deg, #1e2a50, #162032);
+                background: linear-gradient(180deg, rgba(52,152,219,.12), #162032);
             }
             .ring-wrap { position: relative; }
             .ring-wrap svg { display: block; transform: rotate(-90deg); }
@@ -203,13 +203,14 @@ window.pipTimer = {
                 color: #e8edf8;
                 letter-spacing: -1px;
                 line-height: 1;
+                font-family: 'Courier New', 'Lucida Console', monospace;
                 font-variant-numeric: tabular-nums;
             }
             .pip-container.running.pomodoro-theme .ring-time { color: #e74c3c; }
             .pip-container.running.short-break-theme .ring-time { color: #27ae60; }
             .pip-container.running.long-break-theme .ring-time { color: #3498db; }
             .ring-label {
-                font-size: 11px;
+                font-size: 12px;
                 color: #8a97b8;
                 letter-spacing: .1em;
                 margin-top: 5px;
@@ -236,6 +237,7 @@ window.pipTimer = {
                 font-size: 13px;
                 color: #e8edf8;
                 flex: 1;
+                max-width: 100%;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
@@ -278,6 +280,11 @@ window.pipTimer = {
                 cursor: pointer;
                 color: #8a97b8;
             }
+            .pip-hint {
+                font-size: 12px;
+                color: #6e7a8a;
+                text-align: center;
+            }
             .pip-footer {
                 display: flex;
                 align-items: center;
@@ -285,9 +292,9 @@ window.pipTimer = {
                 padding: 10px 20px 14px;
                 background: #162032;
             }
-            .pip-footer span { font-size: 11px; }
-            .pip-footer .lbl { color: #4a5470; }
-            .pip-footer .val { color: #8a97b8; font-weight: 600; }
+            .pip-footer span { font-size: 12px; }
+            .pip-footer .lbl { color: #6e7a8a; }
+            .pip-footer .val { color: #a0aec0; font-weight: 600; }
         `;
         this.pipDocument.head.appendChild(pipStyles);
     },
@@ -330,12 +337,13 @@ window.pipTimer = {
 
         var modeLabel = sessionType === 0 ? 'FOCUSING' : sessionType === 1 ? 'SHORT BREAK' : 'LONG BREAK';
         var isRunning = state.isRunning || false;
+        var isStarted = state.isStarted || false;
         var taskName = state.taskName || null;
         var endsAt = state.endsAt || null;
 
-        var playIcon = isRunning
-            ? '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="2" width="4" height="14" rx="1" fill="white"/><rect x="11" y="2" width="4" height="14" rx="1" fill="white"/></svg>'
-            : '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M6 4l10 6-10 6V4z" fill="white"/></svg>';
+        var playIcon = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M6 4l10 6-10 6V4z" fill="white"/></svg>';
+        var pauseIcon = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="2" width="4" height="14" rx="1" fill="white"/><rect x="11" y="2" width="4" height="14" rx="1" fill="white"/></svg>';
+        var resetIcon = '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5A5 5 0 1 0 4.2 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 2v2.5H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
         var html = '<div class="pip-tabs">';
         html += '<button class="pip-tab ' + (sessionType === 0 ? 'act pomodoro' : '') + '" onclick="window.pipSwitchSession(0)">Pomodoro</button>';
@@ -360,23 +368,51 @@ window.pipTimer = {
             html += '</div>';
         }
 
-        html += '<div class="pip-ctrl">';
-        html += '<button class="pip-reset" onclick="window.pipResetTimer()" aria-label="Reset timer">';
-        html += '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5A5 5 0 1 0 4.2 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 2v2.5H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        html += '</button>';
-        html += '<button class="pip-play ' + sessionClass + '" onclick="window.pipToggleTimer()" aria-label="' + (isRunning ? 'Pause' : 'Play') + '">';
-        html += playIcon;
-        html += '</button>';
-        html += '<div style="width:36px"></div>';
-        html += '</div>';
+        if (!isStarted && !isRunning) {
+            html += '<div class="pip-ctrl">';
+            html += '<button class="pip-play ' + sessionClass + '" onclick="window.pipToggleTimer()" aria-label="Start">';
+            html += playIcon;
+            html += '</button>';
+            html += '</div>';
+            html += '<div class="pip-hint">Space to start</div>';
+        } else if (isRunning) {
+            html += '<div class="pip-ctrl">';
+            html += '<button class="pip-reset" onclick="window.pipResetTimer()" aria-label="Reset timer">';
+            html += resetIcon;
+            html += '</button>';
+            html += '<button class="pip-play ' + sessionClass + '" onclick="window.pipToggleTimer()" aria-label="Pause">';
+            html += pauseIcon;
+            html += '</button>';
+            html += '<div style="width:36px"></div>';
+            html += '</div>';
+        } else {
+            html += '<div class="pip-ctrl">';
+            html += '<button class="pip-reset" onclick="window.pipResetTimer()" aria-label="Reset timer">';
+            html += resetIcon;
+            html += '</button>';
+            html += '<button class="pip-play ' + sessionClass + '" onclick="window.pipToggleTimer()" aria-label="Resume">';
+            html += playIcon;
+            html += '</button>';
+            html += '<div style="width:36px"></div>';
+            html += '</div>';
+            html += '<div class="pip-hint">Space to resume</div>';
+        }
         html += '</div>';
 
-        if (isRunning && endsAt) {
-            html += '<div class="pip-footer">';
+        var durationMinutes = Math.round((state.totalDurationSeconds || 0) / 60);
+        html += '<div class="pip-footer">';
+        if (!isStarted && !isRunning) {
+            var durationLabel = sessionType === 0 ? durationMinutes + ' min session'
+                : durationMinutes + ' min break';
+            html += '<span class="lbl">' + durationLabel + '</span>';
+        } else if (isRunning && endsAt) {
             html += '<span class="lbl">Ends at</span>';
             html += '<span class="val">' + endsAt + '</span>';
-            html += '</div>';
+        } else if (isStarted && !isRunning && endsAt) {
+            html += '<span class="lbl">Paused · ends at</span>';
+            html += '<span class="val">' + endsAt + '</span>';
         }
+        html += '</div>';
 
         return html;
     },
