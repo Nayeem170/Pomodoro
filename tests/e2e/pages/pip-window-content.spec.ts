@@ -55,7 +55,6 @@ test.describe('PiP Window Content and Communication', () => {
         totalDurationSeconds: 1500,
         isRunning: true,
         isStarted: true,
-        showReset: true,
         taskName: 'Test Task',
         endsAt: '10:47 AM'
       });
@@ -66,8 +65,8 @@ test.describe('PiP Window Content and Communication', () => {
         ringLabel: doc.querySelector('.ring-label')?.textContent ?? '',
         pipTabs: doc.querySelectorAll('.pip-tab').length,
         pipCtrl: !!doc.querySelector('.pip-ctrl'),
-        toggleBtn: !!doc.querySelector('[onclick="window.pipToggleTimer()"]'),
-        resetBtn: !!doc.querySelector('[onclick="window.pipResetTimer()"]'),
+        toggleBtn: !!doc.querySelector('.pip-play'),
+        resetBtn: !!doc.querySelector('.pip-reset'),
         pipTask: !!doc.querySelector('.pip-task'),
         taskName: doc.querySelector('.pip-task-name')?.textContent ?? '',
         pipFooter: !!doc.querySelector('.pip-footer'),
@@ -92,7 +91,7 @@ test.describe('PiP Window Content and Communication', () => {
     expect(checks.hasCtrlRow).toBe(false);
   });
 
-  test('should generate correct HTML for short break session', async ({ page }) => {
+  test('should generate correct HTML for short break session (paused)', async ({ page }) => {
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
     const checks = await page.evaluate(() => {
@@ -103,8 +102,8 @@ test.describe('PiP Window Content and Communication', () => {
         totalDurationSeconds: 300,
         isRunning: false,
         isStarted: true,
-        showReset: true,
-        taskName: null
+        taskName: null,
+        endsAt: '11:30 AM'
       });
       const doc = new DOMParser().parseFromString(html, 'text/html');
       return {
@@ -112,7 +111,11 @@ test.describe('PiP Window Content and Communication', () => {
         ringLabel: doc.querySelector('.ring-label')?.textContent ?? '',
         ringFill: !!doc.querySelector('.ring-fill.short-break'),
         pipCtrl: !!doc.querySelector('.pip-ctrl'),
+        resetBtn: !!doc.querySelector('.pip-reset'),
         pipTask: !!doc.querySelector('.pip-task'),
+        pipHint: doc.querySelector('.pip-hint')?.textContent ?? '',
+        pipFooter: !!doc.querySelector('.pip-footer'),
+        footerText: doc.querySelector('.pip-footer')?.textContent ?? '',
         hasActiveTask: !!doc.querySelector('.active-task'),
       };
     });
@@ -121,7 +124,12 @@ test.describe('PiP Window Content and Communication', () => {
     expect(checks.ringLabel).toBe('SHORT BREAK');
     expect(checks.ringFill).toBe(true);
     expect(checks.pipCtrl).toBe(true);
+    expect(checks.resetBtn).toBe(true);
     expect(checks.pipTask).toBe(false);
+    expect(checks.pipHint).toBe('Space to resume');
+    expect(checks.pipFooter).toBe(true);
+    expect(checks.footerText).toContain('Paused · ends at');
+    expect(checks.footerText).toContain('11:30 AM');
     expect(checks.hasActiveTask).toBe(false);
   });
 
@@ -136,7 +144,6 @@ test.describe('PiP Window Content and Communication', () => {
         totalDurationSeconds: 900,
         isRunning: true,
         isStarted: true,
-        showReset: false,
         taskName: 'Break Task'
       });
       const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -165,7 +172,6 @@ test.describe('PiP Window Content and Communication', () => {
         totalDurationSeconds: 1500,
         isRunning: true,
         isStarted: true,
-        showReset: true,
         taskName: null
       });
     });
@@ -248,8 +254,8 @@ test.describe('PiP Window Content and Communication', () => {
       });
       const doc = new DOMParser().parseFromString(html, 'text/html');
       return {
-        toggleBtn: !!doc.querySelector('[onclick="window.pipToggleTimer()"]'),
-        resetBtn: !!doc.querySelector('[onclick="window.pipResetTimer()"]'),
+        toggleBtn: !!doc.querySelector('.pip-play'),
+        resetBtn: !!doc.querySelector('.pip-reset'),
         pipCtrl: !!doc.querySelector('.pip-ctrl'),
         pipTask: !!doc.querySelector('.pip-task'),
         taskName: doc.querySelector('.pip-task-name')?.textContent ?? '',
@@ -272,6 +278,86 @@ test.describe('PiP Window Content and Communication', () => {
     expect(checks.hasActiveTask).toBe(false);
     expect(checks.hasCtrlRow).toBe(false);
     expect(checks.hasCardFooter).toBe(false);
+  });
+
+  test('should show centered play button and duration footer when not started', async ({ page }) => {
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
+
+    const checks = await page.evaluate(() => {
+      const pip = (window as any).pipTimer;
+      const html = pip.generateTimerHTML({
+        sessionType: 0,
+        remainingSeconds: 1500,
+        totalDurationSeconds: 1500,
+        isRunning: false,
+        isStarted: false,
+        taskName: 'Test Task'
+      });
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      return {
+        playBtn: !!doc.querySelector('.pip-play'),
+        resetBtn: !!doc.querySelector('.pip-reset'),
+        pipHint: doc.querySelector('.pip-hint')?.textContent ?? '',
+        pipFooter: !!doc.querySelector('.pip-footer'),
+        footerText: doc.querySelector('.pip-footer')?.textContent ?? '',
+        pipTask: !!doc.querySelector('.pip-task'),
+        taskName: doc.querySelector('.pip-task-name')?.textContent ?? '',
+      };
+    });
+
+    expect(checks.playBtn).toBe(true);
+    expect(checks.resetBtn).toBe(false);
+    expect(checks.pipHint).toBe('Space to start');
+    expect(checks.pipFooter).toBe(true);
+    expect(checks.footerText).toContain('25 min session');
+    expect(checks.pipTask).toBe(true);
+    expect(checks.taskName).toBe('Test Task');
+  });
+
+  test('should use monospace font for timer digits', async ({ page }) => {
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
+
+    const hasMonospace = await page.evaluate(() => {
+      const pip = (window as any).pipTimer;
+      const source = pip.injectPipStyles.toString();
+      return source.includes("'Courier New'") &&
+             source.includes("'Lucida Console'") &&
+             source.includes('monospace');
+    });
+
+    expect(hasMonospace).toBe(true);
+  });
+
+  test('should show paused hint and paused footer when paused', async ({ page }) => {
+    await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
+
+    const checks = await page.evaluate(() => {
+      const pip = (window as any).pipTimer;
+      const html = pip.generateTimerHTML({
+        sessionType: 0,
+        remainingSeconds: 750,
+        totalDurationSeconds: 1500,
+        isRunning: false,
+        isStarted: true,
+        taskName: 'Test Task',
+        endsAt: '10:47 AM'
+      });
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      return {
+        playBtn: !!doc.querySelector('.pip-play'),
+        resetBtn: !!doc.querySelector('.pip-reset'),
+        pipHint: doc.querySelector('.pip-hint')?.textContent ?? '',
+        pipFooter: !!doc.querySelector('.pip-footer'),
+        footerText: doc.querySelector('.pip-footer')?.textContent ?? '',
+      };
+    });
+
+    expect(checks.playBtn).toBe(true);
+    expect(checks.resetBtn).toBe(true);
+    expect(checks.pipHint).toBe('Space to resume');
+    expect(checks.pipFooter).toBe(true);
+    expect(checks.footerText).toContain('Paused · ends at');
+    expect(checks.footerText).toContain('10:47 AM');
   });
 
   test('should handle PiP toggle timer callback without error', async ({ page }) => {
