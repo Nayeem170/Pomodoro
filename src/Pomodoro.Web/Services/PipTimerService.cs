@@ -162,6 +162,9 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
             totalDurationSeconds = _timerService.Settings.GetDurationSeconds(_timerService.CurrentSessionType),
             isRunning = _timerService.IsRunning,
             isStarted = _timerService.IsStarted,
+            canStart = _timerService.CurrentSessionType == SessionType.Pomodoro
+                ? _taskService.CurrentTaskId.HasValue
+                : true,
             taskName = _timerService.CurrentSessionType == SessionType.Pomodoro
                 ? _appState.CurrentTask?.Name
                 : null,

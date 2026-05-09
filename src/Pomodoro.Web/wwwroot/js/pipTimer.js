@@ -338,6 +338,7 @@ window.pipTimer = {
         var modeLabel = sessionType === 0 ? 'FOCUSING' : sessionType === 1 ? 'SHORT BREAK' : 'LONG BREAK';
         var isRunning = state.isRunning || false;
         var isStarted = state.isStarted || false;
+        var canStart = state.canStart !== false;
         var taskName = state.taskName || null;
         var endsAt = state.endsAt || null;
 
@@ -369,12 +370,14 @@ window.pipTimer = {
         }
 
         if (!isStarted && !isRunning) {
+            var startDisabled = sessionType === 0 && !canStart;
+            var startTitle = startDisabled ? 'Select a task first' : 'Start';
             html += '<div class="pip-ctrl">';
-            html += '<button class="pip-play ' + sessionClass + '" onclick="window.pipToggleTimer()" aria-label="Start">';
+            html += '<button class="pip-play ' + sessionClass + (startDisabled ? '" disabled' : '"') + ' onclick="window.pipToggleTimer()" aria-label="' + startTitle + '" title="' + startTitle + '">';
             html += playIcon;
             html += '</button>';
             html += '</div>';
-            html += '<div class="pip-hint">Space to start</div>';
+            html += '<div class="pip-hint">' + (startDisabled ? 'Select a task to start' : 'Space to start') + '</div>';
         } else if (isRunning) {
             html += '<div class="pip-ctrl">';
             html += '<button class="pip-reset" onclick="window.pipResetTimer()" aria-label="Reset timer">';
@@ -405,12 +408,16 @@ window.pipTimer = {
             var durationLabel = sessionType === 0 ? durationMinutes + ' min session'
                 : durationMinutes + ' min break';
             html += '<span class="lbl">' + durationLabel + '</span>';
+            html += '<span class="val"></span>';
         } else if (isRunning && endsAt) {
             html += '<span class="lbl">Ends at</span>';
             html += '<span class="val">' + endsAt + '</span>';
         } else if (isStarted && !isRunning && endsAt) {
             html += '<span class="lbl">Paused · ends at</span>';
             html += '<span class="val">' + endsAt + '</span>';
+        } else {
+            html += '<span class="lbl"></span>';
+            html += '<span class="val"></span>';
         }
         html += '</div>';
 
