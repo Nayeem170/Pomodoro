@@ -210,7 +210,7 @@ window.pipTimer = {
             .pip-container.running.short-break-theme .ring-time { color: #27ae60; }
             .pip-container.running.long-break-theme .ring-time { color: #3498db; }
             .ring-label {
-                font-size: 12px;
+                font-size: 15px;
                 color: #8a97b8;
                 letter-spacing: .1em;
                 margin-top: 5px;
@@ -299,7 +299,7 @@ window.pipTimer = {
                 padding: 10px 20px 14px;
                 background: #162032;
             }
-            .pip-footer span { font-size: 12px; }
+            .pip-footer span { font-size: 14px; }
             .pip-footer .lbl { color: #6e7a8a; }
             .pip-footer .val { color: #a0aec0; font-weight: 600; text-align: right; }
         `;
