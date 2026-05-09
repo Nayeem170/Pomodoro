@@ -29,7 +29,6 @@
     else
     {
         <div class="ctrl-row">
-            <div style="width:36px"></div>
             <button class="ibtn lg @GetSessionClass()" @onclick="OnStart" disabled="@IsStartDisabled" title="@(IsStartDisabled ? "Select a task first" : "Start")" aria-label="@(IsStartDisabled ? "Select a task first" : "Start timer")">
                 @Constants.UI.PlayIcon
             </button>
