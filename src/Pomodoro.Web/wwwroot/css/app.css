@@ -171,7 +171,7 @@ input, textarea, [contenteditable="true"] {
 }
 
 .mobile-tab-label {
-    font-size: 10px;
+    font-size: 14px;
     font-weight: 500;
 }
 
@@ -259,7 +259,7 @@ input, textarea, [contenteditable="true"] {
 .mode-tabs button {
     flex: 1;
     padding: 7px 0;
-    font-size: 12px;
+    font-size: 14px;
     text-align: center;
     border-radius: 7px 7px 0 0;
     border: none;

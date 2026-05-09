@@ -30,8 +30,8 @@ window.pipTimer = {
             return false;
         }
         
-        var width = Math.round(Math.min(window.innerWidth, 420) * 0.9);
-        var height = 440;
+        var width = 380;
+        var height = 430;
         
         if (this.isSupported()) {
             try {
@@ -56,8 +56,8 @@ window.pipTimer = {
     },
     
     openFallback: function(timerState) {
-        var width = Math.round(Math.min(window.innerWidth, 420) * 0.9);
-        var height = 440;
+        var width = 380;
+        var height = 430;
         
         const features = [
             'width=' + width,
@@ -132,6 +132,7 @@ window.pipTimer = {
                 width: 100%;
                 display: flex;
                 flex-direction: column;
+                flex: 1;
             }
             .pip-tabs {
                 display: flex;
@@ -145,7 +146,7 @@ window.pipTimer = {
                 border-radius: 7px 7px 0 0;
                 border: none;
                 background: transparent;
-                font-size: 13px;
+                font-size: 14px;
                 font-weight: 400;
                 color: rgba(255,255,255,0.3);
                 cursor: pointer;
@@ -163,8 +164,8 @@ window.pipTimer = {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                padding: 20px 20px 16px;
-                gap: 14px;
+                padding: 12px 20px 10px;
+                gap: 10px;
             }
             .pip-container.pomodoro-theme .pip-timer-area {
                 background: linear-gradient(180deg, rgba(231,76,60,.12), #162032);
@@ -287,21 +288,17 @@ window.pipTimer = {
                 cursor: pointer;
                 color: #8a97b8;
             }
-            .pip-hint {
-                font-size: 12px;
-                color: #6e7a8a;
-                text-align: center;
-            }
             .pip-footer {
-                display: grid;
-                grid-template-columns: 1fr 90px;
+                display: flex;
                 align-items: center;
+                justify-content: space-between;
                 padding: 10px 20px 14px;
                 background: #162032;
+                margin-top: auto;
             }
             .pip-footer span { font-size: 14px; }
             .pip-footer .lbl { color: #6e7a8a; }
-            .pip-footer .val { color: #a0aec0; font-weight: 600; text-align: right; }
+            .pip-footer .val { color: #a0aec0; font-weight: 600; }
         `;
         this.pipDocument.head.appendChild(pipStyles);
     },
@@ -354,9 +351,9 @@ window.pipTimer = {
         var resetIcon = '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5A5 5 0 1 0 4.2 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 2v2.5H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
         var html = '<div class="pip-tabs">';
-        html += '<button class="pip-tab ' + (sessionType === 0 ? 'act pomodoro' : '') + '" onclick="window.pipSwitchSession(0)">Pomodoro</button>';
-        html += '<button class="pip-tab ' + (sessionType === 1 ? 'act short-break' : '') + '" onclick="window.pipSwitchSession(1)">Short break</button>';
-        html += '<button class="pip-tab ' + (sessionType === 2 ? 'act long-break' : '') + '" onclick="window.pipSwitchSession(2)">Long break</button>';
+        html += '<button class="pip-tab ' + (sessionType === 0 ? 'act pomodoro' : '') + '" data-action="switch" data-session="0">Pomodoro</button>';
+        html += '<button class="pip-tab ' + (sessionType === 1 ? 'act short-break' : '') + '" data-action="switch" data-session="1">Short break</button>';
+        html += '<button class="pip-tab ' + (sessionType === 2 ? 'act long-break' : '') + '" data-action="switch" data-session="2">Long break</button>';
         html += '</div>';
         html += '<div class="pip-timer-area">';
         html += '<div class="ring-wrap">';
@@ -380,49 +377,50 @@ window.pipTimer = {
             var startDisabled = sessionType === 0 && !canStart;
             var startTitle = startDisabled ? 'Select a task first' : 'Start';
             html += '<div class="pip-ctrl">';
-            html += '<button class="pip-play ' + sessionClass + (startDisabled ? '" disabled' : '"') + ' onclick="window.pipToggleTimer()" aria-label="' + startTitle + '" title="' + startTitle + '">';
+            html += '<button class="pip-play ' + sessionClass + (startDisabled ? '" disabled' : '"') + ' data-action="toggle" aria-label="' + startTitle + '" title="' + startTitle + '">';
             html += playIcon;
             html += '</button>';
             html += '</div>';
-            html += '<div class="pip-hint">' + (startDisabled ? 'Select a task to start' : 'Space to start') + '</div>';
         } else if (isRunning) {
             html += '<div class="pip-ctrl">';
-            html += '<button class="pip-reset" onclick="window.pipResetTimer()" aria-label="Reset timer">';
+            html += '<button class="pip-reset" data-action="reset" aria-label="Reset timer">';
             html += resetIcon;
             html += '</button>';
-            html += '<button class="pip-play ' + sessionClass + '" onclick="window.pipToggleTimer()" aria-label="Pause">';
+            html += '<button class="pip-play ' + sessionClass + '" data-action="toggle" aria-label="Pause">';
             html += pauseIcon;
             html += '</button>';
             html += '<div style="width:36px"></div>';
             html += '</div>';
         } else {
             html += '<div class="pip-ctrl">';
-            html += '<button class="pip-reset" onclick="window.pipResetTimer()" aria-label="Reset timer">';
+            html += '<button class="pip-reset" data-action="reset" aria-label="Reset timer">';
             html += resetIcon;
             html += '</button>';
-            html += '<button class="pip-play ' + sessionClass + '" onclick="window.pipToggleTimer()" aria-label="Resume">';
+            html += '<button class="pip-play ' + sessionClass + '" data-action="toggle" aria-label="Resume">';
             html += playIcon;
             html += '</button>';
             html += '<div style="width:36px"></div>';
             html += '</div>';
-            html += '<div class="pip-hint">Space to resume</div>';
         }
         html += '</div>';
 
         var durationMinutes = Math.round((state.totalDurationSeconds || 0) / 60);
+        var durationLabel = sessionType === 0 ? durationMinutes + ' min session'
+            : durationMinutes + ' min break';
         var footerLeft = '';
         var footerRight = '';
         if (!isStarted && !isRunning) {
-            var durationLabel = sessionType === 0 ? durationMinutes + ' min session'
-                : durationMinutes + ' min break';
-            footerLeft = '';
-            footerRight = durationLabel;
+            footerLeft = durationLabel;
         } else if (isRunning && endsAt) {
             footerLeft = 'Ends at';
             footerRight = endsAt;
-        } else if (isStarted && !isRunning && endsAt) {
-            footerLeft = 'Paused · ends at';
-            footerRight = endsAt;
+        } else if (isStarted && !isRunning) {
+            if (endsAt) {
+                footerLeft = 'Paused · ends at';
+                footerRight = endsAt;
+            } else {
+                footerLeft = durationLabel;
+            }
         }
         html += '<div class="pip-footer">';
         html += '<span class="lbl">' + footerLeft + '</span>';
@@ -477,20 +475,25 @@ window.pipTimer = {
         pipScript.textContent = [
             '(function() {',
             '    var bc = new BroadcastChannel("' + bcName + '");',
-            '    window.pipToggleTimer = function() { bc.postMessage({ type: "' + msgToggleTimer + '" }); };',
-            '    window.pipResetTimer = function() { bc.postMessage({ type: "' + msgResetTimer + '" }); };',
-            '    window.pipSwitchSession = function(sessionType) { bc.postMessage({ type: "' + msgSwitchSession + '", sessionType: sessionType }); };',
-            '    bc.onmessage = function(event) {',
-            '        if (event.data.type === "' + msgTimerUpdate + '") {}',
-            '    };',
+            '    function toggle() { bc.postMessage({ type: "' + msgToggleTimer + '" }); }',
+            '    function reset() { bc.postMessage({ type: "' + msgResetTimer + '" }); }',
+            '    function switchSession(t) { bc.postMessage({ type: "' + msgSwitchSession + '", sessionType: t }); }',
+            '    document.addEventListener("click", function(e) {',
+            '        var el = e.target.closest("[data-action]");',
+            '        if (!el) return;',
+            '        var action = el.getAttribute("data-action");',
+            '        if (action === "toggle") toggle();',
+            '        else if (action === "reset") reset();',
+            '        else if (action === "switch") switchSession(parseInt(el.getAttribute("data-session"), 10));',
+            '    });',
             '    window.addEventListener("keydown", function(event) {',
             '        if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;',
             '        var key = event.key.toLowerCase();',
-            '        if (key === " " || key === "spacebar") { event.preventDefault(); event.stopPropagation(); window.pipToggleTimer(); }',
-            '        else if (key === "r") { event.preventDefault(); event.stopPropagation(); window.pipResetTimer(); }',
-            '        else if (key === "p") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(0); }',
-            '        else if (key === "s") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(1); }',
-            '        else if (key === "l") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(2); }',
+            '        if (key === " " || key === "spacebar") { event.preventDefault(); event.stopPropagation(); toggle(); }',
+            '        else if (key === "r") { event.preventDefault(); event.stopPropagation(); reset(); }',
+            '        else if (key === "p") { event.preventDefault(); event.stopPropagation(); switchSession(0); }',
+            '        else if (key === "s") { event.preventDefault(); event.stopPropagation(); switchSession(1); }',
+            '        else if (key === "l") { event.preventDefault(); event.stopPropagation(); switchSession(2); }',
             '    }, { capture: true });',
             '    document.body.setAttribute("tabindex", "0");',
             '    document.body.focus();',
