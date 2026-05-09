@@ -286,15 +286,15 @@ window.pipTimer = {
                 text-align: center;
             }
             .pip-footer {
-                display: flex;
+                display: grid;
+                grid-template-columns: 1fr auto;
                 align-items: center;
-                justify-content: space-between;
                 padding: 10px 20px 14px;
                 background: #162032;
             }
             .pip-footer span { font-size: 12px; }
             .pip-footer .lbl { color: #6e7a8a; }
-            .pip-footer .val { color: #a0aec0; font-weight: 600; }
+            .pip-footer .val { color: #a0aec0; font-weight: 600; text-align: right; }
         `;
         this.pipDocument.head.appendChild(pipStyles);
     },
@@ -403,22 +403,23 @@ window.pipTimer = {
         html += '</div>';
 
         var durationMinutes = Math.round((state.totalDurationSeconds || 0) / 60);
-        html += '<div class="pip-footer">';
+        var footerLeft = '';
+        var footerRight = '';
         if (!isStarted && !isRunning) {
             var durationLabel = sessionType === 0 ? durationMinutes + ' min session'
                 : durationMinutes + ' min break';
-            html += '<span class="lbl">' + durationLabel + '</span>';
-            html += '<span class="val"></span>';
+            footerLeft = '';
+            footerRight = durationLabel;
         } else if (isRunning && endsAt) {
-            html += '<span class="lbl">Ends at</span>';
-            html += '<span class="val">' + endsAt + '</span>';
+            footerLeft = 'Ends at';
+            footerRight = endsAt;
         } else if (isStarted && !isRunning && endsAt) {
-            html += '<span class="lbl">Paused · ends at</span>';
-            html += '<span class="val">' + endsAt + '</span>';
-        } else {
-            html += '<span class="lbl"></span>';
-            html += '<span class="val"></span>';
+            footerLeft = 'Paused · ends at';
+            footerRight = endsAt;
         }
+        html += '<div class="pip-footer">';
+        html += '<span class="lbl">' + footerLeft + '</span>';
+        html += '<span class="val">' + footerRight + '</span>';
         html += '</div>';
 
         return html;
