@@ -268,6 +268,13 @@ window.pipTimer = {
                 background: #3498db;
                 box-shadow: 0 4px 18px rgba(52,152,219,.45);
             }
+            .pip-play:hover {
+                opacity: 0.9;
+            }
+            .pip-play:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
             .pip-reset {
                 width: 36px;
                 height: 36px;
@@ -287,7 +294,7 @@ window.pipTimer = {
             }
             .pip-footer {
                 display: grid;
-                grid-template-columns: 1fr auto;
+                grid-template-columns: 1fr 90px;
                 align-items: center;
                 padding: 10px 20px 14px;
                 background: #162032;
@@ -479,7 +486,9 @@ window.pipTimer = {
             '    window.addEventListener("keydown", function(event) {',
             '        if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;',
             '        var key = event.key.toLowerCase();',
-            '        if (key === "p") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(0); }',
+            '        if (key === " " || key === "spacebar") { event.preventDefault(); event.stopPropagation(); window.pipToggleTimer(); }',
+            '        else if (key === "r") { event.preventDefault(); event.stopPropagation(); window.pipResetTimer(); }',
+            '        else if (key === "p") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(0); }',
             '        else if (key === "s") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(1); }',
             '        else if (key === "l") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(2); }',
             '    }, { capture: true });',
