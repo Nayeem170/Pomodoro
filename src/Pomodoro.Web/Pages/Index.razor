@@ -62,7 +62,7 @@ else
                                OnResume="HandleTimerResume"
                                OnReset="HandleTimerReset" />
             </div>
-            <div class="card-footer">
+            <div class="card-footer @(IsTimerRunning ? "" : "idle")">
                 @if (IsTimerRunning)
                 {
                     <div class="ends-at">
@@ -70,11 +70,7 @@ else
                         <span class="val">@DateTime.Now.AddSeconds(RemainingTime.TotalSeconds).ToString("h:mm tt")</span>
                     </div>
                 }
-                else
-                {
-                    <div></div>
-                }
-                <div class="card-footer-left">
+                <div class="card-footer-actions">
                     <button class="pip-btn" @onclick="HandleTogglePip" title="@(IsPipOpen ? Constants.PipTimerUI.CloseFloatingTimerTitle : Constants.PipTimerUI.PopOutFloatingTimerTitle)" aria-label="Picture in Picture">
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><rect x="7" y="7" width="5.5" height="4.5" rx="1" fill="currentColor"/></svg>
                     </button>
