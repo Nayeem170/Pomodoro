@@ -40,7 +40,7 @@ export default defineConfig({
     command: 'npx serve ./bin/e2e-publish/wwwroot -l 5000 --single',
     url: 'http://localhost:5000',
     reuseExistingServer: true,
-    timeout: 60000,
+  timeout: 120000,
     stdout: 'pipe',
     stderr: 'pipe',
   },
