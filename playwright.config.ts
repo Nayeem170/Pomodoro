@@ -5,7 +5,7 @@ export default defineConfig({
   fullyParallel: true,
   retries: 0,
   workers: 8,
-  timeout: 0,
+  timeout: 60000,
   reporter: [
     ['list'],
   ],
@@ -37,7 +37,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'dotnet serve -d ./bin/e2e-publish/wwwroot -p 5000 --fallback-file /index.html',
+    command: 'npx serve ./bin/e2e-publish/wwwroot -l 5000 --single',
     url: 'http://localhost:5000',
     reuseExistingServer: true,
     timeout: 60000,
