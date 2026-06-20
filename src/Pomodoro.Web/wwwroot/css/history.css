@@ -75,6 +75,11 @@
     border-color: var(--color-border-primary);
 }
 
+.nav-qbtn:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
 .nav-arr:disabled {
     opacity: 0.3;
     cursor: default;

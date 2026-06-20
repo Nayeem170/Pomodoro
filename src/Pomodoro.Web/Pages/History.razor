@@ -22,7 +22,7 @@ else
                         <span class="period-lbl">@FormattedSelectedDate</span>
                         <button class="nav-arr" @onclick="GoToNextDay" title="Next day" disabled="@IsSelectedDateToday" aria-label="Next day">&#8594;</button>
                     </div>
-                    <button class="nav-qbtn @(IsSelectedDateToday ? "active" : "")" @onclick="GoToToday">Today</button>
+                    <button class="nav-qbtn @(!IsSelectedDateToday ? "active" : "")" @onclick="GoToToday" disabled="@IsSelectedDateToday">Today</button>
                 </div>
             </div>
 
@@ -54,7 +54,7 @@ else
                         <span class="period-lbl">@FormattedWeekRange</span>
                         <button class="nav-arr" @onclick="GoToNextWeek" title="Next week" disabled="@IsSelectedWeekCurrent" aria-label="Next week">&#8594;</button>
                     </div>
-                    <button class="nav-qbtn @(IsSelectedWeekCurrent ? "active" : "")" @onclick="GoToThisWeek">This week</button>
+                    <button class="nav-qbtn @(!IsSelectedWeekCurrent ? "active" : "")" @onclick="GoToThisWeek" disabled="@IsSelectedWeekCurrent">This week</button>
                 </div>
             </div>
 
