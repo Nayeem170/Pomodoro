@@ -67,7 +67,7 @@ public class WeeklyTimeDistributionBase : ComponentBase, IDisposable
     {
         var weekEnd = WeekStart.AddDays(7);
         var weekActivities = ActivityService.GetAllActivities()
-            .Where(a => a.CompletedAt.Date >= WeekStart.Date && a.CompletedAt.Date < weekEnd.Date)
+            .Where(a => a.CompletedAt.ToLocalTime().Date >= WeekStart.Date && a.CompletedAt.ToLocalTime().Date < weekEnd.Date)
             .ToList();
 
         Segments = new List<ChartSegment>();

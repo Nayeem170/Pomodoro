@@ -126,6 +126,21 @@ public class WeeklyTimeDistributionBaseTests
     }
 
     [Fact]
+    public void CalculateSegments_UtcCompletedAt_ConvertsToLocalBeforeFiltering()
+    {
+        var weekStart = new DateTime(2026, 4, 20, 0, 0, 0, DateTimeKind.Local);
+        var activities = new List<ActivityRecord>
+        {
+            new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, TaskName = "Task 1", CompletedAt = DateTime.SpecifyKind(new DateTime(2026, 4, 20, 0, 30, 0), DateTimeKind.Utc), DurationMinutes = 25, WasCompleted = true }
+        };
+        var sut = CreateSut(activities, weekStart);
+
+        Assert.Single(sut.Segments);
+        Assert.Equal("Task 1", sut.Segments[0].Label);
+        Assert.Equal(25, sut.TotalMinutes);
+    }
+
+    [Fact]
     public void Dispose_DoesNotThrowWhenCalledTwice()
     {
         var sut = CreateSut();
