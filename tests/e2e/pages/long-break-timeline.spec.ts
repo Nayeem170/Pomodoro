@@ -12,7 +12,7 @@ test.describe('Long Break Activity Timeline Rendering', () => {
 
     await page.evaluate(async () => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('PomodoroDB', 1);
+        const req = indexedDB.open('PomodoroDB', 2);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });

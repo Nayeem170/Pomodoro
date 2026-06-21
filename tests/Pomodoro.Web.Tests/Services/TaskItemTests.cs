@@ -7,6 +7,21 @@ namespace Pomodoro.Web.Tests.Services;
 [Trait("Category", "Service")]
 public class TaskItemTests
 {
+    [Fact]
+    public void GoogleTasksSettings_DefaultProperties()
+    {
+        var settings = new GoogleTasksSettings([]);
+        settings.Lists.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ListSetting_DefaultProperties()
+    {
+        var setting = new ListSetting(true, "#4285F4", null);
+        setting.IsVisible.Should().BeTrue();
+        setting.Color.Should().Be("#4285F4");
+        setting.LastSync.Should().BeNull();
+    }
     private static TaskItem CreateFullyPopulatedTask()
     {
         return new TaskItem
