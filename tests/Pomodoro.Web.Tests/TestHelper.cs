@@ -6,6 +6,7 @@ using Microsoft.JSInterop;
 using Moq;
 using Pomodoro.Web.Services;
 using Pomodoro.Web.Services.Formatters;
+using Pomodoro.Web.Services.Repositories;
 using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Tests;

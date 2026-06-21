@@ -35,7 +35,7 @@ public class ExportService : IExportService
             var activities = await _activityRepository.GetAllAsync();
             var tasks = await _taskRepository.GetAllAsync();
             var settings = await _settingsRepository.GetAsync();
-            var pomoMeta = (await _pomodoroMetaRepo.GetAllAsync()).ToList();
+            var pomoMeta = (await _pomodoroMetaRepo.GetAllAsync())?.ToList() ?? new List<PomodoroMeta>();
 
             var exportData = new ExportData
             {
@@ -76,7 +76,7 @@ public class ExportService : IExportService
             var activities = await _activityRepository.GetAllAsync();
             var tasks = await _taskRepository.GetAllAsync();
             var settings = await _settingsRepository.GetAsync();
-            var pomoMeta = (await _pomodoroMetaRepo.GetAllAsync()).ToList();
+            var pomoMeta = (await _pomodoroMetaRepo.GetAllAsync())?.ToList() ?? new List<PomodoroMeta>();
 
             var exportData = new ExportData
             {

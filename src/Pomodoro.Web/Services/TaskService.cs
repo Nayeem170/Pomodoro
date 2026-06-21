@@ -95,7 +95,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
         await ActivateDueRecurringAndScheduledTasks();
 
-        if (_googleTasksService.IsConnected())
+        if (await _googleTasksService.IsConnectedAsync())
         {
             await RefreshGoogleListsAsync();
         }
@@ -356,7 +356,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
     public async Task RefreshGoogleListsAsync()
     {
-        if (!_googleTasksService.IsConnected())
+        if (!await _googleTasksService.IsConnectedAsync())
         {
             _cachedGoogleLists = [];
             return;

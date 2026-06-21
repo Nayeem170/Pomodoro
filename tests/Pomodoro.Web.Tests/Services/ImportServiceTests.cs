@@ -28,6 +28,7 @@ public class ImportServiceTests
             _mockActivityRepository.Object,
             _mockTaskRepository.Object,
             _mockSettingsRepository.Object,
+            Mock.Of<IPomodoroMetaRepository>(),
             _mockLogger.Object);
     }
 

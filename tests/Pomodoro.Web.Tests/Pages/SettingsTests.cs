@@ -56,6 +56,7 @@ namespace Pomodoro.Web.Tests.Pages
 
             Services.AddSingleton(new SettingsPresenterService(_mockPresenterLogger.Object));
             Services.AddSingleton(Mock.Of<ICloudSyncService>());
+            Services.AddSingleton(Mock.Of<IGoogleDriveService>());
 
             Services.AddSingleton<NavigationManager, TestNavigationManager>();
         }

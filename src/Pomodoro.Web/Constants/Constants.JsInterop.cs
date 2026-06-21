@@ -120,6 +120,20 @@ public static partial class Constants
         public const string CreateFile = "googleDrive.createFile";
         public const string UpdateFile = "googleDrive.updateFile";
         public const string DeleteFile = "googleDrive.deleteFile";
+        public const string GetUserInfo = "googleDrive.getGoogleUserInfo";
+        public const string GetAccessToken = "googleDrive.getAccessToken";
+    }
+
+    /// <summary>
+    /// Google Tasks JavaScript function names
+    /// </summary>
+    public static class GoogleTasksJsFunctions
+    {
+        public const string ListTaskLists = "googleTasks.listTaskLists";
+        public const string ListTasks = "googleTasks.listTasks";
+        public const string InsertTask = "googleTasks.insertTask";
+        public const string PatchTask = "googleTasks.patchTask";
+        public const string DeleteTask = "googleTasks.deleteTask";
     }
 
     /// <summary>

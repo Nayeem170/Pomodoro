@@ -31,6 +31,7 @@ public class ExportServiceTests
             _mockActivityRepository.Object,
             _mockTaskRepository.Object,
             _mockSettingsRepository.Object,
+            Mock.Of<IPomodoroMetaRepository>(),
             _mockLogger.Object);
     }
 
@@ -49,7 +50,7 @@ public class ExportServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Contains("\"version\": 1", result);
+        Assert.Contains("\"version\": 2", result);
         Assert.Contains("\"exportDate\"", result);
         Assert.Contains("\"settings\"", result);
         Assert.Contains("\"activities\"", result);

@@ -84,7 +84,7 @@ public class ImportServiceDuplicateTests
         };
 
         var json = JsonSerializer.Serialize(exportData);
-        var service = new ImportService(mockActivityRepo.Object, mockTaskRepo.Object, mockSettingsRepo.Object, mockLogger.Object);
+        var service = new ImportService(mockActivityRepo.Object, mockTaskRepo.Object, mockSettingsRepo.Object, Mock.Of<IPomodoroMetaRepository>(), mockLogger.Object);
 
         var result = await service.ImportFromJsonAsync(json);
 
@@ -121,7 +121,7 @@ public class ImportServiceDuplicateTests
         };
 
         var json = JsonSerializer.Serialize(exportData);
-        var service = new ImportService(mockActivityRepo.Object, mockTaskRepo.Object, mockSettingsRepo.Object, mockLogger.Object);
+        var service = new ImportService(mockActivityRepo.Object, mockTaskRepo.Object, mockSettingsRepo.Object, Mock.Of<IPomodoroMetaRepository>(), mockLogger.Object);
 
         var result = await service.ImportFromJsonAsync(json);
 
@@ -486,7 +486,7 @@ public partial class TaskServiceCloudSyncTests
         services.AddSingleton<IIndexedDbService>(mockIndexedDb.Object);
         var serviceProvider = services.BuildServiceProvider();
 
-        var taskService = new TaskService(mockTaskRepo.Object, mockIndexedDb.Object, appState, serviceProvider);
+        var taskService = new TaskService(mockTaskRepo.Object, mockIndexedDb.Object, appState, serviceProvider, Mock.Of<IPomodoroMetaRepository>(), Mock.Of<IGoogleTasksService>(), Mock.Of<ILogger<TaskService>>());
         await taskService.AddTaskAsync("Test Task");
 
         mockCloudSync.Verify(c => c.ScheduleSyncAsync(), Times.Once);
@@ -593,7 +593,7 @@ public class ImportServiceDuplicateEmptyIdTests
         };
 
         var json = JsonSerializer.Serialize(exportData);
-        var service = new ImportService(mockActivityRepo.Object, mockTaskRepo.Object, mockSettingsRepo.Object, mockLogger.Object);
+        var service = new ImportService(mockActivityRepo.Object, mockTaskRepo.Object, mockSettingsRepo.Object, Mock.Of<IPomodoroMetaRepository>(), mockLogger.Object);
 
         var result = await service.ImportFromJsonAsync(json);
 

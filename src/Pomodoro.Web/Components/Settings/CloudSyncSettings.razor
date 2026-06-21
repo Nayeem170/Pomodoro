@@ -1,5 +1,6 @@
 @using Pomodoro.Web.Services
 @inject ICloudSyncService CloudSyncService
+@inject IGoogleDriveService GoogleDriveService
 @inject ILogger<CloudSyncSettings> Logger
 
 <div class="ss ss-data">
@@ -22,7 +23,7 @@
         <div class="sr">
             <div>
                 <div class="sr-lbl">Google Drive</div>
-                <div class="sr-sub">Last synced @FormatLastSynced</div>
+                <div class="sr-sub">@(GoogleDriveService.AccountEmail ?? ("Last synced " + FormatLastSynced))</div>
             </div>
             <div class="sync-actions">
                 <button class="sec-btn" @onclick="SyncNow" disabled="@_isSyncing">

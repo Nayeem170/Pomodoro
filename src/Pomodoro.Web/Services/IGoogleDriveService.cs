@@ -9,6 +9,9 @@ public interface IGoogleDriveService
     Task<string?> ConnectAsync();
     Task DisconnectAsync();
     bool IsConnected { get; }
+    string? AccountEmail { get; }
+    void SetAccountEmail(string? email);
+    Task<string?> GetAccessTokenAsync();
     Task<string?> FindSyncFileAsync();
     Task<string> ReadFileAsync(string fileId);
     Task<string> CreateFileAsync(string fileName, string content);

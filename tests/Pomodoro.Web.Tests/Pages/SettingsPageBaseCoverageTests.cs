@@ -60,6 +60,7 @@ public class SettingsPageBaseCoverageTests : TestContext
         Services.AddSingleton(new SettingsPresenterService(_mockPresenterLogger.Object));
         Services.AddSingleton(_mockCloudSyncService.Object);
         Services.AddSingleton(new Mock<ILogger<CloudSyncSettings>>().Object);
+        Services.AddSingleton(Mock.Of<IGoogleDriveService>());
     }
 
     [Fact]

@@ -46,7 +46,10 @@ public class AppState
     {
         lock (_tasksLock)
         {
-            _tasks.Insert(position, task);
+            if (position < 0)
+                _tasks.Add(task);
+            else
+                _tasks.Insert(position, task);
         }
         NotifyStateChanged();
     }
