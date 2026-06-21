@@ -66,7 +66,11 @@ window.getGoogleUserInfo = async function(accessToken) {
 - On `DisconnectAsync`, clear email
 - Persist email in `SyncStateRecord` (`CloudSyncService.cs:478-486`)
 
-### 5. Re-auth UX for existing users
+### 5. Re-auth UX for existing users — DEFERRED to Phase 1
+
+> **Status: Deferred.** Existing users granted only `drive.appdata`. `TrySilentAuthAsync(prompt:'')` may return a token without the new scopes → tasks calls 401, userinfo 403 → email null. Degrades gracefully (401→reconnect, email→"Last synced" fallback). Non-blocking now.
+>
+> **When Phase 1 tasks UI lands:** add silent-auth + null email ⇒ surface "Reconnect for Tasks" hint.
 
 Changing scope invalidates existing sessions. On startup:
 

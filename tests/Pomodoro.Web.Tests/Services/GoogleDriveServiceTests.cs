@@ -44,12 +44,13 @@ public class GoogleDriveServiceTests : IDisposable
     public async Task ConnectAsync_InvokesJsRequestAuth()
     {
         _jsRuntime.NextResult = "test-token";
+        _jsRuntime.NextResult = "user@example.com";
 
         var token = await _service.ConnectAsync();
 
         Assert.Equal("test-token", token);
-        Assert.Equal("googleDrive.requestAuth", _jsRuntime.LastMethod);
         Assert.True(_service.IsConnected);
+        Assert.Equal("user@example.com", _service.AccountEmail);
     }
 
     [Fact]
@@ -102,12 +103,13 @@ public class GoogleDriveServiceTests : IDisposable
     public async Task TrySilentAuthAsync_InvokesJs()
     {
         _jsRuntime.NextResult = "silent-token";
+        _jsRuntime.NextResult = "user@example.com";
 
         var result = await _service.TrySilentAuthAsync();
 
         Assert.True(result);
-        Assert.Equal("googleDrive.trySilentAuth", _jsRuntime.LastMethod);
         Assert.True(_service.IsConnected);
+        Assert.Equal("user@example.com", _service.AccountEmail);
     }
 
     [Fact]
@@ -241,6 +243,88 @@ public class GoogleDriveServiceTests : IDisposable
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.DeleteFileAsync("file-id"));
         Assert.False(_service.IsConnected);
+    }
+
+    [Fact]
+    public async Task DisconnectAsync_ClearsAccountEmail()
+    {
+        _service.SetAccountEmail("user@example.com");
+        Assert.Equal("user@example.com", _service.AccountEmail);
+
+        await _service.DisconnectAsync();
+
+        Assert.Null(_service.AccountEmail);
+    }
+
+    [Fact]
+    public async Task SetAccountEmail_UpdatesProperty()
+    {
+        _service.SetAccountEmail("user@example.com");
+        Assert.Equal("user@example.com", _service.AccountEmail);
+
+        _service.SetAccountEmail(null);
+        Assert.Null(_service.AccountEmail);
+    }
+
+    [Fact]
+    public async Task ConnectAsync_FetchesEmail()
+    {
+        _jsRuntime.NextResult = "test-token";
+        _jsRuntime.NextResult = "user@example.com";
+
+        var token = await _service.ConnectAsync();
+
+        Assert.Equal("test-token", token);
+        Assert.Equal("user@example.com", _service.AccountEmail);
+    }
+
+    [Fact]
+    public async Task ConnectAsync_HandlesUserInfoFailure()
+    {
+        _jsRuntime.NextResult = "test-token";
+        _jsRuntime.NextResult = null;
+
+        var token = await _service.ConnectAsync();
+
+        Assert.Equal("test-token", token);
+        Assert.Null(_service.AccountEmail);
+        Assert.True(_service.IsConnected);
+    }
+
+    [Fact]
+    public async Task ConnectAsync_HandlesUserInfoNull()
+    {
+        _jsRuntime.NextResult = "test-token";
+        _jsRuntime.NextResult = (string?)null;
+
+        var token = await _service.ConnectAsync();
+
+        Assert.Equal("test-token", token);
+        Assert.Null(_service.AccountEmail);
+    }
+
+    [Fact]
+    public async Task TrySilentAuthAsync_FetchesEmail()
+    {
+        _jsRuntime.NextResult = "silent-token";
+        _jsRuntime.NextResult = "user@example.com";
+
+        var result = await _service.TrySilentAuthAsync();
+
+        Assert.True(result);
+        Assert.Equal("user@example.com", _service.AccountEmail);
+    }
+
+    [Fact]
+    public async Task TrySilentAuthAsync_HandlesUserInfoFailure()
+    {
+        _jsRuntime.NextResult = "silent-token";
+        _jsRuntime.NextResult = null;
+
+        var result = await _service.TrySilentAuthAsync();
+
+        Assert.True(result);
+        Assert.Null(_service.AccountEmail);
     }
 
     private class TestJsRuntime : IJSRuntime

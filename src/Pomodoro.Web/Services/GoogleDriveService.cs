@@ -8,8 +8,10 @@ public class GoogleDriveService : IGoogleDriveService
     private readonly IJSRuntime _jsRuntime;
     private readonly ILogger<GoogleDriveService> _logger;
     private bool _isConnected;
+    private string? _accountEmail;
 
     public bool IsConnected => _isConnected;
+    public string? AccountEmail => _accountEmail;
 
     public GoogleDriveService(IJSRuntime jsRuntime, ILogger<GoogleDriveService> logger)
     {
@@ -18,6 +20,8 @@ public class GoogleDriveService : IGoogleDriveService
     }
 
     public void SetConnected(bool connected) => _isConnected = connected;
+
+    public void SetAccountEmail(string? email) => _accountEmail = email;
 
     public async Task SetAccessTokenAsync(string token)
     {
@@ -33,6 +37,7 @@ public class GoogleDriveService : IGoogleDriveService
             if (!string.IsNullOrEmpty(token))
             {
                 _isConnected = true;
+                await FetchAccountEmailAsync(token);
                 return true;
             }
             return false;
@@ -63,6 +68,7 @@ public class GoogleDriveService : IGoogleDriveService
         {
             var token = await _jsRuntime.InvokeAsync<string>(Constants.GoogleDriveJsFunctions.RequestAuth);
             _isConnected = true;
+            await FetchAccountEmailAsync(token);
             _logger.LogInformation(Constants.SyncMessages.LogAuthSuccess);
             return token;
         }
@@ -80,12 +86,32 @@ public class GoogleDriveService : IGoogleDriveService
         {
             await _jsRuntime.InvokeVoidAsync(Constants.GoogleDriveJsFunctions.RevokeAuth);
             _isConnected = false;
+            _accountEmail = null;
             _logger.LogInformation(Constants.SyncMessages.LogDisconnect);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to disconnect Google Drive");
             throw;
+        }
+    }
+
+    private async Task FetchAccountEmailAsync(string accessToken)
+    {
+        try
+        {
+            var email = await _jsRuntime.InvokeAsync<string?>(
+                Constants.GoogleDriveJsFunctions.GetUserInfo, accessToken);
+            _accountEmail = email;
+            if (!string.IsNullOrEmpty(email))
+            {
+                _logger.LogInformation(Constants.SyncMessages.LogUserInfoSuccess, email);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, Constants.SyncMessages.LogUserInfoFetchFailed, ex.Message);
+            _accountEmail = null;
         }
     }
 

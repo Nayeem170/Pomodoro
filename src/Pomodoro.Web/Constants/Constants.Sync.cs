@@ -10,6 +10,9 @@ public static partial class Constants
         public const int PeriodicSyncIntervalMs = 30 * 60 * 1000;
         public const string AppDataFolder = "appDataFolder";
         public const string DriveScope = "https://www.googleapis.com/auth/drive.appdata";
+        public const string TasksScope = "https://www.googleapis.com/auth/tasks.readonly";
+        public const string TasksScopeReadWrite = "https://www.googleapis.com/auth/tasks";
+        public const string UserInfoEndpoint = "https://www.googleapis.com/oauth2/v3/userinfo";
         public const string DriveFilesEndpoint = "https://www.googleapis.com/drive/v3/files";
         public const string DriveUploadEndpoint = "https://www.googleapis.com/upload/drive/v3/files";
         public const string DefaultClientId = "778366289120-ejtm43pfvkgih3l3a5jp7op33alvnh97.apps.googleusercontent.com";
@@ -56,5 +59,7 @@ public static partial class Constants
         public const string LogRemoteNewer = "Remote data is newer, pulling changes";
         public const string LogLocalNewer = "Local data is newer, pushing changes";
         public const string LogDataEqual = "Local and remote data are in sync";
+        public const string LogUserInfoFetchFailed = "Failed to fetch Google user info: {Error}";
+        public const string LogUserInfoSuccess = "Google account email resolved: {Email}";
     }
 }
