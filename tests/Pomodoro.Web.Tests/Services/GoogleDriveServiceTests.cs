@@ -375,4 +375,27 @@ public class GoogleDriveServiceTests : IDisposable
 
         public void Dispose() { }
     }
+
+    [Fact]
+    public async Task GetAccessTokenAsync_InvokesJs()
+    {
+        _jsRuntime.NextResult = "access-token-123";
+
+        var token = await _service.GetAccessTokenAsync();
+
+        Assert.Equal("googleDrive.getAccessToken", _jsRuntime.LastMethod);
+        Assert.Equal("access-token-123", token);
+    }
+
+    [Fact]
+    public async Task ConnectAsync_NullUserInfo_SetsEmailNull()
+    {
+        _jsRuntime.NextResult = "test-token";
+        _jsRuntime.NextResult = (string?)null;
+
+        var token = await _service.ConnectAsync();
+
+        Assert.Equal("test-token", token);
+        Assert.Null(_service.AccountEmail);
+    }
 }

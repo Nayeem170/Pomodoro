@@ -186,6 +186,22 @@ public class GoogleTasksServiceTests
         await Assert.ThrowsAsync<JSException>(() => _service.GetTasksAsync("list-1"));
     }
 
+    [Fact]
+    public async Task GetTasksAsync_ParsesParentAndPosition()
+    {
+        var taskData = new object[]
+        {
+            new { id = "task-1", title = "Task with parent", status = "needsAction", updated = "2025-06-20T10:00:00Z", parent = "parent-task-id", position = "00000001" }
+        };
+        _jsRuntime.QueueResult(JsonSerializer.Serialize(taskData));
+
+        var tasks = await _service.GetTasksAsync("list-1");
+
+        Assert.Single(tasks);
+        Assert.Equal("parent-task-id", tasks[0].Parent);
+        Assert.Equal("00000001", tasks[0].Position);
+    }
+
     private class TestJsRuntime : IJSRuntime
     {
         private int _callIndex;

@@ -581,4 +581,36 @@ public class TaskServiceMultiListTests
 
         _mockTaskRepo.Verify(x => x.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
     }
+
+    [Fact]
+    public async Task AddTaskAsync_WithLocalPomodoroListId_DelegatesToSingleParam()
+    {
+        var task = new TaskItem { Name = "New Task", CreatedAt = DateTime.UtcNow };
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+
+        var sut = CreateSut();
+        await sut.AddTaskAsync("New Task", Constants.TaskLists.LocalPomodoroListId);
+
+        _appState.Tasks.Should().Contain(t => t.Name == "New Task");
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WhenConnected_RefreshesGoogleLists()
+    {
+        var record = new AppStateRecord
+        {
+            Id = Constants.Storage.DefaultSettingsId,
+            CurrentTaskId = Guid.NewGuid(),
+            CurrentListId = "glist-1"
+        };
+        _mockIndexedDb.Setup(x => x.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(record);
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync()).ReturnsAsync([]);
+
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+
+        _appState.CurrentListId.Should().Be("glist-1");
+    }
 }
