@@ -11,7 +11,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     private readonly IIndexedDbService _indexedDb;
     private readonly AppState _appState;
     private readonly IServiceProvider _serviceProvider;
-    private readonly IPomodoroMetaRepository _pomodoroMetaRepo;
     private readonly IGoogleTasksService _googleTasksService;
     private readonly ILogger<TaskService> _logger;
     private readonly IPomodoroMetaRepository _sidecarRepo;
@@ -64,7 +63,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         _indexedDb = indexedDb;
         _appState = appState;
         _serviceProvider = serviceProvider;
-        _pomodoroMetaRepo = pomodoroMetaRepo;
         _googleTasksService = googleTasksService;
         _logger = logger;
         _sidecarRepo = pomodoroMetaRepo;
@@ -375,11 +373,12 @@ public class TaskService : ITaskService, ITimerEventSubscriber
                     if (googleTasks == null) continue;
 
                     var remoteIds = googleTasks.Select(t => t.Id).ToHashSet();
-                    var existing = (await _taskRepository.GetByGoogleListIdAsync(gList.Id)).ToList();
+                    var existingInList = (await _taskRepository.GetByGoogleListIdAsync(gList.Id)).ToList();
 
                     foreach (var gTask in googleTasks)
                     {
-                        var local = existing.FirstOrDefault(t => t.GoogleTaskId == gTask.Id);
+                        var local = existingInList.FirstOrDefault(t => t.GoogleTaskId == gTask.Id)
+                            ?? _appState.Tasks.FirstOrDefault(t => t.GoogleTaskId == gTask.Id);
                         if (local != null)
                         {
                             var updated = local.WithUpdates(c =>
@@ -391,6 +390,8 @@ public class TaskService : ITaskService, ITimerEventSubscriber
                                 c.ETag = gTask.ETag;
                                 c.UpdatedAt = ParseGoogleDateTime(gTask.Updated);
                                 c.GoogleListId = gList.Id;
+                                c.IsDeleted = false;
+                                c.DeletedAt = null;
                             });
                             await _taskRepository.SaveAsync(updated);
                             _appState.UpdateTask(local.Id, t =>
@@ -401,6 +402,9 @@ public class TaskService : ITaskService, ITimerEventSubscriber
                                 t.DueDate = updated.DueDate;
                                 t.ETag = updated.ETag;
                                 t.UpdatedAt = updated.UpdatedAt;
+                                t.GoogleListId = updated.GoogleListId;
+                                t.IsDeleted = false;
+                                t.DeletedAt = null;
                             });
                         }
                         else
@@ -411,7 +415,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
                         }
                     }
 
-                    foreach (var orphan in existing.Where(t => !remoteIds.Contains(t.GoogleTaskId)))
+                    foreach (var orphan in existingInList.Where(t => !remoteIds.Contains(t.GoogleTaskId)))
                     {
                         var deleted = orphan.WithUpdates(c =>
                         {

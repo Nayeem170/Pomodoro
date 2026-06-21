@@ -327,4 +327,41 @@ public class TaskServiceMultiListTests
         cache.Should().HaveCount(1);
         cache[0].Id.Should().Be("glist-1");
     }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_RemotePresentUndeletesSoftDeletedTask()
+    {
+        var localDeleted = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Old",
+            GoogleTaskId = "remote-1",
+            GoogleListId = "glist-1",
+            IsDeleted = true,
+            DeletedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [localDeleted];
+
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync()).ReturnsAsync(
+            [new GoogleTaskList { Id = "glist-1", Title = "My List" }]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", It.IsAny<string?>())).ReturnsAsync(
+            [new GoogleTask { Id = "remote-1", Title = "Restored", Status = "needsAction", Updated = "2025-06-20T10:00:00Z" }]);
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync(
+            new List<TaskItem>());
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.Is<TaskItem>(t =>
+            t.Id == localDeleted.Id && !t.IsDeleted))).ReturnsAsync(true);
+
+        var sut = CreateSut();
+        await sut.RefreshGoogleListsAsync();
+
+        _mockTaskRepo.Verify(x => x.SaveAsync(It.Is<TaskItem>(t =>
+            t.Id == localDeleted.Id)), Times.Once);
+
+        var inMemory = _appState.FindTaskById(localDeleted.Id);
+        inMemory.Should().NotBeNull();
+        inMemory!.IsDeleted.Should().BeFalse();
+        inMemory.Name.Should().Be("Restored");
+        inMemory.GoogleListId.Should().Be("glist-1");
+    }
 }
