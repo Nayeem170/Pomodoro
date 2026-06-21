@@ -96,6 +96,11 @@ public class GoogleDriveService : IGoogleDriveService
         }
     }
 
+    public async Task<string?> GetAccessTokenAsync()
+    {
+        return await _jsRuntime.InvokeAsync<string?>(Constants.GoogleDriveJsFunctions.GetAccessToken);
+    }
+
     private async Task FetchAccountEmailAsync(string accessToken)
     {
         try

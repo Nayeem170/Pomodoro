@@ -121,6 +121,7 @@ public static partial class Constants
         public const string UpdateFile = "googleDrive.updateFile";
         public const string DeleteFile = "googleDrive.deleteFile";
         public const string GetUserInfo = "googleDrive.getGoogleUserInfo";
+        public const string GetAccessToken = "googleDrive.getAccessToken";
     }
 
     /// <summary>

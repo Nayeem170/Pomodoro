@@ -116,6 +116,7 @@ public abstract class TestHelper : TestContext
         Services.AddSingleton(SettingsPresenterService);
         Services.AddSingleton(Mock.Of<ICloudSyncService>());
         Services.AddSingleton(Mock.Of<IGoogleDriveService>());
+        Services.AddSingleton(Mock.Of<IGoogleTasksService>());
 
         // Register LocalDateTimeService
         var mockLocalDateTimeService = new Mock<ILocalDateTimeService>();

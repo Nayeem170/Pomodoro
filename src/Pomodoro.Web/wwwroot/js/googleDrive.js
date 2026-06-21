@@ -114,6 +114,10 @@ window.googleDrive = {
         this._accessToken = token;
     },
 
+    getAccessToken: function() {
+        return this._accessToken;
+    },
+
     _getAuthHeaders: function() {
         if (!this._accessToken) {
             throw new Error('401 No access token');
