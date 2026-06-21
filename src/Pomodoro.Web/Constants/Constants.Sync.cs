@@ -13,6 +13,7 @@ public static partial class Constants
         public const string DriveFilesEndpoint = "https://www.googleapis.com/drive/v3/files";
         public const string DriveUploadEndpoint = "https://www.googleapis.com/upload/drive/v3/files";
         public const string DefaultClientId = "778366289120-ejtm43pfvkgih3l3a5jp7op33alvnh97.apps.googleusercontent.com";
+        public const string TasksReadOnlyInPhase = "Creating tasks on Google lists requires sync. Currently in read-only mode.";
     }
 
     public static class SyncMessages

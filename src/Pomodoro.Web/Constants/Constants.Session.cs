@@ -82,6 +82,16 @@ public static partial class Constants
         public const int InitialPomodoroCount = 0;
         public const int InitialCount = 0;
         public const int InsertAtBeginning = 0;
+        public const int InsertAtEnd = -1;
+    }
+
+    /// <summary>
+    /// Task list constants for multi-list support
+    /// </summary>
+    public static class TaskLists
+    {
+        public const string LocalPomodoroListId = "__local_pomodoro__";
+        public const string ScheduleListId = "__schedule__";
     }
 
     /// <summary>

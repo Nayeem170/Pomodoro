@@ -94,6 +94,20 @@ public class AppState
         }
     }
 
+    private string? _currentListId;
+    public string? CurrentListId
+    {
+        get => _currentListId;
+        set
+        {
+            if (_currentListId != value)
+            {
+                _currentListId = value;
+                NotifyStateChanged();
+            }
+        }
+    }
+
     private TimerSettings _settings = new();
     public TimerSettings Settings
     {

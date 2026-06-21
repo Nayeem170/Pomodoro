@@ -10,17 +10,20 @@ public class ImportService : IImportService
     private readonly IActivityRepository _activityRepository;
     private readonly ITaskRepository _taskRepository;
     private readonly ISettingsRepository _settingsRepository;
+    private readonly IPomodoroMetaRepository _pomodoroMetaRepo;
     private readonly ILogger<ImportService> _logger;
 
     public ImportService(
         IActivityRepository activityRepository,
         ITaskRepository taskRepository,
         ISettingsRepository settingsRepository,
+        IPomodoroMetaRepository pomodoroMetaRepo,
         ILogger<ImportService> logger)
     {
         _activityRepository = activityRepository;
         _taskRepository = taskRepository;
         _settingsRepository = settingsRepository;
+        _pomodoroMetaRepo = pomodoroMetaRepo;
         _logger = logger;
     }
 
@@ -50,6 +53,8 @@ public class ImportService : IImportService
             var settingsImported = await ImportSettingsAsync(importData.Settings);
             var taskImportResult = await ImportTasksAsync(importData.Tasks, existingData);
             var activityImportResult = await ImportActivitiesAsync(importData.Activities, existingData, taskImportResult.TaskIdMapping);
+
+            await ImportPomodoroMetaAsync(importData.PomodoroMeta);
 
             _logger.LogInformation(
                 "Import completed: {ActivitiesImported} activities imported, {ActivitiesSkipped} activities skipped, " +
@@ -181,18 +186,7 @@ public class ImportService : IImportService
                 else
                 {
                     var newId = Guid.NewGuid();
-                    var importedTask = new TaskItem
-                    {
-                        Id = newId,
-                        Name = task.Name,
-                        PomodoroCount = task.PomodoroCount,
-                        TotalFocusMinutes = task.TotalFocusMinutes,
-                        IsCompleted = task.IsCompleted,
-                        CreatedAt = task.CreatedAt,
-                        LastWorkedOn = task.LastWorkedOn,
-                        IsDeleted = task.IsDeleted,
-                        DeletedAt = task.DeletedAt
-                    };
+                    var importedTask = task.WithUpdates(c => c.Id = newId);
                     await _taskRepository.SaveAsync(importedTask);
 
                     if (task.Id != Guid.Empty)
@@ -212,6 +206,16 @@ public class ImportService : IImportService
             TasksSkipped = tasksSkipped,
             TaskIdMapping = taskIdMapping
         };
+    }
+
+    private async Task ImportPomodoroMetaAsync(List<PomodoroMeta>? pomodoroMeta)
+    {
+        if (pomodoroMeta == null) return;
+
+        foreach (var meta in pomodoroMeta)
+        {
+            await _pomodoroMetaRepo.SaveAsync(meta);
+        }
     }
 
     private async Task<ActivityImportResult> ImportActivitiesAsync(List<ActivityRecord>? activities, ExistingData existingData, Dictionary<Guid, Guid> taskIdMapping)
@@ -270,15 +274,6 @@ public class ImportService : IImportService
     }
 
     #region Import Data Models
-
-    private class ExportData
-    {
-        public int Version { get; set; }
-        public DateTime ExportDate { get; set; }
-        public TimerSettings? Settings { get; set; }
-        public List<ActivityRecord>? Activities { get; set; }
-        public List<TaskItem>? Tasks { get; set; }
-    }
 
     private class ExistingData
     {

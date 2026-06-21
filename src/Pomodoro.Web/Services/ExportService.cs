@@ -11,17 +11,20 @@ public class ExportService : IExportService
     private readonly IActivityRepository _activityRepository;
     private readonly ITaskRepository _taskRepository;
     private readonly ISettingsRepository _settingsRepository;
+    private readonly IPomodoroMetaRepository _pomodoroMetaRepo;
     private readonly ILogger<ExportService> _logger;
 
     public ExportService(
         IActivityRepository activityRepository,
         ITaskRepository taskRepository,
         ISettingsRepository settingsRepository,
+        IPomodoroMetaRepository pomodoroMetaRepo,
         ILogger<ExportService> logger)
     {
         _activityRepository = activityRepository;
         _taskRepository = taskRepository;
         _settingsRepository = settingsRepository;
+        _pomodoroMetaRepo = pomodoroMetaRepo;
         _logger = logger;
     }
 
@@ -32,14 +35,22 @@ public class ExportService : IExportService
             var activities = await _activityRepository.GetAllAsync();
             var tasks = await _taskRepository.GetAllAsync();
             var settings = await _settingsRepository.GetAsync();
+            var pomoMeta = (await _pomodoroMetaRepo.GetAllAsync()).ToList();
 
-            var exportData = new
+            var exportData = new ExportData
             {
-                Version = 1,
+                Version = 2,
                 ExportDate = DateTime.UtcNow,
                 Settings = settings,
                 Activities = activities,
-                Tasks = tasks
+                Tasks = tasks.Where(t => !t.IsGoogleTask).Select(t => t.WithUpdates(c =>
+                {
+                    c.GoogleTaskId = null;
+                    c.GoogleListId = null;
+                    c.ETag = null;
+                    c.UpdatedAt = null;
+                })).ToList(),
+                PomodoroMeta = pomoMeta
             };
 
             var json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions
@@ -65,14 +76,22 @@ public class ExportService : IExportService
             var activities = await _activityRepository.GetAllAsync();
             var tasks = await _taskRepository.GetAllAsync();
             var settings = await _settingsRepository.GetAsync();
+            var pomoMeta = (await _pomodoroMetaRepo.GetAllAsync()).ToList();
 
-            var exportData = new
+            var exportData = new ExportData
             {
-                Version = 1,
+                Version = 2,
                 ExportDate = DateTime.UtcNow,
                 Settings = settings,
                 Activities = activities,
-                Tasks = tasks
+                Tasks = tasks.Where(t => !t.IsGoogleTask).Select(t => t.WithUpdates(c =>
+                {
+                    c.GoogleTaskId = null;
+                    c.GoogleListId = null;
+                    c.ETag = null;
+                    c.UpdatedAt = null;
+                })).ToList(),
+                PomodoroMeta = pomoMeta
             };
 
             var json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions

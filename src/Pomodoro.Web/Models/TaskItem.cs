@@ -54,4 +54,41 @@ public class TaskItem
     public bool IsRecurring => Repeat is { Type: not RepeatType.None };
 
     public bool IsVisible => !IsDeleted && (!IsScheduled || ScheduledDate <= DateTime.UtcNow.Date);
+
+    public bool IsGoogleTask => !string.IsNullOrEmpty(GoogleTaskId);
+
+    public string? GoogleTaskId { get; set; }
+    public string? GoogleListId { get; set; }
+    public string? ETag { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public string? Notes { get; set; }
+    public DateTime? DueDate { get; set; }
+    public Priority Priority { get; set; }
+
+    public TaskItem WithUpdates(Action<TaskItem>? mutate = null)
+    {
+        var copy = new TaskItem
+        {
+            Id = Id,
+            Name = Name,
+            CreatedAt = CreatedAt,
+            IsCompleted = IsCompleted,
+            TotalFocusMinutes = TotalFocusMinutes,
+            PomodoroCount = PomodoroCount,
+            LastWorkedOn = LastWorkedOn,
+            IsDeleted = IsDeleted,
+            DeletedAt = DeletedAt,
+            Repeat = Repeat,
+            ScheduledDate = ScheduledDate,
+            GoogleTaskId = GoogleTaskId,
+            GoogleListId = GoogleListId,
+            ETag = ETag,
+            UpdatedAt = UpdatedAt,
+            Notes = Notes,
+            DueDate = DueDate,
+            Priority = Priority
+        };
+        mutate?.Invoke(copy);
+        return copy;
+    }
 }

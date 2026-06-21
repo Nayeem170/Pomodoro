@@ -70,6 +70,7 @@ public class ServiceRegistrationService : IServiceRegistrationService
         services.AddScoped<ILocalDateTimeService, LocalDateTimeService>();
         services.AddScoped<IGoogleDriveService, GoogleDriveService>();
         services.AddScoped<ICloudSyncService, CloudSyncService>();
+        services.AddScoped<IPomodoroMetaRepository, PomodoroMetaRepository>();
 
         _logger?.LogInformation("All services registered successfully");
     }
