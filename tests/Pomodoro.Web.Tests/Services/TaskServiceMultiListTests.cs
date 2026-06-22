@@ -613,4 +613,52 @@ public class TaskServiceMultiListTests
 
         _appState.CurrentListId.Should().Be("glist-1");
     }
+
+    [Fact]
+    public void CurrentListId_ReturnsAppStateValue()
+    {
+        var sut = CreateSut();
+        _appState.CurrentListId = "test-list";
+        sut.CurrentListId.Should().Be("test-list");
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_GoogleTaskWithoutSidecarMeta_ReturnsUnchanged()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "No Meta",
+            GoogleTaskId = "gtask-1",
+            GoogleListId = "glist-1",
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [task];
+        _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
+
+        var sut = CreateSut();
+        var result = await sut.GetTasksForListAsync("glist-1");
+
+        result.Should().HaveCount(1);
+        result[0].PomodoroCount.Should().Be(0);
+        result[0].TotalFocusMinutes.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_InvalidDates_SetsNullUpdatedAndDueDate()
+    {
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync()).ReturnsAsync(
+            [new GoogleTaskList { Id = "glist-1", Title = "My List" }]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", It.IsAny<string?>())).ReturnsAsync(
+            [new GoogleTask { Id = "remote-1", Title = "Bad Dates", Status = "needsAction", Updated = "not-a-date", Due = "also-invalid" }]);
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync([]);
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+
+        var sut = CreateSut();
+        await sut.RefreshGoogleListsAsync();
+
+        _mockTaskRepo.Verify(x => x.SaveAsync(It.Is<TaskItem>(t =>
+            t.UpdatedAt == null && t.DueDate == null)), Times.Once);
+    }
 }

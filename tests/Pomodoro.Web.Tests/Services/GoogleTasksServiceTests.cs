@@ -187,6 +187,18 @@ public class GoogleTasksServiceTests
     }
 
     [Fact]
+    public async Task GetTasksAsync_RetryOn429_ThrowsWhenReauthReturnsNull()
+    {
+        _jsRuntime.QueueException(new JSException("Error 429: Too Many Requests"));
+        _googleDriveServiceMock.SetupSequence(x => x.GetAccessTokenAsync())
+            .ReturnsAsync("test-token")
+            .ReturnsAsync((string?)null);
+
+        var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.GetTasksAsync("list-1"));
+        Assert.Contains("reconnect", ex.Message.ToLower());
+    }
+
+    [Fact]
     public async Task GetTasksAsync_ParsesParentAndPosition()
     {
         var taskData = new object[]
