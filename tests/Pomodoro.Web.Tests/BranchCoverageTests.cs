@@ -282,6 +282,7 @@ public class CloudSyncSettingsBranchTests : TestContext
         _loggerMock = new Mock<ILogger<Pomodoro.Web.Components.Settings.CloudSyncSettings>>();
         Services.AddSingleton(_cloudSyncServiceMock.Object);
         Services.AddSingleton(_loggerMock.Object);
+        Services.AddSingleton(Mock.Of<IGoogleDriveService>());
     }
 
     [Fact]

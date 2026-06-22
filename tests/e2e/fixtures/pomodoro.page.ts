@@ -150,7 +150,7 @@ export class PomodoroPage {
   async setSettingViaIndexedDB(key: string, value: any) {
     await this.page.evaluate(async ({ key: k, value: v }) => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('PomodoroDB', 1);
+        const req = indexedDB.open('PomodoroDB', 2);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });
@@ -194,7 +194,7 @@ export class PomodoroPage {
   async completePomodoroViaDB(taskName: string) {
     await this.page.evaluate(async (name) => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('PomodoroDB', 1);
+        const req = indexedDB.open('PomodoroDB', 2);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });
@@ -241,7 +241,7 @@ export class PomodoroPage {
   async completePomodoroViaIndexedDB(taskName: string) {
     await this.page.evaluate(async (name) => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('PomodoroDB', 1);
+        const req = indexedDB.open('PomodoroDB', 2);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });
@@ -298,7 +298,7 @@ export class PomodoroPage {
     await this.goto('/');
     await this.page.evaluate(async ({ name, count: n }) => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('PomodoroDB', 1);
+        const req = indexedDB.open('PomodoroDB', 2);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });

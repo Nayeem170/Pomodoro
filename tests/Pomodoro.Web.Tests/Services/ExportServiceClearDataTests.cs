@@ -27,6 +27,7 @@ public class ExportServiceClearDataTests
             _mockActivityRepo.Object,
             _mockTaskRepo.Object,
             _mockSettingsRepo.Object,
+            Mock.Of<IPomodoroMetaRepository>(),
             _mockLogger.Object);
     }
 

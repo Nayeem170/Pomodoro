@@ -89,6 +89,7 @@ public class SettingsBaseTests : TestContext
         Services.AddSingleton(SettingsPresenterService);
         Services.AddSingleton(Mock.Of<ICloudSyncService>());
         Services.AddSingleton(new Mock<ILogger<Pomodoro.Web.Components.Settings.CloudSyncSettings>>().Object);
+        Services.AddSingleton(Mock.Of<IGoogleDriveService>());
     }
 
     #endregion

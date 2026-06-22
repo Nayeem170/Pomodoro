@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Pomodoro.Web;
 using Pomodoro.Web.Models;
+using Microsoft.Extensions.Logging;
 using Pomodoro.Web.Services;
 using Pomodoro.Web.Services.Repositories;
 using Xunit;
@@ -35,7 +36,10 @@ public partial class TaskServiceTests
             MockTaskRepository.Object,
             MockIndexedDb.Object,
             AppState,
-            new ServiceCollection().BuildServiceProvider()
+            new ServiceCollection().BuildServiceProvider(),
+            Mock.Of<IPomodoroMetaRepository>(),
+            Mock.Of<IGoogleTasksService>(),
+            Mock.Of<ILogger<TaskService>>()
         );
     }
 

@@ -32,10 +32,19 @@ public static partial class Constants
         public const string DatabaseName = "PomodoroDB";
 
         /// <summary>Database version</summary>
-        public const int DatabaseVersion = 1;
+        public const int DatabaseVersion = 2;
 
         /// <summary>Index name for completedAt field</summary>
         public const string CompletedAtIndex = "completedAt";
+
+        /// <summary>Store name for pomodoro meta sidecar</summary>
+        public const string PomoMetaStore = "pomoMeta";
+
+        /// <summary>Index name for googleTaskId field</summary>
+        public const string GoogleTaskIdIndex = "googleTaskId";
+
+        /// <summary>Index name for googleListId field</summary>
+        public const string GoogleListIdIndex = "googleListId";
     }
 
     /// <summary>

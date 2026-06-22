@@ -23,6 +23,7 @@ public class CloudSyncSettingsCoverageTests : TestContext
         _loggerMock = new Mock<ILogger<CloudSyncSettings>>();
         Services.AddSingleton(_cloudSyncServiceMock.Object);
         Services.AddSingleton(_loggerMock.Object);
+        Services.AddSingleton(Mock.Of<IGoogleDriveService>());
     }
 
     [Fact]

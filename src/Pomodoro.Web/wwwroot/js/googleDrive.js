@@ -29,7 +29,7 @@ window.googleDrive = {
             this._clientId = clientId;
             this._tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: clientId,
-                scope: 'https://www.googleapis.com/auth/drive.appdata',
+                scope: 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/tasks.readonly openid email',
                 callback: (response) => {
                     if (response.access_token) {
                         this._accessToken = response.access_token;
@@ -112,6 +112,10 @@ window.googleDrive = {
 
     setAccessToken: function(token) {
         this._accessToken = token;
+    },
+
+    getAccessToken: function() {
+        return this._accessToken;
     },
 
     _getAuthHeaders: function() {
@@ -229,5 +233,17 @@ window.googleDrive = {
                 if (response.status === 401) throw new Error('401 Unauthorized');
                 if (!response.ok) throw new Error('Failed to delete file: ' + response.status);
             });
+    },
+
+    getGoogleUserInfo: function(accessToken) {
+        return fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { 'Authorization': 'Bearer ' + accessToken }
+        })
+            .then(response => {
+                if (response.status === 401) throw new Error('401 Unauthorized');
+                if (!response.ok) throw new Error('Failed to fetch user info: ' + response.status);
+                return response.json();
+            })
+            .then(data => data.email || null);
     }
 };

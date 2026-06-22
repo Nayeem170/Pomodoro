@@ -10,9 +10,15 @@ public static partial class Constants
         public const int PeriodicSyncIntervalMs = 30 * 60 * 1000;
         public const string AppDataFolder = "appDataFolder";
         public const string DriveScope = "https://www.googleapis.com/auth/drive.appdata";
+        public const string TasksScope = "https://www.googleapis.com/auth/tasks.readonly";
+        public const string TasksScopeReadWrite = "https://www.googleapis.com/auth/tasks";
+        public const string UserInfoEndpoint = "https://www.googleapis.com/oauth2/v3/userinfo";
         public const string DriveFilesEndpoint = "https://www.googleapis.com/drive/v3/files";
         public const string DriveUploadEndpoint = "https://www.googleapis.com/upload/drive/v3/files";
         public const string DefaultClientId = "778366289120-ejtm43pfvkgih3l3a5jp7op33alvnh97.apps.googleusercontent.com";
+        public const string TasksReadOnlyInPhase = "Creating tasks on Google lists requires sync. Currently in read-only mode.";
+        public const string TasksApiBase = "https://tasks.googleapis.com/tasks/v1";
+        public const int TasksListTasksPageSize = 100;
     }
 
     public static class SyncMessages
@@ -56,5 +62,15 @@ public static partial class Constants
         public const string LogRemoteNewer = "Remote data is newer, pulling changes";
         public const string LogLocalNewer = "Local data is newer, pushing changes";
         public const string LogDataEqual = "Local and remote data are in sync";
+        public const string LogUserInfoFetchFailed = "Failed to fetch Google user info: {Error}";
+        public const string LogUserInfoSuccess = "Google account email resolved: {Email}";
+        public const string LogTasksRateLimited = "Google Tasks API rate-limited, retrying";
+        public const string LogTasksForbidden = "Tasks API access forbidden — check scope";
+        public const string TasksAccessForbidden = "Google Tasks access forbidden — reconnect with updated permissions";
+        public const string TasksReconnectRequired = "Tasks connection lost — reconnect required";
+        public const string TasksRateLimitExceeded = "Google Tasks API rate-limited after {MaxRetries} retries";
+        public const string TasksUnavailable = "Google Tasks API unavailable after retries";
+        public const string LogTasksApiError = "Google Tasks API error: {Error}";
+        public const string LogTasksListSuccess = "Fetched {Count} items from Google Tasks API";
     }
 }

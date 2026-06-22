@@ -228,6 +228,7 @@ public class CloudSyncSettingsPullBranchTests : TestContext
         _cloudSyncMock = new Mock<ICloudSyncService>();
         Services.AddSingleton(_cloudSyncMock.Object);
         Services.AddSingleton(new Mock<ILogger<CloudSyncSettings>>().Object);
+        Services.AddSingleton(Mock.Of<IGoogleDriveService>());
     }
 
     [Fact]

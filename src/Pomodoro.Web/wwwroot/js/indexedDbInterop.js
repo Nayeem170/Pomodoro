@@ -71,6 +71,21 @@ window.indexedDbInterop = {
                 if (!db.objectStoreNames.contains(storage.appStateStore)) {
                     db.createObjectStore(storage.appStateStore, { keyPath: indexes.id });
                 }
+
+                // V2 migration: add indexes to existing tasks store + new pomo_meta store
+                if (event.oldVersion < 2) {
+                    const tx = event.target.transaction;
+                    const ts = tx.objectStore(storage.tasksStore);
+                    if (!ts.indexNames.contains(indexes.googleListId)) {
+                        ts.createIndex(indexes.googleListId, indexes.googleListId, { unique: false });
+                    }
+                    if (!ts.indexNames.contains(indexes.googleTaskId)) {
+                        ts.createIndex(indexes.googleTaskId, indexes.googleTaskId, { unique: false });
+                    }
+                    if (!db.objectStoreNames.contains(storage.pomoMetaStore)) {
+                        db.createObjectStore(storage.pomoMetaStore, { keyPath: indexes.googleTaskId });
+                    }
+                }
             };
         });
     },

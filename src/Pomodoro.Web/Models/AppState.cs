@@ -46,7 +46,10 @@ public class AppState
     {
         lock (_tasksLock)
         {
-            _tasks.Insert(position, task);
+            if (position < 0)
+                _tasks.Add(task);
+            else
+                _tasks.Insert(position, task);
         }
         NotifyStateChanged();
     }
@@ -89,6 +92,20 @@ public class AppState
             if (_currentTaskId != value)
             {
                 _currentTaskId = value;
+                NotifyStateChanged();
+            }
+        }
+    }
+
+    private string? _currentListId;
+    public string? CurrentListId
+    {
+        get => _currentListId;
+        set
+        {
+            if (_currentListId != value)
+            {
+                _currentListId = value;
                 NotifyStateChanged();
             }
         }

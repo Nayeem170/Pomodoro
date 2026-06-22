@@ -357,5 +357,94 @@ public partial class TaskRepositoryTests
     }
 
     #endregion
+
+    #region GetByGoogleListIdAsync Tests
+
+    [Fact]
+    public async Task GetByGoogleListIdAsync_ReturnsMatchingNonDeletedTasks()
+    {
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = Guid.NewGuid(), Name = "Google 1", CreatedAt = DateTime.UtcNow, GoogleListId = "glist-1", GoogleTaskId = "gtask-1" },
+            new() { Id = Guid.NewGuid(), Name = "Google 2", CreatedAt = DateTime.UtcNow, GoogleListId = "glist-1", GoogleTaskId = "gtask-2", IsDeleted = true, DeletedAt = DateTime.UtcNow },
+            new() { Id = Guid.NewGuid(), Name = "Google 3", CreatedAt = DateTime.UtcNow, GoogleListId = "glist-2", GoogleTaskId = "gtask-3" }
+        };
+
+        MockIndexedDb
+            .Setup(x => x.QueryByIndexAsync<TaskItem>(Constants.Storage.TasksStore, Constants.Storage.GoogleListIdIndex, "glist-1"))
+            .ReturnsAsync(tasks.Where(t => t.GoogleListId == "glist-1").ToList());
+
+        var repository = CreateRepository();
+        var result = await repository.GetByGoogleListIdAsync("glist-1");
+
+        Assert.Single(result);
+        Assert.Equal("gtask-1", result[0].GoogleTaskId);
+    }
+
+    [Fact]
+    public async Task GetByGoogleListIdAsync_WithNullResult_ReturnsEmptyList()
+    {
+        MockIndexedDb
+            .Setup(x => x.QueryByIndexAsync<TaskItem>(Constants.Storage.TasksStore, Constants.Storage.GoogleListIdIndex, "glist-1"))
+            .ReturnsAsync((List<TaskItem>?)null);
+
+        var repository = CreateRepository();
+        var result = await repository.GetByGoogleListIdAsync("glist-1");
+
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+
+    #endregion
+
+    #region GetByGoogleTaskIdAsync Tests
+
+    [Fact]
+    public async Task GetByGoogleTaskIdAsync_ReturnsMatchingTask()
+    {
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = Guid.NewGuid(), Name = "Google 1", CreatedAt = DateTime.UtcNow, GoogleListId = "glist-1", GoogleTaskId = "gtask-1" },
+            new() { Id = Guid.NewGuid(), Name = "Google 2", CreatedAt = DateTime.UtcNow, GoogleListId = "glist-1", GoogleTaskId = "gtask-2" }
+        };
+
+        MockIndexedDb
+            .Setup(x => x.QueryByIndexAsync<TaskItem>(Constants.Storage.TasksStore, Constants.Storage.GoogleTaskIdIndex, "gtask-2"))
+            .ReturnsAsync([tasks[1]]);
+
+        var repository = CreateRepository();
+        var result = await repository.GetByGoogleTaskIdAsync("gtask-2");
+
+        Assert.NotNull(result);
+        Assert.Equal("gtask-2", result!.GoogleTaskId);
+    }
+
+    [Fact]
+    public async Task GetByGoogleTaskIdAsync_NotFound_ReturnsNull()
+    {
+        MockIndexedDb
+            .Setup(x => x.QueryByIndexAsync<TaskItem>(Constants.Storage.TasksStore, Constants.Storage.GoogleTaskIdIndex, "missing"))
+            .ReturnsAsync([]);
+
+        var repository = CreateRepository();
+        var result = await repository.GetByGoogleTaskIdAsync("missing");
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetByGoogleTaskIdAsync_WithNullResult_ReturnsNull()
+    {
+        MockIndexedDb
+            .Setup(x => x.QueryByIndexAsync<TaskItem>(Constants.Storage.TasksStore, Constants.Storage.GoogleTaskIdIndex, "gtask-1"))
+            .ReturnsAsync((List<TaskItem>?)null);
+
+        var repository = CreateRepository();
+        var result = await repository.GetByGoogleTaskIdAsync("gtask-1");
+
+        Assert.Null(result);
+    }
+
+    #endregion
 }
 

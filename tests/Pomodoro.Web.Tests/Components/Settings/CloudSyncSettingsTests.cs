@@ -15,14 +15,17 @@ public class CloudSyncSettingsTests : TestContext
 {
     private readonly Mock<ICloudSyncService> _cloudSyncServiceMock;
     private readonly Mock<ILogger<CloudSyncSettings>> _loggerMock;
+    private readonly Mock<IGoogleDriveService> _googleDriveServiceMock;
 
     public CloudSyncSettingsTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         _cloudSyncServiceMock = new Mock<ICloudSyncService>();
         _loggerMock = new Mock<ILogger<CloudSyncSettings>>();
+        _googleDriveServiceMock = new Mock<IGoogleDriveService>();
         Services.AddSingleton(_cloudSyncServiceMock.Object);
         Services.AddSingleton(_loggerMock.Object);
+        Services.AddSingleton(_googleDriveServiceMock.Object);
     }
 
     [Fact]

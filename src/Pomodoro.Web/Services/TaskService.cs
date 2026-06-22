@@ -1,33 +1,71 @@
 using System.Web;
+using Microsoft.Extensions.Logging;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Services.Repositories;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Service for managing tasks using IndexedDB for persistent storage
-/// Implements ITimerEventSubscriber to handle timer completion events
-/// </summary>
 public class TaskService : ITaskService, ITimerEventSubscriber
 {
     private readonly ITaskRepository _taskRepository;
     private readonly IIndexedDbService _indexedDb;
     private readonly AppState _appState;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IGoogleTasksService _googleTasksService;
+    private readonly ILogger<TaskService> _logger;
+    private readonly IPomodoroMetaRepository _sidecarRepo;
+
+    private List<GoogleTaskList> _cachedGoogleLists = [];
 
     public event Action? OnChange;
 
     public List<TaskItem> Tasks => _appState.Tasks.Where(t => !t.IsDeleted).ToList();
-    public IReadOnlyList<TaskItem> AllTasks => _appState.Tasks; // Includes soft-deleted tasks for history
+    public IReadOnlyList<TaskItem> AllTasks => _appState.Tasks;
     public Guid? CurrentTaskId => _appState.CurrentTaskId;
     public TaskItem? CurrentTask => _appState.CurrentTask;
 
-    public TaskService(ITaskRepository taskRepository, IIndexedDbService indexedDb, AppState appState, IServiceProvider serviceProvider)
+    public IReadOnlyList<TaskListRef> TaskLists
+    {
+        get
+        {
+            var allTasks = _appState.Tasks;
+            var lists = new List<TaskListRef>
+            {
+                new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)",
+                    allTasks.Count(t => !t.IsGoogleTask && !t.IsScheduled && !t.IsDeleted), true, true),
+                new(Constants.TaskLists.ScheduleListId, "Schedule", "#eab308",
+                    allTasks.Count(t => t.IsScheduled && !t.IsDeleted), true, true)
+            };
+
+            foreach (var gList in _cachedGoogleLists)
+            {
+                var count = allTasks.Count(t => t.GoogleListId == gList.Id && !t.IsDeleted);
+                lists.Add(new TaskListRef(gList.Id, gList.Title, "var(--pomodoro-color)", count, true, false));
+            }
+
+            return lists;
+        }
+    }
+
+    public TaskListRef? CurrentList => TaskLists.FirstOrDefault(l => l.Id == _appState.CurrentListId);
+    public string? CurrentListId => _appState.CurrentListId;
+
+    public TaskService(
+        ITaskRepository taskRepository,
+        IIndexedDbService indexedDb,
+        AppState appState,
+        IServiceProvider serviceProvider,
+        IPomodoroMetaRepository pomodoroMetaRepo,
+        IGoogleTasksService googleTasksService,
+        ILogger<TaskService> logger)
     {
         _taskRepository = taskRepository;
         _indexedDb = indexedDb;
         _appState = appState;
         _serviceProvider = serviceProvider;
+        _googleTasksService = googleTasksService;
+        _logger = logger;
+        _sidecarRepo = pomodoroMetaRepo;
     }
 
     public async Task InitializeAsync()
@@ -48,21 +86,26 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             }
         }
 
+        if (!string.IsNullOrEmpty(appState?.CurrentListId))
+        {
+            _appState.CurrentListId = appState.CurrentListId;
+        }
+
         await ActivateDueRecurringAndScheduledTasks();
+
+        if (await _googleTasksService.IsConnectedAsync())
+        {
+            await RefreshGoogleListsAsync();
+        }
+
         NotifyStateChanged();
     }
 
-    /// <summary>
-    /// Reloads all task data from storage, refreshing the in-memory cache.
-    /// Call this after import operations to reflect changes.
-    /// </summary>
     public async Task ReloadAsync()
     {
-        // Reload tasks from repository
         var tasks = await _taskRepository.GetAllIncludingDeletedAsync();
         _appState.Tasks = tasks ?? new List<TaskItem>();
 
-        // Clear current task selection if the task no longer exists
         if (_appState.CurrentTaskId.HasValue)
         {
             if (!_appState.Tasks.Any(t => t.Id == _appState.CurrentTaskId.Value))
@@ -78,7 +121,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     {
         var sanitized = SanitizeTaskName(name);
 
-        // Validate that the task name is not empty after sanitization and within length limit
         if (string.IsNullOrEmpty(sanitized) || sanitized.Length > Constants.UI.MaxTaskNameLength)
         {
             return;
@@ -89,20 +131,26 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             Id = Guid.NewGuid(),
             Name = sanitized,
             CreatedAt = DateTime.UtcNow,
-            IsCompleted = false,
             TotalFocusMinutes = Constants.Tasks.InitialFocusMinutes,
             PomodoroCount = Constants.Tasks.InitialPomodoroCount
         };
 
-        // Persist first to ensure cache and storage stay consistent
         await SaveTaskAsync(task);
-
-        // Update in-memory state only after successful persistence
         _appState.InsertTask(task, Constants.Tasks.InsertAtBeginning);
         _appState.CurrentTaskId = task.Id;
         await SaveCurrentTaskIdAsync();
         NotifyStateChanged();
         MarkDirty();
+    }
+
+    public async Task AddTaskAsync(string name, string? listId)
+    {
+        if (!string.IsNullOrEmpty(listId) && listId != Constants.TaskLists.LocalPomodoroListId && listId != Constants.TaskLists.ScheduleListId)
+        {
+            throw new NotSupportedException(Constants.Sync.TasksReadOnlyInPhase);
+        }
+
+        await AddTaskAsync(name);
     }
 
     public async Task UpdateTaskAsync(TaskItem task)
@@ -117,20 +165,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         var existingTask = _appState.FindTaskById(task.Id);
         if (existingTask == null) return;
 
-        var taskToSave = new TaskItem
-        {
-            Id = existingTask.Id,
-            Name = name,
-            CreatedAt = existingTask.CreatedAt,
-            IsCompleted = existingTask.IsCompleted,
-            TotalFocusMinutes = existingTask.TotalFocusMinutes,
-            PomodoroCount = existingTask.PomodoroCount,
-            LastWorkedOn = existingTask.LastWorkedOn,
-            IsDeleted = existingTask.IsDeleted,
-            DeletedAt = existingTask.DeletedAt,
-            Repeat = existingTask.Repeat,
-            ScheduledDate = existingTask.ScheduledDate
-        };
+        var taskToSave = existingTask.WithUpdates(c => c.Name = name);
         await SaveTaskAsync(taskToSave);
 
         _appState.UpdateTask(task.Id, t => t.Name = name);
@@ -143,23 +178,13 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         var existingTask = _appState.FindTaskById(taskId);
         if (existingTask == null) return;
 
-        var taskToSave = new TaskItem
+        var taskToSave = existingTask.WithUpdates(c =>
         {
-            Id = existingTask.Id,
-            Name = existingTask.Name,
-            CreatedAt = existingTask.CreatedAt,
-            IsCompleted = existingTask.IsCompleted,
-            TotalFocusMinutes = existingTask.TotalFocusMinutes,
-            PomodoroCount = existingTask.PomodoroCount,
-            LastWorkedOn = existingTask.LastWorkedOn,
-            IsDeleted = true,
-            DeletedAt = DateTime.UtcNow,
-            Repeat = existingTask.Repeat,
-            ScheduledDate = existingTask.ScheduledDate
-        };
+            c.IsDeleted = true;
+            c.DeletedAt = DateTime.UtcNow;
+        });
         await SaveTaskAsync(taskToSave);
 
-        // Update in-memory state only after successful persistence
         _appState.UpdateTask(taskId, t =>
         {
             t.IsDeleted = true;
@@ -191,8 +216,13 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
             if (nextOccurrence.HasValue)
             {
-                existingTask.IsCompleted = true;
-                await SaveTaskAsync(existingTask);
+                var taskToSave = existingTask.WithUpdates(c =>
+                {
+                    c.IsCompleted = true;
+                    c.Repeat!.LastCompletedDate = DateTime.UtcNow;
+                    c.Repeat.NextOccurrence = nextOccurrence;
+                });
+                await SaveTaskAsync(taskToSave);
                 _appState.UpdateTask(taskId, t =>
                 {
                     t.IsCompleted = true;
@@ -205,21 +235,8 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             }
         }
 
-        var taskToSave = new TaskItem
-        {
-            Id = existingTask.Id,
-            Name = existingTask.Name,
-            CreatedAt = existingTask.CreatedAt,
-            IsCompleted = true,
-            TotalFocusMinutes = existingTask.TotalFocusMinutes,
-            PomodoroCount = existingTask.PomodoroCount,
-            LastWorkedOn = existingTask.LastWorkedOn,
-            IsDeleted = existingTask.IsDeleted,
-            DeletedAt = existingTask.DeletedAt,
-            Repeat = existingTask.Repeat,
-            ScheduledDate = existingTask.ScheduledDate
-        };
-        await SaveTaskAsync(taskToSave);
+        var taskToSave2 = existingTask.WithUpdates(c => c.IsCompleted = true);
+        await SaveTaskAsync(taskToSave2);
 
         _appState.UpdateTask(taskId, t => t.IsCompleted = true);
         NotifyStateChanged();
@@ -231,23 +248,9 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         var existingTask = _appState.FindTaskById(taskId);
         if (existingTask == null) return;
 
-        var taskToSave = new TaskItem
-        {
-            Id = existingTask.Id,
-            Name = existingTask.Name,
-            CreatedAt = existingTask.CreatedAt,
-            IsCompleted = false,
-            TotalFocusMinutes = existingTask.TotalFocusMinutes,
-            PomodoroCount = existingTask.PomodoroCount,
-            LastWorkedOn = existingTask.LastWorkedOn,
-            IsDeleted = existingTask.IsDeleted,
-            DeletedAt = existingTask.DeletedAt,
-            Repeat = existingTask.Repeat,
-            ScheduledDate = existingTask.ScheduledDate
-        };
+        var taskToSave = existingTask.WithUpdates(c => c.IsCompleted = false);
         await SaveTaskAsync(taskToSave);
 
-        // Update in-memory state only after successful persistence
         _appState.UpdateTask(taskId, t => t.IsCompleted = false);
         NotifyStateChanged();
         MarkDirty();
@@ -267,35 +270,176 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
     public async Task AddTimeToTaskAsync(Guid taskId, int minutes)
     {
-        // Validate that minutes is a positive value
-        if (minutes <= 0)
+        if (minutes <= 0) return;
+
+        var task = _appState.FindTaskById(taskId);
+        if (task == null) return;
+
+        if (task.IsGoogleTask && !string.IsNullOrEmpty(task.GoogleTaskId))
         {
-            return;
+            var meta = await _sidecarRepo.GetAsync(task.GoogleTaskId);
+            meta = new PomodoroMeta(
+                task.GoogleTaskId,
+                meta?.PomodoroCount + 1 ?? 1,
+                meta?.TotalFocusMinutes + minutes ?? minutes,
+                meta?.Priority ?? Priority.None);
+            await _sidecarRepo.SaveAsync(meta);
+            _appState.UpdateTask(taskId, t => { t.LastWorkedOn = DateTime.UtcNow; });
         }
-
-        var updated = _appState.UpdateTask(taskId, t =>
+        else
         {
-            t.TotalFocusMinutes += minutes;
-            t.PomodoroCount++;
-            t.LastWorkedOn = DateTime.UtcNow;
-        });
-
-        if (updated)
-        {
-            var task = _appState.FindTaskById(taskId);
-            if (task != null)
+            var updated = _appState.UpdateTask(taskId, t =>
             {
-                await SaveTaskAsync(task);
-            }
-            NotifyStateChanged();
+                t.TotalFocusMinutes += minutes;
+                t.PomodoroCount++;
+                t.LastWorkedOn = DateTime.UtcNow;
+            });
+
+            if (!updated) return;
+
+            await SaveTaskAsync(task);
         }
+
+        NotifyStateChanged();
     }
 
     public async Task SaveAsync()
     {
-        // Save all tasks to IndexedDB (thread-safe copy)
         var tasksToSave = _appState.Tasks.ToList();
         await _indexedDb.PutAllAsync(Constants.Storage.TasksStore, tasksToSave);
+    }
+
+    public async Task<IReadOnlyList<TaskItem>> GetTasksForListAsync(string listId)
+    {
+        var allTasks = _appState.Tasks;
+        IEnumerable<TaskItem> filtered = listId switch
+        {
+            Constants.TaskLists.LocalPomodoroListId => allTasks.Where(t => !t.IsGoogleTask && !t.IsScheduled && !t.IsDeleted),
+            Constants.TaskLists.ScheduleListId => allTasks.Where(t => t.IsScheduled && !t.IsDeleted),
+            _ => allTasks.Where(t => t.GoogleListId == listId && !t.IsDeleted)
+        };
+
+        var tasks = filtered.ToList();
+
+        var hasGoogleTasks = tasks.Any(t => t.IsGoogleTask);
+        if (hasGoogleTasks)
+        {
+            var allMeta = await _sidecarRepo.GetAllAsync();
+            var metaDict = allMeta.ToDictionary(m => m.GoogleTaskId);
+
+            tasks = tasks.Select(t =>
+            {
+                if (!string.IsNullOrEmpty(t.GoogleTaskId) && metaDict.TryGetValue(t.GoogleTaskId, out var meta))
+                {
+                    return t.WithUpdates(c =>
+                    {
+                        c.PomodoroCount = meta.PomodoroCount;
+                        c.TotalFocusMinutes = meta.TotalFocusMinutes;
+                        c.Priority = meta.Priority;
+                    });
+                }
+                return t;
+            }).ToList();
+        }
+
+        return tasks;
+    }
+
+    public async Task SelectListAsync(string listId)
+    {
+        _appState.CurrentListId = listId;
+        await SaveCurrentTaskIdAsync();
+        NotifyStateChanged();
+    }
+
+    public async Task RefreshGoogleListsAsync()
+    {
+        if (!await _googleTasksService.IsConnectedAsync())
+        {
+            _cachedGoogleLists = [];
+            return;
+        }
+
+        try
+        {
+            var googleLists = await _googleTasksService.GetTaskListsAsync();
+            _cachedGoogleLists = googleLists?.ToList() ?? [];
+
+            foreach (var gList in _cachedGoogleLists)
+            {
+                try
+                {
+                    var googleTasks = await _googleTasksService.GetTasksAsync(gList.Id);
+                    if (googleTasks == null) continue;
+
+                    var remoteIds = googleTasks.Select(t => t.Id).ToHashSet();
+                    var existingInList = (await _taskRepository.GetByGoogleListIdAsync(gList.Id)).ToList();
+
+                    foreach (var gTask in googleTasks)
+                    {
+                        var local = existingInList.FirstOrDefault(t => t.GoogleTaskId == gTask.Id)
+                            ?? _appState.Tasks.FirstOrDefault(t => t.GoogleTaskId == gTask.Id);
+                        if (local != null)
+                        {
+                            var updated = local.WithUpdates(c =>
+                            {
+                                c.Name = gTask.Title;
+                                c.IsCompleted = gTask.Status == "completed";
+                                c.Notes = gTask.Notes;
+                                c.DueDate = ParseGoogleDate(gTask.Due);
+                                c.ETag = gTask.ETag;
+                                c.UpdatedAt = ParseGoogleDateTime(gTask.Updated);
+                                c.GoogleListId = gList.Id;
+                                c.IsDeleted = false;
+                                c.DeletedAt = null;
+                            });
+                            await _taskRepository.SaveAsync(updated);
+                            _appState.UpdateTask(local.Id, t =>
+                            {
+                                t.Name = updated.Name;
+                                t.IsCompleted = updated.IsCompleted;
+                                t.Notes = updated.Notes;
+                                t.DueDate = updated.DueDate;
+                                t.ETag = updated.ETag;
+                                t.UpdatedAt = updated.UpdatedAt;
+                                t.GoogleListId = updated.GoogleListId;
+                                t.IsDeleted = false;
+                                t.DeletedAt = null;
+                            });
+                        }
+                        else
+                        {
+                            var newTask = MapGoogleTaskToTaskItem(gTask, gList.Id);
+                            await _taskRepository.SaveAsync(newTask);
+                            _appState.InsertTask(newTask, Constants.Tasks.InsertAtEnd);
+                        }
+                    }
+
+                    foreach (var orphan in existingInList.Where(t => !remoteIds.Contains(t.GoogleTaskId)))
+                    {
+                        var deleted = orphan.WithUpdates(c =>
+                        {
+                            c.IsDeleted = true;
+                            c.DeletedAt = DateTime.UtcNow;
+                        });
+                        await _taskRepository.SaveAsync(deleted);
+                        _appState.UpdateTask(orphan.Id, t =>
+                        {
+                            t.IsDeleted = true;
+                            t.DeletedAt = DateTime.UtcNow;
+                        });
+                    }
+                }
+                catch (Exception ex) when (ex is not UnauthorizedAccessException)
+                {
+                    _logger.LogWarning(ex, "Failed to refresh Google list {ListId}, skipping", gList.Id);
+                }
+            }
+        }
+        catch (Exception ex) when (ex is not UnauthorizedAccessException)
+        {
+            _logger.LogWarning(ex, "Failed to refresh Google task lists");
+        }
     }
 
     private async Task SaveTaskAsync(TaskItem task)
@@ -308,22 +452,54 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         var appStateRecord = new AppStateRecord
         {
             Id = Constants.Storage.DefaultSettingsId,
-            CurrentTaskId = _appState.CurrentTaskId
+            CurrentTaskId = _appState.CurrentTaskId,
+            CurrentListId = _appState.CurrentListId
         };
         await _indexedDb.PutAsync(Constants.Storage.AppStateStore, appStateRecord);
     }
 
-    /// <summary>
-    /// Handles timer completion events from ITimerEventSubscriber
-    /// Updates task time when a pomodoro completes
-    /// </summary>
     public async Task HandleTimerCompletedAsync(TimerCompletedEventArgs args)
     {
-        // Only process completed pomodoro sessions with a task
         if (args.SessionType != SessionType.Pomodoro || !args.TaskId.HasValue)
             return;
 
         await AddTimeToTaskAsync(args.TaskId.Value, args.DurationMinutes);
+    }
+
+    private static DateTime? ParseGoogleDateTime(string? iso)
+    {
+        if (string.IsNullOrEmpty(iso)) return null;
+        if (DateTime.TryParse(iso, null, System.Globalization.DateTimeStyles.RoundtripKind, out var dt))
+            return dt.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(dt, DateTimeKind.Utc) : dt.ToUniversalTime();
+        return null;
+    }
+
+    private static DateTime? ParseGoogleDate(string? date)
+    {
+        if (string.IsNullOrEmpty(date)) return null;
+        if (DateTime.TryParse(date, out var dt))
+            return DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+        return null;
+    }
+
+    private static TaskItem MapGoogleTaskToTaskItem(GoogleTask g, string listId)
+    {
+        return new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = g.Title,
+            GoogleTaskId = g.Id,
+            GoogleListId = listId,
+            ETag = g.ETag,
+            UpdatedAt = ParseGoogleDateTime(g.Updated),
+            Notes = g.Notes,
+            DueDate = ParseGoogleDate(g.Due),
+            IsCompleted = g.Status == "completed",
+            CreatedAt = DateTime.UtcNow,
+            Priority = Priority.None,
+            TotalFocusMinutes = 0,
+            PomodoroCount = 0
+        };
     }
 
     private static DateTime? ComputeNextOccurrence(RepeatRule rule)
@@ -430,12 +606,10 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         return HttpUtility.HtmlEncode(name.Trim());
     }
 
-    /// <summary>
-    /// Record for storing app state in IndexedDB
-    /// </summary>
     public class AppStateRecord
     {
         public string Id { get; set; } = Constants.Storage.DefaultSettingsId;
         public Guid? CurrentTaskId { get; set; }
+        public string? CurrentListId { get; set; }
     }
 }

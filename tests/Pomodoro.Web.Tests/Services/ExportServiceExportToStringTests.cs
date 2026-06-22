@@ -28,6 +28,7 @@ public class ExportServiceExportToStringTests
             _mockActivityRepo.Object,
             _mockTaskRepo.Object,
             _mockSettingsRepo.Object,
+            Mock.Of<IPomodoroMetaRepository>(),
             _mockLogger.Object);
     }
 
@@ -44,7 +45,7 @@ public class ExportServiceExportToStringTests
         Assert.DoesNotContain("\n", result);
         var jsonDoc = JsonDocument.Parse(result);
         Assert.True(jsonDoc.RootElement.TryGetProperty("version", out var version));
-        Assert.Equal(1, version.GetInt32());
+        Assert.Equal(2, version.GetInt32());
     }
 
     [Fact]
