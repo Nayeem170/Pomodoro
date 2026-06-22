@@ -54,4 +54,16 @@ public class TaskRepository : ITaskRepository
     {
         await _indexedDb.ClearAsync(Constants.Storage.TasksStore);
     }
+
+    public async Task<IReadOnlyList<TaskItem>> GetByGoogleListIdAsync(string listId)
+    {
+        var all = await _indexedDb.QueryByIndexAsync<TaskItem>(Constants.Storage.TasksStore, Constants.Storage.GoogleListIdIndex, listId);
+        return all?.Where(t => !t.IsDeleted).ToList() ?? new List<TaskItem>();
+    }
+
+    public async Task<TaskItem?> GetByGoogleTaskIdAsync(string googleTaskId)
+    {
+        var results = await _indexedDb.QueryByIndexAsync<TaskItem>(Constants.Storage.TasksStore, Constants.Storage.GoogleTaskIdIndex, googleTaskId);
+        return results?.FirstOrDefault(t => t.GoogleTaskId == googleTaskId);
+    }
 }

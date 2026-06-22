@@ -61,6 +61,7 @@ public static partial class Constants
         public const string LongBreak = "Long Break";
         public const string AnotherPomodoro = "Another Pomodoro";
         public const string StartPomodoro = "Start Pomodoro";
+        public const string ResumePomodoro = "Resume Pomodoro";
     }
 
     /// <summary>
@@ -81,5 +82,31 @@ public static partial class Constants
         public const int InitialPomodoroCount = 0;
         public const int InitialCount = 0;
         public const int InsertAtBeginning = 0;
+        public const int InsertAtEnd = -1;
+    }
+
+    /// <summary>
+    /// Task list constants for multi-list support
+    /// </summary>
+    public static class TaskLists
+    {
+        public const string LocalPomodoroListId = "__local_pomodoro__";
+        public const string ScheduleListId = "__schedule__";
+    }
+
+    /// <summary>
+    /// Repeat/schedule task constants
+    /// </summary>
+    public static class Repeat
+    {
+        public const string RepeatIcon = "🔁";
+        public const string ScheduleIcon = "📅";
+        public const string PausedIcon = "⏸️";
+        public const string RepeatCssClass = "task-repeat";
+        public const string ScheduleCssClass = "task-scheduled";
+        public const string PausedCssClass = "repeat-paused";
+        public const int DefaultCustomDays = 1;
+        public const int DefaultMonthlyDay = 1;
+        public const int MaxCustomDays = 365;
     }
 }

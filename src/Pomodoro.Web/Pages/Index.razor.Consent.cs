@@ -1,23 +1,25 @@
 using Pomodoro.Web.Models;
+using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Pages;
 
-/// <summary>
-/// Consent actions partial for Index page
-/// Contains consent modal-related event handlers
-/// </summary>
 public partial class IndexBase
 {
     #region Consent Actions
 
-    /// <summary>
-    /// Handles selecting a consent option after timer completion
-    /// </summary>
-    public async Task HandleConsentOptionSelect(SessionType sessionType)
+    public async Task HandleConsentOptionSelect(ConsentOption option)
     {
         try
         {
-            await ConsentService.SelectOptionAsync(sessionType);
+            if (option.IsResume)
+            {
+                await TimerService.ResumeInterruptedPomodoroAsync();
+                ConsentService.HideConsentModal();
+            }
+            else
+            {
+                await ConsentService.SelectOptionAsync(option.SessionType);
+            }
         }
         catch (Exception ex)
         {

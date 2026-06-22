@@ -1,4 +1,5 @@
 using System.Text.Json;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Pomodoro.Web.Models;
@@ -14,6 +15,7 @@ public class ImportServiceTests
     private readonly Mock<IActivityRepository> _mockActivityRepository;
     private readonly Mock<ITaskRepository> _mockTaskRepository;
     private readonly Mock<ISettingsRepository> _mockSettingsRepository;
+    private readonly Mock<IPomodoroMetaRepository> _mockPomodoroMetaRepo;
     private readonly Mock<ILogger<ImportService>> _mockLogger;
     private readonly ImportService _service;
 
@@ -22,12 +24,14 @@ public class ImportServiceTests
         _mockActivityRepository = new Mock<IActivityRepository>();
         _mockTaskRepository = new Mock<ITaskRepository>();
         _mockSettingsRepository = new Mock<ISettingsRepository>();
+        _mockPomodoroMetaRepo = new Mock<IPomodoroMetaRepository>();
         _mockLogger = new Mock<ILogger<ImportService>>();
 
         _service = new ImportService(
             _mockActivityRepository.Object,
             _mockTaskRepository.Object,
             _mockSettingsRepository.Object,
+            _mockPomodoroMetaRepo.Object,
             _mockLogger.Object);
     }
 
@@ -350,9 +354,90 @@ public class ImportServiceTests
             It.Is<ActivityRecord>(a => a.TaskId == existingTask.Id)), Times.Once);
     }
 
+    [Fact]
+    public async Task ImportFromJsonAsync_DuplicateTaskWithEmptyId_SkipsImport()
+    {
+        var existingTask = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Shared Task",
+            CreatedAt = DateTime.UtcNow
+        };
+        var importTask = new TaskItem
+        {
+            Id = Guid.Empty,
+            Name = "Shared Task",
+            CreatedAt = existingTask.CreatedAt
+        };
+        var json = CreateValidJson(tasks: [importTask]);
+        _mockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        _mockTaskRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([existingTask]);
+
+        var result = await _service.ImportFromJsonAsync(json);
+
+        Assert.True(result.Success);
+        Assert.Equal(0, result.TasksImported);
+        Assert.Equal(1, result.TasksSkipped);
+    }
+
+    [Fact]
+    public async Task ImportFromJsonAsync_DuplicateTaskWithNonEmptyId_ImportsAsNew()
+    {
+        var existingTask = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Shared Task",
+            CreatedAt = DateTime.UtcNow
+        };
+        var importTask = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Shared Task",
+            CreatedAt = existingTask.CreatedAt.AddDays(1)
+        };
+        var json = CreateValidJson(tasks: [importTask]);
+        _mockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        _mockTaskRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([existingTask]);
+
+        var result = await _service.ImportFromJsonAsync(json);
+
+        Assert.True(result.Success);
+        Assert.Equal(1, result.TasksImported);
+    }
+
     #endregion
 
     #region Error Handling
+
+    [Fact]
+    public async Task ImportFromJsonAsync_WithPomodoroMeta_ImportsSidecar()
+    {
+        var meta = new PomodoroMeta("gtask-1", 5, 125, Priority.High);
+        var json = CreateValidJson(pomodoroMeta: [meta]);
+        _mockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        _mockTaskRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        _mockPomodoroMetaRepo.Setup(r => r.SaveAsync(It.IsAny<PomodoroMeta>())).Returns(Task.CompletedTask);
+
+        var result = await _service.ImportFromJsonAsync(json);
+
+        result.Success.Should().BeTrue();
+        _mockPomodoroMetaRepo.Verify(x => x.SaveAsync(It.Is<PomodoroMeta>(m =>
+            m.GoogleTaskId == "gtask-1" && m.PomodoroCount == 5 && m.TotalFocusMinutes == 125 && m.Priority == Priority.High)),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ImportFromJsonAsync_WithNullPomodoroMeta_SkipsImport()
+    {
+        var json = CreateValidJson(pomodoroMeta: null);
+        _mockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        _mockTaskRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+
+        var result = await _service.ImportFromJsonAsync(json);
+
+        result.Success.Should().BeTrue();
+        _mockPomodoroMetaRepo.Verify(x => x.SaveAsync(It.IsAny<PomodoroMeta>()), Times.Never);
+    }
 
     [Fact]
     public async Task ImportFromJsonAsync_RepositoryThrows_ReturnsFailure()
@@ -383,7 +468,8 @@ public class ImportServiceTests
     private static string CreateValidJson(
         TimerSettings? settings = null,
         List<ActivityRecord>? activities = null,
-        List<TaskItem>? tasks = null)
+        List<TaskItem>? tasks = null,
+        List<PomodoroMeta>? pomodoroMeta = null)
     {
         var data = new
         {
@@ -391,7 +477,8 @@ public class ImportServiceTests
             ExportDate = DateTime.UtcNow,
             Settings = settings,
             Activities = activities,
-            Tasks = tasks
+            Tasks = tasks,
+            PomodoroMeta = pomodoroMeta
         };
         return JsonSerializer.Serialize(data);
     }

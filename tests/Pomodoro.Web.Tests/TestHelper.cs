@@ -1,10 +1,12 @@
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Moq;
 using Pomodoro.Web.Services;
 using Pomodoro.Web.Services.Formatters;
+using Pomodoro.Web.Services.Repositories;
 using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Tests;
@@ -114,6 +116,9 @@ public abstract class TestHelper : TestContext
         Services.AddSingleton(HistoryPagePresenterService);
         Services.AddSingleton(SettingsPresenterService);
         Services.AddSingleton(Mock.Of<ICloudSyncService>());
+        Services.AddSingleton(Mock.Of<IGoogleDriveService>());
+        Services.AddSingleton(Mock.Of<IGoogleTasksService>());
+        Services.AddSingleton(Mock.Of<IPomodoroMetaRepository>());
 
         // Register LocalDateTimeService
         var mockLocalDateTimeService = new Mock<ILocalDateTimeService>();
@@ -143,4 +148,14 @@ public abstract class TestHelper : TestContext
         }
         return activities;
     }
+}
+
+internal class TestNavigationManager : NavigationManager
+{
+    public TestNavigationManager()
+    {
+        Initialize("http://localhost/", "http://localhost/");
+    }
+
+    protected override void NavigateToCore(string uri, bool forceLoad) { }
 }

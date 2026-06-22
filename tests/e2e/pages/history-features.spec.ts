@@ -40,8 +40,8 @@ test.describe('History Features', () => {
     const todayBtn = page.locator('button.nav-qbtn');
     await expect(todayBtn).toBeVisible();
 
-    const isActive = await todayBtn.evaluate(el => el.classList.contains('active'));
-    expect(isActive).toBe(true);
+    const isDisabled = await todayBtn.isDisabled();
+    expect(isDisabled).toBe(true);
   });
 
   test('should enable Today button after navigating away from today', async ({ page }) => {
@@ -54,13 +54,17 @@ test.describe('History Features', () => {
 
     const todayBtn = page.locator('button.nav-qbtn');
     const isActive = await todayBtn.evaluate(el => el.classList.contains('active'));
-    expect(isActive).toBe(false);
+    expect(isActive).toBe(true);
+    const isDisabled = await todayBtn.isDisabled();
+    expect(isDisabled).toBe(false);
 
     await todayBtn.click();
     await page.waitForTimeout(500);
 
     const isActiveAgain = await todayBtn.evaluate(el => el.classList.contains('active'));
-    expect(isActiveAgain).toBe(true);
+    expect(isActiveAgain).toBe(false);
+    const isDisabledAgain = await todayBtn.isDisabled();
+    expect(isDisabledAgain).toBe(true);
   });
 
   test('should disable next day button when on today', async ({ page }) => {

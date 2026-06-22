@@ -1,4 +1,5 @@
 using System.Text.Json;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Pomodoro.Web.Models;
@@ -31,6 +32,7 @@ public class ExportServiceTests
             _mockActivityRepository.Object,
             _mockTaskRepository.Object,
             _mockSettingsRepository.Object,
+            Mock.Of<IPomodoroMetaRepository>(),
             _mockLogger.Object);
     }
 
@@ -49,7 +51,7 @@ public class ExportServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Contains("\"version\": 1", result);
+        Assert.Contains("\"version\": 2", result);
         Assert.Contains("\"exportDate\"", result);
         Assert.Contains("\"settings\"", result);
         Assert.Contains("\"activities\"", result);
@@ -236,6 +238,89 @@ public class ExportServiceTests
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.AtLeastOnce);
         }
+    }
+
+    [Fact]
+    public async Task ExportToJsonAsync_WithGoogleTasks_FiltersAndScrubs()
+    {
+        var tasks = new List<TaskItem>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(), Name = "Local Task", CreatedAt = DateTime.UtcNow,
+                PomodoroCount = 1, GoogleTaskId = null, GoogleListId = null
+            },
+            new()
+            {
+                Id = Guid.NewGuid(), Name = "Google Task", CreatedAt = DateTime.UtcNow,
+                GoogleTaskId = "gtask-1", GoogleListId = "glist-1", ETag = "etag-1",
+                UpdatedAt = DateTime.UtcNow
+            }
+        };
+
+        _mockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        _mockTaskRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(tasks);
+        _mockSettingsRepository.Setup(r => r.GetAsync()).ReturnsAsync(new TimerSettings());
+
+        var result = await _exportService.ExportToJsonAsync();
+        var jsonDoc = JsonDocument.Parse(result);
+        var tasksArray = jsonDoc.RootElement.GetProperty("tasks");
+
+        tasksArray.GetArrayLength().Should().Be(1);
+        tasksArray[0].GetProperty("name").GetString().Should().Be("Local Task");
+        tasksArray[0].GetProperty("googleTaskId").ValueKind.Should().Be(JsonValueKind.Null);
+        tasksArray[0].GetProperty("googleListId").ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    [Fact]
+    public async Task ExportToJsonAsync_WithPomodoroMeta_IncludesInOutput()
+    {
+        var mockMetaRepo = new Mock<IPomodoroMetaRepository>();
+        mockMetaRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(
+            [new PomodoroMeta("gtask-1", 5, 125, Priority.High)]);
+
+        var exportService = new ExportService(
+            _mockActivityRepository.Object,
+            _mockTaskRepository.Object,
+            _mockSettingsRepository.Object,
+            mockMetaRepo.Object,
+            _mockLogger.Object);
+
+        _mockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        _mockTaskRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        _mockSettingsRepository.Setup(r => r.GetAsync()).ReturnsAsync(new TimerSettings());
+
+        var result = await exportService.ExportToJsonAsync();
+        var jsonDoc = JsonDocument.Parse(result);
+
+        jsonDoc.RootElement.TryGetProperty("pomodoroMeta", out var metaArray).Should().BeTrue();
+        metaArray.GetArrayLength().Should().Be(1);
+        metaArray[0].GetProperty("googleTaskId").GetString().Should().Be("gtask-1");
+        metaArray[0].GetProperty("pomodoroCount").GetInt32().Should().Be(5);
+    }
+
+    [Fact]
+    public async Task ExportToJsonAsync_WithPomodoroMetaNull_UsesEmptyList()
+    {
+        var mockMetaRepo = new Mock<IPomodoroMetaRepository>();
+        mockMetaRepo.Setup(r => r.GetAllAsync()).ReturnsAsync((List<PomodoroMeta>?)null);
+
+        var exportService = new ExportService(
+            _mockActivityRepository.Object,
+            _mockTaskRepository.Object,
+            _mockSettingsRepository.Object,
+            mockMetaRepo.Object,
+            _mockLogger.Object);
+
+        _mockActivityRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        _mockTaskRepository.Setup(r => r.GetAllAsync()).ReturnsAsync([]);
+        _mockSettingsRepository.Setup(r => r.GetAsync()).ReturnsAsync(new TimerSettings());
+
+        var result = await exportService.ExportToJsonAsync();
+        var jsonDoc = JsonDocument.Parse(result);
+
+        jsonDoc.RootElement.TryGetProperty("pomodoroMeta", out var metaArray).Should().BeTrue();
+        metaArray.GetArrayLength().Should().Be(0);
     }
 
     #endregion

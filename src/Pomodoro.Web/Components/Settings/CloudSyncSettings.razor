@@ -1,5 +1,6 @@
 @using Pomodoro.Web.Services
 @inject ICloudSyncService CloudSyncService
+@inject IGoogleDriveService GoogleDriveService
 @inject ILogger<CloudSyncSettings> Logger
 
 <div class="ss ss-data">
@@ -22,7 +23,7 @@
         <div class="sr">
             <div>
                 <div class="sr-lbl">Google Drive</div>
-                <div class="sr-sub">Last synced @FormatLastSynced</div>
+                <div class="sr-sub">@(GoogleDriveService.AccountEmail ?? ("Last synced " + FormatLastSynced))</div>
             </div>
             <div class="sync-actions">
                 <button class="sec-btn" @onclick="SyncNow" disabled="@_isSyncing">
@@ -91,6 +92,17 @@
         }
     }
 
+    private static string GetSyncSuccessMessage(SyncResult result)
+    {
+        if (result.Action == SyncAction.Pushed)
+            return Constants.SyncMessages.SyncPushSuccess;
+        if (result.Action == SyncAction.Pulled)
+            return Constants.SyncMessages.SyncPullSuccess
+                .Replace("{ActivityCount}", result.ActivitiesImported.ToString())
+                .Replace("{TaskCount}", result.TasksImported.ToString());
+        return Constants.SyncMessages.AlreadyUpToDate;
+    }
+
     private async Task SyncNow()
     {
         _isSyncing = true;
@@ -102,15 +114,7 @@
 
             if (result.Success)
             {
-                var message = result.Action switch
-                {
-                    SyncAction.Pushed => Constants.SyncMessages.SyncPushSuccess,
-                    SyncAction.Pulled => string.Format(Constants.SyncMessages.SyncPullSuccess,
-                        result.ActivitiesImported, result.TasksImported),
-                    SyncAction.UpToDate => Constants.SyncMessages.AlreadyUpToDate,
-                    _ => Constants.SyncMessages.SyncComplete
-                };
-                await ShowToast(message);
+                await ShowToast(GetSyncSuccessMessage(result));
             }
             else if (result.ErrorMessage == Constants.SyncMessages.ReconnectRequired)
             {
@@ -121,15 +125,7 @@
                     result = await CloudSyncService.SyncNowAsync();
                     if (result.Success)
                     {
-                        var message = result.Action switch
-                        {
-                            SyncAction.Pushed => Constants.SyncMessages.SyncPushSuccess,
-                            SyncAction.Pulled => string.Format(Constants.SyncMessages.SyncPullSuccess,
-                                result.ActivitiesImported, result.TasksImported),
-                            SyncAction.UpToDate => Constants.SyncMessages.AlreadyUpToDate,
-                            _ => Constants.SyncMessages.SyncComplete
-                        };
-                        await ShowToast(message);
+                        await ShowToast(GetSyncSuccessMessage(result));
                     }
                     else
                     {

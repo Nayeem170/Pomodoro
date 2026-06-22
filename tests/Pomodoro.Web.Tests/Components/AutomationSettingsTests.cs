@@ -9,35 +9,24 @@ namespace Pomodoro.Web.Tests.Components;
 public class AutomationSettingsTests : TestContext
 {
     [Fact]
-    public void ToggleAutoStartPomodoros_TogglesValue()
+    public void ToggleAutoStartSession_TogglesValue()
     {
-        var settings = new TimerSettings { AutoStartPomodoros = true };
+        var settings = new TimerSettings { AutoStartSession = true };
         var cut = RenderComponent<AutomationSettings>(parameters => parameters.Add(p => p.Settings, settings));
 
         cut.Find(".tog").Click();
 
-        Assert.False(settings.AutoStartPomodoros);
+        Assert.False(settings.AutoStartSession);
     }
 
     [Fact]
-    public void ToggleAutoStartBreaks_TogglesValue()
+    public void ToggleAutoStartSession_WhenFalse_TurnsTrue()
     {
-        var settings = new TimerSettings { AutoStartBreaks = true };
-        var cut = RenderComponent<AutomationSettings>(parameters => parameters.Add(p => p.Settings, settings));
-
-        cut.FindAll(".tog")[1].Click();
-
-        Assert.False(settings.AutoStartBreaks);
-    }
-
-    [Fact]
-    public void ToggleAutoStartPomodoros_WhenFalse_TurnsTrue()
-    {
-        var settings = new TimerSettings { AutoStartPomodoros = false };
+        var settings = new TimerSettings { AutoStartSession = false };
         var cut = RenderComponent<AutomationSettings>(parameters => parameters.Add(p => p.Settings, settings));
 
         cut.Find(".tog").Click();
 
-        Assert.True(settings.AutoStartPomodoros);
+        Assert.True(settings.AutoStartSession);
     }
 }

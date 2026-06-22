@@ -298,6 +298,25 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         _cloudSyncService?.ScheduleSyncAsync();
     }
 
+    public TimerSession? InterruptedPomodoro =>
+        _pausedSessions.TryGetValue(SessionType.Pomodoro, out var session) ? session : null;
+
+    public async Task ResumeInterruptedPomodoroAsync()
+    {
+        if (!_pausedSessions.TryGetValue(SessionType.Pomodoro, out var session)) return;
+
+        await _jsTimerInterop.StopAsync();
+
+        session.IsRunning = true;
+        session.EndAt = DateTime.UtcNow.AddSeconds(session.RemainingSeconds);
+        _appState.CurrentSession = session;
+        _pausedSessions.Remove(SessionType.Pomodoro);
+
+        NotifyStateChanged();
+        _dotNetRef ??= DotNetObjectReference.Create<object>(this);
+        await _jsTimerInterop.StartAsync(_dotNetRef);
+    }
+
     public async Task SaveSettingsAsync()
     {
         await _settingsRepository.SaveAsync(_appState.Settings);

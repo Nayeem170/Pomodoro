@@ -28,8 +28,7 @@ public class SettingsPresenterService
             && settings.LongBreakMinutes == defaults.LongBreakMinutes
             && settings.SoundEnabled == defaults.SoundEnabled
             && settings.NotificationsEnabled == defaults.NotificationsEnabled
-            && settings.AutoStartPomodoros == defaults.AutoStartPomodoros
-            && settings.AutoStartBreaks == defaults.AutoStartBreaks
+            && settings.AutoStartSession == defaults.AutoStartSession
             && settings.AutoStartDelaySeconds == defaults.AutoStartDelaySeconds
             && settings.LongBreakInterval == defaults.LongBreakInterval
             && settings.DailyGoal == defaults.DailyGoal;

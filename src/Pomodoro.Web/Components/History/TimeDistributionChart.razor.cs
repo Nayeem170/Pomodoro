@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
@@ -16,8 +17,7 @@ public class TimeDistributionChartBase : ComponentBase, IDisposable
     [Parameter]
     public List<ActivityRecord> Activities { get; set; } = new();
 
-    private static readonly string ShortBreakColor = "#1D9E75";
-    private static readonly string LongBreakColor = "#378ADD";
+    private static readonly string BreakColor = "#1D9E75";
     private static readonly string[] TaskColors = { "#D85A30", "#E8913A", "#C75B9B", "#7B68EE", "#20B2AA", "#CD853F", "#6B8E23", "#DB7093" };
 
     public List<ChartSegment> Segments { get; set; } = new();
@@ -80,13 +80,9 @@ public class TimeDistributionChartBase : ComponentBase, IDisposable
             var label = kvp.Key;
             string color;
 
-            if (label.Equals(Constants.Activity.ShortBreaksLabel, StringComparison.OrdinalIgnoreCase))
+            if (label.Equals(Constants.Activity.BreaksLabel, StringComparison.OrdinalIgnoreCase))
             {
-                color = ShortBreakColor;
-            }
-            else if (label.Equals(Constants.Activity.LongBreaksLabel, StringComparison.OrdinalIgnoreCase))
-            {
-                color = LongBreakColor;
+                color = BreakColor;
             }
             else
             {
@@ -98,7 +94,7 @@ public class TimeDistributionChartBase : ComponentBase, IDisposable
             segments.Add(new ChartSegment(label, color, pct));
         }
 
-        Segments = segments;
+        Segments = segments.OrderByDescending(s => s.Percentage).ToList();
     }
 
     public void Dispose()

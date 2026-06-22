@@ -1,95 +1,103 @@
 # Pomodoro — Project Guide for AI Agents
 
 ## Project Overview
-
-Blazor WebAssembly (.NET 9) Pomodoro timer PWA. Single-page app with timer, tasks, history, settings, and cloud sync (Google Drive).
+Blazor WebAssembly (.NET 9) Pomodoro timer PWA — timer, tasks, history, settings, Google Drive sync.
 
 ## Architecture
-
-```
 src/Pomodoro.Web/
-  Components/       # Razor components (Tasks/, Timer/, Settings/, History/, Shared/)
-  Constants/        # Partial class Constants (11 files: UI, Sync, Timer, Messages, etc.)
-  Layout/           # MainLayout.razor
-  Models/           # Data models (TaskItem, TimerSettings, Activity, etc.)
-  Pages/            # Routeable pages (Index, Settings, About, History)
-  Services/         # Business logic (ITimerService, ITaskService, ICloudSyncService, etc.)
-  wwwroot/          # Static assets, JS interop files (googleDrive.js, compressionInterop.js)
-  Program.cs        # DI registration
-```
+  Components/   # Razor components (Tasks/, Timer/, Settings/, History/, Shared/)
+  Constants/    # Partial class Constants (11 files: UI, Sync, Timer, Messages, etc.)
+  Models/       # TaskItem, TimerSettings, Activity, etc.
+  Pages/        # Index, Settings, About, History
+  Services/     # Interfaces + implementations; ServiceRegistrationService.cs for DI
+  wwwroot/      # googleDrive.js, compressionInterop.js
+  Program.cs    # Entry point → ApplicationStartupService
 
 ## Tech Stack
-
-- **Frontend:** Blazor WebAssembly, C# 13, .NET 9
-- **Testing (Unit):** xUnit, bUnit, Moq, FluentAssertions
-- **Testing (E2E):** Playwright (Chromium only), TypeScript
-- **Formatting:** `dotnet format Pomodoro.sln --verify-no-changes` (enforced in CI)
-- **CI:** GitHub Actions (`pull-request.yml`, `deploy.yml`)
+- Blazor WASM, C# 13, .NET 9
+- Unit tests: xUnit, bUnit, Moq, FluentAssertions
+- E2E: Playwright (Chromium), TypeScript
+- Formatting: `dotnet format Pomodoro.sln --verify-no-changes` (CI enforced)
 
 ## Key Conventions
 
 ### Code Style
-- No comments in code unless explicitly asked
-- Nullable reference types enabled
-- Constants use partial class pattern: `Constants.UI.ButtonClass`, `Constants.Sync.SyncFileName`
-- Services use interface + implementation pattern (e.g., `ITimerService` / `TimerService`)
-- Component code-behind uses `@inherits ComponentBase` pattern (e.g., `SettingsPageBase`)
-- CSS classes are concise: `.sr` (setting row), `.ss` (settings section), `.tog` (toggle), `.stepper`, `.step-btn`, `.step-input`, `.step-unit`, `.sr-lbl`, `.sr-sub`, `.card`, `.card-hdr`, `.card-title`, `.mode-tabs`, `.mode-btn`, `.ring-area`, `.timer-time`, `.timer-mode-label`, `.task-row`, `.task-checkbox`, `.active-task`, `.sec-btn`, `.danger-btn`
+- No comments unless asked; nullable reference types enabled
+- Constants: partial class pattern — `Constants.UI.ButtonClass`, `Constants.Sync.SyncFileName`
+- Services: interface + impl (e.g. `ITimerService` / `TimerService`)
+- Code-behind: `@inherits ComponentBase` (e.g. `SettingsPageBase`)
+- CSS uses concise utility names (e.g. `.sr`, `.tog`, `.stepper`) — follow existing component patterns
 
-### Testing Conventions
-- Unit tests use `[Trait("Category", "Service")]` or `"Component"` or `"Page"`
-- Component tests extend `TestHelper` (provides all mock services) or `TestContext` directly
-- `TestHelper` auto-registers mocks for all services including `ICloudSyncService`
-- When adding a new injected service, register `Mock.Of<INewService>()` in `TestHelper` constructor
-- E2E tests use `PomodoroPage` fixture from `tests/e2e/fixtures/pomodoro.page.ts`
-- E2E selectors use CSS class names from the actual rendered components
+### Testing
+- Traits: `[Trait("Category", "Service|Component|Page")]`
+- Component tests extend `TestHelper` (all mocks pre-registered) or `TestContext`
+- New injected service → add `Mock.Of<INewService>()` to `TestHelper` constructor
+- E2E: use `PomodoroPage` fixture from `tests/e2e/fixtures/pomodoro.page.ts`; selectors use rendered CSS class names
+- `IJSRuntime.InvokeAsync<T>` is an interface method and is directly mockable by Moq — no custom test double needed for basic setups. Custom test doubles in the codebase exist for advanced scenarios (sequential call tracking, per-identifier config), not as a workaround for a Moq limitation. Prefer Moq setups before introducing custom test doubles.
 
 ### Git Workflow
-- `main` — production, `develop` — integration
-- Feature branches: `feature/description` or `fix/description`
-- PRs target `develop`, merge to `main` after
+- `main` = production, `develop` = integration
+- Branches: `feature/description` or `fix/description` off `develop`
+- Every PR: targets `develop`, body includes `Closes #XX`
+
+### Development Cycle
+Triggered by "next item":
+1. Pick next item — **In Progress** first, then **Todo**
+2. **In Progress + open PR** → merge with `develop` if needed → `gh pr merge <n> --merge --admin`
+   - Merged → set **Review**, repeat
+   - Failed (CI/API) → skip, next item
+3. **Todo or In Progress without PR** → implement:
+   - Set **In Progress**; branch from `develop`
+   - Run `dotnet format Pomodoro.sln --verify-no-changes` and `dotnet test`
+   - Commit, push, open PR with `Closes #XX`; repeat from step 1
+4. After all PRs merged → resolve CodeRabbit comments:
+   - Read: `gh api repos/Nayeem170/Pomodoro/pulls/<n>/reviews`
+   - Fix all actionable items on one branch → PR → merge
+   - Then set issues to **Review**
+5. **Never set Review** unless PR is merged AND CodeRabbit feedback resolved
+
+### Project Board
+
+| Status | Meaning | ID |
+|---|---|---|
+| Todo | not started | `0cdfd9a0` |
+| In Progress | being worked on | `ae38fc2d` |
+| Review | PR merged | `10a3102c` |
+| Done | user-verified (manual only) | `a881df4c` |
+
+Board: `PVT_kwHOAJBk4M4BWD1D` · Status field: `PVTSSF_lAHOAJBk4M4BWD1DzhRbEOY`
+PRs are auto-removed from board by `pr-check.yml`.
 
 ### DI Registration
-All services registered in `Program.cs`. When adding a new service:
-1. Create interface in `Services/`
-2. Create implementation in `Services/`
-3. Register in `Program.cs`: `builder.Services.AddSingleton<IService, Service>()`
-4. Add mock to `TestHelper.cs` constructor
+All services registered as **Scoped** via `ServiceRegistrationService` (Scoped = Singleton in WASM).
+New service checklist: create interface → create impl → `services.AddScoped<IService, Service>()` → add mock to `TestHelper`.
+
+### Cloud Sync
+- Last-write-wins on `LastSyncedAt`; entire dataset pushed/pulled as a unit (no field-level merge)
+- Debounced 300ms; compressed via `compressionInterop.js` before upload
+- On push failure: surface error to user, do not silently swallow
 
 ## Common Commands
-
 ```bash
 dotnet build Pomodoro.sln
 dotnet test tests/Pomodoro.Web.Tests/Pomodoro.Web.Tests.csproj
 dotnet format Pomodoro.sln --verify-no-changes
 npx playwright test tests/e2e/pages/
+# Local coverage report:
+dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage
+reportgenerator -reports:"./coverage/**/coverage.cobertura.xml" -targetdir:"./coverage/report" -reporttypes:"Html"
 ```
 
-## CI Pipeline (ci.yml)
+Codecov: https://app.codecov.io/github/Nayeem170/Pomodoro
 
-1. `build` → publishes app artifact once
-2. `unit-test` ∥ `e2e` (parallel, both download build artifact)
-3. `e2e-gate` — depends on all 16 E2E shards, creates single check for branch protection
-4. 98% line coverage threshold configured in codecov.yml; coverage reported to Codecov via codecov-action
+## CI Pipeline
+1. `build` → publishes artifact
+2. `unit-test` ∥ `e2e` (parallel, both use build artifact; 16 shards, gated by `e2e-gate`)
+3. 98% line coverage threshold (codecov.yml)
 
-### E2E Shards (16 total)
-`timer-flow`, `timer-ring`, `long-break`, `tasks`, `settings`, `history`, `consent-modal`, `consent-auto-continue`, `today-summary`, `pip`, `cloud`, `persistence`, `sound`, `mobile`, `about`, `navigation`
-
-### Workflow Files
-- `ci.yml` — PR pipeline (build → unit-test ∥ e2e → e2e-gate)
-- `e2e.yml` — Reusable E2E workflow with 16-shard matrix
-- `deploy.yml` — build → deploy to Cloudflare Pages (push to main)
-- `reports.yml` — Manual trigger, generates coverage/E2E reports as GitHub Pages
-
-## Coverage
-
-- Codecov: https://app.codecov.io/github/Nayeem170/Pomodoro
-- Local report: `dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage && reportgenerator -reports:"./coverage/**/coverage.cobertura.xml" -targetdir:"./coverage/report" -reporttypes:"Html"`
+Workflows: `ci.yml` (PR pipeline) · `e2e.yml` (reusable, 16-shard matrix) · `deploy.yml` (auto on main, manual preview) · `pr-check.yml` (issue linkage + board cleanup) · `reports.yml` (manual)
 
 ## Known Issues
-
-- `NavigationManager` cannot be mocked with Moq (non-virtual properties) — use `TestNavigationManager` subclass instead
-- `IJSRuntime.InvokeAsync<T>` is an extension method — cannot be mocked with Moq, use custom `IJSRuntime` test double
-- `page.clock.install()` must be called AFTER the timer is started in E2E tests — installing it before Blazor initialization can freeze `DateTime.UtcNow` and prevent the app from loading
-- Timer Start button requires a task to be selected first (`IsStartDisabled` is true by default) — E2E tests must call `addTask()` + `selectTask()` before `startTimer()`
-- `BL0005` warnings from Blazor analyzer are suppressed in test project via `<NoWarn>BL0005</NoWarn>` (intentional parameter setting in tests)
+- `NavigationManager` — non-virtual, can't mock with Moq → use `TestNavigationManager` in `TestHelper.cs`
+- `page.clock.install()` must be called **after** timer start in E2E — installing before Blazor init freezes `DateTime.UtcNow`
+- `BL0005` suppressed in test project via `<NoWarn>BL0005</NoWarn>` (intentional)

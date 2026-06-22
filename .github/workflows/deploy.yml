@@ -1,15 +1,24 @@
-name: Deploy
+name: Deploy to Cloudflare Pages
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'develop'
+        type: choice
+        options:
+          - develop
+          - main
 
 permissions:
   contents: read
   deployments: write
 
 concurrency:
-  group: deploy-production
+  group: deploy-${{ github.event_name == 'push' && github.ref_name || inputs.branch }}
   cancel-in-progress: true
 
 jobs:
@@ -17,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'push' && github.ref || inputs.branch }}
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -41,9 +52,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: ${{ steps.deploy.outputs.deployment-url }}
+    environment: ${{ ((github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'workflow_dispatch' && inputs.branch == 'main')) && 'production' || 'preview' }}
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -57,5 +66,5 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: pomodoro
-          branch: main
+          branch: ${{ github.event_name == 'push' && github.ref_name || inputs.branch }}
           directory: publish/wwwroot

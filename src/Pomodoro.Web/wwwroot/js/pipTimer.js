@@ -31,7 +31,7 @@ window.pipTimer = {
         }
         
         var width = Math.round(Math.min(window.innerWidth, 420) * 0.9);
-        var height = Math.round(width * 1.35 * 0.6) + 140;
+        var height = 440;
         
         if (this.isSupported()) {
             try {
@@ -57,7 +57,7 @@ window.pipTimer = {
     
     openFallback: function(timerState) {
         var width = Math.round(Math.min(window.innerWidth, 420) * 0.9);
-        var height = Math.round(width * 1.35 * 0.6) + 140;
+        var height = 440;
         
         const features = [
             'width=' + width,
@@ -79,6 +79,16 @@ window.pipTimer = {
         
         this.pipDocument = this.pipWindow.document;
         this.writePopupContent(timerState);
+        var container = this.pipDocument.getElementById('pip-container');
+        if (container) {
+            var themeClass = this.getThemeClass(timerState.sessionType || 0);
+            var runningClass = timerState.isRunning ? 'running' : '';
+            container.className = 'pip-container ' + themeClass + ' ' + runningClass;
+        }
+        if (!this.pipScriptInitialized) {
+            this.ensurePipScript();
+            this.pipScriptInitialized = true;
+        }
         this.setupCloseHandler();
         this.setupBroadcastChannel();
         
@@ -93,6 +103,13 @@ window.pipTimer = {
             default: return 'pomodoro-theme';
         }
     },
+
+    escapeHtml: function(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    },
     
     injectPipStyles: function() {
         if (!this.pipDocument) return;
@@ -102,87 +119,77 @@ window.pipTimer = {
         pipStyles.textContent = `
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: #1a1a2e;
+                font-family: system-ui, -apple-system, sans-serif;
+                background: #162032;
                 color: #ffffff;
                 min-height: 100vh;
                 display: flex;
                 flex-direction: column;
-                align-items: center;
-                justify-content: center;
                 overflow: hidden;
                 padding: 0;
             }
             .pip-container {
                 width: 100%;
-                max-width: 380px;
-            }
-            .mode-tabs {
                 display: flex;
-                gap: 4px;
-                background: #1f3460;
-                border-radius: 12px;
-                padding: 3px;
-                margin: 10px 14px 8px;
+                flex-direction: column;
             }
-            .mode-tab {
+            .pip-tabs {
+                display: flex;
+                padding: 6px 10px 0;
+                gap: 2px;
+                background: #162032;
+            }
+            .pip-tab {
                 flex: 1;
-                padding: 6px 0;
-                font-size: 16px;
-                text-align: center;
-                border-radius: 8px;
+                padding: 7px 0;
+                border-radius: 7px 7px 0 0;
                 border: none;
                 background: transparent;
-                color: #a0a0a0;
-                cursor: pointer;
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                font-size: 14px;
                 font-weight: 400;
-                transition: background 0.15s;
+                color: rgba(255,255,255,0.3);
+                cursor: pointer;
+                font-family: system-ui, -apple-system, sans-serif;
+                border-bottom: 2px solid transparent;
             }
-            .mode-tab:hover {
-                background: #16213e;
+            .pip-tab.act {
+                color: #e8edf8;
+                font-weight: 600;
             }
-            .mode-tab.active {
-                background: #16213e;
-                color: #ffffff;
-                font-weight: 500;
-                border: 1px solid #2d4a6f;
-            }
-            .timer-card {
-                background: #16213e;
-                border: 1px solid #2d4a6f;
-                border-radius: 12px;
-                margin: 0 14px;
-                overflow: hidden;
-                transition: background 0.3s ease, border-color 0.3s ease;
-            }
-            .card-top {
-                padding: 18px 14px 14px;
-                text-align: center;
+            .pip-tab.act.pomodoro { border-bottom-color: #e74c3c; }
+            .pip-tab.act.short-break { border-bottom-color: #27ae60; }
+            .pip-tab.act.long-break { border-bottom-color: #3498db; }
+            .pip-timer-area {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+                padding: 20px 20px 16px;
+                gap: 14px;
             }
-            .ring-area {
-                position: relative;
-                width: 180px;
-                height: 180px;
-                flex-shrink: 0;
+            .pip-container.pomodoro-theme .pip-timer-area {
+                background: linear-gradient(180deg, rgba(231,76,60,.12), #162032);
             }
-            .ring-area svg { transform: rotate(-90deg); }
-            .ring-bg { fill: none; stroke: #1f3460; stroke-width: 10; }
+            .pip-container.short-break-theme .pip-timer-area {
+                background: linear-gradient(180deg, rgba(39,174,96,.12), #162032);
+            }
+            .pip-container.long-break-theme .pip-timer-area {
+                background: linear-gradient(180deg, rgba(52,152,219,.12), #162032);
+            }
+            .ring-wrap { position: relative; }
+            .ring-wrap svg { display: block; transform: rotate(-90deg); }
+            .ring-bg { fill: none; stroke: #1e2a40; stroke-width: 14; }
             .ring-fill {
                 fill: none;
                 stroke: #e74c3c;
-                stroke-width: 10;
+                stroke-width: 14;
                 stroke-linecap: round;
-                stroke-dasharray: 509;
+                stroke-dasharray: 553;
                 stroke-dashoffset: 0;
                 transition: stroke-dashoffset 0.4s ease;
             }
             .ring-fill.short-break { stroke: #27ae60; }
             .ring-fill.long-break { stroke: #3498db; }
-            .timer-center {
+            .ring-center {
                 position: absolute;
                 top: 50%;
                 left: 50%;
@@ -190,98 +197,104 @@ window.pipTimer = {
                 text-align: center;
                 pointer-events: none;
             }
-            .ttime {
+            .ring-time {
                 font-size: 42px;
                 font-weight: 700;
-                color: #ffffff;
+                color: #e8edf8;
+                letter-spacing: -1px;
                 line-height: 1;
-                font-family: 'Courier New', monospace;
+                font-family: 'Courier New', 'Lucida Console', monospace;
                 font-variant-numeric: tabular-nums;
             }
-            .pip-container.running.pomodoro-theme .ttime { color: #e74c3c; }
-            .pip-container.running.short-break-theme .ttime { color: #27ae60; }
-            .pip-container.running.long-break-theme .ttime { color: #3498db; }
-            .tmode {
-                font-size: 15px;
-                color: #6e7a8a;
-                margin-top: 3px;
-                letter-spacing: 0.06em;
+            .pip-container.running.pomodoro-theme .ring-time { color: #e74c3c; }
+            .pip-container.running.short-break-theme .ring-time { color: #27ae60; }
+            .pip-container.running.long-break-theme .ring-time { color: #3498db; }
+            .ring-label {
+                font-size: 13px;
+                color: #8a97b8;
+                letter-spacing: .1em;
+                margin-top: 5px;
             }
-            .active-task {
-                font-size: 16px;
-                color: #a0a0a0;
-                margin-top: 12px;
-                margin-bottom: 10px;
-                padding: 8px 12px;
-                background: #1f3460;
+            .pip-task {
+                width: 100%;
+                background: #1e2a40;
                 border-radius: 8px;
-                text-align: left;
+                padding: 8px 12px;
                 display: flex;
                 align-items: center;
-                gap: 6px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                width: 100%;
+                gap: 8px;
             }
-            .task-dot {
-                width: 6px;
-                height: 6px;
+            .pip-task-dot {
+                width: 7px;
+                height: 7px;
                 border-radius: 50%;
                 background: #e74c3c;
                 flex-shrink: 0;
             }
-            .task-dot.short-break { background: #27ae60; }
-            .task-dot.long-break { background: #3498db; }
-            .ctrl-row {
+            .pip-task-dot.short-break { background: #27ae60; }
+            .pip-task-dot.long-break { background: #3498db; }
+            .pip-task-name {
+                font-size: 13px;
+                color: #e8edf8;
+                flex: 1;
+                max-width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .pip-ctrl {
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 gap: 16px;
             }
-            .ibtn {
+            .pip-play {
+                width: 52px;
+                height: 52px;
+                border-radius: 50%;
+                background: #e74c3c;
+                border: none;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                border-radius: 50%;
                 cursor: pointer;
-                border: 1px solid rgba(45, 74, 111, 0.6);
-                background: transparent;
-                color: #a0a0a0;
-                padding: 0;
-                transition: background 0.15s;
+                box-shadow: 0 4px 18px rgba(231,76,60,.45);
             }
-            .ibtn.sm { width: 36px; height: 36px; font-size: 14px; }
-            .ibtn.lg { width: 50px; height: 50px; border: none; color: white; font-size: 16px; }
-            .ibtn.lg.pomodoro { background: #e74c3c; }
-            .ibtn.lg.short-break { background: #27ae60; }
-            .ibtn.lg.long-break { background: #3498db; }
-            .ibtn.lg:hover { opacity: 0.9; }
-            .ibtn.sm:hover { background: #1f3460; }
-            .card-footer {
+            .pip-play.short-break {
+                background: #27ae60;
+                box-shadow: 0 4px 18px rgba(39,174,96,.45);
+            }
+            .pip-play.long-break {
+                background: #3498db;
+                box-shadow: 0 4px 18px rgba(52,152,219,.45);
+            }
+            .pip-reset {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                border: 0.5px solid rgba(255,255,255,0.14);
+                background: transparent;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                color: #8a97b8;
+            }
+            .pip-hint {
+                font-size: 12px;
+                color: #6e7a8a;
+                text-align: center;
+            }
+            .pip-footer {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 8px 14px;
-                border-top: 1px solid #2d4a6f;
-                background: #1f3460;
+                padding: 10px 20px 14px;
+                background: #162032;
             }
-            .session-info {
-                font-size: 16px;
-                color: #6e7a8a;
-            }
-            .pip-container.pomodoro-theme .timer-card {
-                background: linear-gradient(135deg, rgba(231, 76, 60, 0.15) 0%, #16213e 100%);
-                border: 1px solid rgba(231, 76, 60, 0.3);
-            }
-            .pip-container.short-break-theme .timer-card {
-                background: linear-gradient(135deg, rgba(39, 174, 96, 0.15) 0%, #16213e 100%);
-                border: 1px solid rgba(39, 174, 96, 0.3);
-            }
-            .pip-container.long-break-theme .timer-card {
-                background: linear-gradient(135deg, rgba(52, 152, 219, 0.15) 0%, #16213e 100%);
-                border: 1px solid rgba(52, 152, 219, 0.3);
-            }
+            .pip-footer span { font-size: 12px; }
+            .pip-footer .lbl { color: #6e7a8a; }
+            .pip-footer .val { color: #a0aec0; font-weight: 600; }
         `;
         this.pipDocument.head.appendChild(pipStyles);
     },
@@ -316,49 +329,98 @@ window.pipTimer = {
         var minutes = Math.floor(remainingSeconds / 60);
         var seconds = remainingSeconds % 60;
         var timeDisplay = minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
-        
-        var isRunning = state.isRunning || false;
-        var isStarted = state.isStarted || false;
-        var playPauseIcon = isRunning ? '\u23F8' : '\u25B6';
-        var showReset = state.showReset || false;
 
-        var circumference = 2 * Math.PI * 81;
+        var circumference = 2 * Math.PI * 88;
         var totalSeconds = state.totalDurationSeconds || remainingSeconds;
         var progress = totalSeconds > 0 ? remainingSeconds / totalSeconds : 0;
         var dashOffset = circumference * (1 - progress);
 
         var modeLabel = sessionType === 0 ? 'FOCUSING' : sessionType === 1 ? 'SHORT BREAK' : 'LONG BREAK';
-        
-        var html = '<div class="mode-tabs">';
-        html += '<button class="mode-tab ' + (sessionType === 0 ? 'active' : '') + '" onclick="window.pipSwitchSession(0)">Pomodoro</button>';
-        html += '<button class="mode-tab ' + (sessionType === 1 ? 'active' : '') + '" onclick="window.pipSwitchSession(1)">Short break</button>';
-        html += '<button class="mode-tab ' + (sessionType === 2 ? 'active' : '') + '" onclick="window.pipSwitchSession(2)">Long break</button>';
+        var isRunning = state.isRunning || false;
+        var isStarted = state.isStarted || false;
+        var canStart = state.canStart !== false;
+        var taskName = state.taskName || null;
+        var endsAt = state.endsAt || null;
+
+        var playIcon = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M6 4l10 6-10 6V4z" fill="white"/></svg>';
+        var pauseIcon = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="2" width="4" height="14" rx="1" fill="white"/><rect x="11" y="2" width="4" height="14" rx="1" fill="white"/></svg>';
+        var resetIcon = '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5A5 5 0 1 0 4.2 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 2v2.5H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+        var html = '<div class="pip-tabs">';
+        html += '<button class="pip-tab ' + (sessionType === 0 ? 'act pomodoro' : '') + '" onclick="window.pipSwitchSession(0)">Pomodoro</button>';
+        html += '<button class="pip-tab ' + (sessionType === 1 ? 'act short-break' : '') + '" onclick="window.pipSwitchSession(1)">Short break</button>';
+        html += '<button class="pip-tab ' + (sessionType === 2 ? 'act long-break' : '') + '" onclick="window.pipSwitchSession(2)">Long break</button>';
         html += '</div>';
-        html += '<div class="timer-card">';
-        html += '<div class="card-top">';
-        html += '<div class="ring-area">';
-        html += '<svg width="180" height="180" viewBox="0 0 180 180">';
-        html += '<circle class="ring-bg" cx="90" cy="90" r="81"/>';
-        html += '<circle class="ring-fill ' + sessionClass + '" cx="90" cy="90" r="81" style="stroke-dasharray: ' + circumference.toFixed(1) + '; stroke-dashoffset: ' + dashOffset.toFixed(1) + '"/>';
+        html += '<div class="pip-timer-area">';
+        html += '<div class="ring-wrap">';
+        html += '<svg width="220" height="220" viewBox="0 0 220 220">';
+        html += '<circle class="ring-bg" cx="110" cy="110" r="88"/>';
+        html += '<circle class="ring-fill ' + sessionClass + '" cx="110" cy="110" r="88" style="stroke-dasharray: ' + circumference.toFixed(1) + '; stroke-dashoffset: ' + dashOffset.toFixed(1) + '"/>';
         html += '</svg>';
-        html += '<div class="timer-center">';
-        html += '<div class="ttime">' + timeDisplay + '</div>';
-        html += '<div class="tmode">' + modeLabel + '</div>';
+        html += '<div class="ring-center">';
+        html += '<div class="ring-time">' + timeDisplay + '</div>';
+        html += '<div class="ring-label">' + modeLabel + '</div>';
         html += '</div></div>';
-        if (state.taskName) {
-            html += '<div class="active-task"><div class="task-dot ' + sessionClass + '"></div><span>' + state.taskName + '</span></div>';
+
+        if (sessionType === 0 && taskName) {
+            html += '<div class="pip-task">';
+            html += '<div class="pip-task-dot ' + sessionClass + '"></div>';
+            html += '<span class="pip-task-name">' + this.escapeHtml(taskName) + '</span>';
+            html += '</div>';
         }
-        html += '<div class="ctrl-row">';
-        html += '<button class="ibtn lg ' + sessionClass + '" onclick="window.pipToggleTimer()">' + playPauseIcon + '</button>';
-        if (showReset) {
-            html += '<button class="ibtn sm" onclick="window.pipResetTimer()">&#x21BA;</button>';
+
+        if (!isStarted && !isRunning) {
+            var startDisabled = sessionType === 0 && !canStart;
+            var startTitle = startDisabled ? 'Select a task first' : 'Start';
+            html += '<div class="pip-ctrl">';
+            html += '<button class="pip-play ' + sessionClass + (startDisabled ? '" disabled' : '"') + ' onclick="window.pipToggleTimer()" aria-label="' + startTitle + '" title="' + startTitle + '">';
+            html += playIcon;
+            html += '</button>';
+            html += '</div>';
+            html += '<div class="pip-hint">' + (startDisabled ? 'Select a task to start' : 'Space to start') + '</div>';
+        } else if (isRunning) {
+            html += '<div class="pip-ctrl">';
+            html += '<button class="pip-reset" onclick="window.pipResetTimer()" aria-label="Reset timer">';
+            html += resetIcon;
+            html += '</button>';
+            html += '<button class="pip-play ' + sessionClass + '" onclick="window.pipToggleTimer()" aria-label="Pause">';
+            html += pauseIcon;
+            html += '</button>';
+            html += '<div style="width:36px"></div>';
+            html += '</div>';
+        } else {
+            html += '<div class="pip-ctrl">';
+            html += '<button class="pip-reset" onclick="window.pipResetTimer()" aria-label="Reset timer">';
+            html += resetIcon;
+            html += '</button>';
+            html += '<button class="pip-play ' + sessionClass + '" onclick="window.pipToggleTimer()" aria-label="Resume">';
+            html += playIcon;
+            html += '</button>';
+            html += '<div style="width:36px"></div>';
+            html += '</div>';
+            html += '<div class="pip-hint">Space to resume</div>';
         }
-        html += '</div></div>';
-        html += '<div class="card-footer">';
-        html += '<span class="session-info">' + modeLabel + '</span>';
-        html += '<span class="session-info">' + timeDisplay + '</span>';
-        html += '</div></div>';
-        
+        html += '</div>';
+
+        var durationMinutes = Math.round((state.totalDurationSeconds || 0) / 60);
+        html += '<div class="pip-footer">';
+        if (!isStarted && !isRunning) {
+            var durationLabel = sessionType === 0 ? durationMinutes + ' min session'
+                : durationMinutes + ' min break';
+            html += '<span class="lbl">' + durationLabel + '</span>';
+            html += '<span class="val"></span>';
+        } else if (isRunning && endsAt) {
+            html += '<span class="lbl">Ends at</span>';
+            html += '<span class="val">' + endsAt + '</span>';
+        } else if (isStarted && !isRunning && endsAt) {
+            html += '<span class="lbl">Paused · ends at</span>';
+            html += '<span class="val">' + endsAt + '</span>';
+        } else {
+            html += '<span class="lbl"></span>';
+            html += '<span class="val"></span>';
+        }
+        html += '</div>';
+
         return html;
     },
     
@@ -416,9 +478,7 @@ window.pipTimer = {
             '    window.addEventListener("keydown", function(event) {',
             '        if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;',
             '        var key = event.key.toLowerCase();',
-            '        if (key === " " || event.code === "Space") { event.preventDefault(); event.stopPropagation(); window.pipToggleTimer(); }',
-            '        else if (key === "r") { event.preventDefault(); event.stopPropagation(); window.pipResetTimer(); }',
-            '        else if (key === "p") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(0); }',
+            '        if (key === "p") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(0); }',
             '        else if (key === "s") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(1); }',
             '        else if (key === "l") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(2); }',
             '    }, { capture: true });',

@@ -49,8 +49,8 @@ test.describe('Settings Auto-Save', () => {
     expect(classReloaded).toBe(classAfter);
   });
 
-  test('should persist auto-start pomodoros toggle after reload', async ({ page }) => {
-    const toggle = page.locator('.sr-lbl').filter({ hasText: 'Auto-start pomodoros' }).locator('..').locator('.tog');
+  test('should persist auto-start session toggle after reload', async ({ page }) => {
+    const toggle = page.locator('.sr-lbl').filter({ hasText: 'Auto-start session' }).locator('..').locator('.tog');
     const classBefore = await toggle.getAttribute('class');
     await toggle.click();
     await page.waitForTimeout(500);
@@ -62,7 +62,7 @@ test.describe('Settings Auto-Save', () => {
     await pomodoroPage.openSettings();
     await expect(page.locator('.sett-body')).toBeVisible({ timeout: 30000 });
 
-    const reloadedToggle = page.locator('.sr-lbl').filter({ hasText: 'Auto-start pomodoros' }).locator('..').locator('.tog');
+    const reloadedToggle = page.locator('.sr-lbl').filter({ hasText: 'Auto-start session' }).locator('..').locator('.tog');
     const classReloaded = await reloadedToggle.getAttribute('class');
     expect(classReloaded).toBe(classAfter);
   });

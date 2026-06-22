@@ -26,7 +26,7 @@ public class ConsentModalBase : ComponentBase
     public List<ConsentOption> Options { get; set; } = new();
 
     [Parameter]
-    public EventCallback<SessionType> OnOptionSelected { get; set; }
+    public EventCallback<ConsentOption> OnOptionSelected { get; set; }
 
     #endregion
 
@@ -115,9 +115,9 @@ public class ConsentModalBase : ComponentBase
     /// <summary>
     /// Handles option selection
     /// </summary>
-    protected async Task HandleOptionSelect(SessionType sessionType)
+    protected async Task HandleOptionSelect(ConsentOption option)
     {
-        await OnOptionSelected.InvokeAsync(sessionType);
+        await OnOptionSelected.InvokeAsync(option);
     }
 
     protected RenderFragment RenderOptions => builder =>
@@ -128,7 +128,7 @@ public class ConsentModalBase : ComponentBase
             var cssClass = $"btn-option {(option.IsDefault ? "default" : "")}";
             builder.OpenElement(seq++, "button");
             builder.AddAttribute(seq++, "class", cssClass);
-            builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, _ => HandleOptionSelect(option.SessionType)));
+            builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, _ => HandleOptionSelect(option)));
 
             builder.OpenElement(seq++, "span");
             builder.AddAttribute(seq++, "class", "option-label");

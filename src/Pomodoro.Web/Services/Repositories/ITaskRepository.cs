@@ -36,4 +36,14 @@ public interface ITaskRepository
     /// Clears all tasks from the store
     /// </summary>
     Task ClearAllAsync();
+
+    /// <summary>
+    /// Gets tasks by Google list ID
+    /// </summary>
+    Task<IReadOnlyList<TaskItem>> GetByGoogleListIdAsync(string listId);
+
+    /// <summary>
+    /// Gets a task by Google task ID
+    /// </summary>
+    Task<TaskItem?> GetByGoogleTaskIdAsync(string googleTaskId);
 }

@@ -93,10 +93,11 @@ public class WeeklyTimeDistributionBaseTests
         };
         var sut = CreateSut(activities);
 
-        Assert.Equal(3, sut.Segments.Count);
+        Assert.Equal(2, sut.Segments.Count);
+        Assert.Equal("Task 1", sut.Segments[0].Label);
+        Assert.Equal(Constants.Activity.BreaksLabel, sut.Segments[1].Label);
         Assert.Equal(56, sut.Segments[0].Percentage);
-        Assert.Equal(11, sut.Segments[1].Percentage);
-        Assert.Equal(33, sut.Segments[2].Percentage);
+        Assert.Equal(44, sut.Segments[1].Percentage);
         Assert.Equal(45, sut.TotalMinutes);
     }
 
@@ -122,6 +123,21 @@ public class WeeklyTimeDistributionBaseTests
         var sut = CreateSut(activities);
 
         Assert.Equal("25m", sut.FormattedTotal);
+    }
+
+    [Fact]
+    public void CalculateSegments_UtcCompletedAt_ConvertsToLocalBeforeFiltering()
+    {
+        var weekStart = new DateTime(2026, 4, 20, 0, 0, 0, DateTimeKind.Local);
+        var activities = new List<ActivityRecord>
+        {
+            new() { Id = Guid.NewGuid(), Type = SessionType.Pomodoro, TaskName = "Task 1", CompletedAt = DateTime.SpecifyKind(new DateTime(2026, 4, 20, 0, 30, 0), DateTimeKind.Utc), DurationMinutes = 25, WasCompleted = true }
+        };
+        var sut = CreateSut(activities, weekStart);
+
+        Assert.Single(sut.Segments);
+        Assert.Equal("Task 1", sut.Segments[0].Label);
+        Assert.Equal(25, sut.TotalMinutes);
     }
 
     [Fact]

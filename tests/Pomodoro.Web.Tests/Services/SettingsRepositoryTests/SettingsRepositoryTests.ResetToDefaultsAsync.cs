@@ -66,8 +66,7 @@ public partial class SettingsRepositoryTests
             recordType.GetProperty("LongBreakMinutes")?.GetValue(capturedRecord));
         Assert.True((bool?)recordType.GetProperty("SoundEnabled")?.GetValue(capturedRecord)!);
         Assert.True((bool?)recordType.GetProperty("NotificationsEnabled")?.GetValue(capturedRecord)!);
-        Assert.True((bool?)recordType.GetProperty("AutoStartPomodoros")?.GetValue(capturedRecord)!);
-        Assert.True((bool?)recordType.GetProperty("AutoStartBreaks")?.GetValue(capturedRecord)!);
+        Assert.True((bool?)recordType.GetProperty("AutoStartSession")?.GetValue(capturedRecord)!);
         Assert.Equal(Constants.Timer.DefaultAutoStartDelaySeconds,
             recordType.GetProperty("AutoStartDelaySeconds")?.GetValue(capturedRecord));
     }

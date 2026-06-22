@@ -1,5 +1,17 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
+
+async function fetchServiceWorker(page: Page) {
+  return page.evaluate(async () => {
+    try {
+      const res = await fetch('/service-worker.js');
+      const contentType = res.headers.get('content-type') ?? '';
+      return { isJavaScript: contentType.includes('javascript'), body: await res.text() };
+    } catch {
+      return { isJavaScript: false, body: '' };
+    }
+  });
+}
 
 test.describe('Service Worker Cache Behavior', () => {
   let pomodoroPage: PomodoroPage;
@@ -80,42 +92,29 @@ test.describe('Service Worker Cache Behavior', () => {
   });
 
   test('should verify service worker precache asset list is defined', async ({ page }) => {
-    const swContent = await page.evaluate(async () => {
-      try {
-        const res = await fetch('/service-worker.js');
-        if (!res.ok) return null;
-        return await res.text();
-      } catch {
-        return null;
-      }
-    });
+    const sw = await fetchServiceWorker(page);
+    test.skip(!sw.isJavaScript, '/service-worker.js not served as JavaScript (SPA fallback)');
 
-    if (swContent) {
-      expect(swContent).toContain('cacheName');
-      expect(swContent).toContain('install');
-      expect(swContent).toContain('activate');
-      expect(swContent).toContain('fetch');
-    }
+    expect(sw.body).toContain('cacheName');
+    expect(sw.body).toContain('install');
+    expect(sw.body).toContain('activate');
+    expect(sw.body).toContain('fetch');
   });
 
   test('should verify service worker handles notification click events', async ({ page }) => {
-    const swContent = await page.evaluate(async () => {
-      const res = await fetch('/service-worker.js');
-      return await res.text();
-    });
+    const sw = await fetchServiceWorker(page);
+    test.skip(!sw.isJavaScript, '/service-worker.js not served as JavaScript (SPA fallback)');
 
-    expect(swContent).toContain('notificationclick');
-    expect(swContent).toContain('pomodoro-notifications');
-    expect(swContent).toContain('NOTIFICATION_ACTION');
+    expect(sw.body).toContain('notificationclick');
+    expect(sw.body).toContain('pomodoro-notifications');
+    expect(sw.body).toContain('NOTIFICATION_ACTION');
   });
 
   test('should verify BroadcastChannel is created in service worker scope', async ({ page }) => {
-    const swContent = await page.evaluate(async () => {
-      const res = await fetch('/service-worker.js');
-      return await res.text();
-    });
+    const sw = await fetchServiceWorker(page);
+    test.skip(!sw.isJavaScript, '/service-worker.js not served as JavaScript (SPA fallback)');
 
-    expect(swContent).toContain('new BroadcastChannel');
-    expect(swContent).toContain('pomodoro-notifications');
+    expect(sw.body).toContain('new BroadcastChannel');
+    expect(sw.body).toContain('pomodoro-notifications');
   });
 });

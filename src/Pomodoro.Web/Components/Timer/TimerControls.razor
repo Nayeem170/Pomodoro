@@ -5,23 +5,25 @@
     @if (IsRunning)
     {
         <div class="ctrl-row">
-            <button class="ibtn lg @GetSessionClass()" @onclick="OnPause" title="Pause" aria-label="Pause timer">
-                @Constants.UI.PauseIcon
-            </button>
             <button class="ibtn" @onclick="OnReset" title="Reset" aria-label="Reset timer">
                 @Constants.UI.ResetIcon
             </button>
+            <button class="ibtn lg @GetSessionClass()" @onclick="OnPause" title="Pause" aria-label="Pause timer">
+                @Constants.UI.PauseIcon
+            </button>
+            <div style="width:36px"></div>
         </div>
     }
     else if (IsStarted)
     {
         <div class="ctrl-row">
-            <button class="ibtn lg @GetSessionClass()" @onclick="OnResume" title="Resume" aria-label="Resume timer">
-                @Constants.UI.PlayIcon
-            </button>
             <button class="ibtn" @onclick="OnReset" title="Reset" aria-label="Reset timer">
                 @Constants.UI.ResetIcon
             </button>
+            <button class="ibtn lg @GetSessionClass()" @onclick="OnResume" title="Resume" aria-label="Resume timer">
+                @Constants.UI.PlayIcon
+            </button>
+            <div style="width:36px"></div>
         </div>
     }
     else

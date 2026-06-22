@@ -150,7 +150,7 @@ export class PomodoroPage {
   async setSettingViaIndexedDB(key: string, value: any) {
     await this.page.evaluate(async ({ key: k, value: v }) => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('PomodoroDB', 1);
+        const req = indexedDB.open('PomodoroDB', 2);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });
@@ -194,7 +194,7 @@ export class PomodoroPage {
   async completePomodoroViaDB(taskName: string) {
     await this.page.evaluate(async (name) => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('PomodoroDB', 1);
+        const req = indexedDB.open('PomodoroDB', 2);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });
@@ -241,7 +241,7 @@ export class PomodoroPage {
   async completePomodoroViaIndexedDB(taskName: string) {
     await this.page.evaluate(async (name) => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('PomodoroDB', 1);
+        const req = indexedDB.open('PomodoroDB', 2);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });
@@ -298,7 +298,7 @@ export class PomodoroPage {
     await this.goto('/');
     await this.page.evaluate(async ({ name, count: n }) => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('PomodoroDB', 1);
+        const req = indexedDB.open('PomodoroDB', 2);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });
@@ -409,13 +409,8 @@ export class PomodoroPage {
     await this.page.waitForLoadState('domcontentloaded');
   }
 
-  async toggleAutoStartPomodoros() {
-    const toggle = this.page.locator('.sr-lbl').filter({ hasText: 'Auto-start pomodoros' }).locator('..').locator('.tog');
-    await toggle.click();
-  }
-
-  async toggleAutoStartBreaks() {
-    const toggle = this.page.locator('.sr-lbl').filter({ hasText: 'Auto-start breaks' }).locator('..').locator('.tog');
+  async toggleAutoStartSession() {
+    const toggle = this.page.locator('.sr-lbl').filter({ hasText: 'Auto-start session' }).locator('..').locator('.tog');
     await toggle.click();
   }
 
@@ -430,5 +425,48 @@ export class PomodoroPage {
       await skipOption.click();
       await expect(skipOption).not.toBeVisible({ timeout: 3000 });
     }
+  }
+
+  async editTask(taskName: string) {
+    const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
+    await taskItem.locator('button[aria-label="Edit task"]').click();
+    await this.page.locator('.task-edit-panel').waitFor({ state: 'visible', timeout: 5000 });
+  }
+
+  async saveTaskEdit() {
+    await this.page.locator('.tep-save-btn').click();
+    await this.page.locator('.task-edit-panel').waitFor({ state: 'hidden', timeout: 5000 });
+  }
+
+  async cancelTaskEdit() {
+    await this.page.locator('.tep-cancel-btn').click();
+    await this.page.locator('.task-edit-panel').waitFor({ state: 'hidden', timeout: 5000 });
+  }
+
+  async setTaskRepeat(type: string) {
+    await this.page.locator('.tep-select').selectOption(type);
+  }
+
+  async setTaskScheduleDate(dateStr: string) {
+    await this.page.locator('.tep-row').filter({ hasText: 'Schedule' }).locator('input[type="date"]').fill(dateStr);
+  }
+
+  async toggleTaskPause() {
+    await this.page.locator('.tep-toggle').click();
+  }
+
+  async hasRepeatBadge(taskName: string): Promise<boolean> {
+    const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
+    return await taskItem.locator('.task-badge.task-repeat').isVisible().catch(() => false);
+  }
+
+  async hasScheduleBadge(taskName: string): Promise<boolean> {
+    const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
+    return await taskItem.locator('.task-badge.task-scheduled').isVisible().catch(() => false);
+  }
+
+  async hasPausedBadge(taskName: string): Promise<boolean> {
+    const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
+    return await taskItem.locator('.task-badge.repeat-paused').isVisible().catch(() => false);
   }
 }

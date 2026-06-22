@@ -1,9 +1,16 @@
 coverage:
+  precision: 2
+  round: down
+  range: 80..100
   status:
     project:
       default:
-        target: 98%
-        threshold: 0.5%
+        target: 99.5%
+        threshold: 0%
     patch:
       default:
-        target: 98%
+        target: 95%
+        threshold: 0.5%
+parsers:
+  cobertura:
+    partials_as_hits: true

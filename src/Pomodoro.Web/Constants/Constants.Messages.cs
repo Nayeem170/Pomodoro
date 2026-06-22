@@ -95,6 +95,7 @@ public static partial class Constants
         public const string ErrorCompletingTask = "Error completing task";
         public const string ErrorDeletingTask = "Error deleting task";
         public const string ErrorUncompletingTask = "Error uncompleting task";
+        public const string ErrorUpdatingTask = "Error updating task";
         public const string ErrorStartingTimer = "Error starting timer";
         public const string ErrorPausingTimer = "Error pausing timer";
         public const string ErrorResumingTimer = "Error resuming timer";

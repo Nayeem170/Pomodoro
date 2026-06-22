@@ -60,10 +60,10 @@ test.describe('Sound on Timer Completion', () => {
       }
     }
 
-    const autoStartBreaksToggle = page.locator('.sr-lbl').filter({ hasText: 'Auto-start breaks' }).locator('..').locator('.tog');
-    const isBreakAutoOn = await autoStartBreaksToggle.evaluate(el => el.classList.contains('on'));
-    if (!isBreakAutoOn) {
-      await autoStartBreaksToggle.click();
+    const autoStartSessionToggle = page.locator('.sr-lbl').filter({ hasText: 'Auto-start session' }).locator('..').locator('.tog');
+    const isSessionAutoOn = await autoStartSessionToggle.evaluate(el => el.classList.contains('on'));
+    if (!isSessionAutoOn) {
+      await autoStartSessionToggle.click();
     }
 
     await pomodoroPage.goto('/');

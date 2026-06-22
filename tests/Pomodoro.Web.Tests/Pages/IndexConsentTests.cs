@@ -31,7 +31,7 @@ public class IndexConsentTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         // Act - Call method directly and await completion
-        var task = cut.Instance.HandleConsentOptionSelect(SessionType.Pomodoro);
+        var task = cut.Instance.HandleConsentOptionSelect(new ConsentOption { SessionType = SessionType.Pomodoro });
         await task;
 
         // Assert
@@ -45,7 +45,7 @@ public class IndexConsentTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         // Act - Call method directly and await completion
-        var task = cut.Instance.HandleConsentOptionSelect(SessionType.ShortBreak);
+        var task = cut.Instance.HandleConsentOptionSelect(new ConsentOption { SessionType = SessionType.ShortBreak });
         await task;
 
         // Assert
@@ -59,7 +59,7 @@ public class IndexConsentTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         // Act - Call method directly and await completion
-        var task = cut.Instance.HandleConsentOptionSelect(SessionType.LongBreak);
+        var task = cut.Instance.HandleConsentOptionSelect(new ConsentOption { SessionType = SessionType.LongBreak });
         await task;
 
         // Assert
@@ -77,7 +77,7 @@ public class IndexConsentTests : TestHelper
             .ThrowsAsync(expectedException);
 
         // Act - Call method directly and await completion
-        var task = cut.Instance.HandleConsentOptionSelect(SessionType.Pomodoro);
+        var task = cut.Instance.HandleConsentOptionSelect(new ConsentOption { SessionType = SessionType.Pomodoro });
         await task;
 
         // Assert

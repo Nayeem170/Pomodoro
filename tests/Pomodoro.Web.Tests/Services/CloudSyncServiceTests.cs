@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -214,6 +215,28 @@ public class CloudSyncServiceTests : IDisposable
         await _sut.InitializeAsync();
 
         Assert.True(_sut.IsInitialized);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_WhenGoogleDriveFailsAllRetries_StillSetsInitialized()
+    {
+        var state = new SyncStateRecord
+        {
+            ClientId = "test-client-id",
+            IsConnected = true,
+            AccessToken = "test-token"
+        };
+        _mockIndexedDb
+            .Setup(db => db.GetAsync<SyncStateRecord>(Constants.Storage.AppStateStore, "cloudSync"))
+            .ReturnsAsync(state);
+        _mockGoogleDrive
+            .Setup(g => g.InitializeAsync("test-client-id"))
+            .ThrowsAsync(new Exception("Google Drive init failed"));
+
+        await _sut.InitializeAsync();
+
+        Assert.True(_sut.IsInitialized);
+        _mockGoogleDrive.Verify(g => g.InitializeAsync("test-client-id"), Times.Exactly(3));
     }
 
     [Fact]
@@ -1357,6 +1380,64 @@ public class CloudSyncServiceTests : IDisposable
 
         Assert.NotNull(timer);
         timer!.Dispose();
+    }
+
+    [Fact]
+    public async Task StartPeriodicSync_TimerCallback_WhenConnected_Syncs()
+    {
+        _mockGoogleDrive.Setup(g => g.IsConnected).Returns(true);
+        _mockGoogleDrive.Setup(g => g.ConnectAsync()).ReturnsAsync("token");
+        _mockGoogleDrive.Setup(g => g.FindSyncFileAsync()).ReturnsAsync((string?)null);
+        _mockExportService.Setup(e => e.ExportToJsonStringAsync()).ReturnsAsync("{}");
+        _mockJsRuntime.Setup(js => js.InvokeAsync<string>(
+            Constants.CompressionJsFunctions.GzipCompress, It.IsAny<object?[]>()))
+            .ReturnsAsync("compressed");
+        _mockGoogleDrive.Setup(g => g.CreateFileAsync(
+            Constants.Sync.SyncFileName, It.IsAny<string>()))
+            .ReturnsAsync("file-id");
+
+        await _sut.ConnectAsync("test-client");
+
+        var field = typeof(CloudSyncService).GetField("_periodicSyncTimer",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        var timer = (Timer?)field?.GetValue(_sut);
+        Assert.NotNull(timer);
+
+        timer!.Change(TimeSpan.Zero, TimeSpan.FromMilliseconds(-1));
+        await Task.Delay(500);
+
+        _mockGoogleDrive.Verify(g => g.FindSyncFileAsync(), Times.AtLeast(2));
+        timer.Dispose();
+    }
+
+    [Fact]
+    public async Task StartPeriodicSync_TimerCallback_WhenDisconnected_DoesNotSync()
+    {
+        _mockGoogleDrive.Setup(g => g.IsConnected).Returns(true);
+        _mockGoogleDrive.Setup(g => g.ConnectAsync()).ReturnsAsync("token");
+        _mockGoogleDrive.Setup(g => g.FindSyncFileAsync()).ReturnsAsync((string?)null);
+        _mockExportService.Setup(e => e.ExportToJsonStringAsync()).ReturnsAsync("{}");
+        _mockJsRuntime.Setup(js => js.InvokeAsync<string>(
+            Constants.CompressionJsFunctions.GzipCompress, It.IsAny<object?[]>()))
+            .ReturnsAsync("compressed");
+        _mockGoogleDrive.Setup(g => g.CreateFileAsync(
+            Constants.Sync.SyncFileName, It.IsAny<string>()))
+            .ReturnsAsync("file-id");
+
+        await _sut.ConnectAsync("test-client");
+
+        var field = typeof(CloudSyncService).GetField("_periodicSyncTimer",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        var timer = (Timer?)field?.GetValue(_sut);
+        Assert.NotNull(timer);
+
+        _mockGoogleDrive.Setup(g => g.IsConnected).Returns(false);
+
+        timer!.Change(TimeSpan.Zero, TimeSpan.FromMilliseconds(-1));
+        await Task.Delay(500);
+
+        _mockExportService.Verify(e => e.ExportToJsonStringAsync(), Times.Once);
+        timer.Dispose();
     }
 
     #endregion

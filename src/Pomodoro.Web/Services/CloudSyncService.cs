@@ -126,6 +126,7 @@ public class CloudSyncService : ICloudSyncService, IDisposable
                         await _googleDriveService.SetAccessTokenAsync(syncState.AccessToken);
                     }
                     _googleDriveService.SetConnected(true);
+                    _googleDriveService.SetAccountEmail(syncState.AccountEmail);
                     StartPeriodicSync();
                 }
 
@@ -444,7 +445,8 @@ public class CloudSyncService : ICloudSyncService, IDisposable
                 LastSyncedAt = LastSyncedAt,
                 DeviceId = DeviceId,
                 IsConnected = connected ?? IsConnected,
-                AccessToken = accessToken
+                AccessToken = accessToken,
+                AccountEmail = _googleDriveService.AccountEmail
             };
             await _indexedDb.PutAsync(Constants.Storage.AppStateStore, state);
         }
@@ -483,4 +485,5 @@ public class SyncStateRecord
     public string? DeviceId { get; set; }
     public bool IsConnected { get; set; }
     public string? AccessToken { get; set; }
+    public string? AccountEmail { get; set; }
 }

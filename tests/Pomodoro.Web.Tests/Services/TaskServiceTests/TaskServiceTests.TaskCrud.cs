@@ -275,9 +275,8 @@ public partial class TaskServiceTests
     }
 
     [Fact]
-    public async Task UpdateTaskAsync_HtmlEncodesTaskName()
+    public async Task UpdateTaskAsync_PreservesTaskNameAsIs()
     {
-        // Arrange
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, name: "Original Name");
 
@@ -289,13 +288,10 @@ public partial class TaskServiceTests
         var service = CreateService();
         await service.InitializeAsync();
 
-        // Act
         task.Name = "<b>Bold</b>";
         await service.UpdateTaskAsync(task);
 
-        // Assert
-        Assert.DoesNotContain("<b>", service.Tasks[0].Name);
-        Assert.Contains("&lt;", service.Tasks[0].Name);
+        Assert.Equal("<b>Bold</b>", service.Tasks[0].Name);
     }
 
     [Fact]

@@ -27,7 +27,6 @@ namespace Pomodoro.Web.Tests.Pages
         private readonly Mock<IActivityService> _mockActivityService;
         private readonly Mock<IJSRuntime> _mockJSRuntime;
         private readonly Mock<IJSInteropService> _mockJSInteropService;
-        private readonly Mock<NavigationManager> _mockNavigationManager;
         private readonly Mock<ILogger<SettingsPageBase>> _mockLogger;
         private readonly Mock<ILogger<SettingsPresenterService>> _mockPresenterLogger;
 
@@ -40,7 +39,6 @@ namespace Pomodoro.Web.Tests.Pages
             _mockActivityService = new Mock<IActivityService>();
             _mockJSRuntime = new Mock<IJSRuntime>();
             _mockJSInteropService = new Mock<IJSInteropService>();
-            _mockNavigationManager = new Mock<NavigationManager>();
             _mockLogger = new Mock<ILogger<SettingsPageBase>>();
             _mockPresenterLogger = new Mock<ILogger<SettingsPresenterService>>();
 
@@ -53,14 +51,14 @@ namespace Pomodoro.Web.Tests.Pages
             Services.AddSingleton(_mockActivityService.Object);
             Services.AddSingleton(_mockJSRuntime.Object);
             Services.AddSingleton(_mockJSInteropService.Object);
-            Services.AddSingleton(_mockNavigationManager.Object);
             Services.AddSingleton(_mockLogger.Object);
             Services.AddSingleton(_mockPresenterLogger.Object);
 
             Services.AddSingleton(new SettingsPresenterService(_mockPresenterLogger.Object));
             Services.AddSingleton(Mock.Of<ICloudSyncService>());
+            Services.AddSingleton(Mock.Of<IGoogleDriveService>());
 
-            Services.AddSingleton<NavigationManager>(new MockNavigationManager());
+            Services.AddSingleton<NavigationManager, TestNavigationManager>();
         }
 
         [Fact]
@@ -480,18 +478,6 @@ namespace Pomodoro.Web.Tests.Pages
             });
 
             Assert.Contains("Custom toast message!", cut.Markup);
-        }
-    }
-
-    internal class MockNavigationManager : NavigationManager
-    {
-        public MockNavigationManager()
-        {
-            Initialize("http://localhost/", "http://localhost/settings");
-        }
-
-        protected override void NavigateToCore(string uri, bool forceLoad)
-        {
         }
     }
 }

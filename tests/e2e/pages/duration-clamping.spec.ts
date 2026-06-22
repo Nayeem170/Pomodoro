@@ -33,7 +33,7 @@ test.describe('Duration Input Clamping', () => {
   });
 
   test('should have correct min/max attributes on auto-start delay input', async ({ page }) => {
-    const autoStartToggle = page.locator('.sr-lbl').filter({ hasText: 'Auto-start pomodoros' }).locator('..').locator('.tog');
+    const autoStartToggle = page.locator('.sr-lbl').filter({ hasText: 'Auto-start session' }).locator('..').locator('.tog');
     const isOn = await autoStartToggle.evaluate(el => el.classList.contains('on'));
     if (!isOn) {
       await autoStartToggle.click();

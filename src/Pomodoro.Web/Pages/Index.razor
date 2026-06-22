@@ -21,14 +21,14 @@ else
                     aria-selected="@(CurrentSessionType == SessionType.Pomodoro)">
                 Pomodoro
             </button>
-            <button class="@(CurrentSessionType == SessionType.ShortBreak ? "active" : "")"
+            <button class="@(CurrentSessionType == SessionType.ShortBreak ? "active short-break-active" : "")"
                     @onclick="() => HandleSessionSwitch(SessionType.ShortBreak)"
                     title="@Constants.KeyboardShortcuts.ShortBreakKey"
                     role="tab"
                     aria-selected="@(CurrentSessionType == SessionType.ShortBreak)">
                 Short break
             </button>
-            <button class="@(CurrentSessionType == SessionType.LongBreak ? "active" : "")"
+            <button class="@(CurrentSessionType == SessionType.LongBreak ? "active long-break-active" : "")"
                     @onclick="() => HandleSessionSwitch(SessionType.LongBreak)"
                     title="@Constants.KeyboardShortcuts.LongBreakKey"
                     role="tab"
@@ -62,8 +62,15 @@ else
                                OnResume="HandleTimerResume"
                                OnReset="HandleTimerReset" />
             </div>
-            <div class="card-footer">
-                <div class="card-footer-left">
+            <div class="card-footer @(IsTimerRunning ? "" : "idle")">
+                @if (IsTimerRunning)
+                {
+                    <div class="ends-at">
+                        <span class="lbl">Ends at</span>
+                        <span class="val">@DateTime.Now.AddSeconds(RemainingTime.TotalSeconds).ToString("h:mm tt")</span>
+                    </div>
+                }
+                <div class="card-footer-actions">
                     <button class="pip-btn" @onclick="HandleTogglePip" title="@(IsPipOpen ? Constants.PipTimerUI.CloseFloatingTimerTitle : Constants.PipTimerUI.PopOutFloatingTimerTitle)" aria-label="Picture in Picture">
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><rect x="7" y="7" width="5.5" height="4.5" rx="1" fill="currentColor"/></svg>
                     </button>
@@ -83,7 +90,8 @@ else
                               OnTaskSelect="HandleTaskSelect"
                               OnTaskComplete="HandleTaskComplete"
                               OnTaskDelete="HandleTaskDelete"
-                              OnTaskUncomplete="HandleTaskUncomplete" />
+                              OnTaskUncomplete="HandleTaskUncomplete"
+                              OnTaskEdit="HandleTaskEdit" />
                 </div>
             </ChildContent>
             <ErrorContent Context="ex">
