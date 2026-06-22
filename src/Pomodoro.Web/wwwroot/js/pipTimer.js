@@ -145,7 +145,7 @@ window.pipTimer = {
                 border-radius: 7px 7px 0 0;
                 border: none;
                 background: transparent;
-                font-size: 13px;
+                font-size: 14px;
                 font-weight: 400;
                 color: rgba(255,255,255,0.3);
                 cursor: pointer;
@@ -210,7 +210,7 @@ window.pipTimer = {
             .pip-container.running.short-break-theme .ring-time { color: #27ae60; }
             .pip-container.running.long-break-theme .ring-time { color: #3498db; }
             .ring-label {
-                font-size: 12px;
+                font-size: 13px;
                 color: #8a97b8;
                 letter-spacing: .1em;
                 margin-top: 5px;
