@@ -13,14 +13,19 @@ public class IndexPagePresenterService
         _logger = logger;
     }
 
-    public IndexPageState UpdateState(ITaskService taskService, ITimerService timerService)
+    public async Task<IndexPageState> UpdateStateAsync(ITaskService taskService, ITimerService timerService, string? currentListId)
     {
         try
         {
+            var listId = currentListId ?? taskService.CurrentListId ?? Constants.TaskLists.LocalPomodoroListId;
+            var tasks = await taskService.GetTasksForListAsync(listId);
+
             return new IndexPageState
             {
-                Tasks = taskService.Tasks?.ToList() ?? new List<TaskItem>(),
+                Tasks = tasks.ToList(),
                 CurrentTaskId = taskService.CurrentTaskId,
+                CurrentListId = listId,
+                TaskLists = taskService.TaskLists,
                 RemainingTime = timerService.RemainingTime,
                 CurrentSessionType = timerService.CurrentSessionType,
                 IsTimerRunning = timerService.IsRunning,
@@ -30,13 +35,14 @@ public class IndexPagePresenterService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in UpdateState");
+            _logger.LogError(ex, "Error in UpdateStateAsync");
             return new IndexPageState
             {
                 Tasks = new List<TaskItem>(),
                 RemainingTime = TimeSpan.FromMinutes(Constants.Timer.DefaultPomodoroMinutes),
                 CurrentSessionType = SessionType.Pomodoro,
-                IsTimerStarted = false
+                IsTimerStarted = false,
+                CurrentListId = Constants.TaskLists.LocalPomodoroListId
             };
         }
     }
@@ -46,6 +52,8 @@ public class IndexPageState
 {
     public List<TaskItem> Tasks { get; set; } = new();
     public Guid? CurrentTaskId { get; set; }
+    public string? CurrentListId { get; set; }
+    public IReadOnlyList<TaskListRef> TaskLists { get; set; } = [];
     public TimeSpan RemainingTime { get; set; }
     public SessionType CurrentSessionType { get; set; }
     public bool IsTimerRunning { get; set; }

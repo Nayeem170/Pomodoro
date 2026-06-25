@@ -7,6 +7,8 @@ namespace Pomodoro.Web.Services;
 
 public class TaskService : ITaskService, ITimerEventSubscriber
 {
+    private const string ColorPalette = "#4285F4,#0B8043,#E67C73,#9C27B0,#F59E0B,#EC407A,#AB47BC,#FF5722,#795548";
+
     private readonly ITaskRepository _taskRepository;
     private readonly IIndexedDbService _indexedDb;
     private readonly AppState _appState;
@@ -15,7 +17,10 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     private readonly ILogger<TaskService> _logger;
     private readonly IPomodoroMetaRepository _sidecarRepo;
 
-    private List<GoogleTaskList> _cachedGoogleLists = [];
+    private List<GoogleListCacheEntry> _cachedGoogleLists = [];
+    private GoogleTasksSettings _googleTasksSettings = new(new Dictionary<string, ListSetting>());
+    private Dictionary<string, PomodoroMeta>? _sidecarCache;
+    private bool _sidecarCacheDirty = true;
 
     public event Action? OnChange;
 
@@ -37,10 +42,10 @@ public class TaskService : ITaskService, ITimerEventSubscriber
                     allTasks.Count(t => t.IsScheduled && !t.IsDeleted), true, true)
             };
 
-            foreach (var gList in _cachedGoogleLists)
+            foreach (var entry in _cachedGoogleLists)
             {
-                var count = allTasks.Count(t => t.GoogleListId == gList.Id && !t.IsDeleted);
-                lists.Add(new TaskListRef(gList.Id, gList.Title, "var(--pomodoro-color)", count, true, false));
+                var count = allTasks.Count(t => t.GoogleListId == entry.Id && !t.IsDeleted);
+                lists.Add(new TaskListRef(entry.Id, entry.Title, entry.Color, count, entry.IsVisible, false));
             }
 
             return lists;
@@ -90,6 +95,8 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         {
             _appState.CurrentListId = appState.CurrentListId;
         }
+
+        await LoadGoogleTasksSettingsAsync();
 
         await ActivateDueRecurringAndScheduledTasks();
 
@@ -177,6 +184,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     {
         var existingTask = _appState.FindTaskById(taskId);
         if (existingTask == null) return;
+        if (existingTask.IsGoogleTask) return;
 
         var taskToSave = existingTask.WithUpdates(c =>
         {
@@ -205,6 +213,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     {
         var existingTask = _appState.FindTaskById(taskId);
         if (existingTask == null) return;
+        if (existingTask.IsGoogleTask) return;
 
         var isRecurring = existingTask.IsRecurring && existingTask.Repeat is { IsActive: true };
 
@@ -247,6 +256,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     {
         var existingTask = _appState.FindTaskById(taskId);
         if (existingTask == null) return;
+        if (existingTask.IsGoogleTask) return;
 
         var taskToSave = existingTask.WithUpdates(c => c.IsCompleted = false);
         await SaveTaskAsync(taskToSave);
@@ -284,6 +294,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
                 meta?.TotalFocusMinutes + minutes ?? minutes,
                 meta?.Priority ?? Priority.None);
             await _sidecarRepo.SaveAsync(meta);
+            InvalidateSidecarCache();
             _appState.UpdateTask(taskId, t => { t.LastWorkedOn = DateTime.UtcNow; });
         }
         else
@@ -324,8 +335,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         var hasGoogleTasks = tasks.Any(t => t.IsGoogleTask);
         if (hasGoogleTasks)
         {
-            var allMeta = await _sidecarRepo.GetAllAsync();
-            var metaDict = allMeta.ToDictionary(m => m.GoogleTaskId);
+            var metaDict = await GetSidecarCacheAsync();
 
             tasks = tasks.Select(t =>
             {
@@ -363,9 +373,35 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         try
         {
             var googleLists = await _googleTasksService.GetTaskListsAsync();
-            _cachedGoogleLists = googleLists?.ToList() ?? [];
+            var remoteLists = googleLists?.ToList() ?? [];
 
-            foreach (var gList in _cachedGoogleLists)
+            var updatedCache = new List<GoogleListCacheEntry>();
+            var palette = ColorPalette.Split(',');
+
+            for (var i = 0; i < remoteLists.Count; i++)
+            {
+                var gList = remoteLists[i];
+                var listId = gList.Id;
+                var settingsEntry = _googleTasksSettings.Lists.GetValueOrDefault(listId);
+
+                if (settingsEntry != null)
+                {
+                    updatedCache.Add(new GoogleListCacheEntry(listId, gList.Title, settingsEntry.Color, settingsEntry.IsVisible));
+                }
+                else
+                {
+                    var color = palette[i % palette.Length];
+                    updatedCache.Add(new GoogleListCacheEntry(listId, gList.Title, color, true));
+
+                    _googleTasksSettings.Lists[listId] = new ListSetting(true, color, null);
+                }
+            }
+
+            _cachedGoogleLists = updatedCache;
+            await SaveGoogleTasksSettingsAsync();
+            InvalidateSidecarCache();
+
+            foreach (var gList in remoteLists)
             {
                 try
                 {
@@ -604,6 +640,58 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     {
         if (string.IsNullOrEmpty(name)) return string.Empty;
         return HttpUtility.HtmlEncode(name.Trim());
+    }
+
+    private async Task LoadGoogleTasksSettingsAsync()
+    {
+        var settings = await _indexedDb.GetAsync<GoogleTasksSettings>(Constants.Storage.GoogleTasksSettingsStore, Constants.Storage.DefaultSettingsId);
+        if (settings != null)
+            _googleTasksSettings = settings;
+    }
+
+    private async Task SaveGoogleTasksSettingsAsync()
+    {
+        await _indexedDb.PutAsync(Constants.Storage.GoogleTasksSettingsStore, _googleTasksSettings);
+    }
+
+    public async Task UpdateListVisibilityAsync(string listId, bool isVisible)
+    {
+        var lists = new Dictionary<string, ListSetting>(_googleTasksSettings.Lists);
+        if (lists.ContainsKey(listId))
+        {
+            lists[listId] = lists[listId] with { IsVisible = isVisible };
+        }
+        else
+        {
+            var cachedEntry = _cachedGoogleLists.FirstOrDefault(e => e.Id == listId);
+            lists[listId] = new ListSetting(isVisible, cachedEntry?.Color ?? "var(--pomodoro-color)", null);
+        }
+
+        _googleTasksSettings = new GoogleTasksSettings(lists);
+        await SaveGoogleTasksSettingsAsync();
+
+        var entry = _cachedGoogleLists.FirstOrDefault(e => e.Id == listId);
+        if (entry != null)
+        {
+            _cachedGoogleLists[_cachedGoogleLists.IndexOf(entry)] = entry with { IsVisible = isVisible };
+            NotifyStateChanged();
+        }
+    }
+
+    private void InvalidateSidecarCache()
+    {
+        _sidecarCacheDirty = true;
+    }
+
+    private async Task<Dictionary<string, PomodoroMeta>> GetSidecarCacheAsync()
+    {
+        if (_sidecarCache != null && !_sidecarCacheDirty)
+            return _sidecarCache!;
+
+        var allMeta = await _sidecarRepo.GetAllAsync();
+        _sidecarCache = allMeta.ToDictionary(m => m.GoogleTaskId);
+        _sidecarCacheDirty = false;
+        return _sidecarCache;
     }
 
     public class AppStateRecord

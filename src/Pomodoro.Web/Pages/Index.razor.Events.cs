@@ -42,7 +42,7 @@ public partial class IndexBase
     {
         SafeAsync(async () =>
         {
-            UpdateState();
+            await UpdateStateAsync();
             await InvokeAsync(StateHasChanged);
         }, nameof(OnTaskServiceChanged));
     }
@@ -51,26 +51,24 @@ public partial class IndexBase
 
     #region Timer Service Events
 
-    public Task OnTimerCompleted(TimerCompletedEventArgs args)
+    public async Task OnTimerCompleted(TimerCompletedEventArgs args)
     {
         try
         {
-            UpdateState();
+            await UpdateStateAsync();
             StateHasChanged();
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, Constants.Messages.ErrorInOnTimerComplete);
         }
-
-        return Task.CompletedTask;
     }
 
     public void OnTimerStateChanged()
     {
         SafeAsync(async () =>
         {
-            UpdateState();
+            await UpdateStateAsync();
             await InvokeAsync(StateHasChanged);
         }, nameof(OnTimerStateChanged));
     }
@@ -106,7 +104,7 @@ public partial class IndexBase
                     // The auto-start will happen when countdown reaches zero
                     break;
             }
-            UpdateState();
+            await UpdateStateAsync();
             await InvokeAsync(StateHasChanged);
         }, nameof(OnNotificationAction));
     }
@@ -140,7 +138,7 @@ public partial class IndexBase
         SafeAsync(async () =>
         {
             IsConsentModalVisible = false;
-            UpdateState();
+            await UpdateStateAsync();
             await InvokeAsync(StateHasChanged);
         }, nameof(OnConsentHandled));
     }

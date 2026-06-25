@@ -41,7 +41,7 @@ public partial class IndexBase
                     await TimerService.StartLongBreakAsync();
                     break;
             }
-            UpdateState();
+            await UpdateStateAsync();
             StateHasChanged();
         }
         catch (Exception ex)
@@ -58,7 +58,7 @@ public partial class IndexBase
         try
         {
             await TimerService.PauseAsync();
-            UpdateState();
+            await UpdateStateAsync();
             StateHasChanged();
         }
         catch (Exception ex)
@@ -75,7 +75,7 @@ public partial class IndexBase
         try
         {
             await TimerService.ResumeAsync();
-            UpdateState();
+            await UpdateStateAsync();
             StateHasChanged();
         }
         catch (Exception ex)
@@ -92,7 +92,7 @@ public partial class IndexBase
         try
         {
             await TimerService.ResetAsync();
-            UpdateState();
+            await UpdateStateAsync();
             StateHasChanged();
         }
         catch (Exception ex)
@@ -109,7 +109,7 @@ public partial class IndexBase
         try
         {
             await TimerService.SwitchSessionTypeAsync(sessionType);
-            UpdateState();
+            await UpdateStateAsync();
             StateHasChanged();
         }
         catch (Exception ex)

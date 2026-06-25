@@ -28,7 +28,7 @@ public partial class IndexBase
         await TryExecuteAsync(async () =>
         {
             await TaskService.AddTaskAsync(taskName);
-            UpdateState();
+            await UpdateStateAsync();
             StateHasChanged();
         }, Constants.Messages.ErrorAddingTask);
     }
@@ -41,7 +41,7 @@ public partial class IndexBase
         await TryExecuteAsync(async () =>
         {
             await TaskService.SelectTaskAsync(taskId);
-            UpdateState();
+            await UpdateStateAsync();
             StateHasChanged();
         }, Constants.Messages.ErrorSelectingTask);
     }
@@ -54,7 +54,7 @@ public partial class IndexBase
         await TryExecuteAsync(async () =>
         {
             await TaskService.CompleteTaskAsync(taskId);
-            UpdateState();
+            await UpdateStateAsync();
             StateHasChanged();
         }, Constants.Messages.ErrorCompletingTask);
     }
@@ -67,7 +67,7 @@ public partial class IndexBase
         await TryExecuteAsync(async () =>
         {
             await TaskService.DeleteTaskAsync(taskId);
-            UpdateState();
+            await UpdateStateAsync();
             StateHasChanged();
         }, Constants.Messages.ErrorDeletingTask);
     }
@@ -80,7 +80,7 @@ public partial class IndexBase
         await TryExecuteAsync(async () =>
         {
             await TaskService.UncompleteTaskAsync(taskId);
-            UpdateState();
+            await UpdateStateAsync();
             StateHasChanged();
         }, Constants.Messages.ErrorUncompletingTask);
     }
@@ -90,7 +90,7 @@ public partial class IndexBase
         await TryExecuteAsync(async () =>
         {
             await TaskService.UpdateTaskAsync(task);
-            UpdateState();
+            await UpdateStateAsync();
             StateHasChanged();
         }, Constants.Messages.ErrorUpdatingTask);
     }

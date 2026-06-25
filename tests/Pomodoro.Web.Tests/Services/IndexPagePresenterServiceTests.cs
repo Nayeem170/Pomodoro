@@ -18,102 +18,94 @@ public class IndexPagePresenterServiceTests
         _service = new IndexPagePresenterService(_loggerMock.Object);
     }
 
-    [Fact]
-    public void UpdateState_WithValidServices_ShouldReturnCorrectState()
+    private static Mock<ITaskService> SetupTaskService(List<TaskItem>? tasks = null, Guid? currentTaskId = null, IReadOnlyList<TaskListRef>? taskLists = null)
     {
-        // Arrange
-        var taskServiceMock = new Mock<ITaskService>();
-        var timerServiceMock = new Mock<ITimerService>();
-
-        var tasks = new List<TaskItem>
+        var mock = new Mock<ITaskService>();
+        mock.Setup(s => s.CurrentTaskId).Returns(currentTaskId);
+        mock.Setup(s => s.CurrentTask).Returns((TaskItem?)null);
+        mock.Setup(s => s.CurrentListId).Returns((string?)null);
+        mock.Setup(s => s.TaskLists).Returns(taskLists ?? new List<TaskListRef>
         {
-            new TaskItem { Id = Guid.NewGuid(), Name = "Task 1" },
-            new TaskItem { Id = Guid.NewGuid(), Name = "Task 2" }
-        };
-        var currentTaskId = tasks[0].Id;
-        var remainingTime = TimeSpan.FromMinutes(25);
-        var sessionType = SessionType.Pomodoro;
+            new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)", 0, true, true)
+        });
+        mock.Setup(s => s.GetTasksForListAsync(It.IsAny<string>()))
+            .ReturnsAsync(tasks ?? new List<TaskItem>());
+        return mock;
+    }
 
-        taskServiceMock.Setup(s => s.Tasks).Returns(tasks);
-        taskServiceMock.Setup(s => s.CurrentTaskId).Returns(currentTaskId);
-        timerServiceMock.Setup(s => s.RemainingTime).Returns(remainingTime);
-        timerServiceMock.Setup(s => s.CurrentSessionType).Returns(sessionType);
-        timerServiceMock.Setup(s => s.IsRunning).Returns(true);
-        timerServiceMock.Setup(s => s.IsPaused).Returns(false);
-        timerServiceMock.Setup(s => s.IsStarted).Returns(true);
-
-        // Act
-        var result = _service.UpdateState(taskServiceMock.Object, timerServiceMock.Object);
-
-        // Assert
-        Assert.Equal(2, result.Tasks.Count);
-        Assert.Equal(currentTaskId, result.CurrentTaskId);
-        Assert.Equal(remainingTime, result.RemainingTime);
-        Assert.Equal(sessionType, result.CurrentSessionType);
-        Assert.True(result.IsTimerRunning);
-        Assert.False(result.IsTimerPaused);
-        Assert.True(result.IsTimerStarted);
+    private static Mock<ITimerService> SetupTimerService(TimeSpan remaining = default, SessionType session = SessionType.Pomodoro,
+        bool running = false, bool paused = false, bool started = false)
+    {
+        var mock = new Mock<ITimerService>();
+        mock.Setup(s => s.RemainingTime).Returns(remaining);
+        mock.Setup(s => s.CurrentSessionType).Returns(session);
+        mock.Setup(s => s.IsRunning).Returns(running);
+        mock.Setup(s => s.IsPaused).Returns(paused);
+        mock.Setup(s => s.IsStarted).Returns(started);
+        return mock;
     }
 
     [Fact]
-    public void UpdateState_WithNullTasks_ShouldReturnEmptyList()
+    public async Task UpdateStateAsync_WithValidServices_ShouldReturnCorrectState()
     {
-        // Arrange
-        var taskServiceMock = new Mock<ITaskService>();
-        var timerServiceMock = new Mock<ITimerService>();
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = Guid.NewGuid(), Name = "Task 1", CreatedAt = DateTime.UtcNow },
+            new() { Id = Guid.NewGuid(), Name = "Task 2", CreatedAt = DateTime.UtcNow }
+        };
+        var currentTaskId = tasks[0].Id;
+        var taskService = SetupTaskService(tasks, currentTaskId);
+        var timerService = SetupTimerService(TimeSpan.FromMinutes(25), SessionType.Pomodoro, true, false, true);
 
-        taskServiceMock.Setup(s => s.Tasks).Returns((List<TaskItem>)null!);
-        timerServiceMock.Setup(s => s.RemainingTime).Returns(TimeSpan.FromMinutes(25));
-        timerServiceMock.Setup(s => s.CurrentSessionType).Returns(SessionType.Pomodoro);
-        timerServiceMock.Setup(s => s.IsRunning).Returns(false);
-        timerServiceMock.Setup(s => s.IsPaused).Returns(false);
-        timerServiceMock.Setup(s => s.IsStarted).Returns(false);
+        var result = await _service.UpdateStateAsync(taskService.Object, timerService.Object, null);
 
-        // Act
-        var result = _service.UpdateState(taskServiceMock.Object, timerServiceMock.Object);
+        Assert.Equal(2, result.Tasks.Count);
+        Assert.Equal(currentTaskId, result.CurrentTaskId);
+        Assert.Equal(TimeSpan.FromMinutes(25), result.RemainingTime);
+        Assert.Equal(SessionType.Pomodoro, result.CurrentSessionType);
+        Assert.True(result.IsTimerRunning);
+        Assert.False(result.IsTimerPaused);
+        Assert.True(result.IsTimerStarted);
+        Assert.Equal(Constants.TaskLists.LocalPomodoroListId, result.CurrentListId);
+    }
 
-        // Assert
+    [Fact]
+    public async Task UpdateStateAsync_WithNullTasks_ShouldReturnEmptyList()
+    {
+        var taskService = SetupTaskService(null);
+        var timerService = SetupTimerService(TimeSpan.FromMinutes(25));
+
+        var result = await _service.UpdateStateAsync(taskService.Object, timerService.Object, null);
+
         Assert.Empty(result.Tasks);
         Assert.Null(result.CurrentTaskId);
     }
 
     [Fact]
-    public void UpdateState_WithException_ShouldReturnDefaultState()
+    public async Task UpdateStateAsync_WithException_ShouldReturnDefaultState()
     {
-        // Arrange
-        var taskServiceMock = new Mock<ITaskService>();
-        var timerServiceMock = new Mock<ITimerService>();
+        var taskService = new Mock<ITaskService>();
+        taskService.Setup(s => s.GetTasksForListAsync(It.IsAny<string>()))
+            .ThrowsAsync(new Exception("Test exception"));
+        var timerService = SetupTimerService();
 
-        taskServiceMock.Setup(s => s.Tasks).Throws(new Exception("Test exception"));
+        var result = await _service.UpdateStateAsync(taskService.Object, timerService.Object, null);
 
-        // Act
-        var result = _service.UpdateState(taskServiceMock.Object, timerServiceMock.Object);
-
-        // Assert
         Assert.Empty(result.Tasks);
         Assert.Equal(TimeSpan.FromMinutes(Constants.Timer.DefaultPomodoroMinutes), result.RemainingTime);
         Assert.Equal(SessionType.Pomodoro, result.CurrentSessionType);
         Assert.False(result.IsTimerStarted);
+        Assert.Equal(Constants.TaskLists.LocalPomodoroListId, result.CurrentListId);
     }
 
     [Fact]
-    public void UpdateState_WithAllTimerStates_ShouldReturnCorrectValues()
+    public async Task UpdateStateAsync_WithAllTimerStates_ShouldReturnCorrectValues()
     {
-        // Arrange
-        var taskServiceMock = new Mock<ITaskService>();
-        var timerServiceMock = new Mock<ITimerService>();
+        var taskService = SetupTaskService(new List<TaskItem>());
+        var timerService = SetupTimerService(TimeSpan.FromMinutes(5), SessionType.ShortBreak, true, true, true);
 
-        taskServiceMock.Setup(s => s.Tasks).Returns(new List<TaskItem>());
-        timerServiceMock.Setup(s => s.RemainingTime).Returns(TimeSpan.FromMinutes(5));
-        timerServiceMock.Setup(s => s.CurrentSessionType).Returns(SessionType.ShortBreak);
-        timerServiceMock.Setup(s => s.IsRunning).Returns(true);
-        timerServiceMock.Setup(s => s.IsPaused).Returns(true);
-        timerServiceMock.Setup(s => s.IsStarted).Returns(true);
+        var result = await _service.UpdateStateAsync(taskService.Object, timerService.Object, null);
 
-        // Act
-        var result = _service.UpdateState(taskServiceMock.Object, timerServiceMock.Object);
-
-        // Assert
         Assert.Equal(TimeSpan.FromMinutes(5), result.RemainingTime);
         Assert.Equal(SessionType.ShortBreak, result.CurrentSessionType);
         Assert.True(result.IsTimerRunning);
@@ -122,14 +114,38 @@ public class IndexPagePresenterServiceTests
     }
 
     [Fact]
+    public async Task UpdateStateAsync_PassesListIdToTaskService()
+    {
+        var taskService = SetupTaskService();
+        var timerService = SetupTimerService();
+
+        await _service.UpdateStateAsync(taskService.Object, timerService.Object, "custom-list-id");
+
+        taskService.Verify(s => s.GetTasksForListAsync("custom-list-id"), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateStateAsync_FallsBackToCurrentListId_WhenNull()
+    {
+        var taskService = SetupTaskService();
+        taskService.Setup(s => s.CurrentListId).Returns("glist-1");
+        var timerService = SetupTimerService();
+
+        var result = await _service.UpdateStateAsync(taskService.Object, timerService.Object, null);
+
+        taskService.Verify(s => s.GetTasksForListAsync("glist-1"), Times.Once);
+        Assert.Equal("glist-1", result.CurrentListId);
+    }
+
+    [Fact]
     public void IndexPageState_DefaultValues_ShouldBeCorrect()
     {
-        // Act
         var state = new IndexPageState();
 
-        // Assert
         Assert.Empty(state.Tasks);
         Assert.Null(state.CurrentTaskId);
+        Assert.Null(state.CurrentListId);
+        Assert.Empty(state.TaskLists);
         Assert.Equal(TimeSpan.Zero, state.RemainingTime);
         Assert.Equal(SessionType.Pomodoro, state.CurrentSessionType);
         Assert.False(state.IsTimerRunning);
@@ -137,4 +153,3 @@ public class IndexPagePresenterServiceTests
         Assert.False(state.IsTimerStarted);
     }
 }
-
