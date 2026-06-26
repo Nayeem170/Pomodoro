@@ -154,10 +154,43 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     {
         if (!string.IsNullOrEmpty(listId) && listId != Constants.TaskLists.LocalPomodoroListId && listId != Constants.TaskLists.ScheduleListId)
         {
-            throw new NotSupportedException(Constants.Sync.TasksReadOnlyInPhase);
+            await AddGoogleTaskAsync(name, listId);
+            return;
         }
 
         await AddTaskAsync(name);
+    }
+
+    private async Task AddGoogleTaskAsync(string name, string listId)
+    {
+        var sanitized = SanitizeTaskName(name);
+        if (string.IsNullOrEmpty(sanitized) || sanitized.Length > Constants.UI.MaxTaskNameLength)
+            return;
+
+        var googleTask = new GoogleTask { Title = sanitized };
+        var inserted = await _googleTasksService.InsertTaskAsync(listId, googleTask);
+
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = inserted.Title,
+            GoogleTaskId = inserted.Id,
+            GoogleListId = listId,
+            ETag = inserted.ETag,
+            UpdatedAt = ParseGoogleDateTime(inserted.Updated),
+            Notes = inserted.Notes,
+            DueDate = ParseGoogleDate(inserted.Due),
+            IsCompleted = inserted.Status == "completed",
+            CreatedAt = DateTime.UtcNow,
+            TotalFocusMinutes = Constants.Tasks.InitialFocusMinutes,
+            PomodoroCount = Constants.Tasks.InitialPomodoroCount
+        };
+
+        await SaveTaskAsync(task);
+        _appState.InsertTask(task, Constants.Tasks.InsertAtBeginning);
+        _appState.CurrentTaskId = task.Id;
+        await SaveCurrentTaskIdAsync();
+        NotifyStateChanged();
     }
 
     public async Task UpdateTaskAsync(TaskItem task)
@@ -172,19 +205,65 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         var existingTask = _appState.FindTaskById(task.Id);
         if (existingTask == null) return;
 
-        var taskToSave = existingTask.WithUpdates(c => c.Name = name);
+        var taskToSave = existingTask.WithUpdates(c =>
+        {
+            c.Name = name;
+            c.Notes = task.Notes;
+            c.DueDate = task.DueDate;
+        });
+
+        var googlePushPatch = BuildPatch(existingTask, taskToSave);
+
         await SaveTaskAsync(taskToSave);
 
-        _appState.UpdateTask(task.Id, t => t.Name = name);
+        _appState.UpdateTask(task.Id, t =>
+        {
+            t.Name = taskToSave.Name;
+            t.Notes = taskToSave.Notes;
+            t.DueDate = taskToSave.DueDate;
+        });
+
+        if (taskToSave.IsGoogleTask && !string.IsNullOrEmpty(taskToSave.GoogleTaskId) && googlePushPatch != null)
+        {
+            var result = await PushGooglePatchAsync(taskToSave, googlePushPatch);
+            if (result != null)
+            {
+                var updatedEtag = result.ETag;
+                _appState.UpdateTask(task.Id, t => t.ETag = updatedEtag);
+                var updated = _appState.FindTaskById(task.Id);
+                if (updated != null)
+                {
+                    var withEtag = updated.WithUpdates(c => c.ETag = updatedEtag);
+                    await SaveTaskAsync(withEtag);
+                }
+            }
+        }
+        else
+        {
+            MarkDirty();
+        }
+
         NotifyStateChanged();
-        MarkDirty();
     }
 
     public async Task DeleteTaskAsync(Guid taskId)
     {
         var existingTask = _appState.FindTaskById(taskId);
         if (existingTask == null) return;
-        if (existingTask.IsGoogleTask) return;
+
+        if (existingTask.IsGoogleTask && !string.IsNullOrEmpty(existingTask.GoogleTaskId))
+        {
+            try
+            {
+                await _googleTasksService.DeleteTaskAsync(existingTask.GoogleListId!, existingTask.GoogleTaskId);
+            }
+            catch (Exception ex) when (ex is not UnauthorizedAccessException)
+            {
+                _logger.LogWarning(ex, "Failed to delete Google task {TaskId}, marking local dirty", existingTask.GoogleTaskId);
+                existingTask = existingTask.WithUpdates(c => c.IsLocalDirty = true);
+                _appState.UpdateTask(taskId, t => t.IsLocalDirty = true);
+            }
+        }
 
         var taskToSave = existingTask.WithUpdates(c =>
         {
@@ -205,15 +284,16 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             await SaveCurrentTaskIdAsync();
         }
 
+        if (!existingTask.IsGoogleTask)
+            MarkDirty();
+
         NotifyStateChanged();
-        MarkDirty();
     }
 
     public async Task CompleteTaskAsync(Guid taskId)
     {
         var existingTask = _appState.FindTaskById(taskId);
         if (existingTask == null) return;
-        if (existingTask.IsGoogleTask) return;
 
         var isRecurring = existingTask.IsRecurring && existingTask.Repeat is { IsActive: true };
 
@@ -239,7 +319,16 @@ public class TaskService : ITaskService, ITimerEventSubscriber
                     t.Repeat.NextOccurrence = nextOccurrence;
                 });
                 NotifyStateChanged();
-                MarkDirty();
+
+                if (existingTask.IsGoogleTask && !string.IsNullOrEmpty(existingTask.GoogleTaskId))
+                {
+                    var patch = new GoogleTaskPatch(null, null, "completed");
+                    await PushGooglePatchAsync(existingTask, patch);
+                }
+                else if (!existingTask.IsGoogleTask)
+                {
+                    MarkDirty();
+                }
                 return;
             }
         }
@@ -249,21 +338,38 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
         _appState.UpdateTask(taskId, t => t.IsCompleted = true);
         NotifyStateChanged();
-        MarkDirty();
+
+        if (existingTask.IsGoogleTask && !string.IsNullOrEmpty(existingTask.GoogleTaskId))
+        {
+            var patch = new GoogleTaskPatch(null, null, "completed");
+            await PushGooglePatchAsync(existingTask, patch);
+        }
+        else
+        {
+            MarkDirty();
+        }
     }
 
     public async Task UncompleteTaskAsync(Guid taskId)
     {
         var existingTask = _appState.FindTaskById(taskId);
         if (existingTask == null) return;
-        if (existingTask.IsGoogleTask) return;
 
         var taskToSave = existingTask.WithUpdates(c => c.IsCompleted = false);
         await SaveTaskAsync(taskToSave);
 
         _appState.UpdateTask(taskId, t => t.IsCompleted = false);
         NotifyStateChanged();
-        MarkDirty();
+
+        if (existingTask.IsGoogleTask && !string.IsNullOrEmpty(existingTask.GoogleTaskId))
+        {
+            var patch = new GoogleTaskPatch(null, null, "needsAction");
+            await PushGooglePatchAsync(existingTask, patch);
+        }
+        else
+        {
+            MarkDirty();
+        }
     }
 
     public async Task SelectTaskAsync(Guid taskId)
@@ -422,35 +528,89 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
                     foreach (var gTask in googleTasks)
                     {
+                        if (gTask.Hidden && gTask.Status == "completed")
+                        {
+                            var hiddenLocal = existingInList.FirstOrDefault(t => t.GoogleTaskId == gTask.Id)
+                                ?? _appState.Tasks.FirstOrDefault(t => t.GoogleTaskId == gTask.Id);
+                            if (hiddenLocal != null && !hiddenLocal.IsDeleted)
+                            {
+                                var deleted = hiddenLocal.WithUpdates(c =>
+                                {
+                                    c.IsDeleted = true;
+                                    c.DeletedAt = DateTime.UtcNow;
+                                });
+                                await _taskRepository.SaveAsync(deleted);
+                                _appState.UpdateTask(hiddenLocal.Id, t =>
+                                {
+                                    t.IsDeleted = true;
+                                    t.DeletedAt = DateTime.UtcNow;
+                                });
+                            }
+                            continue;
+                        }
+
                         var local = existingInList.FirstOrDefault(t => t.GoogleTaskId == gTask.Id)
                             ?? _appState.Tasks.FirstOrDefault(t => t.GoogleTaskId == gTask.Id);
                         if (local != null)
                         {
-                            var updated = local.WithUpdates(c =>
+                            if (local.IsLocalDirty)
                             {
-                                c.Name = gTask.Title;
-                                c.IsCompleted = gTask.Status == "completed";
-                                c.Notes = gTask.Notes;
-                                c.DueDate = ParseGoogleDate(gTask.Due);
-                                c.ETag = gTask.ETag;
-                                c.UpdatedAt = ParseGoogleDateTime(gTask.Updated);
-                                c.GoogleListId = gList.Id;
-                                c.IsDeleted = false;
-                                c.DeletedAt = null;
-                            });
-                            await _taskRepository.SaveAsync(updated);
-                            _appState.UpdateTask(local.Id, t =>
+                                if (local.IsDeleted)
+                                {
+                                    continue;
+                                }
+
+                                var localMatchesRemote =
+                                    local.Name == gTask.Title &&
+                                    local.IsCompleted == (gTask.Status == "completed") &&
+                                    (local.Notes ?? "") == (gTask.Notes ?? "") &&
+                                    local.DueDate == ParseGoogleDate(gTask.Due);
+
+                                if (localMatchesRemote)
+                                {
+                                    var cleared = local.WithUpdates(c =>
+                                    {
+                                        c.ETag = gTask.ETag;
+                                        c.UpdatedAt = ParseGoogleDateTime(gTask.Updated);
+                                        c.IsLocalDirty = false;
+                                    });
+                                    await _taskRepository.SaveAsync(cleared);
+                                    _appState.UpdateTask(local.Id, t =>
+                                    {
+                                        t.ETag = cleared.ETag;
+                                        t.UpdatedAt = cleared.UpdatedAt;
+                                        t.IsLocalDirty = false;
+                                    });
+                                }
+                            }
+                            else
                             {
-                                t.Name = updated.Name;
-                                t.IsCompleted = updated.IsCompleted;
-                                t.Notes = updated.Notes;
-                                t.DueDate = updated.DueDate;
-                                t.ETag = updated.ETag;
-                                t.UpdatedAt = updated.UpdatedAt;
-                                t.GoogleListId = updated.GoogleListId;
-                                t.IsDeleted = false;
-                                t.DeletedAt = null;
-                            });
+                                var updated = local.WithUpdates(c =>
+                                {
+                                    c.Name = gTask.Title;
+                                    c.IsCompleted = gTask.Status == "completed";
+                                    c.Notes = gTask.Notes;
+                                    c.DueDate = ParseGoogleDate(gTask.Due);
+                                    c.ETag = gTask.ETag;
+                                    c.UpdatedAt = ParseGoogleDateTime(gTask.Updated);
+                                    c.GoogleListId = gList.Id;
+                                    c.IsDeleted = false;
+                                    c.DeletedAt = null;
+                                });
+                                await _taskRepository.SaveAsync(updated);
+                                _appState.UpdateTask(local.Id, t =>
+                                {
+                                    t.Name = updated.Name;
+                                    t.IsCompleted = updated.IsCompleted;
+                                    t.Notes = updated.Notes;
+                                    t.DueDate = updated.DueDate;
+                                    t.ETag = updated.ETag;
+                                    t.UpdatedAt = updated.UpdatedAt;
+                                    t.GoogleListId = updated.GoogleListId;
+                                    t.IsDeleted = false;
+                                    t.DeletedAt = null;
+                                });
+                            }
                         }
                         else
                         {
@@ -643,6 +803,72 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     {
         _cloudSyncService ??= _serviceProvider.GetService<ICloudSyncService>();
         _cloudSyncService?.ScheduleSyncAsync();
+    }
+
+    private static GoogleTaskPatch? BuildPatch(TaskItem existing, TaskItem updated)
+    {
+        string? title = null;
+        string? notes = null;
+        string? status = null;
+        string? due = null;
+
+        if (existing.Name != updated.Name) title = updated.Name;
+        if (existing.Notes != updated.Notes) notes = updated.Notes ?? "";
+        if (existing.IsCompleted != updated.IsCompleted)
+            status = updated.IsCompleted ? "completed" : "needsAction";
+        if (existing.DueDate != updated.DueDate)
+            due = updated.DueDate.HasValue ? updated.DueDate.Value.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'") : "";
+
+        if (title == null && notes == null && status == null && due == null)
+            return null;
+
+        return new GoogleTaskPatch(title, notes, status, due);
+    }
+
+    private async Task<GoogleTask?> PushGooglePatchAsync(TaskItem task, GoogleTaskPatch patch)
+    {
+        try
+        {
+            var result = await _googleTasksService.PatchTaskAsync(
+                task.GoogleListId!, task.GoogleTaskId!, patch, task.ETag);
+            if (result != null)
+            {
+                var updated = _appState.FindTaskById(task.Id);
+                if (updated != null)
+                {
+                    var saved = updated.WithUpdates(c =>
+                    {
+                        c.ETag = result.ETag;
+                        c.IsLocalDirty = false;
+                    });
+                    await _taskRepository.SaveAsync(saved);
+                    _appState.UpdateTask(task.Id, t =>
+                    {
+                        t.ETag = saved.ETag;
+                        t.IsLocalDirty = false;
+                    });
+                }
+            }
+            return result;
+        }
+        catch (Exception ex) when (ex.Message.Contains("412") && task.ETag != null)
+        {
+            _logger.LogWarning("ETag conflict on task {TaskId}, pulling to reconcile", task.GoogleTaskId);
+            await RefreshGoogleListsAsync();
+            return null;
+        }
+        catch (Exception ex) when (ex is not UnauthorizedAccessException)
+        {
+            _logger.LogWarning(ex, "Failed to push Google patch for task {TaskId}, marking local dirty", task.GoogleTaskId);
+            var dirty = _appState.FindTaskById(task.Id);
+            if (dirty != null)
+            {
+                var saved = dirty.WithUpdates(c => c.IsLocalDirty = true);
+                await _taskRepository.SaveAsync(saved);
+                _appState.UpdateTask(task.Id, t => t.IsLocalDirty = true);
+            }
+            return null;
+        }
     }
 
     private static string SanitizeTaskName(string name)

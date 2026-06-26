@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Pomodoro.Web.Models;
@@ -81,6 +82,10 @@ public class GoogleTasksService : IGoogleTasksService
         if (item.TryGetProperty("etag", out var etagProp) && etagProp.ValueKind != JsonValueKind.Null)
             etag = etagProp.GetString();
 
+        bool hidden = false;
+        if (item.TryGetProperty("hidden", out var hiddenProp) && hiddenProp.ValueKind != JsonValueKind.Null)
+            hidden = hiddenProp.GetBoolean();
+
         return new GoogleTask
         {
             Id = item.GetProperty("id").GetString() ?? string.Empty,
@@ -91,9 +96,59 @@ public class GoogleTasksService : IGoogleTasksService
             Updated = item.GetProperty("updated").GetString() ?? string.Empty,
             Parent = parent,
             Position = position,
-            ETag = etag
+            ETag = etag,
+            Hidden = hidden
         };
     }
+
+    public async Task<GoogleTask> InsertTaskAsync(string listId, GoogleTask task)
+    {
+        return await ExecuteWithRetryAsync(async token =>
+        {
+            var body = new { title = task.Title, notes = task.Notes, due = task.Due };
+            var json = await _jsRuntime.InvokeAsync<string>(Constants.GoogleTasksJsFunctions.InsertTask, token, listId, body);
+            var data = JsonSerializer.Deserialize<JsonElement>(json);
+            var inserted = MapGoogleTask(data);
+            _logger.LogInformation("Inserted Google task {TaskId} in list {ListId}", inserted.Id, listId);
+            return inserted;
+        });
+    }
+
+    public async Task<GoogleTask?> PatchTaskAsync(string listId, string taskId, GoogleTaskPatch updates, string? etag = null)
+    {
+        return await ExecuteWithRetryAsync(async token =>
+        {
+            var body = new JsonObject();
+            if (updates.Title != null) body["title"] = updates.Title;
+            if (updates.Notes != null) body["notes"] = updates.Notes;
+            if (updates.Status != null) body["status"] = updates.Status;
+            if (updates.Due != null) body["due"] = updates.Due;
+
+            var filteredJson = body.ToJsonString();
+
+            var json = await _jsRuntime.InvokeAsync<string>(Constants.GoogleTasksJsFunctions.PatchTask, token, listId, taskId, filteredJson, etag);
+            var data = JsonSerializer.Deserialize<JsonElement>(json);
+            var patched = MapGoogleTask(data);
+            _logger.LogInformation("Patched Google task {TaskId}", taskId);
+            return patched;
+        });
+    }
+
+    public async Task DeleteTaskAsync(string listId, string taskId)
+    {
+        await ExecuteVoidWithRetryAsync(async token =>
+        {
+            await _jsRuntime.InvokeVoidAsync(Constants.GoogleTasksJsFunctions.DeleteTask, token, listId, taskId);
+            _logger.LogInformation("Deleted Google task {TaskId} from list {ListId}", taskId, listId);
+        });
+    }
+
+    private Task ExecuteVoidWithRetryAsync(Func<string, Task> action, int maxRetries = 3)
+        => ExecuteWithRetryAsync(async token =>
+        {
+            await action(token);
+            return true;
+        }, maxRetries);
 
     private async Task<T> ExecuteWithRetryAsync<T>(Func<string, Task<T>> action, int maxRetries = 3)
     {
@@ -111,6 +166,11 @@ public class GoogleTasksService : IGoogleTasksService
             {
                 _logger.LogWarning(Constants.SyncMessages.LogSyncUnauthorized);
                 throw new UnauthorizedAccessException(Constants.SyncMessages.TasksReconnectRequired, ex);
+            }
+            catch (JSException ex) when (ex.Message.Contains("412"))
+            {
+                _logger.LogWarning(ex, "ETag conflict on operation");
+                throw;
             }
             catch (JSException ex) when (ex.Message.Contains("403"))
             {

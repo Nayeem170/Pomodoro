@@ -162,13 +162,22 @@ public class TaskServiceMultiListTests
     }
 
     [Fact]
-    public async Task AddTaskAsync_GoogleList_ThrowsNotSupportedException()
+    public async Task AddTaskAsync_GoogleList_InsertsViaGoogleTasksService()
     {
+        var inserted = new GoogleTask { Id = "gt-1", Title = "task name", ETag = "etag-1", Updated = "2024-01-01T00:00:00Z" };
+        _mockGoogleTasksService.Setup(x => x.InsertTaskAsync("google-list-id", It.IsAny<GoogleTask>()))
+            .ReturnsAsync(inserted);
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+
         var sut = CreateSut();
+        await sut.AddTaskAsync("task name", "google-list-id");
 
-        var act = () => sut.AddTaskAsync("task name", "google-list-id");
-
-        await act.Should().ThrowAsync<NotSupportedException>();
+        _mockGoogleTasksService.Verify(x => x.InsertTaskAsync("google-list-id", It.IsAny<GoogleTask>()), Times.Once);
+        _appState.Tasks.Should().Contain(t =>
+            t.GoogleTaskId == "gt-1" &&
+            t.GoogleListId == "google-list-id" &&
+            t.Name == "task name" &&
+            t.ETag == "etag-1");
     }
 
     [Fact]
@@ -666,7 +675,7 @@ public class TaskServiceMultiListTests
     }
 
     [Fact]
-    public async Task CompleteTaskAsync_GoogleTask_IsNoOp()
+    public async Task CompleteTaskAsync_GoogleTask_PushesPatchAndSavesLocally()
     {
         var task = new TaskItem
         {
@@ -678,16 +687,19 @@ public class TaskServiceMultiListTests
         };
         _appState.Tasks = [task];
         _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.PatchTaskAsync("glist-1", "gtask-1", It.IsAny<GoogleTaskPatch>(), It.IsAny<string?>()))
+            .ReturnsAsync((GoogleTask?)null);
 
         var sut = CreateSut();
         await sut.CompleteTaskAsync(task.Id);
 
-        _mockTaskRepo.Verify(x => x.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
-        _appState.FindTaskById(task.Id)!.IsCompleted.Should().BeFalse();
+        _mockTaskRepo.Verify(x => x.SaveAsync(It.Is<TaskItem>(t => t.IsCompleted)), Times.Once);
+        _mockGoogleTasksService.Verify(x => x.PatchTaskAsync("glist-1", "gtask-1", It.IsAny<GoogleTaskPatch>(), It.IsAny<string?>()), Times.Once);
+        _appState.FindTaskById(task.Id)!.IsCompleted.Should().BeTrue();
     }
 
     [Fact]
-    public async Task UncompleteTaskAsync_GoogleTask_IsNoOp()
+    public async Task UncompleteTaskAsync_GoogleTask_PushesPatchAndSavesLocally()
     {
         var task = new TaskItem
         {
@@ -700,16 +712,19 @@ public class TaskServiceMultiListTests
         };
         _appState.Tasks = [task];
         _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.PatchTaskAsync("glist-1", "gtask-1", It.IsAny<GoogleTaskPatch>(), It.IsAny<string?>()))
+            .ReturnsAsync((GoogleTask?)null);
 
         var sut = CreateSut();
         await sut.UncompleteTaskAsync(task.Id);
 
-        _mockTaskRepo.Verify(x => x.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
-        _appState.FindTaskById(task.Id)!.IsCompleted.Should().BeTrue();
+        _mockTaskRepo.Verify(x => x.SaveAsync(It.Is<TaskItem>(t => !t.IsCompleted)), Times.Once);
+        _mockGoogleTasksService.Verify(x => x.PatchTaskAsync("glist-1", "gtask-1", It.IsAny<GoogleTaskPatch>(), It.IsAny<string?>()), Times.Once);
+        _appState.FindTaskById(task.Id)!.IsCompleted.Should().BeFalse();
     }
 
     [Fact]
-    public async Task DeleteTaskAsync_GoogleTask_IsNoOp()
+    public async Task DeleteTaskAsync_GoogleTask_DeletesViaGoogleAndSoftDeletesLocally()
     {
         var task = new TaskItem
         {
@@ -720,13 +735,16 @@ public class TaskServiceMultiListTests
             CreatedAt = DateTime.UtcNow
         };
         _appState.Tasks = [task];
+        _appState.CurrentTaskId = task.Id;
         _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.DeleteTaskAsync("glist-1", "gtask-1")).Returns(Task.CompletedTask);
 
         var sut = CreateSut();
         await sut.DeleteTaskAsync(task.Id);
 
-        _mockTaskRepo.Verify(x => x.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
-        _appState.FindTaskById(task.Id)!.IsDeleted.Should().BeFalse();
+        _mockGoogleTasksService.Verify(x => x.DeleteTaskAsync("glist-1", "gtask-1"), Times.Once);
+        _mockTaskRepo.Verify(x => x.SaveAsync(It.Is<TaskItem>(t => t.IsDeleted)), Times.Once);
+        _appState.FindTaskById(task.Id)!.IsDeleted.Should().BeTrue();
     }
 
     [Fact]
@@ -861,5 +879,341 @@ public class TaskServiceMultiListTests
         await sut.GetTasksForListAsync("glist-1");
 
         _mockSidecarRepo.Verify(x => x.GetAllAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateTaskAsync_GoogleTask_PushesPatchWithChangedFields()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Old Name",
+            GoogleTaskId = "gtask-1",
+            GoogleListId = "glist-1",
+            ETag = "etag-1",
+            CreatedAt = DateTime.UtcNow,
+            Notes = "old notes"
+        };
+        _appState.Tasks = [task];
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        var patched = new GoogleTask { Id = "gtask-1", Title = "New Name", ETag = "etag-2", Updated = "2024-01-01T00:00:00Z" };
+        _mockGoogleTasksService.Setup(x => x.PatchTaskAsync("glist-1", "gtask-1", It.IsAny<GoogleTaskPatch>(), It.IsAny<string?>()))
+            .ReturnsAsync(patched);
+
+        var sut = CreateSut();
+        await sut.UpdateTaskAsync(task.WithUpdates(c => c.Name = "New Name"));
+
+        _mockGoogleTasksService.Verify(x => x.PatchTaskAsync("glist-1", "gtask-1",
+            It.Is<GoogleTaskPatch>(p => p.Title == "New Name"), "etag-1"), Times.Once);
+        _appState.FindTaskById(task.Id)!.Name.Should().Be("New Name");
+        _appState.FindTaskById(task.Id)!.ETag.Should().Be("etag-2");
+    }
+
+    [Fact]
+    public async Task UpdateTaskAsync_LocalTask_MarksDirty()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Local Task",
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [task];
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        var mockCloudSync = new Mock<ICloudSyncService>();
+        _mockServiceProvider.Setup(x => x.GetService(typeof(ICloudSyncService))).Returns(mockCloudSync.Object);
+
+        var sut = CreateSut();
+        await sut.UpdateTaskAsync(task.WithUpdates(c => c.Name = "Updated"));
+
+        mockCloudSync.Verify(x => x.ScheduleSyncAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateTaskAsync_GoogleTask_DoesNotMarkDirty()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Google Task",
+            GoogleTaskId = "gtask-1",
+            GoogleListId = "glist-1",
+            ETag = "etag-1",
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [task];
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.PatchTaskAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<GoogleTaskPatch>(), It.IsAny<string?>()))
+            .ReturnsAsync((GoogleTask?)null);
+        var mockCloudSync = new Mock<ICloudSyncService>();
+        _mockServiceProvider.Setup(x => x.GetService(typeof(ICloudSyncService))).Returns(mockCloudSync.Object);
+
+        var sut = CreateSut();
+        await sut.UpdateTaskAsync(task.WithUpdates(c => c.Name = "Updated"));
+
+        mockCloudSync.Verify(x => x.ScheduleSyncAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task CompleteTaskAsync_GoogleTask_PushFailure_SetsIsLocalDirty()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Google Task",
+            GoogleTaskId = "gtask-1",
+            GoogleListId = "glist-1",
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [task];
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.PatchTaskAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<GoogleTaskPatch>(), It.IsAny<string?>()))
+            .ThrowsAsync(new Exception("Network error"));
+
+        var sut = CreateSut();
+        await sut.CompleteTaskAsync(task.Id);
+
+        _appState.FindTaskById(task.Id)!.IsLocalDirty.Should().BeTrue();
+        _appState.FindTaskById(task.Id)!.IsCompleted.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task DeleteTaskAsync_GoogleTask_PushFailure_MarksDirtyAndStillSoftDeletes()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Google Task",
+            GoogleTaskId = "gtask-1",
+            GoogleListId = "glist-1",
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [task];
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.DeleteTaskAsync("glist-1", "gtask-1"))
+            .ThrowsAsync(new Exception("Network error"));
+
+        var sut = CreateSut();
+        await sut.DeleteTaskAsync(task.Id);
+
+        _mockGoogleTasksService.Verify(x => x.DeleteTaskAsync("glist-1", "gtask-1"), Times.Once);
+        _appState.FindTaskById(task.Id)!.IsDeleted.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task DeleteTaskAsync_GoogleTask_PushFailure_MarksIsLocalDirty()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Google Task",
+            GoogleTaskId = "gtask-1",
+            GoogleListId = "glist-1",
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [task];
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.DeleteTaskAsync("glist-1", "gtask-1"))
+            .ThrowsAsync(new Exception("Network error"));
+
+        var sut = CreateSut();
+        await sut.DeleteTaskAsync(task.Id);
+
+        _appState.FindTaskById(task.Id)!.IsLocalDirty.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_SkipsOverwriteWhenIsLocalDirty()
+    {
+        var localTask = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Local Modified",
+            IsCompleted = true,
+            GoogleTaskId = "gtask-1",
+            GoogleListId = "glist-1",
+            ETag = "etag-1",
+            IsLocalDirty = true,
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [localTask];
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync([localTask]);
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync())
+            .ReturnsAsync([new GoogleTaskList { Id = "glist-1", Title = "List 1" }]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", null))
+            .ReturnsAsync([new GoogleTask { Id = "gtask-1", Title = "Remote Title", Status = "needsAction", ETag = "etag-2", Updated = "2024-01-01T00:00:00Z" }]);
+
+        var sut = CreateSut();
+        await sut.RefreshGoogleListsAsync();
+
+        _appState.FindTaskById(localTask.Id)!.Name.Should().Be("Local Modified");
+        _appState.FindTaskById(localTask.Id)!.IsCompleted.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_ClearsDirtyFlagWhenLocalMatchesRemote()
+    {
+        var localTask = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Matched",
+            IsCompleted = false,
+            GoogleTaskId = "gtask-1",
+            GoogleListId = "glist-1",
+            ETag = "etag-1",
+            IsLocalDirty = true,
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [localTask];
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync([localTask]);
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync())
+            .ReturnsAsync([new GoogleTaskList { Id = "glist-1", Title = "List 1" }]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", null))
+            .ReturnsAsync([new GoogleTask { Id = "gtask-1", Title = "Matched", Status = "needsAction", ETag = "etag-2", Updated = "2024-01-01T00:00:00Z" }]);
+
+        var sut = CreateSut();
+        await sut.RefreshGoogleListsAsync();
+
+        _appState.FindTaskById(localTask.Id)!.IsLocalDirty.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_HiddenCompletedTask_SoftDeletesLocally()
+    {
+        var localTask = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Hidden Task",
+            IsCompleted = true,
+            GoogleTaskId = "gtask-1",
+            GoogleListId = "glist-1",
+            ETag = "etag-1",
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [localTask];
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync([localTask]);
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync())
+            .ReturnsAsync([new GoogleTaskList { Id = "glist-1", Title = "List 1" }]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", null))
+            .ReturnsAsync([new GoogleTask { Id = "gtask-1", Title = "Hidden Task", Status = "completed", ETag = "etag-1", Updated = "2024-01-01T00:00:00Z", Hidden = true }]);
+
+        var sut = CreateSut();
+        await sut.RefreshGoogleListsAsync();
+
+        _appState.FindTaskById(localTask.Id)!.IsDeleted.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CompleteTaskAsync_LocalTask_MarksDirty()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Local Task",
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [task];
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        var mockCloudSync = new Mock<ICloudSyncService>();
+        _mockServiceProvider.Setup(x => x.GetService(typeof(ICloudSyncService))).Returns(mockCloudSync.Object);
+
+        var sut = CreateSut();
+        await sut.CompleteTaskAsync(task.Id);
+
+        mockCloudSync.Verify(x => x.ScheduleSyncAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task AddTaskAsync_GoogleList_EmptyName_ReturnsEarly()
+    {
+        var sut = CreateSut();
+
+        await sut.AddTaskAsync("", "google-list-id");
+
+        _mockGoogleTasksService.Verify(x => x.InsertTaskAsync(It.IsAny<string>(), It.IsAny<GoogleTask>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateTaskAsync_GoogleTask_PushesDueDateClearing()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Google Task",
+            GoogleTaskId = "gtask-1",
+            GoogleListId = "glist-1",
+            ETag = "etag-1",
+            CreatedAt = DateTime.UtcNow,
+            DueDate = new DateTime(2026, 1, 15, 0, 0, 0, DateTimeKind.Utc)
+        };
+        _appState.Tasks = [task];
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        var patched = new GoogleTask { Id = "gt-1", Title = "Google Task", ETag = "etag-2", Updated = "2026-01-01T00:00:00Z" };
+        _mockGoogleTasksService.Setup(x => x.PatchTaskAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<GoogleTaskPatch>(), It.IsAny<string?>()))
+            .ReturnsAsync(patched);
+
+        var sut = CreateSut();
+        var updatedTask = task.WithUpdates(c =>
+        {
+            c.DueDate = null;
+        });
+        await sut.UpdateTaskAsync(updatedTask);
+
+        _mockGoogleTasksService.Verify(x => x.PatchTaskAsync("glist-1", "gtask-1",
+            It.Is<GoogleTaskPatch>(p => p.Due == ""),
+            It.IsAny<string?>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateTaskAsync_GoogleTask_EtagConflict_TriggersPull()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Old Name",
+            GoogleTaskId = "gtask-1",
+            GoogleListId = "glist-1",
+            ETag = "etag-1",
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [task];
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync([task]);
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync())
+            .ReturnsAsync([new GoogleTaskList { Id = "glist-1", Title = "List 1" }]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", null))
+            .ReturnsAsync([new GoogleTask { Id = "gtask-1", Title = "Remote Name", Status = "needsAction", ETag = "etag-remote", Updated = "2026-01-01T00:00:00Z" }]);
+        _mockGoogleTasksService.Setup(x => x.PatchTaskAsync("glist-1", "gtask-1", It.IsAny<GoogleTaskPatch>(), It.IsAny<string?>()))
+            .ThrowsAsync(new Exception("412 ETag mismatch"));
+        _mockIndexedDb.Setup(x => x.GetAsync<GoogleTasksSettings>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((GoogleTasksSettings?)null);
+
+        var sut = CreateSut();
+        await sut.UpdateTaskAsync(task.WithUpdates(c => c.Name = "New Name"));
+
+        _mockGoogleTasksService.Verify(x => x.GetTaskListsAsync(), Times.AtLeastOnce);
+        _appState.FindTaskById(task.Id)!.Name.Should().Be("Remote Name");
+    }
+
+    [Fact]
+    public async Task UpdateListVisibilityAsync_HidingCurrentList_FallsBackToFirstVisible()
+    {
+        _appState.CurrentListId = "glist-2";
+        var sut = CreateSut();
+        SetCachedGoogleLists(sut, [
+            new GoogleListCacheEntry("glist-1", "List 1", "#4285F4", true),
+            new GoogleListCacheEntry("glist-2", "List 2", "#0B8043", true)
+        ]);
+
+        await sut.UpdateListVisibilityAsync("glist-2", false);
+
+        _appState.CurrentListId.Should().Be("glist-1");
     }
 }

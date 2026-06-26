@@ -159,6 +159,7 @@ public class CloudSyncService : ICloudSyncService, IDisposable
             await SaveSyncStateAsync(connected: true, accessToken: token);
 
             StartPeriodicSync();
+            await _taskService.RefreshGoogleListsAsync();
             NotifyStatusChanged();
 
             var syncResult = await SyncNowAsync();
@@ -359,6 +360,8 @@ public class CloudSyncService : ICloudSyncService, IDisposable
                 await _taskService.ReloadAsync();
                 await _activityService.ReloadAsync();
             }
+
+            await _taskService.RefreshGoogleListsAsync();
 
             LastSyncedAt = remoteEnvelope.LastSyncedAt;
             await SaveSyncStateAsync();

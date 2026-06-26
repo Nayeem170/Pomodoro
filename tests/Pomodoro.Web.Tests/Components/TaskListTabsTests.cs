@@ -294,7 +294,7 @@ public class TaskListSyncStripTests : TestContext
 
         Assert.Contains("Google Tasks", cut.Markup);
         Assert.Contains("My Google List", cut.Markup);
-        Assert.Contains("read-only", cut.Markup);
+        Assert.Contains("synced", cut.Markup);
     }
 
     [Fact]
@@ -315,6 +315,6 @@ public class TaskListSyncStripTests : TestContext
             .Add(p => p.ListName, null));
 
         Assert.Contains("Google Tasks", cut.Markup);
-        Assert.Contains("read-only", cut.Markup);
+        Assert.Contains("synced", cut.Markup);
     }
 }

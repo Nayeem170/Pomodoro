@@ -64,6 +64,7 @@ public class TaskItem
     public string? Notes { get; set; }
     public DateTime? DueDate { get; set; }
     public Priority Priority { get; set; }
+    public bool IsLocalDirty { get; set; }
 
     public TaskItem WithUpdates(Action<TaskItem>? mutate = null)
     {
@@ -86,7 +87,8 @@ public class TaskItem
             UpdatedAt = UpdatedAt,
             Notes = Notes,
             DueDate = DueDate,
-            Priority = Priority
+            Priority = Priority,
+            IsLocalDirty = IsLocalDirty
         };
         mutate?.Invoke(copy);
         return copy;
