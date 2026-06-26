@@ -81,6 +81,10 @@ public class GoogleTasksService : IGoogleTasksService
         if (item.TryGetProperty("etag", out var etagProp) && etagProp.ValueKind != JsonValueKind.Null)
             etag = etagProp.GetString();
 
+        bool hidden = false;
+        if (item.TryGetProperty("hidden", out var hiddenProp) && hiddenProp.ValueKind != JsonValueKind.Null)
+            hidden = hiddenProp.GetBoolean();
+
         return new GoogleTask
         {
             Id = item.GetProperty("id").GetString() ?? string.Empty,
@@ -91,8 +95,99 @@ public class GoogleTasksService : IGoogleTasksService
             Updated = item.GetProperty("updated").GetString() ?? string.Empty,
             Parent = parent,
             Position = position,
-            ETag = etag
+            ETag = etag,
+            Hidden = hidden
         };
+    }
+
+    public async Task<GoogleTask> InsertTaskAsync(string listId, GoogleTask task)
+    {
+        return await ExecuteWithRetryAsync(async token =>
+        {
+            var body = new { title = task.Title, notes = task.Notes, due = task.Due };
+            var json = await _jsRuntime.InvokeAsync<string>(Constants.GoogleTasksJsFunctions.InsertTask, token, listId, body);
+            var data = JsonSerializer.Deserialize<JsonElement>(json);
+            var inserted = MapGoogleTask(data);
+            _logger.LogInformation("Inserted Google task {TaskId} in list {ListId}", inserted.Id, listId);
+            return inserted;
+        });
+    }
+
+    public async Task<GoogleTask?> PatchTaskAsync(string listId, string taskId, GoogleTaskPatch updates, string? etag = null)
+    {
+        return await ExecuteWithRetryAsync(async token =>
+        {
+            var body = new Dictionary<string, string?>();
+            if (updates.Title != null) body["title"] = updates.Title;
+            if (updates.Notes != null) body["notes"] = updates.Notes;
+            if (updates.Status != null) body["status"] = updates.Status;
+            if (updates.Due != null) body["due"] = updates.Due;
+
+            var json = await _jsRuntime.InvokeAsync<string>(Constants.GoogleTasksJsFunctions.PatchTask, token, listId, taskId, body, etag);
+            var data = JsonSerializer.Deserialize<JsonElement>(json);
+            var patched = MapGoogleTask(data);
+            _logger.LogInformation("Patched Google task {TaskId}", taskId);
+            return patched;
+        });
+    }
+
+    public async Task DeleteTaskAsync(string listId, string taskId)
+    {
+        await ExecuteVoidWithRetryAsync(async token =>
+        {
+            await _jsRuntime.InvokeVoidAsync(Constants.GoogleTasksJsFunctions.DeleteTask, token, listId, taskId);
+            _logger.LogInformation("Deleted Google task {TaskId} from list {ListId}", taskId, listId);
+        });
+    }
+
+    private async Task ExecuteVoidWithRetryAsync(Func<string, Task> action, int maxRetries = 3)
+    {
+        var token = await _googleDriveService.GetAccessTokenAsync();
+        if (string.IsNullOrEmpty(token))
+            throw new UnauthorizedAccessException(Constants.SyncMessages.TasksReconnectRequired);
+
+        for (var attempt = 0; attempt < maxRetries; attempt++)
+        {
+            try
+            {
+                await action(token);
+                return;
+            }
+            catch (JSException ex) when (ex.Message.Contains("401"))
+            {
+                _logger.LogWarning(Constants.SyncMessages.LogSyncUnauthorized);
+                throw new UnauthorizedAccessException(Constants.SyncMessages.TasksReconnectRequired, ex);
+            }
+            catch (JSException ex) when (ex.Message.Contains("403"))
+            {
+                _logger.LogWarning(ex, Constants.SyncMessages.LogTasksForbidden);
+                throw new UnauthorizedAccessException(Constants.SyncMessages.TasksAccessForbidden, ex);
+            }
+            catch (JSException ex) when (ex.Message.Contains("429"))
+            {
+                if (attempt < maxRetries - 1)
+                {
+                    var delay = (int)Math.Pow(2, attempt) * 1000;
+                    _logger.LogWarning(Constants.SyncMessages.LogTasksRateLimited);
+                    await Task.Delay(delay);
+                    token = await _googleDriveService.GetAccessTokenAsync();
+                    if (string.IsNullOrEmpty(token))
+                        throw new UnauthorizedAccessException(Constants.SyncMessages.TasksReconnectRequired);
+                }
+                else
+                {
+                    _logger.LogWarning(Constants.SyncMessages.LogTasksRateLimited);
+                    throw new UnauthorizedAccessException(Constants.SyncMessages.TasksRateLimitExceeded, ex);
+                }
+            }
+            catch (JSException ex)
+            {
+                _logger.LogError(ex, Constants.SyncMessages.LogTasksApiError, ex.Message);
+                throw;
+            }
+        }
+
+        throw new UnauthorizedAccessException(Constants.SyncMessages.TasksUnavailable);
     }
 
     private async Task<T> ExecuteWithRetryAsync<T>(Func<string, Task<T>> action, int maxRetries = 3)
@@ -111,6 +206,11 @@ public class GoogleTasksService : IGoogleTasksService
             {
                 _logger.LogWarning(Constants.SyncMessages.LogSyncUnauthorized);
                 throw new UnauthorizedAccessException(Constants.SyncMessages.TasksReconnectRequired, ex);
+            }
+            catch (JSException ex) when (ex.Message.Contains("412"))
+            {
+                _logger.LogWarning(ex, "ETag conflict on operation");
+                throw;
             }
             catch (JSException ex) when (ex.Message.Contains("403"))
             {

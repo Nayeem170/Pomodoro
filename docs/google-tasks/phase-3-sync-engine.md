@@ -7,7 +7,7 @@ Implement bidirectional sync between local IndexedDB and Google Tasks API: add w
 ## Prerequisites
 
 - Phase 2 complete (data model, sidecar, multi-list `ITaskService`) — merged PR #91
-- Phase 4 complete (read-only UI, list tabs, guards) — PR #98 pending
+- Phase 4 complete (read-only UI, list tabs, guards) — PR #98 merged
 - JS functions already exist: `googleTasks.insertTask`, `googleTasks.patchTask`, `googleTasks.deleteTask`
 - C# constants already defined: `Constants.JsInterop.GoogleTasksJsFunctions.InsertTask/PatchTask/DeleteTask`
 - `Constants.Sync.TasksScopeReadWrite` already defined

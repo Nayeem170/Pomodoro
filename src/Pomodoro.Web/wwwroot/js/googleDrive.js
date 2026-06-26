@@ -29,7 +29,7 @@ window.googleDrive = {
             this._clientId = clientId;
             this._tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: clientId,
-                scope: 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/tasks.readonly openid email',
+                scope: 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/tasks openid email',
                 callback: (response) => {
                     if (response.access_token) {
                         this._accessToken = response.access_token;
