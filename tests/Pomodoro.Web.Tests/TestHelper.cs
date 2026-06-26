@@ -33,6 +33,7 @@ public abstract class TestHelper : TestContext
     protected Mock<IJSRuntime> JSRuntimeMock { get; private set; }
     protected Mock<IInfiniteScrollInterop> InfiniteScrollInteropMock { get; private set; }
     protected Mock<ITodayStatsService> TodayStatsServiceMock { get; private set; }
+    protected Mock<ICloudSyncService> CloudSyncServiceMock { get; private set; }
     protected Mock<HistoryStatsService> HistoryStatsServiceMock { get; private set; }
     protected IndexPagePresenterService IndexPagePresenterService { get; private set; }
     protected HistoryPagePresenterService HistoryPagePresenterService { get; private set; }
@@ -91,6 +92,7 @@ public abstract class TestHelper : TestContext
         IndexPagePresenterService = new IndexPagePresenterService(indexPageLoggerMock.Object);
         HistoryPagePresenterService = new HistoryPagePresenterService(historyPageLoggerMock.Object);
         SettingsPresenterService = new SettingsPresenterService(settingsPageLoggerMock.Object);
+        CloudSyncServiceMock = new Mock<ICloudSyncService>();
 
         // Register all mocks as singletons in test context
         Services.AddSingleton(TimerServiceMock.Object);
@@ -120,7 +122,7 @@ public abstract class TestHelper : TestContext
         Services.AddSingleton(IndexPagePresenterService);
         Services.AddSingleton(HistoryPagePresenterService);
         Services.AddSingleton(SettingsPresenterService);
-        Services.AddSingleton(Mock.Of<ICloudSyncService>());
+        Services.AddSingleton(CloudSyncServiceMock.Object);
         Services.AddSingleton(Mock.Of<IGoogleDriveService>());
         Services.AddSingleton(Mock.Of<IGoogleTasksService>());
         Services.AddSingleton(Mock.Of<IPomodoroMetaRepository>());

@@ -122,6 +122,7 @@ public partial class IndexBase : ComponentBase, IDisposable
 
             // Subscribe to PiP events
             PipTimerService.OnPipOpened += OnPipOpened;
+            CloudSyncService.OnSyncStatusChanged += OnCloudSyncStatusChanged;
             PipTimerService.OnPipClosed += OnPipClosed;
 
             // Register keyboard shortcuts with proper error handling
@@ -326,6 +327,8 @@ public partial class IndexBase : ComponentBase, IDisposable
             PipTimerService.OnPipOpened -= OnPipOpened;
             PipTimerService.OnPipClosed -= OnPipClosed;
         }
+        if (CloudSyncService != null)
+            CloudSyncService.OnSyncStatusChanged -= OnCloudSyncStatusChanged;
     }
 
     private void UnregisterKeyboardShortcuts()
