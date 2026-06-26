@@ -803,7 +803,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         if (existing.IsCompleted != updated.IsCompleted)
             status = updated.IsCompleted ? "completed" : "needsAction";
         if (existing.DueDate != updated.DueDate)
-            due = updated.DueDate.HasValue ? updated.DueDate.Value.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'") : null;
+            due = updated.DueDate.HasValue ? updated.DueDate.Value.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'") : "";
 
         if (title == null && notes == null && status == null && due == null)
             return null;

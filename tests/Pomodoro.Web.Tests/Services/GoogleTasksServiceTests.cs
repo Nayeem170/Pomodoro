@@ -214,16 +214,141 @@ public class GoogleTasksServiceTests
         Assert.Equal("00000001", tasks[0].Position);
     }
 
+    [Fact]
+    public async Task InsertTaskAsync_ReturnsInsertedTask()
+    {
+        var responseJson = JsonSerializer.Serialize(new { id = "gt-1", title = "New Task", status = "needsAction", updated = "2026-01-01T00:00:00Z", etag = "etag-new" });
+        _jsRuntime.QueueResult(responseJson);
+
+        var result = await _service.InsertTaskAsync("list-1", new GoogleTask { Title = "New Task" });
+
+        Assert.Equal("gt-1", result.Id);
+        Assert.Equal("New Task", result.Title);
+        Assert.Equal("etag-new", result.ETag);
+        Assert.Equal("googleTasks.insertTask", _jsRuntime.LastMethod);
+    }
+
+    [Fact]
+    public async Task PatchTaskAsync_ReturnsPatchedTask()
+    {
+        var responseJson = JsonSerializer.Serialize(new { id = "gt-1", title = "Updated", status = "completed", updated = "2026-01-01T00:00:00Z", etag = "etag-updated" });
+        _jsRuntime.QueueResult(responseJson);
+
+        var result = await _service.PatchTaskAsync("list-1", "gt-1", new GoogleTaskPatch("Updated", null, "completed"));
+
+        Assert.Equal("gt-1", result!.Id);
+        Assert.Equal("etag-updated", result.ETag);
+        Assert.Equal("googleTasks.patchTask", _jsRuntime.LastMethod);
+    }
+
+    [Fact]
+    public async Task PatchTaskAsync_PassesEtag()
+    {
+        var responseJson = JsonSerializer.Serialize(new { id = "gt-1", title = "X", status = "needsAction", updated = "2026-01-01T00:00:00Z" });
+        _jsRuntime.QueueResult(responseJson);
+
+        await _service.PatchTaskAsync("list-1", "gt-1", new GoogleTaskPatch("X"), "etag-abc");
+
+        Assert.Equal("etag-abc", _jsRuntime.LastArgs?[4]);
+    }
+
+    [Fact]
+    public async Task DeleteTaskAsync_InvokesDeleteAndReturns()
+    {
+        _jsRuntime.QueueVoidResult();
+
+        await _service.DeleteTaskAsync("list-1", "gt-1");
+
+        Assert.Equal("googleTasks.deleteTask", _jsRuntime.LastMethod);
+    }
+
+    [Fact]
+    public async Task DeleteTaskAsync_ThrowsUnauthorized_On401()
+    {
+        _jsRuntime.QueueVoidException(new JSException("Error 401: Unauthorized"));
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.DeleteTaskAsync("list-1", "gt-1"));
+    }
+
+    [Fact]
+    public async Task DeleteTaskAsync_Retries_On429()
+    {
+        _jsRuntime.QueueVoidException(new JSException("Error 429: Too Many Requests"));
+        _jsRuntime.QueueVoidResult();
+
+        await _service.DeleteTaskAsync("list-1", "gt-1");
+
+        Assert.Equal("googleTasks.deleteTask", _jsRuntime.LastMethod);
+    }
+
+    [Fact]
+    public async Task InsertTaskAsync_ThrowsUnauthorized_On401()
+    {
+        _jsRuntime.QueueException(new JSException("Error 401: Unauthorized"));
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.InsertTaskAsync("list-1", new GoogleTask { Title = "T" }));
+    }
+
+    [Fact]
+    public async Task InsertTaskAsync_Retries_On429()
+    {
+        _jsRuntime.QueueException(new JSException("Error 429: Too Many Requests"));
+        var responseJson = JsonSerializer.Serialize(new { id = "gt-1", title = "Retry", status = "needsAction", updated = "2026-01-01T00:00:00Z" });
+        _jsRuntime.QueueResult(responseJson);
+
+        var result = await _service.InsertTaskAsync("list-1", new GoogleTask { Title = "Retry" });
+
+        Assert.Equal("gt-1", result.Id);
+    }
+
+    [Fact]
+    public async Task PatchTaskAsync_Throws_On412Conflict()
+    {
+        _jsRuntime.QueueException(new JSException("Error 412 ETag mismatch"));
+
+        var ex = await Assert.ThrowsAsync<JSException>(() =>
+            _service.PatchTaskAsync("list-1", "gt-1", new GoogleTaskPatch("X")));
+    }
+
+    [Fact]
+    public async Task PatchTaskAsync_Retries_On429()
+    {
+        _jsRuntime.QueueException(new JSException("Error 429: Too Many Requests"));
+        var responseJson = JsonSerializer.Serialize(new { id = "gt-1", title = "Retry", status = "needsAction", updated = "2026-01-01T00:00:00Z", etag = "etag-new" });
+        _jsRuntime.QueueResult(responseJson);
+
+        var result = await _service.PatchTaskAsync("list-1", "gt-1", new GoogleTaskPatch("Retry"));
+
+        Assert.Equal("etag-new", result!.ETag);
+    }
+
+    [Fact]
+    public async Task GetTasksAsync_ParsesHiddenProperty()
+    {
+        var responseJson = JsonSerializer.Serialize(new object[]
+        {
+            new { id = "task-1", title = "Hidden task", status = "completed", updated = "2026-01-01T00:00:00Z", hidden = true }
+        });
+        _jsRuntime.QueueResult(responseJson);
+
+        var tasks = await _service.GetTasksAsync("list-1");
+
+        Assert.Single(tasks);
+        Assert.True(tasks[0].Hidden);
+    }
+
     private class TestJsRuntime : IJSRuntime
     {
         private int _callIndex;
-        private readonly List<(object? Result, Exception? Exception)> _queue = new();
+        private readonly List<(object? Result, Exception? Exception, bool IsVoid)> _queue = new();
 
         public string? LastMethod { get; private set; }
         public object?[]? LastArgs { get; private set; }
 
-        public void QueueResult(object? result) => _queue.Add((result, null));
-        public void QueueException(Exception ex) => _queue.Add((null, ex));
+        public void QueueResult(object? result) => _queue.Add((result, null, false));
+        public void QueueException(Exception ex) => _queue.Add((null, ex, false));
+        public void QueueVoidResult() => _queue.Add((null, null, true));
+        public void QueueVoidException(Exception ex) => _queue.Add((null, ex, true));
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
         {
@@ -251,6 +376,30 @@ public class GoogleTasksServiceTests
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken)
         {
             return InvokeAsync<TValue>(identifier, (object?[]?)null);
+        }
+
+        public ValueTask InvokeVoidAsync(string identifier, object?[]? args)
+        {
+            LastMethod = identifier;
+            LastArgs = args;
+
+            if (_callIndex < _queue.Count)
+            {
+                var entry = _queue[_callIndex];
+                _callIndex++;
+                if (entry.Exception != null)
+                    throw entry.Exception;
+                if (!entry.IsVoid)
+                    throw new InvalidOperationException("Expected void result");
+            }
+
+            _callIndex++;
+            return default(ValueTask);
+        }
+
+        public ValueTask InvokeVoidAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
+        {
+            return InvokeVoidAsync(identifier, args);
         }
 
         public void Dispose() { }

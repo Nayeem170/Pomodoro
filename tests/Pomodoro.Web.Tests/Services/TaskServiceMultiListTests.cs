@@ -1124,4 +1124,92 @@ public class TaskServiceMultiListTests
 
         mockCloudSync.Verify(x => x.ScheduleSyncAsync(), Times.Once);
     }
+
+    [Fact]
+    public async Task AddTaskAsync_GoogleList_EmptyName_ReturnsEarly()
+    {
+        var sut = CreateSut();
+
+        await sut.AddTaskAsync("", "google-list-id");
+
+        _mockGoogleTasksService.Verify(x => x.InsertTaskAsync(It.IsAny<string>(), It.IsAny<GoogleTask>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateTaskAsync_GoogleTask_PushesDueDateClearing()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Google Task",
+            GoogleTaskId = "gtask-1",
+            GoogleListId = "glist-1",
+            ETag = "etag-1",
+            CreatedAt = DateTime.UtcNow,
+            DueDate = new DateTime(2026, 1, 15, 0, 0, 0, DateTimeKind.Utc)
+        };
+        _appState.Tasks = [task];
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        var patched = new GoogleTask { Id = "gt-1", Title = "Google Task", ETag = "etag-2", Updated = "2026-01-01T00:00:00Z" };
+        _mockGoogleTasksService.Setup(x => x.PatchTaskAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<GoogleTaskPatch>(), It.IsAny<string?>()))
+            .ReturnsAsync(patched);
+
+        var sut = CreateSut();
+        var updatedTask = task.WithUpdates(c =>
+        {
+            c.DueDate = null;
+        });
+        await sut.UpdateTaskAsync(updatedTask);
+
+        _mockGoogleTasksService.Verify(x => x.PatchTaskAsync("glist-1", "gtask-1",
+            It.Is<GoogleTaskPatch>(p => p.Due == ""),
+            It.IsAny<string?>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateTaskAsync_GoogleTask_EtagConflict_TriggersPull()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Old Name",
+            GoogleTaskId = "gtask-1",
+            GoogleListId = "glist-1",
+            ETag = "etag-1",
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [task];
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync([task]);
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync())
+            .ReturnsAsync([new GoogleTaskList { Id = "glist-1", Title = "List 1" }]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", null))
+            .ReturnsAsync([new GoogleTask { Id = "gtask-1", Title = "Remote Name", Status = "needsAction", ETag = "etag-remote", Updated = "2026-01-01T00:00:00Z" }]);
+        _mockGoogleTasksService.Setup(x => x.PatchTaskAsync("glist-1", "gtask-1", It.IsAny<GoogleTaskPatch>(), It.IsAny<string?>()))
+            .ThrowsAsync(new Exception("412 ETag mismatch"));
+        _mockIndexedDb.Setup(x => x.GetAsync<GoogleTasksSettings>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((GoogleTasksSettings?)null);
+
+        var sut = CreateSut();
+        await sut.UpdateTaskAsync(task.WithUpdates(c => c.Name = "New Name"));
+
+        _mockGoogleTasksService.Verify(x => x.GetTaskListsAsync(), Times.AtLeastOnce);
+        _appState.FindTaskById(task.Id)!.Name.Should().Be("Remote Name");
+    }
+
+    [Fact]
+    public async Task UpdateListVisibilityAsync_HidingCurrentList_FallsBackToFirstVisible()
+    {
+        _appState.CurrentListId = "glist-2";
+        var sut = CreateSut();
+        SetCachedGoogleLists(sut, [
+            new GoogleListCacheEntry("glist-1", "List 1", "#4285F4", true),
+            new GoogleListCacheEntry("glist-2", "List 2", "#0B8043", true)
+        ]);
+
+        await sut.UpdateListVisibilityAsync("glist-2", false);
+
+        _appState.CurrentListId.Should().Be("glist-1");
+    }
 }
