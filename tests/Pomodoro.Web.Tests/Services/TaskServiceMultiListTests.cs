@@ -1216,4 +1216,46 @@ public class TaskServiceMultiListTests
 
         _appState.CurrentListId.Should().Be("glist-1");
     }
+
+    [Fact]
+    public async Task InitializeAsync_RestoresCachedListsFromSettings()
+    {
+        var settings = new GoogleTasksSettings(
+            new Dictionary<string, ListSetting>
+            {
+                ["list-1"] = new ListSetting(true, "#4285F4", null),
+                ["list-2"] = new ListSetting(true, "#0B8043", null)
+            },
+            ["list-1", "list-2"]);
+        _mockIndexedDb.Setup(x => x.GetAsync<GoogleTasksSettings>("googleTasksSettings", "default"))
+            .ReturnsAsync(settings);
+
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+
+        var cache = GetCachedGoogleLists(sut);
+        cache.Should().HaveCount(2);
+        cache[0].Id.Should().Be("list-1");
+        cache[1].Id.Should().Be("list-2");
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_SavesListIdsToSettings()
+    {
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync()).ReturnsAsync([
+            new GoogleTaskList { Id = "list-1", Title = "Personal" },
+            new GoogleTaskList { Id = "list-2", Title = "Work" }
+        ]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("list-1", null)).ReturnsAsync([]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("list-2", null)).ReturnsAsync([]);
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync(It.IsAny<string>())).ReturnsAsync([]);
+
+        var sut = CreateSut();
+        await sut.RefreshGoogleListsAsync();
+
+        _mockIndexedDb.Verify(x => x.PutAsync("googleTasksSettings",
+            It.Is<GoogleTasksSettings>(s => s.ListIds != null && s.ListIds.Count == 2)),
+            Times.AtLeastOnce);
+    }
 }
