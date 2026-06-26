@@ -19,6 +19,8 @@ test.describe('Schedule Tasks', () => {
     await page.setTaskScheduleDate(dateStr);
     await page.saveTaskEdit();
 
+    await page.switchToTaskList('Schedule');
+
     await expect(page.page.locator('.task-row').filter({ hasText: 'Future Task' }).locator('.task-badge.task-scheduled')).toBeVisible();
   });
 
@@ -29,6 +31,8 @@ test.describe('Schedule Tasks', () => {
     await page.editTask('Today Task');
     await page.setTaskScheduleDate(todayStr);
     await page.saveTaskEdit();
+
+    await page.switchToTaskList('Schedule');
 
     await expect(page.page.locator('.task-row').filter({ hasText: 'Today Task' })).toBeVisible();
   });
@@ -42,6 +46,8 @@ test.describe('Schedule Tasks', () => {
     await page.editTask('Schedule Only');
     await page.setTaskScheduleDate(dateStr);
     await page.saveTaskEdit();
+
+    await page.switchToTaskList('Schedule');
 
     await expect(page.page.locator('.task-row').filter({ hasText: 'Schedule Only' })).toBeVisible();
   });

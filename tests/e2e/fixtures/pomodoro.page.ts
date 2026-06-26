@@ -451,6 +451,11 @@ export class PomodoroPage {
     await this.page.locator('.tep-row').filter({ hasText: 'Schedule' }).locator('input[type="date"]').fill(dateStr);
   }
 
+  async switchToTaskList(listName: string) {
+    await this.page.locator('.ltabs button.lt').filter({ hasText: listName }).click();
+    await this.page.waitForTimeout(500);
+  }
+
   async toggleTaskPause() {
     await this.page.locator('.tep-toggle').click();
   }
