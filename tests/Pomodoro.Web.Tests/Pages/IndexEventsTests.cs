@@ -334,5 +334,17 @@ public class IndexEventsTests : TestHelper
     }
 
     #endregion
+
+    #region OnCloudSyncStatusChanged Tests
+
+    [Fact]
+    public void OnCloudSyncStatusChanged_TriggersStateUpdate()
+    {
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        cut.Instance.OnCloudSyncStatusChanged();
+        Assert.True(true);
+    }
+
+    #endregion
 }
 

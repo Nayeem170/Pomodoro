@@ -456,6 +456,20 @@ export class PomodoroPage {
     await this.page.waitForTimeout(500);
   }
 
+  async selectListTab(listName: string) {
+    await this.page.locator('.ltabs button.lt').filter({ hasText: listName }).click();
+    await this.page.waitForTimeout(500);
+  }
+
+  async getActiveListTab(): Promise<string> {
+    const activeTab = this.page.locator('.ltabs button.lt.act');
+    return await activeTab.textContent() || '';
+  }
+
+  async hasListTab(listName: string): Promise<boolean> {
+    return await this.page.locator('.ltabs button.lt').filter({ hasText: listName }).isVisible().catch(() => false);
+  }
+
   async toggleTaskPause() {
     await this.page.locator('.tep-toggle').click();
   }

@@ -98,6 +98,8 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
         await LoadGoogleTasksSettingsAsync();
 
+        await RestoreCachedGoogleListsFromSettingsAsync();
+
         await ActivateDueRecurringAndScheduledTasks();
 
         if (await _googleTasksService.IsConnectedAsync())
@@ -505,6 +507,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
             _cachedGoogleLists = updatedCache;
             await SaveGoogleTasksSettingsAsync();
+            await SaveGoogleListsCacheAsync();
             InvalidateSidecarCache();
 
             if (remoteLists.Count > 0 &&
@@ -921,6 +924,26 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         }
 
         NotifyStateChanged();
+    }
+
+    private async Task SaveGoogleListsCacheAsync()
+    {
+        var data = _cachedGoogleLists.Select(l => l.Id).ToList();
+        _googleTasksSettings = _googleTasksSettings with { ListIds = data };
+        await SaveGoogleTasksSettingsAsync();
+    }
+
+    private async Task RestoreCachedGoogleListsFromSettingsAsync()
+    {
+        if (_googleTasksSettings.ListIds is { Count: > 0 })
+        {
+            var listsDict = _googleTasksSettings.Lists;
+            _cachedGoogleLists = _googleTasksSettings.ListIds.Select(id =>
+            {
+                var settingsEntry = listsDict.GetValueOrDefault(id);
+                return new GoogleListCacheEntry(id, id, settingsEntry?.Color ?? "var(--pomodoro-color)", settingsEntry?.IsVisible ?? true);
+            }).ToList();
+        }
     }
 
     private void InvalidateSidecarCache()

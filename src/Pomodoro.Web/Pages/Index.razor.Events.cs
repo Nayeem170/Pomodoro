@@ -49,6 +49,19 @@ public partial class IndexBase
 
     #endregion
 
+    #region Cloud Sync Events
+
+    public void OnCloudSyncStatusChanged()
+    {
+        SafeAsync(async () =>
+        {
+            await UpdateStateAsync();
+            await InvokeAsync(StateHasChanged);
+        }, nameof(OnCloudSyncStatusChanged));
+    }
+
+    #endregion
+
     #region Timer Service Events
 
     public async Task OnTimerCompleted(TimerCompletedEventArgs args)
