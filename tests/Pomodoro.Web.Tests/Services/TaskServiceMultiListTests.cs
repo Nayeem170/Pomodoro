@@ -1218,6 +1218,180 @@ public class TaskServiceMultiListTests
     }
 
     [Fact]
+    public async Task UpdateListVisibilityAsync_HidingCurrentList_NoVisibleGoogleLists_FallsBackToLocal()
+    {
+        _appState.CurrentListId = "glist-1";
+        var sut = CreateSut();
+        SetCachedGoogleLists(sut, [
+            new GoogleListCacheEntry("glist-1", "List 1", "#4285F4", true)
+        ]);
+
+        await sut.UpdateListVisibilityAsync("glist-1", false);
+
+        _appState.CurrentListId.Should().Be(Constants.TaskLists.LocalPomodoroListId);
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_GoogleList_ReturnsFilteredTasks()
+    {
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = Guid.NewGuid(), Name = "Local", CreatedAt = DateTime.UtcNow },
+            new() { Id = Guid.NewGuid(), Name = "Google", GoogleTaskId = "gt-1", GoogleListId = "glist-1", CreatedAt = DateTime.UtcNow },
+            new() { Id = Guid.NewGuid(), Name = "Other Google", GoogleTaskId = "gt-2", GoogleListId = "glist-2", CreatedAt = DateTime.UtcNow }
+        };
+        _appState.Tasks = tasks;
+        _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
+        var sut = CreateSut();
+
+        var result = await sut.GetTasksForListAsync("glist-1");
+
+        result.Should().HaveCount(1);
+        result[0].Name.Should().Be("Google");
+    }
+
+    [Fact]
+    public async Task CompleteTaskAsync_RecurringGoogleTask_PushesCompletionToGoogle()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem
+        {
+            Id = taskId,
+            Name = "Recurring Google",
+            GoogleTaskId = "gt-1",
+            GoogleListId = "glist-1",
+            ETag = "etag-1",
+            IsCompleted = false,
+            CreatedAt = DateTime.UtcNow,
+            Repeat = new RepeatRule { Type = RepeatType.Daily }
+        };
+        _appState.Tasks = [task];
+        _appState.CurrentTaskId = taskId;
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.PatchTaskAsync("glist-1", "gt-1",
+                It.IsAny<GoogleTaskPatch>(), It.IsAny<string?>()))
+            .ReturnsAsync((string _, string _, GoogleTaskPatch _, string? _) => null!);
+
+        var sut = CreateSut();
+        await sut.CompleteTaskAsync(taskId);
+
+        _appState.FindTaskById(taskId)!.IsCompleted.Should().BeTrue();
+        _appState.FindTaskById(taskId)!.Repeat!.NextOccurrence.Should().NotBeNull();
+        _mockGoogleTasksService.Verify(x => x.PatchTaskAsync("glist-1", "gt-1",
+            It.Is<GoogleTaskPatch>(p => p.Status == "completed"), It.IsAny<string?>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_RemoteListRemoved_CurrentGoogleList_FallsBackToLocal()
+    {
+        _appState.CurrentListId = "glist-1";
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync())
+            .ReturnsAsync([new GoogleTaskList { Id = "glist-2", Title = "Other List" }]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-2", null))
+            .ReturnsAsync([]);
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync(It.IsAny<string>())).ReturnsAsync([]);
+        var sut = CreateSut();
+        SetCachedGoogleLists(sut, [
+            new GoogleListCacheEntry("glist-1", "List 1", "#4285F4", true)
+        ]);
+
+        await sut.RefreshGoogleListsAsync();
+
+        _appState.CurrentListId.Should().Be(Constants.TaskLists.LocalPomodoroListId);
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_DirtyDeletedTask_SkippedWithoutOverwrite()
+    {
+        var localTask = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Deleted Task",
+            GoogleTaskId = "gt-1",
+            GoogleListId = "glist-1",
+            IsDeleted = true,
+            DeletedAt = DateTime.UtcNow,
+            IsLocalDirty = true,
+            ETag = "old",
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [localTask];
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync())
+            .ReturnsAsync([new GoogleTaskList { Id = "glist-1", Title = "List 1" }]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", null))
+            .ReturnsAsync([new GoogleTask { Id = "gt-1", Title = "Deleted Task", Status = "needsAction", ETag = "etag-new", Updated = "2026-01-01T00:00:00Z" }]);
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync([localTask]);
+        var sut = CreateSut();
+
+        await sut.RefreshGoogleListsAsync();
+
+        _appState.FindTaskById(localTask.Id)!.IsLocalDirty.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_DirtyTask_MatchesRemote_ClearsDirtyAndPersists()
+    {
+        var localTask = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Match",
+            GoogleTaskId = "gt-1",
+            GoogleListId = "glist-1",
+            IsCompleted = false,
+            IsLocalDirty = true,
+            ETag = "old",
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [localTask];
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync())
+            .ReturnsAsync([new GoogleTaskList { Id = "glist-1", Title = "List 1" }]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", null))
+            .ReturnsAsync([new GoogleTask { Id = "gt-1", Title = "Match", Status = "needsAction", ETag = "etag-new", Updated = "2026-01-01T00:00:00Z" }]);
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync([localTask]);
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        var sut = CreateSut();
+
+        await sut.RefreshGoogleListsAsync();
+
+        _appState.FindTaskById(localTask.Id)!.IsLocalDirty.Should().BeFalse();
+        _appState.FindTaskById(localTask.Id)!.ETag.Should().Be("etag-new");
+        _mockTaskRepo.Verify(x => x.SaveAsync(It.Is<TaskItem>(t => t.ETag == "etag-new")), Times.Once);
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_DirtyTask_DiffersFromRemote_KeepsDirty()
+    {
+        var localTask = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Local Name",
+            GoogleTaskId = "gt-1",
+            GoogleListId = "glist-1",
+            IsCompleted = false,
+            IsLocalDirty = true,
+            ETag = "old",
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [localTask];
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync())
+            .ReturnsAsync([new GoogleTaskList { Id = "glist-1", Title = "List 1" }]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", null))
+            .ReturnsAsync([new GoogleTask { Id = "gt-1", Title = "Remote Name", Status = "needsAction", ETag = "etag-new", Updated = "2026-01-01T00:00:00Z" }]);
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync([localTask]);
+        var sut = CreateSut();
+
+        await sut.RefreshGoogleListsAsync();
+
+        _appState.FindTaskById(localTask.Id)!.IsLocalDirty.Should().BeTrue();
+        _appState.FindTaskById(localTask.Id)!.Name.Should().Be("Local Name");
+    }
+
+    [Fact]
     public async Task InitializeAsync_RestoresCachedListsFromSettings()
     {
         var settings = new GoogleTasksSettings(

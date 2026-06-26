@@ -337,6 +337,17 @@ public class GoogleTasksServiceTests
         Assert.True(tasks[0].Hidden);
     }
 
+    [Fact]
+    public async Task GetTaskListsAsync_ThrowsUnavailable_WhenAllRetriesExhausted()
+    {
+        _jsRuntime.QueueException(new JSException("Error 429: Too Many Requests"));
+        _jsRuntime.QueueException(new JSException("Error 429: Too Many Requests"));
+        _jsRuntime.QueueException(new JSException("Error 429: Too Many Requests"));
+
+        var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.GetTaskListsAsync());
+        Assert.Contains("rate-limited", ex.Message);
+    }
+
     private class TestJsRuntime : IJSRuntime
     {
         private int _callIndex;
