@@ -56,7 +56,7 @@ public partial class IndexBase
         try
         {
             await UpdateStateAsync();
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {

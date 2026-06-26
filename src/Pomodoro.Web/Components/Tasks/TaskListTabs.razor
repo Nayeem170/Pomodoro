@@ -4,7 +4,7 @@
 <div class="ltabs" role="tablist">
     @foreach (var list in VisibleLists)
     {
-        var isActive = list.Id == CurrentListId;
+        var isActive = list.Id == EffectiveCurrentListId;
         <button class="lt @(isActive ? "act" : "")"
                 @onclick="() => HandleTabClick(list.Id)"
                 @onkeydown="OnKeyDown"
@@ -33,9 +33,19 @@
 
     private IReadOnlyList<TaskListRef> VisibleLists => Lists.Where(l => l.IsVisible).ToList();
 
+    private string? EffectiveCurrentListId
+    {
+        get
+        {
+            if (CurrentListId != null && VisibleLists.Any(l => l.Id == CurrentListId))
+                return CurrentListId;
+            return VisibleLists.FirstOrDefault()?.Id;
+        }
+    }
+
     protected async Task HandleTabClick(string listId)
     {
-        if (listId != CurrentListId)
+        if (listId != EffectiveCurrentListId)
         {
             await OnTabChanged.InvokeAsync(listId);
         }
@@ -48,7 +58,7 @@
         var visible = VisibleLists.ToList();
         if (visible.Count <= 1) return;
 
-        var currentIndex = visible.FindIndex(l => l.Id == CurrentListId);
+        var currentIndex = visible.FindIndex(l => l.Id == EffectiveCurrentListId);
         var nextIndex = e.Key == Constants.Keys.ArrowRight
             ? (currentIndex + 1) % visible.Count
             : (currentIndex - 1 + visible.Count) % visible.Count;

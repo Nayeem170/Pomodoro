@@ -258,6 +258,23 @@ public class TaskListTabsTests : TestContext
 
         Assert.False(tabChanged);
     }
+
+    [Fact]
+    public void TaskListTabs_HiddenCurrentList_FallsBackToFirstVisible()
+    {
+        var lists = new List<TaskListRef>
+        {
+            new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)", 0, true, true),
+            new("glist-1", "Hidden", "#4285F4", 0, false, false)
+        };
+
+        var cut = RenderComponent<TaskListTabs>(parameters => parameters
+            .Add(p => p.Lists, lists)
+            .Add(p => p.CurrentListId, "glist-1"));
+
+        Assert.Contains("act", cut.Markup);
+        Assert.DoesNotContain("Hidden", cut.Markup);
+    }
 }
 
 [Trait("Category", "Component")]

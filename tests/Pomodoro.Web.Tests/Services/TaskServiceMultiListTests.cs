@@ -705,6 +705,7 @@ public class TaskServiceMultiListTests
         await sut.UncompleteTaskAsync(task.Id);
 
         _mockTaskRepo.Verify(x => x.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
+        _appState.FindTaskById(task.Id)!.IsCompleted.Should().BeTrue();
     }
 
     [Fact]

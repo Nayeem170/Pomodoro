@@ -401,6 +401,15 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             await SaveGoogleTasksSettingsAsync();
             InvalidateSidecarCache();
 
+            if (remoteLists.Count > 0 &&
+                !string.IsNullOrEmpty(_appState.CurrentListId) &&
+                _appState.CurrentListId != Constants.TaskLists.LocalPomodoroListId &&
+                _appState.CurrentListId != Constants.TaskLists.ScheduleListId &&
+                !updatedCache.Any(l => l.Id == _appState.CurrentListId))
+            {
+                await SelectListAsync(Constants.TaskLists.LocalPomodoroListId);
+            }
+
             foreach (var gList in remoteLists)
             {
                 try
@@ -674,8 +683,18 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         if (entry != null)
         {
             _cachedGoogleLists[_cachedGoogleLists.IndexOf(entry)] = entry with { IsVisible = isVisible };
-            NotifyStateChanged();
         }
+
+        if (!isVisible && _appState.CurrentListId == listId)
+        {
+            var fallback = _cachedGoogleLists.FirstOrDefault(l => l.IsVisible);
+            if (fallback != null)
+                await SelectListAsync(fallback.Id);
+            else
+                await SelectListAsync(Constants.TaskLists.LocalPomodoroListId);
+        }
+
+        NotifyStateChanged();
     }
 
     private void InvalidateSidecarCache()

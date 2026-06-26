@@ -35,14 +35,18 @@ public class IndexPagePresenterService
         }
         catch (Exception ex)
         {
+            var fallbackListId = currentListId ?? taskService.CurrentListId ?? Constants.TaskLists.LocalPomodoroListId;
             _logger.LogError(ex, "Error in UpdateStateAsync");
             return new IndexPageState
             {
                 Tasks = new List<TaskItem>(),
-                RemainingTime = TimeSpan.FromMinutes(Constants.Timer.DefaultPomodoroMinutes),
-                CurrentSessionType = SessionType.Pomodoro,
-                IsTimerStarted = false,
-                CurrentListId = Constants.TaskLists.LocalPomodoroListId
+                TaskLists = taskService.TaskLists,
+                RemainingTime = timerService.RemainingTime,
+                CurrentSessionType = timerService.CurrentSessionType,
+                IsTimerRunning = timerService.IsRunning,
+                IsTimerPaused = timerService.IsPaused,
+                IsTimerStarted = timerService.IsStarted,
+                CurrentListId = fallbackListId
             };
         }
     }

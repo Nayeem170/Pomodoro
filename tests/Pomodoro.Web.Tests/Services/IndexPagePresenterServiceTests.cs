@@ -87,14 +87,16 @@ public class IndexPagePresenterServiceTests
         var taskService = new Mock<ITaskService>();
         taskService.Setup(s => s.GetTasksForListAsync(It.IsAny<string>()))
             .ThrowsAsync(new Exception("Test exception"));
-        var timerService = SetupTimerService();
+        var timerService = SetupTimerService(TimeSpan.FromMinutes(5), SessionType.ShortBreak, true, true, true);
 
         var result = await _service.UpdateStateAsync(taskService.Object, timerService.Object, null);
 
         Assert.Empty(result.Tasks);
-        Assert.Equal(TimeSpan.FromMinutes(Constants.Timer.DefaultPomodoroMinutes), result.RemainingTime);
-        Assert.Equal(SessionType.Pomodoro, result.CurrentSessionType);
-        Assert.False(result.IsTimerStarted);
+        Assert.Equal(TimeSpan.FromMinutes(5), result.RemainingTime);
+        Assert.Equal(SessionType.ShortBreak, result.CurrentSessionType);
+        Assert.True(result.IsTimerRunning);
+        Assert.True(result.IsTimerPaused);
+        Assert.True(result.IsTimerStarted);
         Assert.Equal(Constants.TaskLists.LocalPomodoroListId, result.CurrentListId);
     }
 
