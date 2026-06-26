@@ -88,7 +88,7 @@ else
                                  CurrentListId="ActiveListId"
                                  OnTabChanged="HandleTabChange" />
                     <TaskListSyncStrip IsGoogleList="@(ActiveList?.IsLocal == false)"
-                                       ListName="ActiveList?.Title" />
+                                       ListName="@ActiveList?.Title" />
                     <TaskList Tasks="Tasks"
                               CurrentTaskId="CurrentTaskId"
                               OnTaskAdd="HandleTaskAdd"

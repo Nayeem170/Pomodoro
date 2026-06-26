@@ -127,6 +127,7 @@ public class CloudSyncService : ICloudSyncService, IDisposable
                     }
                     _googleDriveService.SetConnected(true);
                     _googleDriveService.SetAccountEmail(syncState.AccountEmail);
+                    await _taskService.RefreshGoogleListsAsync();
                     StartPeriodicSync();
                 }
 
