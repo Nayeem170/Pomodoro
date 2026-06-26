@@ -207,4 +207,16 @@ public class TaskItemEditTests : TestContext
         cut.Markup.Should().NotContain("task-repeat");
         cut.Markup.Should().NotContain("task-scheduled");
     }
+
+    [Fact]
+    public void GetCheckboxStyle_NonDefaultColor_ReturnsInlineStyle()
+    {
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Test" };
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
+            parameters.Add(p => p.Item, task)
+                .Add(p => p.CheckboxColor, "#4285F4"));
+
+        cut.Find("button").GetAttribute("style").Should().Contain("border-color:#4285F4");
+        cut.Find("button").GetAttribute("style").Should().Contain("background:#4285F4");
+    }
 }
