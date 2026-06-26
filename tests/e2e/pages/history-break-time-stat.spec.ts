@@ -11,7 +11,7 @@ test.describe('History Break Time Stat', () => {
     await pomodoroPage.goto('/');
     await pomodoroPage.page.evaluate(async () => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('PomodoroDB', 2);
+        const req = indexedDB.open('PomodoroDB', 3);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });
@@ -82,7 +82,7 @@ test.describe('History Break Time Stat', () => {
     await pomodoroPage.goto('/');
     await pomodoroPage.page.evaluate(async () => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('PomodoroDB', 2);
+        const req = indexedDB.open('PomodoroDB', 3);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });

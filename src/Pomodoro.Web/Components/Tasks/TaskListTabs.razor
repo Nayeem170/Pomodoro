@@ -1,0 +1,71 @@
+@using Microsoft.AspNetCore.Components
+@using Pomodoro.Web.Models
+
+<div class="ltabs" role="tablist">
+    @foreach (var list in VisibleLists)
+    {
+        var isActive = list.Id == EffectiveCurrentListId;
+        <button class="lt @(isActive ? "act" : "")"
+                @onclick="() => HandleTabClick(list.Id)"
+                @onkeydown="OnKeyDown"
+                aria-selected="@isActive.ToString().ToLower()"
+                role="tab"
+                tabindex="@(isActive ? "0" : "-1")">
+            <span class="lt-dot" style="background-color: @list.Color"></span>
+            <span class="lt-name">@list.Title</span>
+            @if (list.Count > 0)
+            {
+                <span class="lt-cnt">@list.Count</span>
+            }
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public IReadOnlyList<TaskListRef> Lists { get; set; } = [];
+
+    [Parameter]
+    public string? CurrentListId { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnTabChanged { get; set; }
+
+    private IReadOnlyList<TaskListRef> VisibleLists => Lists.Where(l => l.IsVisible).ToList();
+
+    private string? EffectiveCurrentListId
+    {
+        get
+        {
+            if (CurrentListId != null && VisibleLists.Any(l => l.Id == CurrentListId))
+                return CurrentListId;
+            return VisibleLists.FirstOrDefault()?.Id;
+        }
+    }
+
+    protected async Task HandleTabClick(string listId)
+    {
+        if (listId != EffectiveCurrentListId)
+        {
+            await OnTabChanged.InvokeAsync(listId);
+        }
+    }
+
+    protected async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key != Constants.Keys.ArrowLeft && e.Key != Constants.Keys.ArrowRight) return;
+
+        var visible = VisibleLists.ToList();
+        if (visible.Count <= 1) return;
+
+        var currentIndex = visible.FindIndex(l => l.Id == EffectiveCurrentListId);
+        var nextIndex = e.Key == Constants.Keys.ArrowRight
+            ? (currentIndex + 1) % visible.Count
+            : (currentIndex - 1 + visible.Count) % visible.Count;
+
+        if (currentIndex != nextIndex)
+        {
+            await OnTabChanged.InvokeAsync(visible[nextIndex].Id);
+        }
+    }
+}

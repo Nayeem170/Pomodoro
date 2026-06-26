@@ -1,0 +1,31 @@
+.sync-strip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    background: var(--color-background-secondary);
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+
+.sync-label {
+    font-weight: 500;
+}
+
+.sync-sep {
+    opacity: 0.4;
+}
+
+.sync-list-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 120px;
+}
+
+.sync-status {
+    opacity: 0.7;
+    font-style: italic;
+}

@@ -52,6 +52,11 @@ public abstract class TestHelper : TestContext
         TimerServiceMock.SetupGet(x => x.Settings).Returns(new TimerSettings());
         TimerEventPublisherMock = new Mock<ITimerEventPublisher>();
         TaskServiceMock = new Mock<ITaskService>();
+        TaskServiceMock.Setup(x => x.GetTasksForListAsync(It.IsAny<string>()))
+            .ReturnsAsync(new List<TaskItem>());
+        TaskServiceMock.SetupGet(x => x.TaskLists)
+            .Returns([new TaskListRef(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)", 0, true, true)]);
+        TaskServiceMock.SetupGet(x => x.CurrentListId).Returns((string?)null);
         ActivityServiceMock = new Mock<IActivityService>();
         ActivityServiceMock.Setup(x => x.GetAllActivities()).Returns(new List<ActivityRecord>());
         StatisticsServiceMock = new Mock<IStatisticsService>();

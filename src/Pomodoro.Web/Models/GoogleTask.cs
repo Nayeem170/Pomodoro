@@ -11,4 +11,7 @@ public class GoogleTask
     public string? Parent { get; set; }
     public string? Position { get; set; }
     public string? ETag { get; set; }
+    public bool Hidden { get; set; }
 }
+
+public record GoogleTaskPatch(string? Title = null, string? Notes = null, string? Status = null, string? Due = null);

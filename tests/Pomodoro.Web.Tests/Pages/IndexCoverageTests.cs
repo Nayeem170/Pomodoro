@@ -497,4 +497,26 @@ public class HistoryPageRenderingTests : TestHelper
         cut.Markup.Should().Contain("loading-container");
         cut.Markup.Should().Contain("Loading history...");
     }
+
+    [Fact]
+    public async Task TryExecuteAsync_DirectCall_Exception_SetsErrorMessage()
+    {
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        var method = typeof(IndexBase).GetMethod("TryExecuteAsync", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        var task = (Task)method!.Invoke(cut.Instance, [new Func<Task>(() => throw new Exception("direct error")), "DirectError"])!;
+        await task;
+
+        cut.Instance.ErrorMessage.Should().Contain("DirectError");
+    }
+
+    [Fact]
+    public void OnTimerCompleted_Exception_LogsError()
+    {
+        TaskServiceMock.SetupGet(x => x.Tasks).Throws<NullReferenceException>();
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        var args = new TimerCompletedEventArgs(SessionType.Pomodoro, Guid.NewGuid(), "Task", 25, true, DateTime.UtcNow);
+        cut.Instance.OnTimerCompleted(args);
+    }
 }

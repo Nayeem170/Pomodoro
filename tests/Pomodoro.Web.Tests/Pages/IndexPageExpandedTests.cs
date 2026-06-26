@@ -516,8 +516,8 @@ public class IndexPageExpandedTests : TestHelper
         };
 
         TaskServiceMock
-            .SetupGet(x => x.Tasks)
-            .Returns(tasks);
+            .Setup(x => x.GetTasksForListAsync(It.IsAny<string>()))
+            .ReturnsAsync(tasks);
         TaskServiceMock
             .SetupGet(x => x.CurrentTaskId)
             .Returns(taskId);

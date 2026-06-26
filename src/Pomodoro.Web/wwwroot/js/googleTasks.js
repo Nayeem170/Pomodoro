@@ -44,16 +44,19 @@ window.googleTasks = {
             .then(function(data) { return JSON.stringify(data); });
     },
 
-    patchTask: function(accessToken, listId, taskId, updates) {
+    patchTask: function(accessToken, listId, taskId, updates, etag) {
+        var headers = this._getAuthHeaders(accessToken);
+        if (etag) headers['If-Match'] = etag;
         var url = this._getBaseUrl() + '/lists/' + encodeURIComponent(listId) + '/tasks/' + encodeURIComponent(taskId);
         return fetch(url, {
             method: 'PATCH',
-            headers: this._getAuthHeaders(accessToken),
+            headers: headers,
             body: JSON.stringify(updates)
         })
             .then(function(response) {
                 if (response.ok) return response.json();
                 if (response.status === 404) throw new Error('404 Not Found');
+                if (response.status === 412) throw new Error('412 ETag mismatch');
                 throw new Error('Failed to patch task: ' + response.status);
             })
             .then(function(data) { return JSON.stringify(data); });
@@ -66,7 +69,8 @@ window.googleTasks = {
             headers: this._getAuthHeaders(accessToken)
         })
             .then(function(response) {
-                if (!response.ok) throw new Error('Failed to delete task: ' + response.status);
+                if (response.ok || response.status === 404) return;
+                throw new Error('Failed to delete task: ' + response.status);
             });
     },
 

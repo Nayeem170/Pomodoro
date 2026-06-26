@@ -4,13 +4,13 @@
 <div class="task-row @GetTaskClass()" @onclick="HandleSelect" role="button" tabindex="0" @onkeydown="HandleKeyDown">
     @if (Item.IsCompleted)
     {
-        <button class="task-checkbox completed" @onclick="HandleUncomplete" @onclick:stopPropagation="true" aria-label="Undo">
+        <button class="task-checkbox completed" style="@GetCheckboxStyle()" @onclick="HandleUncomplete" @onclick:stopPropagation="true" aria-label="Undo">
             <svg width="9" height="9" viewBox="0 0 9 9"><polyline points="1.5,4.5 3.5,6.5 7.5,2.5" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
         </button>
     }
     else
     {
-        <button class="task-checkbox" @onclick="HandleComplete" @onclick:stopPropagation="true" aria-label="Complete"></button>
+        <button class="task-checkbox" style="@GetCheckboxStyle()" @onclick="HandleComplete" @onclick:stopPropagation="true" aria-label="Complete"></button>
     }
     <span class="task-text @(Item.IsCompleted ? "completed" : "")">@Item.Name</span>
     @if (Item.IsRecurring)

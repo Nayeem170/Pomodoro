@@ -86,6 +86,13 @@ window.indexedDbInterop = {
                         db.createObjectStore(storage.pomoMetaStore, { keyPath: indexes.googleTaskId });
                     }
                 }
+
+                // V3 migration: google tasks settings store
+                if (event.oldVersion < 3) {
+                    if (!db.objectStoreNames.contains(storage.googleTasksSettingsStore)) {
+                        db.createObjectStore(storage.googleTasksSettingsStore, { keyPath: indexes.id });
+                    }
+                }
             };
         });
     },
