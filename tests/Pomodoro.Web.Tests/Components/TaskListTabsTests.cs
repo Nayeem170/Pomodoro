@@ -159,6 +159,105 @@ public class TaskListTabsTests : TestContext
 
         Assert.DoesNotContain("lt-cnt", cut.Markup);
     }
+
+    [Fact]
+    public async Task TaskListTabs_ArrowRight_NavigatesToNextTab()
+    {
+        var lists = new List<TaskListRef>
+        {
+            new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)", 0, true, true),
+            new("glist-1", "Google", "#4285F4", 0, true, false)
+        };
+        string? changedId = null;
+
+        var cut = RenderComponent<TaskListTabs>(parameters => parameters
+            .Add(p => p.Lists, lists)
+            .Add(p => p.CurrentListId, Constants.TaskLists.LocalPomodoroListId)
+            .Add(p => p.OnTabChanged, EventCallback.Factory.Create<string>(this, id => changedId = id)));
+
+        await cut.Find("button.lt").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        Assert.Equal("glist-1", changedId);
+    }
+
+    [Fact]
+    public async Task TaskListTabs_ArrowLeft_NavigatesToPreviousTab()
+    {
+        var lists = new List<TaskListRef>
+        {
+            new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)", 0, true, true),
+            new("glist-1", "Google", "#4285F4", 0, true, false)
+        };
+        string? changedId = null;
+
+        var cut = RenderComponent<TaskListTabs>(parameters => parameters
+            .Add(p => p.Lists, lists)
+            .Add(p => p.CurrentListId, "glist-1")
+            .Add(p => p.OnTabChanged, EventCallback.Factory.Create<string>(this, id => changedId = id)));
+
+        await cut.FindAll("button.lt").Last().KeyDownAsync(new KeyboardEventArgs { Key = "ArrowLeft" });
+
+        Assert.Equal(Constants.TaskLists.LocalPomodoroListId, changedId);
+    }
+
+    [Fact]
+    public async Task TaskListTabs_ArrowRight_WrapsAround()
+    {
+        var lists = new List<TaskListRef>
+        {
+            new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)", 0, true, true),
+            new("glist-1", "Google", "#4285F4", 0, true, false)
+        };
+        string? changedId = null;
+
+        var cut = RenderComponent<TaskListTabs>(parameters => parameters
+            .Add(p => p.Lists, lists)
+            .Add(p => p.CurrentListId, "glist-1")
+            .Add(p => p.OnTabChanged, EventCallback.Factory.Create<string>(this, id => changedId = id)));
+
+        await cut.FindAll("button.lt").Last().KeyDownAsync(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        Assert.Equal(Constants.TaskLists.LocalPomodoroListId, changedId);
+    }
+
+    [Fact]
+    public async Task TaskListTabs_NonArrowKey_DoesNotNavigate()
+    {
+        var lists = new List<TaskListRef>
+        {
+            new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)", 0, true, true),
+            new("glist-1", "Google", "#4285F4", 0, true, false)
+        };
+        var tabChanged = false;
+
+        var cut = RenderComponent<TaskListTabs>(parameters => parameters
+            .Add(p => p.Lists, lists)
+            .Add(p => p.CurrentListId, Constants.TaskLists.LocalPomodoroListId)
+            .Add(p => p.OnTabChanged, EventCallback.Factory.Create<string>(this, _ => tabChanged = true)));
+
+        await cut.Find("button.lt").KeyDownAsync(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.False(tabChanged);
+    }
+
+    [Fact]
+    public async Task TaskListTabs_SingleVisibleList_ArrowKeyDoesNotNavigate()
+    {
+        var lists = new List<TaskListRef>
+        {
+            new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)", 0, true, true)
+        };
+        var tabChanged = false;
+
+        var cut = RenderComponent<TaskListTabs>(parameters => parameters
+            .Add(p => p.Lists, lists)
+            .Add(p => p.CurrentListId, Constants.TaskLists.LocalPomodoroListId)
+            .Add(p => p.OnTabChanged, EventCallback.Factory.Create<string>(this, _ => tabChanged = true)));
+
+        await cut.Find("button.lt").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        Assert.False(tabChanged);
+    }
 }
 
 [Trait("Category", "Component")]

@@ -744,4 +744,121 @@ public class TaskServiceMultiListTests
             Constants.Storage.GoogleTasksSettingsStore,
             It.IsAny<GoogleTasksSettings>()), Times.Once);
     }
+
+    [Fact]
+    public async Task UpdateListVisibilityAsync_ExistingListInSettings_UsesSettingsColor()
+    {
+        var sut = CreateSut();
+        SetCachedGoogleLists(sut, [new GoogleListCacheEntry("glist-1", "List", "var(--pomodoro-color)", true)]);
+
+        var settingsField = typeof(TaskService).GetField("_googleTasksSettings", NonPublicInstance)!;
+        var settings = (GoogleTasksSettings)settingsField.GetValue(sut)!;
+        var lists = new Dictionary<string, ListSetting>(settings.Lists)
+        {
+            ["glist-1"] = new ListSetting(true, "#FF0000", null)
+        };
+        settingsField.SetValue(sut, new GoogleTasksSettings(lists));
+
+        await sut.UpdateListVisibilityAsync("glist-1", false);
+
+        var cache = GetCachedGoogleLists(sut);
+        cache[0].IsVisible.Should().BeFalse();
+        settingsField = typeof(TaskService).GetField("_googleTasksSettings", NonPublicInstance)!;
+        var updatedSettings = (GoogleTasksSettings)settingsField.GetValue(sut)!;
+        updatedSettings.Lists["glist-1"].Color.Should().Be("#FF0000");
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_WithSettingsEntry_UsesSettingsColor()
+    {
+        var settings = new GoogleTasksSettings(new Dictionary<string, ListSetting>
+        {
+            ["glist-1"] = new ListSetting(false, "#AB12CD", DateTime.UtcNow)
+        });
+
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync()).ReturnsAsync(
+            [new GoogleTaskList { Id = "glist-1", Title = "Settings List" }]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", It.IsAny<string?>())).ReturnsAsync([]);
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync([]);
+
+        var sut = CreateSut();
+        var settingsField = typeof(TaskService).GetField("_googleTasksSettings", NonPublicInstance)!;
+        settingsField.SetValue(sut, settings);
+
+        await sut.RefreshGoogleListsAsync();
+
+        var cache = GetCachedGoogleLists(sut);
+        cache.Should().HaveCount(1);
+        cache[0].Color.Should().Be("#AB12CD");
+        cache[0].IsVisible.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_ValidDueDate_ParsesCorrectly()
+    {
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync()).ReturnsAsync(
+            [new GoogleTaskList { Id = "glist-1", Title = "My List" }]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", It.IsAny<string?>())).ReturnsAsync(
+            [new GoogleTask
+            {
+                Id = "remote-1",
+                Title = "Due Task",
+                Status = "needsAction",
+                Updated = "2025-06-20T10:00:00Z",
+                Due = "2025-07-01"
+            }]);
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync([]);
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+
+        var sut = CreateSut();
+        await sut.RefreshGoogleListsAsync();
+
+        _mockTaskRepo.Verify(x => x.SaveAsync(It.Is<TaskItem>(t =>
+            t.DueDate != null && t.DueDate.Value.Date == new DateTime(2025, 7, 1))), Times.Once);
+    }
+
+    [Fact]
+    public async Task LoadGoogleTasksSettingsAsync_LoadsExistingSettings()
+    {
+        var expectedSettings = new GoogleTasksSettings(new Dictionary<string, ListSetting>
+        {
+            ["glist-1"] = new ListSetting(true, "#4285F4", null)
+        });
+        _mockIndexedDb.Setup(x => x.GetAsync<GoogleTasksSettings>(
+                Constants.Storage.GoogleTasksSettingsStore, Constants.Storage.DefaultSettingsId))
+            .ReturnsAsync(expectedSettings);
+
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+
+        var settingsField = typeof(TaskService).GetField("_googleTasksSettings", NonPublicInstance)!;
+        var actual = (GoogleTasksSettings)settingsField.GetValue(sut)!;
+        actual.Lists.Should().ContainKey("glist-1");
+        actual.Lists["glist-1"].Color.Should().Be("#4285F4");
+    }
+
+    [Fact]
+    public async Task GetSidecarCacheAsync_ReturnsCachedOnSecondCall()
+    {
+        var task1 = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Google Task 1",
+            GoogleTaskId = "gtask-1",
+            GoogleListId = "glist-1",
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [task1];
+        _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync(
+            [new PomodoroMeta("gtask-1", 5, 125, Priority.High)]);
+
+        var sut = CreateSut();
+
+        await sut.GetTasksForListAsync("glist-1");
+        await sut.GetTasksForListAsync("glist-1");
+
+        _mockSidecarRepo.Verify(x => x.GetAllAsync(), Times.Once);
+    }
 }
