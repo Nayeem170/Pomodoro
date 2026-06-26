@@ -173,7 +173,11 @@ public class TaskServiceMultiListTests
         await sut.AddTaskAsync("task name", "google-list-id");
 
         _mockGoogleTasksService.Verify(x => x.InsertTaskAsync("google-list-id", It.IsAny<GoogleTask>()), Times.Once);
-        _appState.Tasks.Should().Contain(t => t.GoogleTaskId == "gt-1" && t.Name == "task name");
+        _appState.Tasks.Should().Contain(t =>
+            t.GoogleTaskId == "gt-1" &&
+            t.GoogleListId == "google-list-id" &&
+            t.Name == "task name" &&
+            t.ETag == "etag-1");
     }
 
     [Fact]
@@ -900,7 +904,7 @@ public class TaskServiceMultiListTests
         await sut.UpdateTaskAsync(task.WithUpdates(c => c.Name = "New Name"));
 
         _mockGoogleTasksService.Verify(x => x.PatchTaskAsync("glist-1", "gtask-1",
-            It.Is<GoogleTaskPatch>(p => p.Title == "New Name"), It.IsAny<string?>()), Times.Once);
+            It.Is<GoogleTaskPatch>(p => p.Title == "New Name"), "etag-1"), Times.Once);
         _appState.FindTaskById(task.Id)!.Name.Should().Be("New Name");
         _appState.FindTaskById(task.Id)!.ETag.Should().Be("etag-2");
     }

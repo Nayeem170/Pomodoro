@@ -319,7 +319,16 @@ public class TaskService : ITaskService, ITimerEventSubscriber
                     t.Repeat.NextOccurrence = nextOccurrence;
                 });
                 NotifyStateChanged();
-                if (!existingTask.IsGoogleTask) MarkDirty();
+
+                if (existingTask.IsGoogleTask && !string.IsNullOrEmpty(existingTask.GoogleTaskId))
+                {
+                    var patch = new GoogleTaskPatch(null, null, "completed");
+                    await PushGooglePatchAsync(existingTask, patch);
+                }
+                else if (!existingTask.IsGoogleTask)
+                {
+                    MarkDirty();
+                }
                 return;
             }
         }
@@ -546,6 +555,11 @@ public class TaskService : ITaskService, ITimerEventSubscriber
                         {
                             if (local.IsLocalDirty)
                             {
+                                if (local.IsDeleted)
+                                {
+                                    continue;
+                                }
+
                                 var localMatchesRemote =
                                     local.Name == gTask.Title &&
                                     local.IsCompleted == (gTask.Status == "completed") &&
@@ -819,11 +833,21 @@ public class TaskService : ITaskService, ITimerEventSubscriber
                 task.GoogleListId!, task.GoogleTaskId!, patch, task.ETag);
             if (result != null)
             {
-                _appState.UpdateTask(task.Id, t =>
+                var updated = _appState.FindTaskById(task.Id);
+                if (updated != null)
                 {
-                    t.ETag = result.ETag;
-                    t.IsLocalDirty = false;
-                });
+                    var saved = updated.WithUpdates(c =>
+                    {
+                        c.ETag = result.ETag;
+                        c.IsLocalDirty = false;
+                    });
+                    await _taskRepository.SaveAsync(saved);
+                    _appState.UpdateTask(task.Id, t =>
+                    {
+                        t.ETag = saved.ETag;
+                        t.IsLocalDirty = false;
+                    });
+                }
             }
             return result;
         }
@@ -836,7 +860,13 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         catch (Exception ex) when (ex is not UnauthorizedAccessException)
         {
             _logger.LogWarning(ex, "Failed to push Google patch for task {TaskId}, marking local dirty", task.GoogleTaskId);
-            _appState.UpdateTask(task.Id, t => t.IsLocalDirty = true);
+            var dirty = _appState.FindTaskById(task.Id);
+            if (dirty != null)
+            {
+                var saved = dirty.WithUpdates(c => c.IsLocalDirty = true);
+                await _taskRepository.SaveAsync(saved);
+                _appState.UpdateTask(task.Id, t => t.IsLocalDirty = true);
+            }
             return null;
         }
     }

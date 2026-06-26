@@ -393,7 +393,6 @@ public class GoogleTasksServiceTests
                     throw new InvalidOperationException("Expected void result");
             }
 
-            _callIndex++;
             return default(ValueTask);
         }
 

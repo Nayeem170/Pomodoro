@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Pomodoro.Web.Models;
@@ -117,13 +118,15 @@ public class GoogleTasksService : IGoogleTasksService
     {
         return await ExecuteWithRetryAsync(async token =>
         {
-            var body = new Dictionary<string, string?>();
+            var body = new JsonObject();
             if (updates.Title != null) body["title"] = updates.Title;
             if (updates.Notes != null) body["notes"] = updates.Notes;
             if (updates.Status != null) body["status"] = updates.Status;
             if (updates.Due != null) body["due"] = updates.Due;
 
-            var json = await _jsRuntime.InvokeAsync<string>(Constants.GoogleTasksJsFunctions.PatchTask, token, listId, taskId, body, etag);
+            var filteredJson = body.ToJsonString();
+
+            var json = await _jsRuntime.InvokeAsync<string>(Constants.GoogleTasksJsFunctions.PatchTask, token, listId, taskId, filteredJson, etag);
             var data = JsonSerializer.Deserialize<JsonElement>(json);
             var patched = MapGoogleTask(data);
             _logger.LogInformation("Patched Google task {TaskId}", taskId);
@@ -140,55 +143,12 @@ public class GoogleTasksService : IGoogleTasksService
         });
     }
 
-    private async Task ExecuteVoidWithRetryAsync(Func<string, Task> action, int maxRetries = 3)
-    {
-        var token = await _googleDriveService.GetAccessTokenAsync();
-        if (string.IsNullOrEmpty(token))
-            throw new UnauthorizedAccessException(Constants.SyncMessages.TasksReconnectRequired);
-
-        for (var attempt = 0; attempt < maxRetries; attempt++)
+    private Task ExecuteVoidWithRetryAsync(Func<string, Task> action, int maxRetries = 3)
+        => ExecuteWithRetryAsync(async token =>
         {
-            try
-            {
-                await action(token);
-                return;
-            }
-            catch (JSException ex) when (ex.Message.Contains("401"))
-            {
-                _logger.LogWarning(Constants.SyncMessages.LogSyncUnauthorized);
-                throw new UnauthorizedAccessException(Constants.SyncMessages.TasksReconnectRequired, ex);
-            }
-            catch (JSException ex) when (ex.Message.Contains("403"))
-            {
-                _logger.LogWarning(ex, Constants.SyncMessages.LogTasksForbidden);
-                throw new UnauthorizedAccessException(Constants.SyncMessages.TasksAccessForbidden, ex);
-            }
-            catch (JSException ex) when (ex.Message.Contains("429"))
-            {
-                if (attempt < maxRetries - 1)
-                {
-                    var delay = (int)Math.Pow(2, attempt) * 1000;
-                    _logger.LogWarning(Constants.SyncMessages.LogTasksRateLimited);
-                    await Task.Delay(delay);
-                    token = await _googleDriveService.GetAccessTokenAsync();
-                    if (string.IsNullOrEmpty(token))
-                        throw new UnauthorizedAccessException(Constants.SyncMessages.TasksReconnectRequired);
-                }
-                else
-                {
-                    _logger.LogWarning(Constants.SyncMessages.LogTasksRateLimited);
-                    throw new UnauthorizedAccessException(Constants.SyncMessages.TasksRateLimitExceeded, ex);
-                }
-            }
-            catch (JSException ex)
-            {
-                _logger.LogError(ex, Constants.SyncMessages.LogTasksApiError, ex.Message);
-                throw;
-            }
-        }
-
-        throw new UnauthorizedAccessException(Constants.SyncMessages.TasksUnavailable);
-    }
+            await action(token);
+            return true;
+        }, maxRetries);
 
     private async Task<T> ExecuteWithRetryAsync<T>(Func<string, Task<T>> action, int maxRetries = 3)
     {
