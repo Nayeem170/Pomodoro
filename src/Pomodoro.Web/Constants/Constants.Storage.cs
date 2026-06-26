@@ -40,6 +40,9 @@ public static partial class Constants
         /// <summary>Store name for pomodoro meta sidecar</summary>
         public const string PomoMetaStore = "pomoMeta";
 
+        /// <summary>Store name for Google Tasks settings</summary>
+        public const string GoogleTasksSettingsStore = "googleTasksSettings";
+
         /// <summary>Index name for googleTaskId field</summary>
         public const string GoogleTaskIdIndex = "googleTaskId";
 

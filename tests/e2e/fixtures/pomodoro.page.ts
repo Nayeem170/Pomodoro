@@ -150,7 +150,7 @@ export class PomodoroPage {
   async setSettingViaIndexedDB(key: string, value: any) {
     await this.page.evaluate(async ({ key: k, value: v }) => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('PomodoroDB', 2);
+        const req = indexedDB.open('PomodoroDB', 3);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });
@@ -194,7 +194,7 @@ export class PomodoroPage {
   async completePomodoroViaDB(taskName: string) {
     await this.page.evaluate(async (name) => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('PomodoroDB', 2);
+        const req = indexedDB.open('PomodoroDB', 3);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });
@@ -241,7 +241,7 @@ export class PomodoroPage {
   async completePomodoroViaIndexedDB(taskName: string) {
     await this.page.evaluate(async (name) => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('PomodoroDB', 2);
+        const req = indexedDB.open('PomodoroDB', 3);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });
@@ -298,7 +298,7 @@ export class PomodoroPage {
     await this.goto('/');
     await this.page.evaluate(async ({ name, count: n }) => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('PomodoroDB', 2);
+        const req = indexedDB.open('PomodoroDB', 3);
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });
@@ -449,6 +449,11 @@ export class PomodoroPage {
 
   async setTaskScheduleDate(dateStr: string) {
     await this.page.locator('.tep-row').filter({ hasText: 'Schedule' }).locator('input[type="date"]').fill(dateStr);
+  }
+
+  async switchToTaskList(listName: string) {
+    await this.page.locator('.ltabs button.lt').filter({ hasText: listName }).click();
+    await this.page.waitForTimeout(500);
   }
 
   async toggleTaskPause() {

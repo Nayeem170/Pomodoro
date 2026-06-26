@@ -398,4 +398,65 @@ public class GoogleDriveServiceTests : IDisposable
         Assert.Equal("test-token", token);
         Assert.Null(_service.AccountEmail);
     }
+
+    [Fact]
+    public async Task ConnectAsync_FetchEmailFails_SetsEmailNull()
+    {
+        var js = new SequentialJsRuntime(
+            ("test-token", null),
+            (null, new JSException("Error fetching user info")));
+
+        var logger = new Mock<ILogger<GoogleDriveService>>();
+        var service = new GoogleDriveService(js, logger.Object);
+
+        var token = await service.ConnectAsync();
+
+        Assert.Equal("test-token", token);
+        Assert.Null(service.AccountEmail);
+        Assert.Equal(0, js.RemainingCalls);
+    }
+
+    [Fact]
+    public async Task TrySilentAuthAsync_FetchEmailFails_SetsEmailNull()
+    {
+        var js = new SequentialJsRuntime(
+            ("silent-token", null),
+            (null, new JSException("Error fetching user info")));
+
+        var logger = new Mock<ILogger<GoogleDriveService>>();
+        var service = new GoogleDriveService(js, logger.Object);
+
+        var result = await service.TrySilentAuthAsync();
+
+        Assert.True(result);
+        Assert.Null(service.AccountEmail);
+        Assert.Equal(0, js.RemainingCalls);
+    }
+
+    private class SequentialJsRuntime : IJSRuntime
+    {
+        private readonly Queue<(object? Result, Exception? Error)> _queue = new();
+        public int RemainingCalls => _queue.Count;
+
+        public SequentialJsRuntime(params (object? Result, Exception? Error)[] calls)
+        {
+            foreach (var c in calls) _queue.Enqueue(c);
+        }
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+        {
+            if (_queue.Count == 0)
+                throw new InvalidOperationException($"Unexpected JS invocation: {identifier}");
+            var call = _queue.Dequeue();
+            if (call.Error != null)
+                throw call.Error;
+            return new ValueTask<TValue>((TValue)call.Result!);
+        }
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+            => InvokeAsync<TValue>(identifier, args);
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken)
+            => InvokeAsync<TValue>(identifier, (object?[]?)null);
+    }
 }

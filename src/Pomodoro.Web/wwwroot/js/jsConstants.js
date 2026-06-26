@@ -114,13 +114,14 @@ window.pomodoroConstants = {
     // Storage names (must match Constants.cs)
     storage: {
         dbName: 'PomodoroDB',
-        dbVersion: 2,
+        dbVersion: 3,
         tasksStore: 'tasks',
         activitiesStore: 'activities',
         dailyStatsStore: 'dailyStats',
         settingsStore: 'settings',
         appStateStore: 'appState',
         pomoMetaStore: 'pomoMeta',
+        googleTasksSettingsStore: 'googleTasksSettings',
         indexes: {
             id: 'id',
             name: 'name',

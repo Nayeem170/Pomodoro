@@ -39,6 +39,7 @@ public interface ITaskService
     Task SelectListAsync(string listId);
     Task AddTaskAsync(string name, string? listId);
     Task RefreshGoogleListsAsync();
+    Task UpdateListVisibilityAsync(string listId, bool isVisible);
 
     /// <summary>Reloads all task data from storage, refreshing the in-memory cache. Call this after import operations to reflect changes.</summary>
     Task ReloadAsync();

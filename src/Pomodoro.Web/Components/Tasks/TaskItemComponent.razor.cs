@@ -33,6 +33,9 @@ public class TaskItemBase : ComponentBase
     [Parameter]
     public EventCallback<TaskItem> OnEdit { get; set; }
 
+    [Parameter]
+    public string CheckboxColor { get; set; } = "var(--pomodoro-color)";
+
     #endregion
 
     #region State
@@ -100,6 +103,12 @@ public class TaskItemBase : ComponentBase
     /// <summary>
     /// Handles task selection click
     /// </summary>
+    protected string GetCheckboxStyle()
+    {
+        if (string.Equals(CheckboxColor, "var(--pomodoro-color)")) return "";
+        return $"border-color:{CheckboxColor};background:{CheckboxColor};";
+    }
+
     protected async Task HandleSelect()
     {
         if (!Item.IsCompleted)

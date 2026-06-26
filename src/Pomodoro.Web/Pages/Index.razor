@@ -84,6 +84,11 @@ else
         <ErrorBoundary @ref="_tasksErrorBoundary">
             <ChildContent>
                 <div class="tasks-section">
+                    <TaskListTabs Lists="TaskLists"
+                                 CurrentListId="ActiveListId"
+                                 OnTabChanged="HandleTabChange" />
+                    <TaskListSyncStrip IsGoogleList="@(ActiveList?.IsLocal == false)"
+                                       ListName="ActiveList?.Title" />
                     <TaskList Tasks="Tasks"
                               CurrentTaskId="CurrentTaskId"
                               OnTaskAdd="HandleTaskAdd"

@@ -212,6 +212,17 @@ Schedule tab filters: `!IsGoogleTask && (IsScheduled || IsRecurring)`.
 - `CurrentTaskIndicator` change (full-list param → direct CurrentTask) is backward compatible via optional param
 - `ConsentService` auto-start with list context requires careful state coordination
 
+## Read-Only Write-Action Guard
+
+Phase 2's `TaskService.CompleteTaskAsync` has no `IsGoogleTask` guard — it writes `IsCompleted=true` locally, but no push to Google exists. On next pull, `RefreshGoogleListsAsync` overwrites from `gTask.Status` → checkmark silently reverts (confusing flicker).
+
+**Fix (folded into steps 5 + 8):**
+- `TaskItemComponent`: disable checkbox for Google tasks (`Item.IsGoogleTask` → `disabled` on `<input type="checkbox">`).
+- `TaskItemComponent`: hide delete action for Google tasks.
+- `TaskService.CompleteTaskAsync`: no-op (early return) when `task.IsGoogleTask`.
+- `TaskService.UncompleteTaskAsync`: same guard.
+- Timer write-path (`AddTimeToTaskAsync`) is **exempt** — writes to local sidecar only (intended, survives pull).
+
 ## Review History
 
 ### Round 1 (verified against code)

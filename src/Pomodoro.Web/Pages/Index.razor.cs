@@ -74,6 +74,9 @@ public partial class IndexBase : ComponentBase, IDisposable
     internal bool ShowKeyboardHelp { get; set; }
     public string? ErrorMessage { get; set; }
     public bool IsPipOpen { get; set; }
+    protected IReadOnlyList<TaskListRef> TaskLists { get; set; } = [];
+    protected string? ActiveListId { get; set; }
+    protected TaskListRef? ActiveList { get; set; }
 
     private (int TotalFocusMinutes, int PomodoroCount, int TasksWorkedOn)? _cachedTodayStats;
 
@@ -200,7 +203,7 @@ public partial class IndexBase : ComponentBase, IDisposable
             }, "Close keyboard shortcuts");
 
             // Load initial state
-            UpdateState();
+            await UpdateStateAsync();
 
             // Check for pending notification action from URL
             // Delay slightly to ensure all services are ready
@@ -254,9 +257,9 @@ public partial class IndexBase : ComponentBase, IDisposable
 
     #region Helper Methods
 
-    private void UpdateState()
+    private async Task UpdateStateAsync()
     {
-        var state = IndexPagePresenterService.UpdateState(TaskService, TimerService);
+        var state = await IndexPagePresenterService.UpdateStateAsync(TaskService, TimerService, ActiveListId);
 
         Tasks = state.Tasks;
         CurrentTaskId = state.CurrentTaskId;
@@ -265,6 +268,16 @@ public partial class IndexBase : ComponentBase, IDisposable
         IsTimerRunning = state.IsTimerRunning;
         IsTimerPaused = state.IsTimerPaused;
         IsTimerStarted = state.IsTimerStarted;
+        TaskLists = state.TaskLists;
+        ActiveListId = state.CurrentListId;
+        ActiveList = TaskLists.FirstOrDefault(l => l.Id == ActiveListId);
+    }
+
+    protected async Task HandleTabChange(string listId)
+    {
+        await TaskService.SelectListAsync(listId);
+        ActiveListId = listId;
+        await UpdateStateAsync();
     }
 
     #endregion
