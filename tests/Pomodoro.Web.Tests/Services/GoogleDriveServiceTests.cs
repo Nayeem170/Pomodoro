@@ -413,6 +413,7 @@ public class GoogleDriveServiceTests : IDisposable
 
         Assert.Equal("test-token", token);
         Assert.Null(service.AccountEmail);
+        Assert.Equal(0, js.RemainingCalls);
     }
 
     [Fact]
@@ -429,11 +430,13 @@ public class GoogleDriveServiceTests : IDisposable
 
         Assert.True(result);
         Assert.Null(service.AccountEmail);
+        Assert.Equal(0, js.RemainingCalls);
     }
 
     private class SequentialJsRuntime : IJSRuntime
     {
         private readonly Queue<(object? Result, Exception? Error)> _queue = new();
+        public int RemainingCalls => _queue.Count;
 
         public SequentialJsRuntime(params (object? Result, Exception? Error)[] calls)
         {
@@ -442,7 +445,8 @@ public class GoogleDriveServiceTests : IDisposable
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
         {
-            if (_queue.Count == 0) return default;
+            if (_queue.Count == 0)
+                throw new InvalidOperationException($"Unexpected JS invocation: {identifier}");
             var call = _queue.Dequeue();
             if (call.Error != null)
                 throw call.Error;
