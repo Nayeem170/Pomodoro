@@ -23,12 +23,6 @@ public class GoogleDriveService : IGoogleDriveService
 
     public void SetAccountEmail(string? email) => _accountEmail = email;
 
-    public async Task SetAccessTokenAsync(string token)
-    {
-        await _jsRuntime.InvokeVoidAsync(Constants.GoogleDriveJsFunctions.SetAccessToken, token);
-        _isConnected = true;
-    }
-
     public async Task<bool> TrySilentAuthAsync()
     {
         try

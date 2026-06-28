@@ -111,7 +111,6 @@ public static partial class Constants
     {
         public const string Init = "googleDrive.init";
         public const string RequestAuth = "googleDrive.requestAuth";
-        public const string SetAccessToken = "googleDrive.setAccessToken";
         public const string TrySilentAuth = "googleDrive.trySilentAuth";
         public const string RevokeAuth = "googleDrive.revokeAuth";
         public const string IsConnected = "googleDrive.isConnected";

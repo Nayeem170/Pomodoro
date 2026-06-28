@@ -124,6 +124,39 @@ public class GoogleTasksServiceTests
     }
 
     [Fact]
+    public async Task GetTasksAsync_On401_RetriesAfterSilentReauthSucceeds()
+    {
+        _jsRuntime.QueueException(new JSException("Error 401: Unauthorized"));
+        var responseJson = JsonSerializer.Serialize(new[]
+        {
+            new { id = "t1", title = "After reauth", status = "needsAction", updated = "2026-01-01T00:00:00.000Z" }
+        });
+        _jsRuntime.QueueResult(responseJson);
+
+        _googleDriveServiceMock.Setup(x => x.TrySilentAuthAsync()).ReturnsAsync(true);
+        _googleDriveServiceMock.SetupSequence(x => x.GetAccessTokenAsync())
+            .ReturnsAsync("stale-token")
+            .ReturnsAsync("fresh-token");
+
+        var tasks = await _service.GetTasksAsync("list-1");
+
+        Assert.Single(tasks);
+        Assert.Equal("After reauth", tasks[0].Title);
+        _googleDriveServiceMock.Verify(x => x.TrySilentAuthAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetTasksAsync_On401_ThrowsWhenSilentReauthFails()
+    {
+        _jsRuntime.QueueException(new JSException("Error 401: Unauthorized"));
+        _googleDriveServiceMock.Setup(x => x.TrySilentAuthAsync()).ReturnsAsync(false);
+
+        var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.GetTasksAsync("list-1"));
+        Assert.Contains("reconnect", ex.Message.ToLower());
+        _googleDriveServiceMock.Verify(x => x.TrySilentAuthAsync(), Times.Once);
+    }
+
+    [Fact]
     public async Task GetTasksAsync_Retries_On429()
     {
         _jsRuntime.QueueException(new JSException("Error 429: Too Many Requests"));

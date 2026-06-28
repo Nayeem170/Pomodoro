@@ -90,16 +90,6 @@ public class GoogleDriveServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SetAccessTokenAsync_InvokesJs()
-    {
-        await _service.SetAccessTokenAsync("my-token");
-
-        Assert.Equal("googleDrive.setAccessToken", _jsRuntime.LastMethod);
-        Assert.Equal("my-token", _jsRuntime.LastArgs?[0]);
-        Assert.True(_service.IsConnected);
-    }
-
-    [Fact]
     public async Task TrySilentAuthAsync_InvokesJs()
     {
         _jsRuntime.NextResult = "silent-token";

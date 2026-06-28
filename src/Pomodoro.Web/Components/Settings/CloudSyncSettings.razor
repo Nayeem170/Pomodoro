@@ -20,6 +20,18 @@
     }
     else
     {
+        @if (CloudSyncService.ReconnectRequired)
+        {
+            <div class="sr reconnect-banner" role="alert">
+                <div>
+                    <div class="sr-lbl">Session expired</div>
+                    <div class="sr-sub">@Constants.SyncMessages.ReconnectRequired</div>
+                </div>
+                <button class="sec-btn" @onclick="Reconnect" disabled="@_isConnecting">
+                    @(_isConnecting ? "Connecting..." : "Reconnect")
+                </button>
+            </div>
+        }
         <div class="sr">
             <div>
                 <div class="sr-lbl">Google Drive</div>
@@ -91,6 +103,8 @@
             StateHasChanged();
         }
     }
+
+    private Task Reconnect() => Connect();
 
     private static string GetSyncSuccessMessage(SyncResult result)
     {

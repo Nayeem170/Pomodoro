@@ -10,6 +10,7 @@ public interface ICloudSyncService
 {
     bool IsConnected { get; }
     bool IsInitialized { get; }
+    bool ReconnectRequired { get; }
     string? ClientId { get; }
     DateTime? LastSyncedAt { get; }
     string DeviceId { get; }
@@ -72,10 +73,12 @@ public class CloudSyncService : ICloudSyncService, IDisposable
     private CancellationTokenSource? _debounceCts;
     private Timer? _periodicSyncTimer;
     private bool _isInitialized;
+    private bool _reconnectRequired;
     private bool _isDisposed;
 
     public bool IsConnected => _googleDriveService.IsConnected;
     public bool IsInitialized => _isInitialized;
+    public bool ReconnectRequired => _reconnectRequired;
     public DateTime? LastSyncedAt { get; private set; }
     private string _deviceId;
     public string DeviceId => _deviceId;
@@ -121,13 +124,22 @@ public class CloudSyncService : ICloudSyncService, IDisposable
                 if (!string.IsNullOrEmpty(ClientId) && syncState.IsConnected)
                 {
                     await _googleDriveService.InitializeAsync(ClientId);
-                    if (!string.IsNullOrEmpty(syncState.AccessToken))
-                    {
-                        await _googleDriveService.SetAccessTokenAsync(syncState.AccessToken);
-                    }
+                    var authed = await _googleDriveService.TrySilentAuthAsync();
+                    if (!authed)
+                        SetReconnectRequired(true);
                     _googleDriveService.SetConnected(true);
                     _googleDriveService.SetAccountEmail(syncState.AccountEmail);
-                    await _taskService.RefreshGoogleListsAsync();
+
+                    try
+                    {
+                        await _taskService.RefreshGoogleListsAsync();
+                    }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        _logger.LogWarning(ex, "Google Tasks auth failed during init; Drive sync will continue. Reconnect required.");
+                        SetReconnectRequired(true);
+                    }
+
                     StartPeriodicSync();
                 }
 
@@ -135,7 +147,7 @@ public class CloudSyncService : ICloudSyncService, IDisposable
                 NotifyStatusChanged();
                 return;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not UnauthorizedAccessException)
             {
                 _logger.LogWarning(ex, "Cloud sync init attempt {Attempt} failed", attempt + 1);
                 if (attempt < 2)
@@ -154,11 +166,12 @@ public class CloudSyncService : ICloudSyncService, IDisposable
         try
         {
             await _googleDriveService.InitializeAsync(clientId);
-            var token = await _googleDriveService.ConnectAsync();
+            _ = await _googleDriveService.ConnectAsync();
 
             ClientId = clientId;
-            await SaveSyncStateAsync(connected: true, accessToken: token);
+            await SaveSyncStateAsync(connected: true);
 
+            SetReconnectRequired(false);
             StartPeriodicSync();
             await _taskService.RefreshGoogleListsAsync();
             NotifyStatusChanged();
@@ -193,6 +206,7 @@ public class CloudSyncService : ICloudSyncService, IDisposable
 
         ClientId = null;
         LastSyncedAt = null;
+        SetReconnectRequired(false);
         await SaveSyncStateAsync(connected: false);
         NotifyStatusChanged();
     }
@@ -206,40 +220,21 @@ public class CloudSyncService : ICloudSyncService, IDisposable
 
         try
         {
-            var fileId = await _googleDriveService.FindSyncFileAsync();
+            var result = await ResolveSyncAsync();
 
-            if (fileId == null)
+            // A successful sync means the session recovered (e.g. the GIS token
+            // client silently refreshed the token); clear any stale reconnect banner.
+            if (result.Success)
             {
-                return await PushAsync();
+                SetReconnectRequired(false);
             }
 
-            var remoteJson = await _googleDriveService.ReadFileAsync(fileId);
-            var remoteEnvelope = JsonSerializer.Deserialize<SyncEnvelope>(remoteJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-            if (remoteEnvelope == null)
-            {
-                return await PushAsync();
-            }
-
-            var remoteLastSynced = remoteEnvelope.LastSyncedAt;
-
-            if (LastSyncedAt == null || remoteLastSynced > LastSyncedAt)
-            {
-                return await PullAsync(fileId, remoteEnvelope);
-            }
-
-            if (LastSyncedAt > remoteLastSynced)
-            {
-                return await PushAsync(fileId);
-            }
-
-            _logger.LogInformation(Constants.SyncMessages.LogDataEqual);
-            return SyncResult.UpToDate();
+            return result;
         }
         catch (UnauthorizedAccessException)
         {
             _logger.LogWarning(Constants.SyncMessages.LogSyncUnauthorized);
-            await SaveSyncStateAsync(accessToken: null);
+            SetReconnectRequired(true);
             return SyncResult.Failed(Constants.SyncMessages.ReconnectRequired);
         }
         catch (Exception ex)
@@ -247,6 +242,39 @@ public class CloudSyncService : ICloudSyncService, IDisposable
             _logger.LogError(ex, Constants.SyncMessages.LogSyncFailed, ex.Message);
             return SyncResult.Failed(ex.Message);
         }
+    }
+
+    private async Task<SyncResult> ResolveSyncAsync()
+    {
+        var fileId = await _googleDriveService.FindSyncFileAsync();
+
+        if (fileId == null)
+        {
+            return await PushAsync();
+        }
+
+        var remoteJson = await _googleDriveService.ReadFileAsync(fileId);
+        var remoteEnvelope = JsonSerializer.Deserialize<SyncEnvelope>(remoteJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        if (remoteEnvelope == null)
+        {
+            return await PushAsync();
+        }
+
+        var remoteLastSynced = remoteEnvelope.LastSyncedAt;
+
+        if (LastSyncedAt == null || remoteLastSynced > LastSyncedAt)
+        {
+            return await PullAsync(fileId, remoteEnvelope);
+        }
+
+        if (LastSyncedAt > remoteLastSynced)
+        {
+            return await PushAsync(fileId);
+        }
+
+        _logger.LogInformation(Constants.SyncMessages.LogDataEqual);
+        return SyncResult.UpToDate();
     }
 
     public Task SyncInBackgroundAsync()
@@ -439,7 +467,7 @@ public class CloudSyncService : ICloudSyncService, IDisposable
         }
     }
 
-    private async Task SaveSyncStateAsync(bool? connected = null, string? accessToken = null)
+    private async Task SaveSyncStateAsync(bool? connected = null)
     {
         try
         {
@@ -449,7 +477,6 @@ public class CloudSyncService : ICloudSyncService, IDisposable
                 LastSyncedAt = LastSyncedAt,
                 DeviceId = DeviceId,
                 IsConnected = connected ?? IsConnected,
-                AccessToken = accessToken,
                 AccountEmail = _googleDriveService.AccountEmail
             };
             await _indexedDb.PutAsync(Constants.Storage.AppStateStore, state);
@@ -461,6 +488,13 @@ public class CloudSyncService : ICloudSyncService, IDisposable
     }
 
     private void NotifyStatusChanged() => OnSyncStatusChanged?.Invoke();
+
+    private void SetReconnectRequired(bool value)
+    {
+        if (_reconnectRequired == value) return;
+        _reconnectRequired = value;
+        NotifyStatusChanged();
+    }
 
     public void Dispose()
     {
@@ -488,6 +522,5 @@ public class SyncStateRecord
     public DateTime? LastSyncedAt { get; set; }
     public string? DeviceId { get; set; }
     public bool IsConnected { get; set; }
-    public string? AccessToken { get; set; }
     public string? AccountEmail { get; set; }
 }

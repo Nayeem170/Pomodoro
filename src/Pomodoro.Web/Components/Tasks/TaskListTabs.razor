@@ -45,7 +45,11 @@
 
     protected async Task HandleTabClick(string listId)
     {
-        if (listId != EffectiveCurrentListId)
+        // Suppress only a re-select of the *actually current* list. Comparing against
+        // EffectiveCurrentListId (which falls back to the first visible list when CurrentListId
+        // is stale/dead) would swallow a click on the fallback tab, leaving the user unable to
+        // refresh out of a stale-selection state. An explicit click must always select.
+        if (listId != CurrentListId)
         {
             await OnTabChanged.InvokeAsync(listId);
         }

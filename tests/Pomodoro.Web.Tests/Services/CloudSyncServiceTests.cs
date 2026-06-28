@@ -128,18 +128,18 @@ public class CloudSyncServiceTests : IDisposable
         var state = new SyncStateRecord
         {
             ClientId = "test-client-id",
-            IsConnected = true,
-            AccessToken = "test-token"
+            IsConnected = true
         };
         _mockIndexedDb
             .Setup(db => db.GetAsync<SyncStateRecord>(Constants.Storage.AppStateStore, "cloudSync"))
             .ReturnsAsync(state);
         _mockGoogleDrive.Setup(g => g.IsConnected).Returns(true);
+        _mockGoogleDrive.Setup(g => g.TrySilentAuthAsync()).ReturnsAsync(true);
 
         await _sut.InitializeAsync();
 
         _mockGoogleDrive.Verify(g => g.InitializeAsync("test-client-id"), Times.Once);
-        _mockGoogleDrive.Verify(g => g.SetAccessTokenAsync("test-token"), Times.Once);
+        _mockGoogleDrive.Verify(g => g.TrySilentAuthAsync(), Times.Once);
         _mockGoogleDrive.Verify(g => g.SetConnected(true), Times.Once);
     }
 
@@ -149,8 +149,7 @@ public class CloudSyncServiceTests : IDisposable
         var state = new SyncStateRecord
         {
             ClientId = "test-client-id",
-            IsConnected = true,
-            AccessToken = "test-token"
+            IsConnected = true
         };
         _mockIndexedDb
             .Setup(db => db.GetAsync<SyncStateRecord>(Constants.Storage.AppStateStore, "cloudSync"))
@@ -160,6 +159,29 @@ public class CloudSyncServiceTests : IDisposable
         await _sut.InitializeAsync();
 
         Assert.True(_sut.IsConnected);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_TasksRefreshUnauthorized_StillInitializesWithoutRetry()
+    {
+        var state = new SyncStateRecord
+        {
+            ClientId = "test-client-id",
+            IsConnected = true
+        };
+        _mockIndexedDb
+            .Setup(db => db.GetAsync<SyncStateRecord>(Constants.Storage.AppStateStore, "cloudSync"))
+            .ReturnsAsync(state);
+        _mockGoogleDrive.Setup(g => g.IsConnected).Returns(true);
+        _mockTaskService
+            .Setup(t => t.RefreshGoogleListsAsync())
+            .ThrowsAsync(new UnauthorizedAccessException("Token expired"));
+
+        await _sut.InitializeAsync();
+
+        Assert.True(_sut.IsInitialized);
+        _mockTaskService.Verify(t => t.RefreshGoogleListsAsync(), Times.Once);
+        _mockGoogleDrive.Verify(g => g.InitializeAsync("test-client-id"), Times.Once);
     }
 
     [Fact]
@@ -185,8 +207,7 @@ public class CloudSyncServiceTests : IDisposable
         var state = new SyncStateRecord
         {
             ClientId = "test-client-id",
-            IsConnected = true,
-            AccessToken = "test-token"
+            IsConnected = true
         };
         _mockIndexedDb
             .Setup(db => db.GetAsync<SyncStateRecord>(Constants.Storage.AppStateStore, "cloudSync"))
@@ -223,8 +244,7 @@ public class CloudSyncServiceTests : IDisposable
         var state = new SyncStateRecord
         {
             ClientId = "test-client-id",
-            IsConnected = true,
-            AccessToken = "test-token"
+            IsConnected = true
         };
         _mockIndexedDb
             .Setup(db => db.GetAsync<SyncStateRecord>(Constants.Storage.AppStateStore, "cloudSync"))
@@ -291,25 +311,6 @@ public class CloudSyncServiceTests : IDisposable
         await _sut.InitializeAsync();
 
         Assert.Equal(originalDeviceId, _sut.DeviceId);
-    }
-
-    [Fact]
-    public async Task InitializeAsync_WithEmptyAccessToken_DoesNotSetAccessToken()
-    {
-        var state = new SyncStateRecord
-        {
-            ClientId = "test-client-id",
-            IsConnected = true,
-            AccessToken = null
-        };
-        _mockIndexedDb
-            .Setup(db => db.GetAsync<SyncStateRecord>(Constants.Storage.AppStateStore, "cloudSync"))
-            .ReturnsAsync(state);
-        _mockGoogleDrive.Setup(g => g.IsConnected).Returns(true);
-
-        await _sut.InitializeAsync();
-
-        _mockGoogleDrive.Verify(g => g.SetAccessTokenAsync(It.IsAny<string>()), Times.Never);
     }
 
     #endregion
@@ -712,7 +713,7 @@ public class CloudSyncServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SyncNowAsync_WhenUnauthorizedAccessException_ClearsAccessToken()
+    public async Task SyncNowAsync_WhenUnauthorizedAccessException_SetsReconnectRequired()
     {
         _mockGoogleDrive.Setup(g => g.IsConnected).Returns(true);
         _mockGoogleDrive.Setup(g => g.FindSyncFileAsync())
@@ -720,10 +721,34 @@ public class CloudSyncServiceTests : IDisposable
 
         await _sut.SyncNowAsync();
 
-        _mockIndexedDb.Verify(
-            db => db.PutAsync(Constants.Storage.AppStateStore, It.Is<SyncStateRecord>(s =>
-                s.AccessToken == null)),
-            Times.Once);
+        Assert.True(_sut.ReconnectRequired);
+    }
+
+    [Fact]
+    public async Task SyncNowAsync_OnSuccessfulSyncAfterFailure_ClearsReconnectRequired()
+    {
+        _mockGoogleDrive.Setup(g => g.IsConnected).Returns(true);
+
+        // First sync fails with auth error -> banner raised.
+        _mockGoogleDrive.Setup(g => g.FindSyncFileAsync())
+            .ThrowsAsync(new UnauthorizedAccessException("Token expired"));
+        await _sut.SyncNowAsync();
+        Assert.True(_sut.ReconnectRequired);
+
+        // Token silently recovers -> next sync succeeds and clears the banner.
+        _mockGoogleDrive.Setup(g => g.FindSyncFileAsync()).ReturnsAsync((string?)null);
+        _mockExportService.Setup(e => e.ExportToJsonStringAsync()).ReturnsAsync("{}");
+        _mockJsRuntime.Setup(js => js.InvokeAsync<string>(
+            Constants.CompressionJsFunctions.GzipCompress, It.IsAny<object?[]>()))
+            .ReturnsAsync("compressed");
+        _mockGoogleDrive.Setup(g => g.CreateFileAsync(
+            Constants.Sync.SyncFileName, It.IsAny<string>()))
+            .ReturnsAsync("file-id");
+
+        var result = await _sut.SyncNowAsync();
+
+        Assert.True(result.Success);
+        Assert.False(_sut.ReconnectRequired);
     }
 
     [Fact]
