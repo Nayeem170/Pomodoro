@@ -172,13 +172,23 @@ public class CloudSyncService : ICloudSyncService, IDisposable
 
             SetReconnectRequired(false);
             StartPeriodicSync();
-            await _taskService.RefreshGoogleListsAsync();
             NotifyStatusChanged();
 
             var syncResult = await SyncNowAsync();
             if (!syncResult.Success)
             {
                 _logger.LogWarning(Constants.SyncMessages.LogSyncFailed, syncResult.ErrorMessage);
+            }
+
+            try
+            {
+                await _taskService.RefreshGoogleListsAsync();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Google Tasks auth failed during connect; Drive sync will continue. Reconnect required.");
+                SetReconnectRequired(true);
+                NotifyStatusChanged();
             }
 
             await SaveSyncStateAsync(connected: true);

@@ -326,6 +326,22 @@ just `dotnet build`), and hard-reload / unregister the SW to drop a cached `inde
 Fix 7 (below) remains a real, kept fix: it guarantees a manual tab click can always recover if
 any future stale-selection state recurs.
 
+### Fix 8 — isolate Tasks auth failure in `ConnectAsync` (TC4)  ✅ fixed
+
+A residual gap on the **Connect** path (manual test TC4): `ConnectAsync` called
+`_taskService.RefreshGoogleListsAsync()` directly, so a Tasks-only **403 scope gap** (or a 401
+after the Fix 1 retry is exhausted) threw `UnauthorizedAccessException` into `ConnectAsync`'s
+generic catch, which logged a misleading "Google Drive authentication failed" and **returned
+false — aborting the entire connect, including Drive**, even though Drive's own scope was valid.
+
+Fix: wrap the Tasks refresh in its own `try/catch (UnauthorizedAccessException)` that logs a
+warning and sets `ReconnectRequired(true)`, then lets the connect succeed (`return true`). It is
+placed **after** `SyncNowAsync` so the Drive success path (which clears `ReconnectRequired`)
+does not wipe the Tasks-set flag. This mirrors the Fix 2 isolation already applied to
+`InitializeAsync`. The 403 scope gap itself remains a **configuration** issue (revoke access +
+reconnect for the `auth/tasks` scope, or enable the Google Tasks API in GCP); Fix 8 only stops
+it from killing the Drive connect and routes the user to the existing reconnect banner.
+
 ## Re-investigation (2026-06-28): why the symptom persisted after Fix 5/6 (superseded by RESOLVED above)
 
 Reported at runtime (localhost:7025): "Tasks" tab is active, coral dot + badge shows **12**,
@@ -441,6 +457,7 @@ the cache:
 - `src/Pomodoro.Web/Services/TaskService.cs` (Fix 5 — `EnsureCurrentListSelectableAsync` + `finally`; Fix 6 — `GetTasksForListAsync` collapse)
 - `src/Pomodoro.Web/Services/IndexPagePresenterService.cs` (Fix 6 — render-boundary collapse; rethrows instead of swallowing)
 - `src/Pomodoro.Web/Components/Tasks/TaskListTabs.razor` (Fix 7 — click-suppression compares real `CurrentListId`, not the fallback)
+- `src/Pomodoro.Web/Services/CloudSyncService.cs` (Fix 8 — isolates Tasks auth failure in `ConnectAsync` so it no longer aborts the Drive connect)
 - `src/Pomodoro.Web/Pages/Index.razor.cs` + `CloudSyncSettings.razor` (Fix 3 reconnect banner)
 - `src/Pomodoro.Web/Services/IGoogleDriveService.cs` / `GoogleDriveService.cs` / `Constants.JsInterop.cs` / `wwwroot/js/googleDrive.js` (Fix 4 — removed `SetAccessTokenAsync`)
 - `tests/Pomodoro.Web.Tests/Services/GoogleTasksServiceTests.cs`

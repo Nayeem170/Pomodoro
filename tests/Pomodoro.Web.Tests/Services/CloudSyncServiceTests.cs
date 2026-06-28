@@ -393,6 +393,29 @@ public class CloudSyncServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ConnectAsync_TasksRefreshUnauthorized_StillConnectsAndSetsReconnect()
+    {
+        _mockGoogleDrive.Setup(g => g.ConnectAsync()).ReturnsAsync("token");
+        _mockGoogleDrive.Setup(g => g.IsConnected).Returns(true);
+        _mockGoogleDrive.Setup(g => g.FindSyncFileAsync()).ReturnsAsync((string?)null);
+        _mockExportService.Setup(e => e.ExportToJsonStringAsync()).ReturnsAsync("{}");
+        _mockJsRuntime.Setup(js => js.InvokeAsync<string>(
+            Constants.CompressionJsFunctions.GzipCompress, It.IsAny<object?[]>()))
+            .ReturnsAsync("compressed");
+        _mockGoogleDrive.Setup(g => g.CreateFileAsync(
+            Constants.Sync.SyncFileName, It.IsAny<string>()))
+            .ReturnsAsync("file-id");
+        _mockTaskService.Setup(t => t.RefreshGoogleListsAsync())
+            .ThrowsAsync(new UnauthorizedAccessException("403 forbidden"));
+
+        var result = await _sut.ConnectAsync("client-id");
+
+        Assert.True(result);
+        Assert.True(_sut.ReconnectRequired);
+        _mockGoogleDrive.Verify(g => g.FindSyncFileAsync(), Times.Once);
+    }
+
+    [Fact]
     public async Task ConnectAsync_ReturnsFalseOnException()
     {
         _mockGoogleDrive.Setup(g => g.ConnectAsync()).ThrowsAsync(new Exception("Auth failed"));
