@@ -90,10 +90,11 @@ public class IndexPagePresenterServiceTests
             new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)", 0, true, true)
         });
         taskService.Setup(s => s.GetTasksForListAsync(It.IsAny<string>()))
-            .ThrowsAsync(new Exception("Test exception"));
+            .ThrowsAsync(new InvalidOperationException("Test exception"));
         var timerService = SetupTimerService(TimeSpan.FromMinutes(5), SessionType.ShortBreak, true, true, true);
 
-        await Assert.ThrowsAsync<Exception>(() => _service.UpdateStateAsync(taskService.Object, timerService.Object, null));
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _service.UpdateStateAsync(taskService.Object, timerService.Object, null));
+        Assert.Equal("Test exception", ex.Message);
     }
 
     [Fact]
@@ -155,7 +156,6 @@ public class IndexPagePresenterServiceTests
         var taskService = SetupTaskService(localTasks);
         var timerService = SetupTimerService();
 
-        // "glist-gone" is not a member of TaskLists (only the local list is known) -> collapse.
         var result = await _service.UpdateStateAsync(taskService.Object, timerService.Object, "glist-gone");
 
         taskService.Verify(s => s.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId), Times.Once);

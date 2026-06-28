@@ -27,7 +27,7 @@
                     <div class="sr-lbl">Session expired</div>
                     <div class="sr-sub">@Constants.SyncMessages.ReconnectRequired</div>
                 </div>
-                <button class="sec-btn" @onclick="Reconnect" disabled="@_isConnecting">
+                <button class="sec-btn" @onclick="Reconnect" disabled="@(_isConnecting || _isSyncing)">
                     @(_isConnecting ? "Connecting..." : "Reconnect")
                 </button>
             </div>

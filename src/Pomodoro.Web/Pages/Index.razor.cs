@@ -274,6 +274,7 @@ public partial class IndexBase : ComponentBase, IDisposable
             TaskLists = state.TaskLists;
             ActiveListId = state.CurrentListId;
             ActiveList = TaskLists.FirstOrDefault(l => l.Id == ActiveListId);
+            ErrorMessage = null;
         }
         catch (Exception ex)
         {

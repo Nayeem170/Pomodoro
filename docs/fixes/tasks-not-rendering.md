@@ -4,7 +4,7 @@
 
 On startup the console repeats, three times:
 
-```
+```text
 tasks.googleapis.com/tasks/v1/users/@me/lists  401 ()
 warn: GoogleTasksService  Sync unauthorized, reconnection required
 warn: CloudSyncService    Cloud sync init attempt N failed
@@ -22,7 +22,7 @@ Google Tasks lists never load; periodic sync never starts.
 The cause is an **expired access token that is never refreshed**, plus retry/propagation
 logic that turns a routine, recoverable expiry into a hard startup failure.
 
-```
+```text
 Persisted access token restored at CloudSyncService.cs:126 is expired (GIS tokens ~1h)
   -> GET /users/@me/lists returns 401
   -> GoogleTasksService.ExecuteWithRetryAsync (GoogleTasksService.cs:165) converts 401 ->
@@ -193,7 +193,7 @@ filter at `TaskService.cs:436`. So they cannot diverge by filtering — the only
 badge 11 / list 0 is that the rendered list was fetched for a **different list id** than the
 badge's local list.
 
-```
+```text
 Prior session selected a Google list -> _appState.CurrentListId persisted (AppStateRecord)
   -> next startup restores that Google list id (TaskService.cs:94-96)
   -> Google pull fails: 401 then 403 (scope) -> GetTaskListsAsync throws at TaskService.cs:483
@@ -236,28 +236,6 @@ private async Task EnsureCurrentListSelectableAsync()
 `SelectListAsync` persists the corrected id and fires `NotifyStateChanged`, so the home page
 re-runs `UpdateStateAsync` and renders the 11 local tasks. Build clean.
 
-**Fix 6 (the render fix) — collapse dead list ids at the render boundary**  ✅ implemented
-
-Fix 5 corrected the persisted `_appState.CurrentListId`, but the page's `ActiveListId`
-latched the dead Google id and the presenter preferred it: `Index.razor.cs` passes
-`ActiveListId` as `currentListId`, the resolver is `currentListId ?? CurrentListId ?? local`,
-and `:275` sets `ActiveListId = state.CurrentListId`. Once `ActiveListId = <dead id>` it wins
-over the corrected `CurrentListId` on every refresh → `GetTasksForListAsync(deadId)` → 0
-tasks, no throw → empty list while the badge (a live getter) still shows 11. The latch was
-sticky: even tab clicks kept preferring the latched id.
-
-Two complementary collapses break the latch:
-1. **`IndexPagePresenterService.UpdateStateAsync`** resolves the requested id against
-   `taskService.TaskLists` (always local + schedule + cached Google); a non-member id falls
-   back to local, so both the fetched tasks and the echoed `CurrentListId`/`ActiveListId`
-   revert to local.
-2. **`TaskService.GetTasksForListAsync`** (defense-in-depth) rewrites a non-local,
-   non-schedule, non-cached-Google id to local before filtering.
-
-Tests: `IndexPagePresenterServiceTests.UpdateStateAsync_DeadListId_CollapsesToLocal`,
-`TaskServiceMultiListTests.GetTasksForListAsync_DeadGoogleListId_CollapsesToLocal`. Existing
-`GetTasksForListAsync`/sidecar tests now register their Google list in `_cachedGoogleLists`.
-
 ### The 403 itself is configuration, not a code bug
 
 The scope string already requests full tasks scope
@@ -277,7 +255,7 @@ Fix 5 corrected the **persisted** `_appState.CurrentListId`, but the page still 
 empty because the **page's `ActiveListId` latched the dead Google id and overrode the
 correction**:
 
-```
+```text
 IndexPagePresenterService resolves: listId = currentListId ?? CurrentListId ?? local
 Index.razor.cs:265 passes ActiveListId as currentListId, and :275 sets ActiveListId = state.CurrentListId
   -> once ActiveListId == deadGoogleId, it WINS over the Fix 5-corrected _appState.CurrentListId

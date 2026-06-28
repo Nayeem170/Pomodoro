@@ -19,10 +19,6 @@ public class IndexPagePresenterService
         {
             var requested = currentListId ?? taskService.CurrentListId ?? Constants.TaskLists.LocalPomodoroListId;
 
-            // Collapse a stale/dead list id (e.g. a Google list restored from storage that is
-            // no longer available after a failed sync) to the local list. Otherwise the page
-            // binds to an empty list while local tasks exist (badge shows a count, list empty),
-            // and ActiveListId latches the dead id on every subsequent refresh.
             var taskLists = taskService.TaskLists;
             var listId = taskLists.Any(l => l.Id == requested)
                 ? requested

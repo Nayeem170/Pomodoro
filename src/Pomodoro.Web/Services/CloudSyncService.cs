@@ -169,7 +169,6 @@ public class CloudSyncService : ICloudSyncService, IDisposable
             _ = await _googleDriveService.ConnectAsync();
 
             ClientId = clientId;
-            await SaveSyncStateAsync(connected: true);
 
             SetReconnectRequired(false);
             StartPeriodicSync();
@@ -181,6 +180,8 @@ public class CloudSyncService : ICloudSyncService, IDisposable
             {
                 _logger.LogWarning(Constants.SyncMessages.LogSyncFailed, syncResult.ErrorMessage);
             }
+
+            await SaveSyncStateAsync(connected: true);
 
             return true;
         }
@@ -222,8 +223,6 @@ public class CloudSyncService : ICloudSyncService, IDisposable
         {
             var result = await ResolveSyncAsync();
 
-            // A successful sync means the session recovered (e.g. the GIS token
-            // client silently refreshed the token); clear any stale reconnect banner.
             if (result.Success)
             {
                 SetReconnectRequired(false);
@@ -358,7 +357,7 @@ public class CloudSyncService : ICloudSyncService, IDisposable
             _logger.LogInformation(Constants.SyncMessages.LogSyncComplete);
             return SyncResult.Pushed();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not UnauthorizedAccessException)
         {
             _logger.LogError(ex, Constants.SyncMessages.LogSyncFailed, ex.Message);
             return SyncResult.Failed(ex.Message);
@@ -402,7 +401,7 @@ public class CloudSyncService : ICloudSyncService, IDisposable
                 result.TasksImported, result.TasksSkipped,
                 result.SettingsImported);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not UnauthorizedAccessException)
         {
             _logger.LogError(ex, Constants.SyncMessages.LogSyncFailed, ex.Message);
             return SyncResult.Failed(ex.Message);

@@ -180,6 +180,7 @@ public class CloudSyncServiceTests : IDisposable
         await _sut.InitializeAsync();
 
         Assert.True(_sut.IsInitialized);
+        Assert.True(_sut.ReconnectRequired);
         _mockTaskService.Verify(t => t.RefreshGoogleListsAsync(), Times.Once);
         _mockGoogleDrive.Verify(g => g.InitializeAsync("test-client-id"), Times.Once);
     }

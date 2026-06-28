@@ -241,6 +241,7 @@ public class TaskServiceMultiListTests
             [new PomodoroMeta("gtask-1", 3, 75, Priority.High)]);
 
         var sut = CreateSut();
+        SetCachedGoogleLists(sut, [new GoogleListCacheEntry("glist-1", "List", "var(--pomodoro-color)", true)]);
         await sut.GetTasksForListAsync("glist-1");
 
         var originalTask = _appState.FindTaskById(task.Id);
@@ -439,6 +440,7 @@ public class TaskServiceMultiListTests
         _appState.Tasks = [localTask];
 
         var sut = CreateSut();
+        SetCachedGoogleLists(sut, [new GoogleListCacheEntry("glist-1", "List", "var(--pomodoro-color)", true)]);
         var result = await sut.GetTasksForListAsync("glist-1");
 
         result.Should().HaveCount(1);
@@ -655,7 +657,6 @@ public class TaskServiceMultiListTests
         var sut = CreateSut();
         await sut.InitializeAsync();
 
-        // glist-1 is no longer present remotely -> Fix 5 resets to the local list
         _appState.CurrentListId.Should().Be(Constants.TaskLists.LocalPomodoroListId);
     }
 

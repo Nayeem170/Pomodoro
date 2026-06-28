@@ -430,8 +430,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
     public async Task<IReadOnlyList<TaskItem>> GetTasksForListAsync(string listId)
     {
-        // Defense-in-depth: a dead Google list id (not local/schedule and not in the cached
-        // Google lists) must not silently return empty while local tasks exist.
         if (!IsKnownList(listId))
         {
             listId = Constants.TaskLists.LocalPomodoroListId;
@@ -517,8 +515,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             await SaveGoogleTasksSettingsAsync();
             await SaveGoogleListsCacheAsync();
             InvalidateSidecarCache();
-
-            await EnsureCurrentListSelectableAsync();
 
             foreach (var gList in remoteLists)
             {
@@ -624,7 +620,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
                         }
                     }
 
-                    foreach (var orphan in existingInList.Where(t => t.GoogleTaskId != null && !remoteIds.Contains(t.GoogleTaskId)))
+                    foreach (var orphan in existingInList.Where(t => !string.IsNullOrEmpty(t.GoogleTaskId) && !remoteIds.Contains(t.GoogleTaskId)))
                     {
                         var deleted = orphan.WithUpdates(c =>
                         {
@@ -651,16 +647,10 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         }
         finally
         {
-            // Runs even when the Google pull throws (401/403/offline) or propagates
-            // UnauthorizedAccessException: a stale Google CurrentListId restored from
-            // storage must fall back to the local list, otherwise the home list binds
-            // to an unavailable Google list (0 tasks) while the badge counts local tasks.
             await EnsureCurrentListSelectableAsync();
         }
     }
 
-    // Resets a dangling CurrentListId (a Google list id no longer present in the cached
-    // lists) back to the local Pomodoro list. Safe no-op for local/schedule/known-Google ids.
     private async Task EnsureCurrentListSelectableAsync()
     {
         var current = _appState.CurrentListId;
@@ -670,10 +660,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         }
     }
 
-    // Single source of truth for "is this a selectable list": the two built-in lists or a
-    // currently-cached Google list. Routing both GetTasksForListAsync and
-    // EnsureCurrentListSelectableAsync through this prevents the built-in-list predicate from
-    // drifting across sites if a new built-in list is added later.
     private bool IsKnownList(string? listId) =>
         listId == Constants.TaskLists.LocalPomodoroListId ||
         listId == Constants.TaskLists.ScheduleListId ||

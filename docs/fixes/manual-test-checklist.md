@@ -18,8 +18,8 @@ Work top-to-bottom. Each case is discrete with an expected result. Mark `[ ]` �
 - [ ] **TC8 — Silent re-auth on reload (Fix 4).** While connected, close & reopen the tab. **Expected:** reconnects silently; Google lists load; no reconnect prompt; no 401 storm in console.
 - [ ] **TC9 — Reconnect banner (Fix 3).** Revoke access in your Google Account security page → reload → open Cloud Sync settings. **Expected:** "Session expired — Reconnect" banner appears; click Reconnect → re-auths → banner clears.
 - [ ] **TC10 — Sync Now.** Settings → Sync Now button. **Expected:** success; Last synced time updates.
-- [ ] **TC11 — Tasks auth failure isolates Drive (Fix 2).** With Drive connected but the Tasks token revoked, reload. **Expected:** Drive periodic sync still runs (console: one warning, not "init attempt 3 failed"); local tasks render.
-- [ ] **TC12 — 401 self-heals (Fix 1).** Let the Tasks token expire (wait or revoke). Trigger a list refresh. **Expected:** one silent re-auth, lists load — not a hard failure.
+- [ ] **TC11 — Tasks auth failure isolates Drive (Fix 2).** With Drive connected, disable the Google Tasks API in GCP (or use an account whose grant lacks the Tasks scope) so Tasks calls 403, then reload. **Expected:** Drive periodic sync still runs (console: one warning, not "init attempt 3 failed"); local tasks render.
+- [ ] **TC12 — 401 self-heals (Fix 1).** While connected, let the GIS access token expire (wait ~1h, or exercise it near expiry), then trigger a list refresh. **Expected:** one silent re-auth, lists load — not a hard failure.
 
 ## Persistence / lifecycle
 - [ ] **TC13 — Selected list survives reload.** Pick a (valid) Google list, reload. **Expected:** same list selected and its tasks render.
