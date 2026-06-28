@@ -157,6 +157,20 @@ public class GoogleTasksServiceTests
     }
 
     [Fact]
+    public async Task GetTasksAsync_On401_ThrowsWhenSilentReauthSucceedsButTokenEmpty()
+    {
+        _jsRuntime.QueueException(new JSException("Error 401: Unauthorized"));
+        _googleDriveServiceMock.Setup(x => x.TrySilentAuthAsync()).ReturnsAsync(true);
+        _googleDriveServiceMock.SetupSequence(x => x.GetAccessTokenAsync())
+            .ReturnsAsync("stale-token")
+            .ReturnsAsync((string?)null);
+
+        var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.GetTasksAsync("list-1"));
+        Assert.Contains("reconnect", ex.Message.ToLower());
+        _googleDriveServiceMock.Verify(x => x.TrySilentAuthAsync(), Times.Once);
+    }
+
+    [Fact]
     public async Task GetTasksAsync_Retries_On429()
     {
         _jsRuntime.QueueException(new JSException("Error 429: Too Many Requests"));
