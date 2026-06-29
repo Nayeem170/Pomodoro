@@ -8,6 +8,7 @@ public static partial class Constants
         public const int SyncVersion = 1;
         public const int DebounceDelayMs = 5000;
         public const int PeriodicSyncIntervalMs = 30 * 60 * 1000;
+        public static readonly TimeSpan AccessTokenLifetime = TimeSpan.FromMinutes(55);
         public const string AppDataFolder = "appDataFolder";
         public const string DriveScope = "https://www.googleapis.com/auth/drive.appdata";
         public const string TasksScope = "https://www.googleapis.com/auth/tasks.readonly";
