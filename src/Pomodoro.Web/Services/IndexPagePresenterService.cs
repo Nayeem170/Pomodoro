@@ -17,7 +17,7 @@ public class IndexPagePresenterService
     {
         try
         {
-            var requested = currentListId ?? taskService.CurrentListId ?? Constants.TaskLists.LocalPomodoroListId;
+            var requested = taskService.CurrentListId ?? currentListId ?? Constants.TaskLists.LocalPomodoroListId;
 
             var taskLists = taskService.TaskLists;
             var listId = taskLists.Any(l => l.Id == requested)
