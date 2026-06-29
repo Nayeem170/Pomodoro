@@ -538,6 +538,21 @@ public class TaskServiceMultiListTests
     }
 
     [Fact]
+    public async Task RefreshGoogleListsAsync_PullThrowsForbidden_SwallowsAndResetsStaleListToLocal()
+    {
+        _appState.CurrentListId = "glist-gone";
+
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync())
+            .ThrowsAsync(new TasksAccessForbiddenException("403 Forbidden", new Exception()));
+
+        var sut = CreateSut();
+        await sut.RefreshGoogleListsAsync();
+
+        _appState.CurrentListId.Should().Be(Constants.TaskLists.LocalPomodoroListId);
+    }
+
+    [Fact]
     public async Task RefreshGoogleListsAsync_DeletesOrphans_RemoteRemoved()
     {
         var localTask = new TaskItem
