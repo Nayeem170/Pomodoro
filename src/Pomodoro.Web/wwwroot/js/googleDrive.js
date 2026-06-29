@@ -86,7 +86,7 @@ window.googleDrive = {
                 }
             };
             try {
-                this._tokenClient.requestAccessToken({ prompt: '' });
+                this._tokenClient.requestAccessToken({ prompt: 'none' });
             } catch (e) {
                 resolve(null);
             }

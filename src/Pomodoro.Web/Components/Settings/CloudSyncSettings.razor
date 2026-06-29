@@ -10,7 +10,7 @@
     {
         <div class="sr">
             <div>
-                <div class="sr-lbl">Google Drive</div>
+                <div class="sr-lbl">Google</div>
                 <div class="sr-sub">Sync across devices</div>
             </div>
             <button class="sec-btn" @onclick="Connect" disabled="@_isConnecting">
@@ -34,7 +34,7 @@
         }
         <div class="sr">
             <div>
-                <div class="sr-lbl">Google Drive</div>
+                <div class="sr-lbl">Google</div>
                 <div class="sr-sub">@(GoogleDriveService.AccountEmail ?? ("Last synced " + FormatLastSynced))</div>
             </div>
             <div class="sync-actions">
