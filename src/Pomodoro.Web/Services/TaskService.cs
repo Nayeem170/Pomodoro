@@ -106,6 +106,10 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         {
             await RefreshGoogleListsAsync();
         }
+        else
+        {
+            await EnsureLocalListSelectedAsync();
+        }
 
         NotifyStateChanged();
     }
@@ -655,6 +659,15 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     {
         var current = _appState.CurrentListId;
         if (!string.IsNullOrEmpty(current) && !IsKnownList(current))
+        {
+            await SelectListAsync(Constants.TaskLists.LocalPomodoroListId);
+        }
+    }
+
+    private async Task EnsureLocalListSelectedAsync()
+    {
+        var current = _appState.CurrentListId;
+        if (!string.IsNullOrEmpty(current) && current != Constants.TaskLists.LocalPomodoroListId && current != Constants.TaskLists.ScheduleListId)
         {
             await SelectListAsync(Constants.TaskLists.LocalPomodoroListId);
         }
