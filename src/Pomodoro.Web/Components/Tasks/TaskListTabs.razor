@@ -6,6 +6,7 @@
     {
         var isActive = list.Id == EffectiveCurrentListId;
         <button class="lt @(isActive ? "act" : "")"
+                style="@(isActive ? $"--list-color: {list.Color}" : "")"
                 @onclick="() => HandleTabClick(list.Id)"
                 @onkeydown="OnKeyDown"
                 aria-selected="@isActive.ToString().ToLower()"

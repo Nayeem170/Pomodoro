@@ -342,6 +342,135 @@ does not wipe the Tasks-set flag. This mirrors the Fix 2 isolation already appli
 reconnect for the `auth/tasks` scope, or enable the Google Tasks API in GCP); Fix 8 only stops
 it from killing the Drive connect and routes the user to the existing reconnect banner.
 
+### Fix 9 — disconnected user falls back to local list on startup  ✅ fixed
+
+When Google Tasks is disconnected (never connected, revoked, or 401 on token refresh), a
+persisted `CurrentListId` pointing to a Google list becomes stale — the list no longer exists in
+`_cachedGoogleLists`. `EnsureCurrentListSelectableAsync` (Fix 5) only runs in the connected
+branch; the disconnected early-return never corrected the selection.
+
+Fix: added `EnsureLocalListSelectedAsync()` in the disconnected `else` branch of
+`TaskService.InitializeAsync`. When `_appState.CurrentListId` is a non-local, non-schedule
+Google list id, it resets to the local Pomodoro list. Connected users with a valid Google list
+selected are unaffected (the `else` branch only runs when not connected).
+
+`src/Pomodoro.Web/Services/TaskService.cs`:
+
+```csharp
+// In InitializeAsync, else branch (not connected):
+if (!string.IsNullOrEmpty(_appState.CurrentListId) &&
+    _appState.CurrentListId != Constants.TaskLists.LocalPomodoroListId &&
+    _appState.CurrentListId != Constants.TaskLists.ScheduleListId)
+{
+    await SelectListAsync(Constants.TaskLists.LocalPomodoroListId);
+}
+```
+
+Tests: `InitializeAsync_NotConnected_NonLocalListId_FallsBackToLocal` added to
+`TaskServiceMultiListTests.cs`. Existing `InitializeAsync_RestoresCurrentListId` updated to
+use the local list id.
+
+### Fix 10 — presenter prefers service `CurrentListId` over stale page parameter  ✅ fixed
+
+`IndexPagePresenterService.UpdateStateAsync` resolved the active list via
+`currentListId ?? taskService.CurrentListId ?? local`. When `OnTaskServiceChanged` fires
+`UpdateStateAsync` via fire-and-forget `SafeAsync`, the passed `currentListId` is the **page's
+`ActiveListId`** — which may be stale if a concurrent `SelectListAsync` has already updated the
+service property. The page parameter wins and clobbers the service's corrected value, causing
+the wrong tab to highlight.
+
+Fix: swap precedence to `taskService.CurrentListId ?? currentListId ?? local`. `SelectListAsync`
+sets `_appState.CurrentListId` synchronously before calling `NotifyStateChanged`, so the
+fire-and-forget handler always sees the fresh service value. The page parameter only wins as
+fallback when the service hasn't been updated yet.
+
+`src/Pomodoro.Web/Services/IndexPagePresenterService.cs`:
+
+```csharp
+var requested = taskService.CurrentListId ?? currentListId ?? Constants.TaskLists.LocalPomodoroListId;
+```
+
+Test: `UpdateStateAsync_PrefersServiceCurrentListId_OverStalePassedId` added to
+`IndexPagePresenterServiceTests.cs`.
+
+### Fix 11 — task section alignment (12px inset)  ✅ fixed
+
+`TaskListTabs` and `TaskListSyncStrip` had no horizontal margin, causing them to align to the
+viewport edge while `timer-card`, `mode-tabs`, and `task-card` all use `margin: 0 12px`. The
+misalignment made the task section look disconnected from the rest of the page.
+
+Fix: added `margin: 0 12px` to both components:
+
+- `src/Pomodoro.Web/Components/Tasks/TaskListTabs.razor.css`: `.ltabs { margin: 0 12px 8px; }`
+- `src/Pomodoro.Web/Components/Tasks/TaskListSyncStrip.razor.css`: `.sync-strip { margin: 0 12px 6px; }`
+
+### Fix 12 — tab highlight uses list's own color as accent  ✅ fixed
+
+The active tab indicator used a fixed `var(--pomodoro-color)` (red) for all tabs. This only
+looked coherent on the Tasks tab (red dot + red accent). On Schedule (yellow dot) and Google
+list tabs (variable dot colors), the red accent was visually disjointed and didn't read as
+"selected."
+
+Fix: pass each list's color as a CSS custom property (`--list-color`) on the active button
+via inline style, and reference it in the CSS:
+
+`src/Pomodoro.Web/Components/Tasks/TaskListTabs.razor`:
+
+```html
+<button class="lt @(isActive ? "act" : "")"
+        style="@(isActive ? $"--list-color: {list.Color}" : "")">
+```
+
+`src/Pomodoro.Web/Components/Tasks/TaskListTabs.razor.css`:
+
+```css
+.lt.act {
+    color: var(--color-text-primary);
+    font-weight: 600;
+    border-bottom-color: var(--list-color);
+}
+```
+
+Each tab's active accent now matches its dot color — red for Tasks, yellow for Schedule,
+and the list's own color for Google tabs. Consistent with the mode-tabs pattern
+(`button.active` uses timer-mode-specific border colors).
+
+### Fix 13 — stale fire-and-forget `UpdateStateAsync` overwrites `ActiveListId`  ✅ fixed
+
+`OnTaskServiceChanged` calls `UpdateStateAsync` via fire-and-forget `SafeAsync`
+(`Index.razor.Events.cs:20`). Multiple in-flight calls captured the page's `ActiveListId` at
+their start; a late-completing older call could overwrite the fields that a newer click had
+already set, leaving the wrong tab highlighted until the next action.
+
+Fix: a monotonic sequence counter `_updateSeq` in `IndexBase`. Each `UpdateStateAsync` captures
+`seq = ++_updateSeq` before the await, and after the await does `if (seq != _updateSeq) return;`
+so only the most-recently-started call's result is applied. WASM is single-threaded (interleaving
+only at awaits), so the increment/compare is race-free without a lock.
+
+`src/Pomodoro.Web/Pages/Index.razor.cs`:
+
+```csharp
+private int _updateSeq;
+
+protected async Task UpdateStateAsync()
+{
+    try
+    {
+        var seq = ++_updateSeq;
+        var state = await IndexPagePresenterService.UpdateStateAsync(...);
+
+        if (seq != _updateSeq) return;   // a newer update started; discard this stale result
+
+        Tasks = state.Tasks;
+        // ... apply fields ...
+    }
+    ...
+}
+```
+
+This is the primary guard against re-entrant overwrites; Fix 10 (presenter precedence swap)
+remains as defense-in-depth.
+
 ## Re-investigation (2026-06-28): why the symptom persisted after Fix 5/6 (superseded by RESOLVED above)
 
 Reported at runtime (localhost:7025): "Tasks" tab is active, coral dot + badge shows **12**,
@@ -453,17 +582,19 @@ the cache:
 ## Files touched
 
 - `src/Pomodoro.Web/Services/GoogleTasksService.cs` (Fix 1)
-- `src/Pomodoro.Web/Services/CloudSyncService.cs` (Fix 2, reconnect state)
-- `src/Pomodoro.Web/Services/TaskService.cs` (Fix 5 — `EnsureCurrentListSelectableAsync` + `finally`; Fix 6 — `GetTasksForListAsync` collapse)
-- `src/Pomodoro.Web/Services/IndexPagePresenterService.cs` (Fix 6 — render-boundary collapse; rethrows instead of swallowing)
-- `src/Pomodoro.Web/Components/Tasks/TaskListTabs.razor` (Fix 7 — click-suppression compares real `CurrentListId`, not the fallback)
-- `src/Pomodoro.Web/Services/CloudSyncService.cs` (Fix 8 — isolates Tasks auth failure in `ConnectAsync` so it no longer aborts the Drive connect)
-- `src/Pomodoro.Web/Pages/Index.razor.cs` + `CloudSyncSettings.razor` (Fix 3 reconnect banner)
-- `src/Pomodoro.Web/Services/IGoogleDriveService.cs` / `GoogleDriveService.cs` / `Constants.JsInterop.cs` / `wwwroot/js/googleDrive.js` (Fix 4 — removed `SetAccessTokenAsync`)
+- `src/Pomodoro.Web/Services/CloudSyncService.cs` (Fix 2, reconnect state, Fix 8)
+- `src/Pomodoro.Web/Services/TaskService.cs` (Fix 5 — `EnsureCurrentListSelectableAsync` + `finally`; Fix 6 — `GetTasksForListAsync` collapse; Fix 9 — disconnected fallback)
+- `src/Pomodoro.Web/Services/IndexPagePresenterService.cs` (Fix 6 — render-boundary collapse; rethrows instead of swallowing; Fix 10 — presenter precedence swap)
+- `src/Pomodoro.Web/Components/Tasks/TaskListTabs.razor` (Fix 7 — click-suppression compares real `CurrentListId`, not the fallback; Fix 12 — `--list-color` inline style)
+- `src/Pomodoro.Web/Components/Tasks/TaskListTabs.razor.css` (Fix 12 — border-bottom uses `var(--list-color)`)
+- `src/Pomodoro.Web/Components/Tasks/TaskListSyncStrip.razor.css` (Fix 11 — 12px inset)
+- `src/Pomodoro.Web/Pages/Index.razor.cs` (Fix 3 reconnect banner; Fix 13 — `_updateSeq` stale-call guard in `UpdateStateAsync`) + `CloudSyncSettings.razor` (Fix 3 reconnect banner)
+- `src/Pomodoro.Web/Services/IGoogleDriveService.cs` / `GoogleDriveService.cs` / `Constants.JsInterop.cs` / `wwwroot/js/googleDrive.js` (token persistence — store/restore access token with 55-min expiry guard; `SyncStateRecord` fields `AccessToken`/`TokenExpiresAt`)
 - `tests/Pomodoro.Web.Tests/Services/GoogleTasksServiceTests.cs`
-- `tests/Pomodoro.Web.Tests/Services/CloudSyncServiceTests*.cs`
-- `tests/Pomodoro.Web.Tests/Services/TaskServiceMultiListTests.cs`
-- `tests/Pomodoro.Web.Tests/Services/IndexPagePresenterServiceTests.cs`
+- `tests/Pomodoro.Web.Tests/Services/CloudSyncServiceTests*.cs` (token-restore cases)
+- `tests/Pomodoro.Web.Tests/Services/TaskServiceMultiListTests.cs` (Fix 9)
+- `tests/Pomodoro.Web.Tests/Services/IndexPagePresenterServiceTests.cs` (Fix 10)
+- `tests/Pomodoro.Web.Tests/Services/GoogleDriveServiceTests.cs` (token persistence)
 
 ---
 

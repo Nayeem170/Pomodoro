@@ -78,6 +78,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected string? ActiveListId { get; set; }
     protected TaskListRef? ActiveList { get; set; }
 
+    private int _updateSeq;
     private (int TotalFocusMinutes, int PomodoroCount, int TasksWorkedOn)? _cachedTodayStats;
 
     private void InvalidateTodayStatsCache() => _cachedTodayStats = null;
@@ -262,7 +263,10 @@ public partial class IndexBase : ComponentBase, IDisposable
     {
         try
         {
+            var seq = ++_updateSeq;
             var state = await IndexPagePresenterService.UpdateStateAsync(TaskService, TimerService, ActiveListId);
+
+            if (seq != _updateSeq) return;
 
             Tasks = state.Tasks;
             CurrentTaskId = state.CurrentTaskId;
@@ -278,6 +282,8 @@ public partial class IndexBase : ComponentBase, IDisposable
         }
         catch (Exception ex)
         {
+            if (seq != _updateSeq) return;
+
             Logger.LogError(ex, Constants.Messages.ErrorInUpdateState);
             ErrorMessage = $"{Constants.Messages.ErrorLoadingTasks}: {ex.Message}";
         }
