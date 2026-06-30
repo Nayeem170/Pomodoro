@@ -660,6 +660,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         var current = _appState.CurrentListId;
         if (!string.IsNullOrEmpty(current) && !IsKnownList(current))
         {
+            Console.WriteLine($"[TABDBG] EnsureCurrentListSelectableAsync RESET: {current} -> local (known={IsKnownList(current)} googleLists={_cachedGoogleLists.Count})");
             await SelectListAsync(Constants.TaskLists.LocalPomodoroListId);
         }
     }
@@ -669,6 +670,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         var current = _appState.CurrentListId;
         if (!string.IsNullOrEmpty(current) && current != Constants.TaskLists.LocalPomodoroListId && current != Constants.TaskLists.ScheduleListId)
         {
+            Console.WriteLine($"[TABDBG] EnsureLocalListSelectedAsync RESET: {current} -> local");
             await SelectListAsync(Constants.TaskLists.LocalPomodoroListId);
         }
     }

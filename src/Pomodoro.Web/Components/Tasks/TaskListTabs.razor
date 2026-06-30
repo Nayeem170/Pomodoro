@@ -52,6 +52,7 @@
 
     protected async Task HandleTabClick(string listId)
     {
+        Console.WriteLine($"[TABDBG] HandleTabClick: clicked={listId} resolved={ResolvedCurrentListId} currentListId={CurrentListId} serviceCurrent={ServiceCurrentListId} suppressed={listId == ResolvedCurrentListId}");
         if (listId != ResolvedCurrentListId)
         {
             await OnTabChanged.InvokeAsync(listId);

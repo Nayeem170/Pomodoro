@@ -17,12 +17,14 @@ public class IndexPagePresenterService
     {
         try
         {
-            var requested = taskService.CurrentListId ?? currentListId ?? Constants.TaskLists.LocalPomodoroListId;
+            var requested = currentListId ?? taskService.CurrentListId ?? Constants.TaskLists.LocalPomodoroListId;
 
             var taskLists = taskService.TaskLists;
             var listId = taskLists.Any(l => l.Id == requested)
                 ? requested
                 : Constants.TaskLists.LocalPomodoroListId;
+
+            Console.WriteLine($"[TABDBG] presenter: requested={requested} resolved={listId} serviceCurrent={taskService.CurrentListId} listsCount={taskLists.Count} containsRequested={taskLists.Any(l => l.Id == requested)}");
 
             var tasks = await taskService.GetTasksForListAsync(listId);
 

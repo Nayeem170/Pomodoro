@@ -326,6 +326,71 @@ just `dotnet build`), and hard-reload / unregister the SW to drop a cached `inde
 Fix 7 (below) remains a real, kept fix: it guarantees a manual tab click can always recover if
 any future stale-selection state recurs.
 
+## Re-investigation #3 (2026-06-30): symptom unchanged after #2 — source says it SHOULD work
+
+The exact symptom persists (local tab always active; Google ghost tab `MTI0…` count 1 never
+activates on click). A line-by-line re-trace of the **current** source shows clicking Google
+*does* select it — so the running binary and/or a runtime-only factor, not the static logic, is
+now the blocker. Findings:
+
+### Real regression found (flag + fix regardless): presenter precedence reversed
+
+`IndexPagePresenterService.cs:20` currently reads:
+
+```csharp
+var requested = taskService.CurrentListId ?? currentListId ?? Constants.TaskLists.LocalPomodoroListId;
+```
+
+Fix 6 wrote this as `currentListId ?? taskService.CurrentListId`. The order is now reversed, so
+the **page's clicked id** (`currentListId` = `ActiveListId`) is ignored whenever
+`taskService.CurrentListId` is non-null — selection is owned entirely by `_appState.CurrentListId`.
+This is a genuine regression of intent and should be restored to `currentListId`-first. **But it
+does not, by itself, break the click** (see next).
+
+### Why the click still resolves to Google on the current source (full trace)
+
+1. `HandleTabClick(googleId)` → `googleId != CurrentListId(ActiveListId=local)` → fires
+   `OnTabChanged` → `HandleTabChange(googleId)`.
+2. `HandleTabChange` sets `ActiveListId=googleId`, then `SelectListAsync(googleId)` writes
+   `_appState.CurrentListId=googleId` **before** the presenter runs.
+3. The Google tab is rendered, so `_cachedGoogleLists` is non-empty ⇒ `taskService.TaskLists`
+   contains the Google list ⇒ the presenter's collapse guard (`taskLists.Any(id) ? id : local`)
+   does **not** collapse `googleId`.
+4. `EnsureCurrentListSelectableAsync` only resets ids **absent** from `_cachedGoogleLists`; the id
+   is present ⇒ no reset. `EnsureLocalListSelectedAsync` runs **only** in `InitializeAsync`'s
+   not-connected branch, not on clicks.
+5. Presenter `requested = taskService.CurrentListId(googleId)` → `listId=googleId` →
+   `state.CurrentListId=googleId` → `ActiveListId=googleId`; highlight reads
+   `ServiceCurrentListId(googleId)` → Google tab active.
+
+Every branch selects Google. So on this source the symptom is **not reproducible**.
+
+### Therefore — the blocker is now ground truth, not logic. Two possibilities:
+
+- **R0 (most probable; 3rd recurrence):** the process serving `:7025` is not running these
+  changes. The ghost tab (title=id) is **not** proof of a fresh build — settings-restore
+  (`RestoreCachedGoogleListsFromSettingsAsync`) existed in earlier builds too. Verify: confirm the
+  running commit/binary, restart the process bound to the port, unregister the SW, hard-reload.
+- **Runtime-only factor** static analysis cannot see: the `@onclick` not reaching `HandleTabClick`
+  (event wiring / overlay), an exception thrown inside the click→update chain (caught into
+  `ErrorMessage`, leaving selection unchanged), or a **stale `Index.TaskLists` snapshot** rendering
+  a Google tab the *live* `_cachedGoogleLists` no longer has (then the presenter collapse *would*
+  snap to local on click).
+
+### Required next step (static analysis exhausted after 8 rounds): instrument
+
+Add four temporary log lines and reproduce once in the browser; the console will show which branch
+fires in a single click:
+1. `HandleTabClick` entry — log `listId`, `CurrentListId`, and whether `OnTabChanged` fires.
+2. `HandleTabChange` — log `listId`.
+3. Presenter `UpdateStateAsync` — log `requested`, resolved `listId`, and
+   `taskService.TaskLists.Count` (to see if the live cache still has the Google list).
+4. `EnsureCurrentListSelectableAsync` / `EnsureLocalListSelectedAsync` — log when a reset fires.
+
+This distinguishes R0 (handlers never log → old binary) from a live collapse/reset (logs show the
+id snapping to local) from an event-wiring issue (click never logs). Recommend restoring the
+`currentListId`-first precedence at the same time.
+
 ## Re-investigation #2 (2026-06-30): Google tab "never active on select" — why
 
 New symptom on `:7025`: the local "Tasks" tab (count 13) is **always** `aria-selected`; a Google

@@ -147,7 +147,7 @@ public class IndexPagePresenterServiceTests
     }
 
     [Fact]
-    public async Task UpdateStateAsync_PrefersServiceCurrentListId_OverStalePassedId()
+    public async Task UpdateStateAsync_PrefersPassedCurrentListId_OverServiceCurrentListId()
     {
         var taskService = SetupTaskService();
         taskService.Setup(s => s.CurrentListId).Returns("glist-1");
@@ -161,8 +161,8 @@ public class IndexPagePresenterServiceTests
 
         var result = await _service.UpdateStateAsync(taskService.Object, timerService.Object, "stale-list");
 
-        taskService.Verify(s => s.GetTasksForListAsync("glist-1"), Times.Once);
-        Assert.Equal("glist-1", result.CurrentListId);
+        taskService.Verify(s => s.GetTasksForListAsync("stale-list"), Times.Once);
+        Assert.Equal("stale-list", result.CurrentListId);
     }
 
     [Fact]
