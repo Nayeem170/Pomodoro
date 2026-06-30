@@ -24,6 +24,8 @@ public class IndexPagePresenterService
                 ? requested
                 : Constants.TaskLists.LocalPomodoroListId;
 
+            Console.WriteLine($"[TABDBG] presenter: requested={requested} resolved={listId} serviceCurrent={taskService.CurrentListId} listsCount={taskLists.Count} containsRequested={taskLists.Any(l => l.Id == requested)}");
+
             var tasks = await taskService.GetTasksForListAsync(listId);
 
             return new IndexPageState

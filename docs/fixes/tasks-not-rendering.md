@@ -326,6 +326,298 @@ just `dotnet build`), and hard-reload / unregister the SW to drop a cached `inde
 Fix 7 (below) remains a real, kept fix: it guarantees a manual tab click can always recover if
 any future stale-selection state recurs.
 
+## Re-investigation #3 (2026-06-30): symptom unchanged after #2 — source says it SHOULD work
+
+The exact symptom persists (local tab always active; Google ghost tab `MTI0…` count 1 never
+activates on click). A line-by-line re-trace of the **current** source shows clicking Google
+*does* select it — so the running binary and/or a runtime-only factor, not the static logic, is
+now the blocker. Findings:
+
+### Real regression found (flag + fix regardless): presenter precedence reversed
+
+`IndexPagePresenterService.cs:20` currently reads:
+
+```csharp
+var requested = taskService.CurrentListId ?? currentListId ?? Constants.TaskLists.LocalPomodoroListId;
+```
+
+Fix 6 wrote this as `currentListId ?? taskService.CurrentListId`. The order is now reversed, so
+the **page's clicked id** (`currentListId` = `ActiveListId`) is ignored whenever
+`taskService.CurrentListId` is non-null — selection is owned entirely by `_appState.CurrentListId`.
+This is a genuine regression of intent and should be restored to `currentListId`-first. **But it
+does not, by itself, break the click** (see next).
+
+### Why the click still resolves to Google on the current source (full trace)
+
+1. `HandleTabClick(googleId)` → `googleId != CurrentListId(ActiveListId=local)` → fires
+   `OnTabChanged` → `HandleTabChange(googleId)`.
+2. `HandleTabChange` sets `ActiveListId=googleId`, then `SelectListAsync(googleId)` writes
+   `_appState.CurrentListId=googleId` **before** the presenter runs.
+3. The Google tab is rendered, so `_cachedGoogleLists` is non-empty ⇒ `taskService.TaskLists`
+   contains the Google list ⇒ the presenter's collapse guard (`taskLists.Any(id) ? id : local`)
+   does **not** collapse `googleId`.
+4. `EnsureCurrentListSelectableAsync` only resets ids **absent** from `_cachedGoogleLists`; the id
+   is present ⇒ no reset. `EnsureLocalListSelectedAsync` runs **only** in `InitializeAsync`'s
+   not-connected branch, not on clicks.
+5. Presenter `requested = taskService.CurrentListId(googleId)` → `listId=googleId` →
+   `state.CurrentListId=googleId` → `ActiveListId=googleId`; highlight reads
+   `ServiceCurrentListId(googleId)` → Google tab active.
+
+Every branch selects Google. So on this source the symptom is **not reproducible**.
+
+### Therefore — the blocker is now ground truth, not logic. Two possibilities:
+
+- **R0 (most probable; 3rd recurrence):** the process serving `:7025` is not running these
+  changes. The ghost tab (title=id) is **not** proof of a fresh build — settings-restore
+  (`RestoreCachedGoogleListsFromSettingsAsync`) existed in earlier builds too. Verify: confirm the
+  running commit/binary, restart the process bound to the port, unregister the SW, hard-reload.
+- **Runtime-only factor** static analysis cannot see: the `@onclick` not reaching `HandleTabClick`
+  (event wiring / overlay), an exception thrown inside the click→update chain (caught into
+  `ErrorMessage`, leaving selection unchanged), or a **stale `Index.TaskLists` snapshot** rendering
+  a Google tab the *live* `_cachedGoogleLists` no longer has (then the presenter collapse *would*
+  snap to local on click).
+
+### Required next step (static analysis exhausted after 8 rounds): instrument
+
+Add four temporary log lines and reproduce once in the browser; the console will show which branch
+fires in a single click:
+1. `HandleTabClick` entry — log `listId`, `CurrentListId`, and whether `OnTabChanged` fires.
+2. `HandleTabChange` — log `listId`.
+3. Presenter `UpdateStateAsync` — log `requested`, resolved `listId`, and
+   `taskService.TaskLists.Count` (to see if the live cache still has the Google list).
+4. `EnsureCurrentListSelectableAsync` / `EnsureLocalListSelectedAsync` — log when a reset fires.
+
+This distinguishes R0 (handlers never log → old binary) from a live collapse/reset (logs show the
+id snapping to local) from an event-wiring issue (click never logs). Recommend restoring the
+`currentListId`-first precedence at the same time.
+
+## Re-investigation #2 (2026-06-30): Google tab "never active on select" — why
+
+New symptom on `:7025`: the local "Tasks" tab (count 13) is **always** `aria-selected`; a Google
+list tab is rendered (title shown as the raw id `MTI0MzEwNTQwNTQ2…`, count 1) but **clicking it
+never activates it**; Schedule never active. Three interacting causes — only one is the live
+trigger, two are structural hazards in the current code.
+
+### A — Google auth is fully dead, so the tab is a "ghost" restored from settings (not a bug by itself)
+
+- Tasks API returns **403** (scope missing) and Drive returns **401**. Every Drive op flips
+  `_isConnected = false` (`GoogleDriveService.cs:155/169/185/200/214`).
+- The Google tab's title is the **raw list id**, not a name. That is the tell: it was rebuilt
+  from local settings by `RestoreCachedGoogleListsFromSettingsAsync`
+  (`TaskService.cs:972` → `new GoogleListCacheEntry(id, id, …)` — id used as title) because the
+  **live** `GetTaskListsAsync()` (which carries real titles) never succeeded (401/403). So the
+  tab exists, but the account behind it is unauthorized. Its count (1) is a locally-stored task
+  with that `GoogleListId`; sync for it is dead until reconnect with `auth/tasks` (Appendix C).
+
+### B — STRUCTURAL BUG: split source of truth for "current list" (highlight vs click-suppression)
+
+`TaskListTabs.razor` now reads **two different** current-list values:
+
+```csharp
+// highlight (which tab is "act"/aria-selected):
+private string? EffectiveCurrentListId
+    => (ServiceCurrentListId ?? CurrentListId) is {} c && VisibleLists.Any(l => l.Id == c)
+       ? c : VisibleLists.FirstOrDefault()?.Id;     // prefers ServiceCurrentListId
+
+// click-suppression:
+protected async Task HandleTabClick(string listId)
+{
+    if (listId != CurrentListId)                      // uses CurrentListId only (page ActiveListId)
+        await OnTabChanged.InvokeAsync(listId);
+}
+```
+
+`CurrentListId` is the page's `ActiveListId`; `ServiceCurrentListId` is `TaskService.CurrentListId`.
+They are written independently (`ActiveListId` from `state.CurrentListId` in `UpdateStateAsync`;
+`TaskService.CurrentListId` by `SelectListAsync` / the `Ensure*` resets), so they **can diverge**.
+When they do, the highlight and the click guard reference **different** lists:
+
+- If `ActiveListId == googleId` while `TaskService.CurrentListId == local`: the highlight shows
+  **local** (prefers `ServiceCurrentListId`), and clicking the Google tab evaluates
+  `googleId != CurrentListId(googleId)` → **false → `OnTabChanged` never fires** → click swallowed.
+  Result: local stays highlighted, Google never activates — exactly the report.
+
+This is the same class of defect as Fix 7 (compare the *right* id), reintroduced by splitting the
+read across two parameters. **Fix: one source of truth** — drive both highlight and
+click-suppression from the *same* id (the service's `CurrentListId`), or echo `ActiveListId`
+from it on every render so they cannot drift.
+
+### C — STRUCTURAL HAZARD: selection is force-reset to local whenever Google is unhealthy
+
+`EnsureLocalListSelectedAsync` (init else-branch, `TaskService.cs:111`, taken when Google is not
+connected at `TaskService.InitializeAsync` time — a real race against `CloudSyncService.InitializeAsync`,
+which calls `SetConnected(true)` separately) and `EnsureCurrentListSelectableAsync`
+(`:487/:654`) both **force `CurrentListId → local`** when the current Google list is absent from
+`_cachedGoogleLists`. Because Drive 401 flips `_isConnected=false`, a restored Google list can be
+present in the tab strip (from settings) while the service simultaneously decides the selection
+must fall back to local. So even a successful click can be undone on the next init/refresh cycle.
+These guards conflate "list permanently gone" with "Google auth temporarily down" — they should
+only reset when the list truly no longer exists, not when auth is failing but the cached entry
+(and its local tasks) still do.
+
+### Live trigger vs latent
+
+- **Most likely live trigger:** B (split source of truth) — produces a *stable* "Google
+  unclickable / local always active" once `ActiveListId` and `TaskService.CurrentListId` diverge,
+  which the init-time race (C) seeds.
+- **R0 caveat still applies:** given this bug surfaced repeatedly only on a stale process, confirm
+  `:7025` is a fresh rebuild/restart before deep-diving; if the title-as-id ghost tab shows, the
+  current `RestoreCachedGoogleListsFromSettingsAsync` IS running, so the build is recent.
+
+### Recommended direction (no code changed here)
+
+1. Collapse to a single current-list id for the tab strip (use `ServiceCurrentListId` for both
+   highlight and click-suppression, or remove `CurrentListId`/`ActiveListId` as a second source).
+2. Make the `Ensure*` resets fire only when the list is genuinely absent from the user's list set,
+   not when Google auth is merely failing (distinguish auth-down from list-deleted).
+3. Resolve the underlying 403 (reconnect for `auth/tasks`, or enable the Tasks API) so live list
+   titles load and the ghost tab becomes a real, selectable list.
+
+### Fix 8 — isolate Tasks auth failure in `ConnectAsync` (TC4)  ✅ fixed
+
+A residual gap on the **Connect** path (manual test TC4): `ConnectAsync` called
+`_taskService.RefreshGoogleListsAsync()` directly, so a Tasks-only **403 scope gap** (or a 401
+after the Fix 1 retry is exhausted) threw `UnauthorizedAccessException` into `ConnectAsync`'s
+generic catch, which logged a misleading "Google Drive authentication failed" and **returned
+false — aborting the entire connect, including Drive**, even though Drive's own scope was valid.
+
+Fix: wrap the Tasks refresh in its own `try/catch (UnauthorizedAccessException)` that logs a
+warning and sets `ReconnectRequired(true)`, then lets the connect succeed (`return true`). It is
+placed **after** `SyncNowAsync` so the Drive success path (which clears `ReconnectRequired`)
+does not wipe the Tasks-set flag. This mirrors the Fix 2 isolation already applied to
+`InitializeAsync`. The 403 scope gap itself remains a **configuration** issue (revoke access +
+reconnect for the `auth/tasks` scope, or enable the Google Tasks API in GCP); Fix 8 only stops
+it from killing the Drive connect and routes the user to the existing reconnect banner.
+
+### Fix 9 — disconnected user falls back to local list on startup  ✅ fixed
+
+When Google Tasks is disconnected (never connected, revoked, or 401 on token refresh), a
+persisted `CurrentListId` pointing to a Google list becomes stale — the list no longer exists in
+`_cachedGoogleLists`. `EnsureCurrentListSelectableAsync` (Fix 5) only runs in the connected
+branch; the disconnected early-return never corrected the selection.
+
+Fix: added `EnsureLocalListSelectedAsync()` in the disconnected `else` branch of
+`TaskService.InitializeAsync`. When `_appState.CurrentListId` is a non-local, non-schedule
+Google list id, it resets to the local Pomodoro list. Connected users with a valid Google list
+selected are unaffected (the `else` branch only runs when not connected).
+
+`src/Pomodoro.Web/Services/TaskService.cs`:
+
+```csharp
+// In InitializeAsync, else branch (not connected):
+if (!string.IsNullOrEmpty(_appState.CurrentListId) &&
+    _appState.CurrentListId != Constants.TaskLists.LocalPomodoroListId &&
+    _appState.CurrentListId != Constants.TaskLists.ScheduleListId)
+{
+    await SelectListAsync(Constants.TaskLists.LocalPomodoroListId);
+}
+```
+
+Tests: `InitializeAsync_NotConnected_NonLocalListId_FallsBackToLocal` added to
+`TaskServiceMultiListTests.cs`. Existing `InitializeAsync_RestoresCurrentListId` updated to
+use the local list id.
+
+### Fix 10 — presenter prefers service `CurrentListId` over stale page parameter  ✅ fixed
+
+`IndexPagePresenterService.UpdateStateAsync` resolved the active list via
+`currentListId ?? taskService.CurrentListId ?? local`. When `OnTaskServiceChanged` fires
+`UpdateStateAsync` via fire-and-forget `SafeAsync`, the passed `currentListId` is the **page's
+`ActiveListId`** — which may be stale if a concurrent `SelectListAsync` has already updated the
+service property. The page parameter wins and clobbers the service's corrected value, causing
+the wrong tab to highlight.
+
+Fix: swap precedence to `taskService.CurrentListId ?? currentListId ?? local`. `SelectListAsync`
+sets `_appState.CurrentListId` synchronously before calling `NotifyStateChanged`, so the
+fire-and-forget handler always sees the fresh service value. The page parameter only wins as
+fallback when the service hasn't been updated yet.
+
+`src/Pomodoro.Web/Services/IndexPagePresenterService.cs`:
+
+```csharp
+var requested = taskService.CurrentListId ?? currentListId ?? Constants.TaskLists.LocalPomodoroListId;
+```
+
+Test: `UpdateStateAsync_PrefersServiceCurrentListId_OverStalePassedId` added to
+`IndexPagePresenterServiceTests.cs`.
+
+### Fix 11 — task section alignment (12px inset)  ✅ fixed
+
+`TaskListTabs` and `TaskListSyncStrip` had no horizontal margin, causing them to align to the
+viewport edge while `timer-card`, `mode-tabs`, and `task-card` all use `margin: 0 12px`. The
+misalignment made the task section look disconnected from the rest of the page.
+
+Fix: added `margin: 0 12px` to both components:
+
+- `src/Pomodoro.Web/Components/Tasks/TaskListTabs.razor.css`: `.ltabs { margin: 0 12px 8px; }`
+- `src/Pomodoro.Web/Components/Tasks/TaskListSyncStrip.razor.css`: `.sync-strip { margin: 0 12px 6px; }`
+
+### Fix 12 — tab highlight uses list's own color as accent  ✅ fixed
+
+The active tab indicator used a fixed `var(--pomodoro-color)` (red) for all tabs. This only
+looked coherent on the Tasks tab (red dot + red accent). On Schedule (yellow dot) and Google
+list tabs (variable dot colors), the red accent was visually disjointed and didn't read as
+"selected."
+
+Fix: pass each list's color as a CSS custom property (`--list-color`) on the active button
+via inline style, and reference it in the CSS:
+
+`src/Pomodoro.Web/Components/Tasks/TaskListTabs.razor`:
+
+```html
+<button class="lt @(isActive ? "act" : "")"
+        style="@(isActive ? $"--list-color: {list.Color}" : "")">
+```
+
+`src/Pomodoro.Web/Components/Tasks/TaskListTabs.razor.css`:
+
+```css
+.lt.act {
+    color: var(--color-text-primary);
+    font-weight: 600;
+    border-bottom-color: var(--list-color);
+}
+```
+
+Each tab's active accent now matches its dot color — red for Tasks, yellow for Schedule,
+and the list's own color for Google tabs. Consistent with the mode-tabs pattern
+(`button.active` uses timer-mode-specific border colors).
+
+### Fix 13 — stale fire-and-forget `UpdateStateAsync` overwrites `ActiveListId`  ✅ fixed
+
+`OnTaskServiceChanged` calls `UpdateStateAsync` via fire-and-forget `SafeAsync`
+(`Index.razor.Events.cs:20`). Multiple in-flight calls captured the page's `ActiveListId` at
+their start; a late-completing older call could overwrite the fields that a newer click had
+already set, leaving the wrong tab highlighted until the next action.
+
+Fix: a monotonic sequence counter `_updateSeq` in `IndexBase`. Each `UpdateStateAsync` captures
+`seq = ++_updateSeq` before the await, and after the await does `if (seq != _updateSeq) return;`
+so only the most-recently-started call's result is applied. WASM is single-threaded (interleaving
+only at awaits), so the increment/compare is race-free without a lock.
+
+`src/Pomodoro.Web/Pages/Index.razor.cs`:
+
+```csharp
+private int _updateSeq;
+
+protected async Task UpdateStateAsync()
+{
+    try
+    {
+        var seq = ++_updateSeq;
+        var state = await IndexPagePresenterService.UpdateStateAsync(...);
+
+        if (seq != _updateSeq) return;   // a newer update started; discard this stale result
+
+        Tasks = state.Tasks;
+        // ... apply fields ...
+    }
+    ...
+}
+```
+
+This is the primary guard against re-entrant overwrites; Fix 10 (presenter precedence swap)
+remains as defense-in-depth.
+
 ## Re-investigation (2026-06-28): why the symptom persisted after Fix 5/6 (superseded by RESOLVED above)
 
 Reported at runtime (localhost:7025): "Tasks" tab is active, coral dot + badge shows **12**,
@@ -437,16 +729,19 @@ the cache:
 ## Files touched
 
 - `src/Pomodoro.Web/Services/GoogleTasksService.cs` (Fix 1)
-- `src/Pomodoro.Web/Services/CloudSyncService.cs` (Fix 2, reconnect state)
-- `src/Pomodoro.Web/Services/TaskService.cs` (Fix 5 — `EnsureCurrentListSelectableAsync` + `finally`; Fix 6 — `GetTasksForListAsync` collapse)
-- `src/Pomodoro.Web/Services/IndexPagePresenterService.cs` (Fix 6 — render-boundary collapse; rethrows instead of swallowing)
-- `src/Pomodoro.Web/Components/Tasks/TaskListTabs.razor` (Fix 7 — click-suppression compares real `CurrentListId`, not the fallback)
-- `src/Pomodoro.Web/Pages/Index.razor.cs` + `CloudSyncSettings.razor` (Fix 3 reconnect banner)
-- `src/Pomodoro.Web/Services/IGoogleDriveService.cs` / `GoogleDriveService.cs` / `Constants.JsInterop.cs` / `wwwroot/js/googleDrive.js` (Fix 4 — removed `SetAccessTokenAsync`)
+- `src/Pomodoro.Web/Services/CloudSyncService.cs` (Fix 2, reconnect state, Fix 8)
+- `src/Pomodoro.Web/Services/TaskService.cs` (Fix 5 — `EnsureCurrentListSelectableAsync` + `finally`; Fix 6 — `GetTasksForListAsync` collapse; Fix 9 — disconnected fallback)
+- `src/Pomodoro.Web/Services/IndexPagePresenterService.cs` (Fix 6 — render-boundary collapse; rethrows instead of swallowing; Fix 10 — presenter precedence swap)
+- `src/Pomodoro.Web/Components/Tasks/TaskListTabs.razor` (Fix 7 — click-suppression compares real `CurrentListId`, not the fallback; Fix 12 — `--list-color` inline style)
+- `src/Pomodoro.Web/Components/Tasks/TaskListTabs.razor.css` (Fix 12 — border-bottom uses `var(--list-color)`)
+- `src/Pomodoro.Web/Components/Tasks/TaskListSyncStrip.razor.css` (Fix 11 — 12px inset)
+- `src/Pomodoro.Web/Pages/Index.razor.cs` (Fix 3 reconnect banner; Fix 13 — `_updateSeq` stale-call guard in `UpdateStateAsync`) + `CloudSyncSettings.razor` (Fix 3 reconnect banner)
+- `src/Pomodoro.Web/Services/IGoogleDriveService.cs` / `GoogleDriveService.cs` / `Constants.JsInterop.cs` / `wwwroot/js/googleDrive.js` (token persistence — store/restore access token with 55-min expiry guard; `SyncStateRecord` fields `AccessToken`/`TokenExpiresAt`)
 - `tests/Pomodoro.Web.Tests/Services/GoogleTasksServiceTests.cs`
-- `tests/Pomodoro.Web.Tests/Services/CloudSyncServiceTests*.cs`
-- `tests/Pomodoro.Web.Tests/Services/TaskServiceMultiListTests.cs`
-- `tests/Pomodoro.Web.Tests/Services/IndexPagePresenterServiceTests.cs`
+- `tests/Pomodoro.Web.Tests/Services/CloudSyncServiceTests*.cs` (token-restore cases)
+- `tests/Pomodoro.Web.Tests/Services/TaskServiceMultiListTests.cs` (Fix 9)
+- `tests/Pomodoro.Web.Tests/Services/IndexPagePresenterServiceTests.cs` (Fix 10)
+- `tests/Pomodoro.Web.Tests/Services/GoogleDriveServiceTests.cs` (token persistence)
 
 ---
 

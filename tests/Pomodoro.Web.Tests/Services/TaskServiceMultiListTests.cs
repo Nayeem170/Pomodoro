@@ -293,7 +293,7 @@ public class TaskServiceMultiListTests
         var record = new AppStateRecord
         {
             Id = Constants.Storage.DefaultSettingsId,
-            CurrentListId = "restored-list-id"
+            CurrentListId = Constants.TaskLists.LocalPomodoroListId
         };
         _mockIndexedDb.Setup(x => x.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(record);
@@ -301,7 +301,25 @@ public class TaskServiceMultiListTests
         var sut = CreateSut();
         await sut.InitializeAsync();
 
-        _appState.CurrentListId.Should().Be("restored-list-id");
+        _appState.CurrentListId.Should().Be(Constants.TaskLists.LocalPomodoroListId);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_NotConnected_NonLocalListId_FallsBackToLocal()
+    {
+        var record = new AppStateRecord
+        {
+            Id = Constants.Storage.DefaultSettingsId,
+            CurrentListId = "some-google-list-id"
+        };
+        _mockIndexedDb.Setup(x => x.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(record);
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(false);
+
+        var sut = CreateSut();
+        await sut.InitializeAsync();
+
+        _appState.CurrentListId.Should().Be(Constants.TaskLists.LocalPomodoroListId);
     }
 
     [Fact]
@@ -530,6 +548,21 @@ public class TaskServiceMultiListTests
         _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
         _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync())
             .ThrowsAsync(new InvalidOperationException("offline"));
+
+        var sut = CreateSut();
+        await sut.RefreshGoogleListsAsync();
+
+        _appState.CurrentListId.Should().Be(Constants.TaskLists.LocalPomodoroListId);
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_PullThrowsForbidden_SwallowsAndResetsStaleListToLocal()
+    {
+        _appState.CurrentListId = "glist-gone";
+
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync())
+            .ThrowsAsync(new TasksAccessForbiddenException("403 Forbidden", new Exception()));
 
         var sut = CreateSut();
         await sut.RefreshGoogleListsAsync();

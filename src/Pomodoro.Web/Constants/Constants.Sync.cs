@@ -8,6 +8,7 @@ public static partial class Constants
         public const int SyncVersion = 1;
         public const int DebounceDelayMs = 5000;
         public const int PeriodicSyncIntervalMs = 30 * 60 * 1000;
+        public static readonly TimeSpan AccessTokenLifetime = TimeSpan.FromMinutes(55);
         public const string AppDataFolder = "appDataFolder";
         public const string DriveScope = "https://www.googleapis.com/auth/drive.appdata";
         public const string TasksScope = "https://www.googleapis.com/auth/tasks.readonly";
@@ -66,7 +67,7 @@ public static partial class Constants
         public const string LogUserInfoSuccess = "Google account email resolved: {Email}";
         public const string LogTasksRateLimited = "Google Tasks API rate-limited, retrying";
         public const string LogTasksForbidden = "Tasks API access forbidden — check scope";
-        public const string TasksAccessForbidden = "Google Tasks access forbidden — reconnect with updated permissions";
+        public const string TasksAccessForbidden = "Google Tasks access forbidden — enable the Tasks API or grant the tasks scope";
         public const string TasksReconnectRequired = "Tasks connection lost — reconnect required";
         public const string TasksRateLimitExceeded = "Google Tasks API rate-limited after {MaxRetries} retries";
         public const string TasksUnavailable = "Google Tasks API unavailable after retries";

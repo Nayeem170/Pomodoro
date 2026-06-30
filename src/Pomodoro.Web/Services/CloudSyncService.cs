@@ -124,7 +124,15 @@ public class CloudSyncService : ICloudSyncService, IDisposable
                 if (!string.IsNullOrEmpty(ClientId) && syncState.IsConnected)
                 {
                     await _googleDriveService.InitializeAsync(ClientId);
-                    var authed = await _googleDriveService.TrySilentAuthAsync();
+
+                    var restoredValid = syncState.TokenExpiresAt.HasValue
+                        && syncState.TokenExpiresAt.Value > DateTime.UtcNow;
+                    if (restoredValid)
+                    {
+                        await _googleDriveService.RestoreAccessTokenAsync(syncState.AccessToken, syncState.TokenExpiresAt);
+                    }
+
+                    var authed = restoredValid || await _googleDriveService.TrySilentAuthAsync();
                     if (!authed)
                         SetReconnectRequired(true);
                     _googleDriveService.SetConnected(true);
@@ -172,13 +180,23 @@ public class CloudSyncService : ICloudSyncService, IDisposable
 
             SetReconnectRequired(false);
             StartPeriodicSync();
-            await _taskService.RefreshGoogleListsAsync();
             NotifyStatusChanged();
 
             var syncResult = await SyncNowAsync();
             if (!syncResult.Success)
             {
                 _logger.LogWarning(Constants.SyncMessages.LogSyncFailed, syncResult.ErrorMessage);
+            }
+
+            try
+            {
+                await _taskService.RefreshGoogleListsAsync();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Google Tasks auth failed during connect; Drive sync will continue. Reconnect required.");
+                SetReconnectRequired(true);
+                NotifyStatusChanged();
             }
 
             await SaveSyncStateAsync(connected: true);
@@ -476,7 +494,9 @@ public class CloudSyncService : ICloudSyncService, IDisposable
                 LastSyncedAt = LastSyncedAt,
                 DeviceId = DeviceId,
                 IsConnected = connected ?? IsConnected,
-                AccountEmail = _googleDriveService.AccountEmail
+                AccountEmail = _googleDriveService.AccountEmail,
+                AccessToken = _googleDriveService.AccessToken,
+                TokenExpiresAt = _googleDriveService.TokenExpiresAt
             };
             await _indexedDb.PutAsync(Constants.Storage.AppStateStore, state);
         }
@@ -522,4 +542,6 @@ public class SyncStateRecord
     public string? DeviceId { get; set; }
     public bool IsConnected { get; set; }
     public string? AccountEmail { get; set; }
+    public string? AccessToken { get; set; }
+    public DateTime? TokenExpiresAt { get; set; }
 }

@@ -182,7 +182,7 @@ public class GoogleTasksService : IGoogleTasksService
             catch (JSException ex) when (ex.Message.Contains("403"))
             {
                 _logger.LogWarning(ex, Constants.SyncMessages.LogTasksForbidden);
-                throw new UnauthorizedAccessException(Constants.SyncMessages.TasksAccessForbidden, ex);
+                throw new TasksAccessForbiddenException(Constants.SyncMessages.TasksAccessForbidden, ex);
             }
             catch (JSException ex) when (ex.Message.Contains("429"))
             {

@@ -147,6 +147,25 @@ public class IndexPagePresenterServiceTests
     }
 
     [Fact]
+    public async Task UpdateStateAsync_PrefersPassedCurrentListId_OverServiceCurrentListId()
+    {
+        var taskService = SetupTaskService();
+        taskService.Setup(s => s.CurrentListId).Returns("glist-1");
+        taskService.Setup(s => s.TaskLists).Returns(new List<TaskListRef>
+        {
+            new("glist-1", "Google", "var(--pomodoro-color)", 0, true, true),
+            new("stale-list", "Stale", "var(--pomodoro-color)", 0, true, true),
+            new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)", 0, true, true)
+        });
+        var timerService = SetupTimerService();
+
+        var result = await _service.UpdateStateAsync(taskService.Object, timerService.Object, "stale-list");
+
+        taskService.Verify(s => s.GetTasksForListAsync("stale-list"), Times.Once);
+        Assert.Equal("stale-list", result.CurrentListId);
+    }
+
+    [Fact]
     public async Task UpdateStateAsync_DeadListId_CollapsesToLocal()
     {
         var localTasks = new List<TaskItem>

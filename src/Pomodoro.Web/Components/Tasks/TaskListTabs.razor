@@ -6,6 +6,7 @@
     {
         var isActive = list.Id == EffectiveCurrentListId;
         <button class="lt @(isActive ? "act" : "")"
+                style="@(isActive ? $"--list-color: {list.Color}" : "")"
                 @onclick="() => HandleTabClick(list.Id)"
                 @onkeydown="OnKeyDown"
                 aria-selected="@isActive.ToString().ToLower()"
@@ -29,27 +30,30 @@
     public string? CurrentListId { get; set; }
 
     [Parameter]
+    public string? ServiceCurrentListId { get; set; }
+
+    [Parameter]
     public EventCallback<string> OnTabChanged { get; set; }
 
     private IReadOnlyList<TaskListRef> VisibleLists => Lists.Where(l => l.IsVisible).ToList();
+
+    private string? ResolvedCurrentListId => ServiceCurrentListId ?? CurrentListId;
 
     private string? EffectiveCurrentListId
     {
         get
         {
-            if (CurrentListId != null && VisibleLists.Any(l => l.Id == CurrentListId))
-                return CurrentListId;
+            var current = ResolvedCurrentListId;
+            if (current != null && VisibleLists.Any(l => l.Id == current))
+                return current;
             return VisibleLists.FirstOrDefault()?.Id;
         }
     }
 
     protected async Task HandleTabClick(string listId)
     {
-        // Suppress only a re-select of the *actually current* list. Comparing against
-        // EffectiveCurrentListId (which falls back to the first visible list when CurrentListId
-        // is stale/dead) would swallow a click on the fallback tab, leaving the user unable to
-        // refresh out of a stale-selection state. An explicit click must always select.
-        if (listId != CurrentListId)
+        Console.WriteLine($"[TABDBG] HandleTabClick: clicked={listId} resolved={ResolvedCurrentListId} currentListId={CurrentListId} serviceCurrent={ServiceCurrentListId} suppressed={listId == ResolvedCurrentListId}");
+        if (listId != ResolvedCurrentListId)
         {
             await OnTabChanged.InvokeAsync(listId);
         }

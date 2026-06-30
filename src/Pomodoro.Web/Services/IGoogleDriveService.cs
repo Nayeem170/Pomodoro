@@ -11,6 +11,9 @@ public interface IGoogleDriveService
     string? AccountEmail { get; }
     void SetAccountEmail(string? email);
     Task<string?> GetAccessTokenAsync();
+    Task RestoreAccessTokenAsync(string? token, DateTime? expiresAt);
+    string? AccessToken { get; }
+    DateTime? TokenExpiresAt { get; }
     Task<string?> FindSyncFileAsync();
     Task<string> ReadFileAsync(string fileId);
     Task<string> CreateFileAsync(string fileName, string content);

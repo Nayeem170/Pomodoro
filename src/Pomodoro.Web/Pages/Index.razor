@@ -86,6 +86,7 @@ else
                 <div class="tasks-section">
                     <TaskListTabs Lists="TaskLists"
                                  CurrentListId="ActiveListId"
+                                 ServiceCurrentListId="TaskService.CurrentListId"
                                  OnTabChanged="HandleTabChange" />
                     <TaskListSyncStrip IsGoogleList="@(ActiveList?.IsLocal == false)"
                                        ListName="@ActiveList?.Title" />

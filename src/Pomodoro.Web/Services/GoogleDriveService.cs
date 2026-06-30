@@ -9,9 +9,15 @@ public class GoogleDriveService : IGoogleDriveService
     private readonly ILogger<GoogleDriveService> _logger;
     private bool _isConnected;
     private string? _accountEmail;
+    private string? _accessToken;
+    private long _tokenExpiresAtMs;
 
     public bool IsConnected => _isConnected;
     public string? AccountEmail => _accountEmail;
+    public string? AccessToken => _accessToken;
+    public DateTime? TokenExpiresAt => _tokenExpiresAtMs > 0
+        ? DateTimeOffset.FromUnixTimeMilliseconds(_tokenExpiresAtMs).UtcDateTime
+        : null;
 
     public GoogleDriveService(IJSRuntime jsRuntime, ILogger<GoogleDriveService> logger)
     {
@@ -30,6 +36,8 @@ public class GoogleDriveService : IGoogleDriveService
             var token = await _jsRuntime.InvokeAsync<string?>(Constants.GoogleDriveJsFunctions.TrySilentAuth);
             if (!string.IsNullOrEmpty(token))
             {
+                _accessToken = token;
+                _tokenExpiresAtMs = TokenExpiryFromNow();
                 _isConnected = true;
                 await FetchAccountEmailAsync(token);
                 return true;
@@ -61,6 +69,8 @@ public class GoogleDriveService : IGoogleDriveService
         try
         {
             var token = await _jsRuntime.InvokeAsync<string>(Constants.GoogleDriveJsFunctions.RequestAuth);
+            _accessToken = token;
+            _tokenExpiresAtMs = TokenExpiryFromNow();
             _isConnected = true;
             await FetchAccountEmailAsync(token);
             _logger.LogInformation(Constants.SyncMessages.LogAuthSuccess);
@@ -81,6 +91,8 @@ public class GoogleDriveService : IGoogleDriveService
             await _jsRuntime.InvokeVoidAsync(Constants.GoogleDriveJsFunctions.RevokeAuth);
             _isConnected = false;
             _accountEmail = null;
+            _accessToken = null;
+            _tokenExpiresAtMs = 0;
             _logger.LogInformation(Constants.SyncMessages.LogDisconnect);
         }
         catch (Exception ex)
@@ -94,6 +106,19 @@ public class GoogleDriveService : IGoogleDriveService
     {
         return await _jsRuntime.InvokeAsync<string?>(Constants.GoogleDriveJsFunctions.GetAccessToken);
     }
+
+    public async Task RestoreAccessTokenAsync(string? token, DateTime? expiresAt)
+    {
+        if (string.IsNullOrEmpty(token) || expiresAt is null) return;
+        var expiresAtMs = new DateTimeOffset(expiresAt.Value).ToUnixTimeMilliseconds();
+        await _jsRuntime.InvokeVoidAsync(Constants.GoogleDriveJsFunctions.SetAccessToken, token, expiresAtMs);
+        _accessToken = token;
+        _tokenExpiresAtMs = expiresAtMs;
+        _isConnected = true;
+    }
+
+    private static long TokenExpiryFromNow() =>
+        DateTimeOffset.UtcNow.Add(Constants.Sync.AccessTokenLifetime).ToUnixTimeMilliseconds();
 
     private async Task FetchAccountEmailAsync(string accessToken)
     {

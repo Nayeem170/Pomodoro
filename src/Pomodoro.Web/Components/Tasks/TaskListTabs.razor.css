@@ -1,17 +1,17 @@
 .ltabs {
     display: flex;
     gap: 2px;
-    padding: 2px;
+    padding: 2px 0;
+    margin: 0 12px 8px;
     background: var(--color-background-secondary);
     border-radius: var(--border-radius-md);
-    margin-bottom: 8px;
 }
 
 .lt {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 10px;
+    padding: 4px 10px 5px;
     font-size: 12px;
     border: none;
     background: transparent;
@@ -19,7 +19,10 @@
     cursor: pointer;
     border-radius: 6px;
     font-family: var(--font-sans);
-    transition: background 0.15s;
+    font-weight: 400;
+    color: var(--color-text-tertiary);
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
     white-space: nowrap;
 }
 
@@ -46,14 +49,13 @@
 }
 
 .lt.act {
-    background: var(--color-background-primary);
     color: var(--color-text-primary);
-    font-weight: 500;
-    border: 0.5px solid var(--color-border-tertiary);
+    font-weight: 600;
+    border-bottom-color: var(--list-color);
 }
 
 .lt:hover {
-    background: var(--color-background-tertiary);
+    color: var(--color-text-secondary);
 }
 
 .lt:focus {

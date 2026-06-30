@@ -1,7 +1,17 @@
 window.googleDrive = {
     _tokenClient: null,
     _accessToken: null,
+    _tokenExpiresAt: 0,
     _clientId: null,
+
+    _storeToken: function(response) {
+        if (response && response.access_token) {
+            this._accessToken = response.access_token;
+            this._tokenExpiresAt = response.expires_in
+                ? Date.now() + (response.expires_in * 1000)
+                : Date.now() + (3600 * 1000);
+        }
+    },
 
     _waitForGis: function() {
         return new Promise((resolve, reject) => {
@@ -31,18 +41,14 @@ window.googleDrive = {
                 client_id: clientId,
                 scope: 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/tasks openid email',
                 callback: (response) => {
-                    if (response.access_token) {
-                        this._accessToken = response.access_token;
-                    }
+                    this._storeToken(response);
                 }
             });
 
             if (autoAuth && this._tokenClient) {
                 return new Promise((resolve) => {
                     this._tokenClient.callback = (response) => {
-                        if (response.access_token) {
-                            this._accessToken = response.access_token;
-                        }
+                        this._storeToken(response);
                         resolve(!!response.access_token);
                     };
                     this._tokenClient.requestAccessToken({ prompt: '' });
@@ -64,7 +70,7 @@ window.googleDrive = {
                     reject(new Error(response.error));
                     return;
                 }
-                this._accessToken = response.access_token;
+                this._storeToken(response);
                 resolve(response.access_token);
             };
             this._tokenClient.requestAccessToken();
@@ -78,15 +84,15 @@ window.googleDrive = {
                 return;
             }
             this._tokenClient.callback = (response) => {
+                this._storeToken(response);
                 if (response.access_token) {
-                    this._accessToken = response.access_token;
                     resolve(response.access_token);
                 } else {
                     resolve(null);
                 }
             };
             try {
-                this._tokenClient.requestAccessToken({ prompt: '' });
+                this._tokenClient.requestAccessToken({ prompt: 'none' });
             } catch (e) {
                 resolve(null);
             }
@@ -107,11 +113,24 @@ window.googleDrive = {
     },
 
     isConnected: function() {
-        return this._accessToken !== null && this._accessToken !== undefined;
+        var token = this.getAccessToken();
+        return token !== null && token !== undefined;
     },
 
     getAccessToken: function() {
-        return this._accessToken;
+        if (this._accessToken && Date.now() < this._tokenExpiresAt) {
+            return this._accessToken;
+        }
+        this._accessToken = null;
+        this._tokenExpiresAt = 0;
+        return null;
+    },
+
+    setAccessToken: function(token, expiresAtMs) {
+        if (token && expiresAtMs && expiresAtMs > Date.now()) {
+            this._accessToken = token;
+            this._tokenExpiresAt = expiresAtMs;
+        }
     },
 
     _getAuthHeaders: function() {

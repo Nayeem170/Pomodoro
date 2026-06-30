@@ -67,7 +67,7 @@ public class GoogleTasksServiceTests
     {
         _jsRuntime.QueueException(new JSException("Error 403: Forbidden"));
 
-        var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.GetTaskListsAsync());
+        var ex = await Assert.ThrowsAsync<TasksAccessForbiddenException>(() => _service.GetTaskListsAsync());
         Assert.Contains("access forbidden", ex.Message);
     }
 
