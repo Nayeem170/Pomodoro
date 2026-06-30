@@ -30,6 +30,9 @@
     public string? CurrentListId { get; set; }
 
     [Parameter]
+    public string? ServiceCurrentListId { get; set; }
+
+    [Parameter]
     public EventCallback<string> OnTabChanged { get; set; }
 
     private IReadOnlyList<TaskListRef> VisibleLists => Lists.Where(l => l.IsVisible).ToList();
@@ -38,8 +41,9 @@
     {
         get
         {
-            if (CurrentListId != null && VisibleLists.Any(l => l.Id == CurrentListId))
-                return CurrentListId;
+            var current = ServiceCurrentListId ?? CurrentListId;
+            if (current != null && VisibleLists.Any(l => l.Id == current))
+                return current;
             return VisibleLists.FirstOrDefault()?.Id;
         }
     }

@@ -326,6 +326,88 @@ just `dotnet build`), and hard-reload / unregister the SW to drop a cached `inde
 Fix 7 (below) remains a real, kept fix: it guarantees a manual tab click can always recover if
 any future stale-selection state recurs.
 
+## Re-investigation #2 (2026-06-30): Google tab "never active on select" — why
+
+New symptom on `:7025`: the local "Tasks" tab (count 13) is **always** `aria-selected`; a Google
+list tab is rendered (title shown as the raw id `MTI0MzEwNTQwNTQ2…`, count 1) but **clicking it
+never activates it**; Schedule never active. Three interacting causes — only one is the live
+trigger, two are structural hazards in the current code.
+
+### A — Google auth is fully dead, so the tab is a "ghost" restored from settings (not a bug by itself)
+
+- Tasks API returns **403** (scope missing) and Drive returns **401**. Every Drive op flips
+  `_isConnected = false` (`GoogleDriveService.cs:155/169/185/200/214`).
+- The Google tab's title is the **raw list id**, not a name. That is the tell: it was rebuilt
+  from local settings by `RestoreCachedGoogleListsFromSettingsAsync`
+  (`TaskService.cs:972` → `new GoogleListCacheEntry(id, id, …)` — id used as title) because the
+  **live** `GetTaskListsAsync()` (which carries real titles) never succeeded (401/403). So the
+  tab exists, but the account behind it is unauthorized. Its count (1) is a locally-stored task
+  with that `GoogleListId`; sync for it is dead until reconnect with `auth/tasks` (Appendix C).
+
+### B — STRUCTURAL BUG: split source of truth for "current list" (highlight vs click-suppression)
+
+`TaskListTabs.razor` now reads **two different** current-list values:
+
+```csharp
+// highlight (which tab is "act"/aria-selected):
+private string? EffectiveCurrentListId
+    => (ServiceCurrentListId ?? CurrentListId) is {} c && VisibleLists.Any(l => l.Id == c)
+       ? c : VisibleLists.FirstOrDefault()?.Id;     // prefers ServiceCurrentListId
+
+// click-suppression:
+protected async Task HandleTabClick(string listId)
+{
+    if (listId != CurrentListId)                      // uses CurrentListId only (page ActiveListId)
+        await OnTabChanged.InvokeAsync(listId);
+}
+```
+
+`CurrentListId` is the page's `ActiveListId`; `ServiceCurrentListId` is `TaskService.CurrentListId`.
+They are written independently (`ActiveListId` from `state.CurrentListId` in `UpdateStateAsync`;
+`TaskService.CurrentListId` by `SelectListAsync` / the `Ensure*` resets), so they **can diverge**.
+When they do, the highlight and the click guard reference **different** lists:
+
+- If `ActiveListId == googleId` while `TaskService.CurrentListId == local`: the highlight shows
+  **local** (prefers `ServiceCurrentListId`), and clicking the Google tab evaluates
+  `googleId != CurrentListId(googleId)` → **false → `OnTabChanged` never fires** → click swallowed.
+  Result: local stays highlighted, Google never activates — exactly the report.
+
+This is the same class of defect as Fix 7 (compare the *right* id), reintroduced by splitting the
+read across two parameters. **Fix: one source of truth** — drive both highlight and
+click-suppression from the *same* id (the service's `CurrentListId`), or echo `ActiveListId`
+from it on every render so they cannot drift.
+
+### C — STRUCTURAL HAZARD: selection is force-reset to local whenever Google is unhealthy
+
+`EnsureLocalListSelectedAsync` (init else-branch, `TaskService.cs:111`, taken when Google is not
+connected at `TaskService.InitializeAsync` time — a real race against `CloudSyncService.InitializeAsync`,
+which calls `SetConnected(true)` separately) and `EnsureCurrentListSelectableAsync`
+(`:487/:654`) both **force `CurrentListId → local`** when the current Google list is absent from
+`_cachedGoogleLists`. Because Drive 401 flips `_isConnected=false`, a restored Google list can be
+present in the tab strip (from settings) while the service simultaneously decides the selection
+must fall back to local. So even a successful click can be undone on the next init/refresh cycle.
+These guards conflate "list permanently gone" with "Google auth temporarily down" — they should
+only reset when the list truly no longer exists, not when auth is failing but the cached entry
+(and its local tasks) still do.
+
+### Live trigger vs latent
+
+- **Most likely live trigger:** B (split source of truth) — produces a *stable* "Google
+  unclickable / local always active" once `ActiveListId` and `TaskService.CurrentListId` diverge,
+  which the init-time race (C) seeds.
+- **R0 caveat still applies:** given this bug surfaced repeatedly only on a stale process, confirm
+  `:7025` is a fresh rebuild/restart before deep-diving; if the title-as-id ghost tab shows, the
+  current `RestoreCachedGoogleListsFromSettingsAsync` IS running, so the build is recent.
+
+### Recommended direction (no code changed here)
+
+1. Collapse to a single current-list id for the tab strip (use `ServiceCurrentListId` for both
+   highlight and click-suppression, or remove `CurrentListId`/`ActiveListId` as a second source).
+2. Make the `Ensure*` resets fire only when the list is genuinely absent from the user's list set,
+   not when Google auth is merely failing (distinguish auth-down from list-deleted).
+3. Resolve the underlying 403 (reconnect for `auth/tasks`, or enable the Tasks API) so live list
+   titles load and the ghost tab becomes a real, selectable list.
+
 ### Fix 8 — isolate Tasks auth failure in `ConnectAsync` (TC4)  ✅ fixed
 
 A residual gap on the **Connect** path (manual test TC4): `ConnectAsync` called

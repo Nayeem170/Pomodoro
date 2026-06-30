@@ -260,6 +260,25 @@ public class TaskListTabsTests : TestContext
     }
 
     [Fact]
+    public void TaskListTabs_ServiceCurrentListId_PrefersServiceValueOverStalePageId()
+    {
+        var lists = new List<TaskListRef>
+        {
+            new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)", 0, true, true),
+            new("glist-1", "Google", "#4285F4", 0, true, false)
+        };
+
+        var cut = RenderComponent<TaskListTabs>(parameters => parameters
+            .Add(p => p.Lists, lists)
+            .Add(p => p.CurrentListId, Constants.TaskLists.LocalPomodoroListId)
+            .Add(p => p.ServiceCurrentListId, "glist-1"));
+
+        var active = cut.FindAll("button.lt.act");
+        Assert.Single(active);
+        Assert.Contains("Google", active[0].TextContent);
+    }
+
+    [Fact]
     public void TaskListTabs_HiddenCurrentList_FallsBackToFirstVisible()
     {
         var lists = new List<TaskListRef>
