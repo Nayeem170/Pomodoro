@@ -37,11 +37,13 @@
 
     private IReadOnlyList<TaskListRef> VisibleLists => Lists.Where(l => l.IsVisible).ToList();
 
+    private string? ResolvedCurrentListId => ServiceCurrentListId ?? CurrentListId;
+
     private string? EffectiveCurrentListId
     {
         get
         {
-            var current = ServiceCurrentListId ?? CurrentListId;
+            var current = ResolvedCurrentListId;
             if (current != null && VisibleLists.Any(l => l.Id == current))
                 return current;
             return VisibleLists.FirstOrDefault()?.Id;
@@ -50,11 +52,7 @@
 
     protected async Task HandleTabClick(string listId)
     {
-        // Suppress only a re-select of the *actually current* list. Comparing against
-        // EffectiveCurrentListId (which falls back to the first visible list when CurrentListId
-        // is stale/dead) would swallow a click on the fallback tab, leaving the user unable to
-        // refresh out of a stale-selection state. An explicit click must always select.
-        if (listId != CurrentListId)
+        if (listId != ResolvedCurrentListId)
         {
             await OnTabChanged.InvokeAsync(listId);
         }

@@ -279,6 +279,31 @@ public class TaskListTabsTests : TestContext
     }
 
     [Fact]
+    public void TaskListTabs_DivergedIds_ClickingNonServiceList_NotSuppressed()
+    {
+        var lists = new List<TaskListRef>
+        {
+            new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)", 0, true, true),
+            new("glist-1", "Google", "#4285F4", 0, true, false)
+        };
+        string? changedId = null;
+
+        var cut = RenderComponent<TaskListTabs>(parameters => parameters
+            .Add(p => p.Lists, lists)
+            .Add(p => p.CurrentListId, "glist-1")
+            .Add(p => p.ServiceCurrentListId, Constants.TaskLists.LocalPomodoroListId)
+            .Add(p => p.OnTabChanged, EventCallback.Factory.Create<string>(this, id => changedId = id)));
+
+        var active = cut.FindAll("button.lt.act");
+        Assert.Single(active);
+        Assert.Contains("Tasks", active[0].TextContent);
+
+        cut.FindAll("button.lt").Last().Click();
+
+        Assert.Equal("glist-1", changedId);
+    }
+
+    [Fact]
     public void TaskListTabs_HiddenCurrentList_FallsBackToFirstVisible()
     {
         var lists = new List<TaskListRef>
