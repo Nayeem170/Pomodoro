@@ -261,9 +261,9 @@ public partial class IndexBase : ComponentBase, IDisposable
 
     private async Task UpdateStateAsync()
     {
+        var seq = ++_updateSeq;
         try
         {
-            var seq = ++_updateSeq;
             var state = await IndexPagePresenterService.UpdateStateAsync(TaskService, TimerService, ActiveListId);
 
             if (seq != _updateSeq) return;
