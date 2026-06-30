@@ -165,6 +165,13 @@ public class GoogleTasksService : IGoogleTasksService
             catch (JSException ex) when (ex.Message.Contains("401"))
             {
                 _logger.LogWarning(Constants.SyncMessages.LogSyncUnauthorized);
+                if (attempt < maxRetries - 1 && await _googleDriveService.TrySilentAuthAsync())
+                {
+                    token = await _googleDriveService.GetAccessTokenAsync();
+                    if (string.IsNullOrEmpty(token))
+                        throw new UnauthorizedAccessException(Constants.SyncMessages.TasksReconnectRequired, ex);
+                    continue;
+                }
                 throw new UnauthorizedAccessException(Constants.SyncMessages.TasksReconnectRequired, ex);
             }
             catch (JSException ex) when (ex.Message.Contains("412"))

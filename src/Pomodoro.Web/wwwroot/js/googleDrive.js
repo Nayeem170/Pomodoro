@@ -110,10 +110,6 @@ window.googleDrive = {
         return this._accessToken !== null && this._accessToken !== undefined;
     },
 
-    setAccessToken: function(token) {
-        this._accessToken = token;
-    },
-
     getAccessToken: function() {
         return this._accessToken;
     },

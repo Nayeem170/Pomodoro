@@ -260,24 +260,33 @@ public partial class IndexBase : ComponentBase, IDisposable
 
     private async Task UpdateStateAsync()
     {
-        var state = await IndexPagePresenterService.UpdateStateAsync(TaskService, TimerService, ActiveListId);
+        try
+        {
+            var state = await IndexPagePresenterService.UpdateStateAsync(TaskService, TimerService, ActiveListId);
 
-        Tasks = state.Tasks;
-        CurrentTaskId = state.CurrentTaskId;
-        RemainingTime = state.RemainingTime;
-        CurrentSessionType = state.CurrentSessionType;
-        IsTimerRunning = state.IsTimerRunning;
-        IsTimerPaused = state.IsTimerPaused;
-        IsTimerStarted = state.IsTimerStarted;
-        TaskLists = state.TaskLists;
-        ActiveListId = state.CurrentListId;
-        ActiveList = TaskLists.FirstOrDefault(l => l.Id == ActiveListId);
+            Tasks = state.Tasks;
+            CurrentTaskId = state.CurrentTaskId;
+            RemainingTime = state.RemainingTime;
+            CurrentSessionType = state.CurrentSessionType;
+            IsTimerRunning = state.IsTimerRunning;
+            IsTimerPaused = state.IsTimerPaused;
+            IsTimerStarted = state.IsTimerStarted;
+            TaskLists = state.TaskLists;
+            ActiveListId = state.CurrentListId;
+            ActiveList = TaskLists.FirstOrDefault(l => l.Id == ActiveListId);
+            ErrorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, Constants.Messages.ErrorInUpdateState);
+            ErrorMessage = $"{Constants.Messages.ErrorLoadingTasks}: {ex.Message}";
+        }
     }
 
     protected async Task HandleTabChange(string listId)
     {
-        await TaskService.SelectListAsync(listId);
         ActiveListId = listId;
+        await TaskService.SelectListAsync(listId);
         await UpdateStateAsync();
     }
 

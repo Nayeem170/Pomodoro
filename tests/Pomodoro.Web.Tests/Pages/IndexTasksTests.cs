@@ -317,5 +317,24 @@ public class IndexTasksTests : TestHelper
     }
 
     #endregion
+
+    #region HandleTabChange
+
+    [Fact]
+    public async Task HandleTabChange_CallsTaskServiceSelectListAsync_WhenInvoked()
+    {
+        const string listId = Constants.TaskLists.LocalPomodoroListId;
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        var method = typeof(IndexBase).GetMethod(
+            "HandleTabChange",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        var task = (Task)method!.Invoke(cut.Instance, new object[] { listId })!;
+        await task;
+
+        TaskServiceMock.Verify(x => x.SelectListAsync(listId), Times.Once);
+    }
+
+    #endregion
 }
 

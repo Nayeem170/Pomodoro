@@ -26,7 +26,6 @@ test.describe('Google Tasks Connect Flow', () => {
         const gd = (window as any).googleDrive;
         if (gd) {
           gd.init = () => Promise.resolve();
-          gd.setAccessToken = () => Promise.resolve();
           gd.getAccessToken = () => Promise.resolve('mock-access-token');
           gd.isConnected = () => true;
           gd.findSyncFile = () => Promise.resolve(null);

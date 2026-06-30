@@ -430,6 +430,11 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
     public async Task<IReadOnlyList<TaskItem>> GetTasksForListAsync(string listId)
     {
+        if (!IsKnownList(listId))
+        {
+            listId = Constants.TaskLists.LocalPomodoroListId;
+        }
+
         var allTasks = _appState.Tasks;
         IEnumerable<TaskItem> filtered = listId switch
         {
@@ -475,6 +480,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         if (!await _googleTasksService.IsConnectedAsync())
         {
             _cachedGoogleLists = [];
+            await EnsureCurrentListSelectableAsync();
             return;
         }
 
@@ -509,15 +515,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             await SaveGoogleTasksSettingsAsync();
             await SaveGoogleListsCacheAsync();
             InvalidateSidecarCache();
-
-            if (remoteLists.Count > 0 &&
-                !string.IsNullOrEmpty(_appState.CurrentListId) &&
-                _appState.CurrentListId != Constants.TaskLists.LocalPomodoroListId &&
-                _appState.CurrentListId != Constants.TaskLists.ScheduleListId &&
-                !updatedCache.Any(l => l.Id == _appState.CurrentListId))
-            {
-                await SelectListAsync(Constants.TaskLists.LocalPomodoroListId);
-            }
 
             foreach (var gList in remoteLists)
             {
@@ -623,7 +620,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
                         }
                     }
 
-                    foreach (var orphan in existingInList.Where(t => !remoteIds.Contains(t.GoogleTaskId)))
+                    foreach (var orphan in existingInList.Where(t => !string.IsNullOrEmpty(t.GoogleTaskId) && !remoteIds.Contains(t.GoogleTaskId)))
                     {
                         var deleted = orphan.WithUpdates(c =>
                         {
@@ -648,7 +645,25 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         {
             _logger.LogWarning(ex, "Failed to refresh Google task lists");
         }
+        finally
+        {
+            await EnsureCurrentListSelectableAsync();
+        }
     }
+
+    private async Task EnsureCurrentListSelectableAsync()
+    {
+        var current = _appState.CurrentListId;
+        if (!string.IsNullOrEmpty(current) && !IsKnownList(current))
+        {
+            await SelectListAsync(Constants.TaskLists.LocalPomodoroListId);
+        }
+    }
+
+    private bool IsKnownList(string? listId) =>
+        listId == Constants.TaskLists.LocalPomodoroListId ||
+        listId == Constants.TaskLists.ScheduleListId ||
+        _cachedGoogleLists.Any(l => l.Id == listId);
 
     private async Task SaveTaskAsync(TaskItem task)
     {
@@ -957,7 +972,10 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             return _sidecarCache!;
 
         var allMeta = await _sidecarRepo.GetAllAsync();
-        _sidecarCache = allMeta.ToDictionary(m => m.GoogleTaskId);
+        _sidecarCache = allMeta
+            .Where(m => !string.IsNullOrEmpty(m.GoogleTaskId))
+            .GroupBy(m => m.GoogleTaskId)
+            .ToDictionary(g => g.Key, g => g.Last());
         _sidecarCacheDirty = false;
         return _sidecarCache;
     }

@@ -209,6 +209,7 @@ public class TaskServiceMultiListTests
         _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync(metaList);
 
         var sut = CreateSut();
+        SetCachedGoogleLists(sut, [new GoogleListCacheEntry("glist-1", "List", "var(--pomodoro-color)", true)]);
         var result = await sut.GetTasksForListAsync("glist-1");
 
         result.Should().HaveCount(2);
@@ -240,6 +241,7 @@ public class TaskServiceMultiListTests
             [new PomodoroMeta("gtask-1", 3, 75, Priority.High)]);
 
         var sut = CreateSut();
+        SetCachedGoogleLists(sut, [new GoogleListCacheEntry("glist-1", "List", "var(--pomodoro-color)", true)]);
         await sut.GetTasksForListAsync("glist-1");
 
         var originalTask = _appState.FindTaskById(task.Id);
@@ -438,6 +440,7 @@ public class TaskServiceMultiListTests
         _appState.Tasks = [localTask];
 
         var sut = CreateSut();
+        SetCachedGoogleLists(sut, [new GoogleListCacheEntry("glist-1", "List", "var(--pomodoro-color)", true)]);
         var result = await sut.GetTasksForListAsync("glist-1");
 
         result.Should().HaveCount(1);
@@ -501,6 +504,37 @@ public class TaskServiceMultiListTests
         var currentList = sut.CurrentList;
         currentList.Should().NotBeNull();
         currentList!.Id.Should().Be("glist-1");
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_PullThrowsUnauthorized_ResetsStaleGoogleListToLocal()
+    {
+        _appState.CurrentListId = "glist-gone";
+
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync())
+            .ThrowsAsync(new UnauthorizedAccessException("401 Unauthorized"));
+
+        var sut = CreateSut();
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => sut.RefreshGoogleListsAsync());
+
+        _appState.CurrentListId.Should().Be(Constants.TaskLists.LocalPomodoroListId);
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_PullFailsNonAuth_SwallowsAndResetsStaleListToLocal()
+    {
+        _appState.CurrentListId = "glist-gone";
+
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync())
+            .ThrowsAsync(new InvalidOperationException("offline"));
+
+        var sut = CreateSut();
+        await sut.RefreshGoogleListsAsync();
+
+        _appState.CurrentListId.Should().Be(Constants.TaskLists.LocalPomodoroListId);
     }
 
     [Fact]
@@ -623,7 +657,7 @@ public class TaskServiceMultiListTests
         var sut = CreateSut();
         await sut.InitializeAsync();
 
-        _appState.CurrentListId.Should().Be("glist-1");
+        _appState.CurrentListId.Should().Be(Constants.TaskLists.LocalPomodoroListId);
     }
 
     [Fact]
@@ -649,6 +683,7 @@ public class TaskServiceMultiListTests
         _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
 
         var sut = CreateSut();
+        SetCachedGoogleLists(sut, [new GoogleListCacheEntry("glist-1", "List", "var(--pomodoro-color)", true)]);
         var result = await sut.GetTasksForListAsync("glist-1");
 
         result.Should().HaveCount(1);
@@ -874,11 +909,42 @@ public class TaskServiceMultiListTests
             [new PomodoroMeta("gtask-1", 5, 125, Priority.High)]);
 
         var sut = CreateSut();
+        SetCachedGoogleLists(sut, [new GoogleListCacheEntry("glist-1", "List", "var(--pomodoro-color)", true)]);
 
         await sut.GetTasksForListAsync("glist-1");
         await sut.GetTasksForListAsync("glist-1");
 
         _mockSidecarRepo.Verify(x => x.GetAllAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_ToleratesNullAndDuplicateSidecarKeys()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Google Task",
+            GoogleTaskId = "gtask-1",
+            GoogleListId = "glist-1",
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [task];
+        _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync(
+            new List<PomodoroMeta>
+            {
+                new("gtask-1", 1, 25, Priority.Med),
+                new("gtask-1", 2, 50, Priority.High),
+                new(null!, 9, 999, Priority.High)
+            });
+
+        var sut = CreateSut();
+        SetCachedGoogleLists(sut, [new GoogleListCacheEntry("glist-1", "List", "var(--pomodoro-color)", true)]);
+        var result = await sut.GetTasksForListAsync("glist-1");
+
+        var hydrated = result.Should().HaveCount(1).And.Subject.First();
+        hydrated.PomodoroCount.Should().Be(2);
+        hydrated.TotalFocusMinutes.Should().Be(50);
+        hydrated.Priority.Should().Be(Priority.High);
     }
 
     [Fact]
@@ -1243,11 +1309,31 @@ public class TaskServiceMultiListTests
         _appState.Tasks = tasks;
         _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
         var sut = CreateSut();
+        SetCachedGoogleLists(sut, [
+            new GoogleListCacheEntry("glist-1", "List 1", "var(--pomodoro-color)", true),
+            new GoogleListCacheEntry("glist-2", "List 2", "var(--pomodoro-color)", true)
+        ]);
 
         var result = await sut.GetTasksForListAsync("glist-1");
 
         result.Should().HaveCount(1);
         result[0].Name.Should().Be("Google");
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_DeadGoogleListId_CollapsesToLocal()
+    {
+        var localTask = new TaskItem { Id = Guid.NewGuid(), Name = "Local", CreatedAt = DateTime.UtcNow };
+        var googleTask = new TaskItem { Id = Guid.NewGuid(), Name = "Google", GoogleTaskId = "gt-1", GoogleListId = "glist-gone", CreatedAt = DateTime.UtcNow };
+        _appState.Tasks = [localTask, googleTask];
+        _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
+
+        var sut = CreateSut();
+
+        var result = await sut.GetTasksForListAsync("glist-gone");
+
+        result.Should().HaveCount(1);
+        result[0].Name.Should().Be("Local");
     }
 
     [Fact]

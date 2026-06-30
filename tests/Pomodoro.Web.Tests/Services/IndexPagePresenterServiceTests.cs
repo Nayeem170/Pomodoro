@@ -82,22 +82,19 @@ public class IndexPagePresenterServiceTests
     }
 
     [Fact]
-    public async Task UpdateStateAsync_WithException_ShouldReturnDefaultState()
+    public async Task UpdateStateAsync_WithException_ShouldRethrow()
     {
         var taskService = new Mock<ITaskService>();
+        taskService.Setup(s => s.TaskLists).Returns(new List<TaskListRef>
+        {
+            new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)", 0, true, true)
+        });
         taskService.Setup(s => s.GetTasksForListAsync(It.IsAny<string>()))
-            .ThrowsAsync(new Exception("Test exception"));
+            .ThrowsAsync(new InvalidOperationException("Test exception"));
         var timerService = SetupTimerService(TimeSpan.FromMinutes(5), SessionType.ShortBreak, true, true, true);
 
-        var result = await _service.UpdateStateAsync(taskService.Object, timerService.Object, null);
-
-        Assert.Empty(result.Tasks);
-        Assert.Equal(TimeSpan.FromMinutes(5), result.RemainingTime);
-        Assert.Equal(SessionType.ShortBreak, result.CurrentSessionType);
-        Assert.True(result.IsTimerRunning);
-        Assert.True(result.IsTimerPaused);
-        Assert.True(result.IsTimerStarted);
-        Assert.Equal(Constants.TaskLists.LocalPomodoroListId, result.CurrentListId);
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _service.UpdateStateAsync(taskService.Object, timerService.Object, null));
+        Assert.Equal("Test exception", ex.Message);
     }
 
     [Fact]
@@ -119,6 +116,11 @@ public class IndexPagePresenterServiceTests
     public async Task UpdateStateAsync_PassesListIdToTaskService()
     {
         var taskService = SetupTaskService();
+        taskService.Setup(s => s.TaskLists).Returns(new List<TaskListRef>
+        {
+            new("custom-list-id", "Custom", "var(--pomodoro-color)", 0, true, true),
+            new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)", 0, true, true)
+        });
         var timerService = SetupTimerService();
 
         await _service.UpdateStateAsync(taskService.Object, timerService.Object, "custom-list-id");
@@ -131,12 +133,34 @@ public class IndexPagePresenterServiceTests
     {
         var taskService = SetupTaskService();
         taskService.Setup(s => s.CurrentListId).Returns("glist-1");
+        taskService.Setup(s => s.TaskLists).Returns(new List<TaskListRef>
+        {
+            new("glist-1", "Google", "var(--pomodoro-color)", 0, true, true),
+            new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)", 0, true, true)
+        });
         var timerService = SetupTimerService();
 
         var result = await _service.UpdateStateAsync(taskService.Object, timerService.Object, null);
 
         taskService.Verify(s => s.GetTasksForListAsync("glist-1"), Times.Once);
         Assert.Equal("glist-1", result.CurrentListId);
+    }
+
+    [Fact]
+    public async Task UpdateStateAsync_DeadListId_CollapsesToLocal()
+    {
+        var localTasks = new List<TaskItem>
+        {
+            new() { Id = Guid.NewGuid(), Name = "Local", CreatedAt = DateTime.UtcNow }
+        };
+        var taskService = SetupTaskService(localTasks);
+        var timerService = SetupTimerService();
+
+        var result = await _service.UpdateStateAsync(taskService.Object, timerService.Object, "glist-gone");
+
+        taskService.Verify(s => s.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId), Times.Once);
+        Assert.Equal(Constants.TaskLists.LocalPomodoroListId, result.CurrentListId);
+        Assert.Single(result.Tasks);
     }
 
     [Fact]

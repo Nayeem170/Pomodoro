@@ -107,6 +107,7 @@ public static partial class Constants
         public const string ErrorSelectingConsentOption = "Error selecting consent option";
         public const string ErrorCheckingPendingNotificationAction = "Error checking pending notification action";
         public const string ErrorInUpdateState = "Error in UpdateState";
+        public const string ErrorLoadingTasks = "Error loading tasks";
         public const string ErrorInDispose = "Error in Dispose";
         public const string SelectTaskBeforePomodoro = "Please select a task before starting a pomodoro.";
 
