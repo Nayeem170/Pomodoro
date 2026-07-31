@@ -107,3 +107,18 @@ publish/
 # Local coverage output
 cov/
 cov-release*/
+.local/
+
+# Agentic pipeline tasks (local, not shared)
+.agentic-tasks/
+
+# Worktrees (local)
+.worktrees/
+.worktrees-pomodoro/
+
+# Gate state files (local, regenerated on each run)
+.gates/
+
+# Local Kilo config (machine-specific, not shared)
+kilo.json
+kilo.jsonc

@@ -1,4 +1,4 @@
-import { test, expect, BrowserContext } from '@playwright/test';
+import { test, expect, BrowserContext } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('Mobile Nav Menu', () => {

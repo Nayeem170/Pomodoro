@@ -326,6 +326,66 @@ just `dotnet build`), and hard-reload / unregister the SW to drop a cached `inde
 Fix 7 (below) remains a real, kept fix: it guarantees a manual tab click can always recover if
 any future stale-selection state recurs.
 
+## Re-investigation #4 (2026-07-01): Schedule tab ALSO never activates — falsifies all list-specific theories
+
+New detail: **both** non-local tabs (Schedule *and* the Google ghost) never activate; only the
+local "Tasks" tab is ever selected. This is the decisive clue, because **Schedule is a built-in
+list that is unconditionally present** in `TaskService.TaskLists` (`TaskService.cs:41`) and in
+`IsKnownList` (`:677`). Therefore every previously-theorised cause is **excluded**:
+
+- Not the Google ghost / settings-restore (Schedule has no Google id).
+- Not the stale-cache / dead-id collapse (Schedule is always in the live `TaskLists`).
+- Not `EnsureCurrentListSelectableAsync` / `EnsureLocalListSelectedAsync` (both leave Schedule
+  alone — Schedule is local-list-exempt and always "known").
+- Not the presenter precedence reversal (Schedule resolves to itself either way).
+
+The cause is therefore **tab-independent**: the click does not produce a committed,
+re-rendered selection change for *any* non-local tab.
+
+### Verified: the selection write itself is sound
+
+`AppState.CurrentListId` (`AppState.cs:101-112`) is a plain backing-field setter that assigns and
+fires `NotifyStateChanged()` — it does **not** reject or normalise non-local values. So
+`SelectListAsync(scheduleId)` genuinely persists `scheduleId`. Combined with the full chain trace
+in #3, **the current source selects Schedule (and Google) correctly on click.** There is no
+remaining static code path that blocks it.
+
+### Conclusion: this is no longer a source-logic bug
+
+Two tab-independent explanations remain, in order of probability:
+
+1. **R0 — the running binary is not this source (highest).** If even the built-in Schedule tab
+   can't activate, the deployed `TaskListTabs` / `HandleTabChange` / presenter wiring predates the
+   current code. Decisive checks:
+   - Confirm which commit the `:7025` process is actually running (e.g. a visible build stamp, or
+     diff the served `_framework/*.dll` mtime against the just-built output).
+   - Kill the process bound to `:7025` (not just rebuild), `dotnet run` fresh, then in DevTools →
+     Application → Service Workers **Unregister** and **Clear storage**, hard-reload.
+   - If a **published** build is being served, the published SW (`service-worker.published.js`) is
+     **cache-first over `.dll`/`.wasm`** and only busts when `assetsManifest.version` changes —
+     a stale published artifact serves old IL indefinitely. Re-publish (new content hashes) or
+     bump the SW cache.
+2. **Render/event plumbing (only if R0 is ruled out by a verified fresh build):** the `@onclick`
+   not reaching `HandleTabClick` (an overlay capturing pointer events on tabs 2–3; or event
+   delegation broken), or the page never re-rendering the `act` class after state changes (a
+   dispatcher/`StateHasChanged` problem). These are not visible in static analysis.
+
+### Mandatory next step: instrument (static analysis is fully exhausted)
+
+Eight-plus rounds of source tracing have converged on "the code is correct." Proceeding further
+without runtime data is guesswork. Add the four log lines from #3 (HandleTabClick entry,
+HandleTabChange, presenter `requested`/`listId`/`TaskLists.Count`, Ensure* resets) and reproduce
+one click on the **Schedule** tab (simplest — no Google involved):
+
+- No `HandleTabClick` log → click never reaches the handler (plumbing) **or** old binary (R0).
+- `HandleTabClick` logs but `listId == CurrentListId` → suppression bug in the running binary
+  (i.e. not the current source).
+- Handlers log `scheduleId` end-to-end but the tab still shows local active → a render/`act`-class
+  problem.
+
+One Schedule click with logs distinguishes all three. Until then, the symptom cannot be
+attributed to any specific line in the current source.
+
 ## Re-investigation #3 (2026-06-30): symptom unchanged after #2 — source says it SHOULD work
 
 The exact symptom persists (local tab always active; Google ghost tab `MTI0…` count 1 never

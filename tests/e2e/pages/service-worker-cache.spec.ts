@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 async function fetchServiceWorker(page: Page) {

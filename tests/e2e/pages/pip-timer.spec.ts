@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('Picture-in-Picture Timer', () => {
@@ -48,22 +48,28 @@ test.describe('Picture-in-Picture Timer', () => {
     expect(timerBefore).toBe(timerAfter);
   });
 
-  test('should show error banner when PiP popup is blocked', async ({ page }) => {
-    await page.evaluate(() => {
-      delete (window as any).documentPictureInPicture;
+  // This path deliberately blocks the PiP popup and asserts the app surfaces an
+  // error banner - so the browser logs an intentional console error.
+  test.describe('error path (intentional console error)', () => {
+    test.use({ allowConsoleErrors: true });
+
+    test('should show error banner when PiP popup is blocked', async ({ page }) => {
+      await page.evaluate(() => {
+        delete (window as any).documentPictureInPicture;
+      });
+
+      await page.evaluate(() => {
+        (window as any).open = () => null;
+      });
+
+      const pipButton = page.locator('button[aria-label="Picture in Picture"]');
+      await pipButton.click();
+      await page.waitForTimeout(1000);
+
+      const errorBanner = page.locator('.error-banner');
+      await expect(errorBanner).toBeVisible({ timeout: 5000 });
+      await expect(errorBanner).toContainText(/pop-up blocked/i);
     });
-
-    await page.evaluate(() => {
-      (window as any).open = () => null;
-    });
-
-    const pipButton = page.locator('button[aria-label="Picture in Picture"]');
-    await pipButton.click();
-    await page.waitForTimeout(1000);
-
-    const errorBanner = page.locator('.error-banner');
-    await expect(errorBanner).toBeVisible({ timeout: 5000 });
-    await expect(errorBanner).toContainText(/pop-up blocked/i);
   });
 
   test('should handle PiP close gracefully', async ({ page }) => {
