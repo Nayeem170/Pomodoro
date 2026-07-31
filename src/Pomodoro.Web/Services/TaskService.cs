@@ -817,7 +817,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
                 if (parent == null && !string.IsNullOrEmpty(current.GoogleParentTaskId))
                     byGoogleId.TryGetValue(current.GoogleParentTaskId, out parent);
 
-                if (parent == null || !seen.Add(parent.Id)) break;
+                if (parent == null || parent.IsDeleted || !seen.Add(parent.Id)) break;
 
                 current = parent;
             }

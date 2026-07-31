@@ -66,7 +66,7 @@ public class TaskItemBase : ComponentBase
 
     protected bool CanAddSubtask => Depth < Constants.Tasks.MaxSubtaskDepth;
 
-    protected bool CanMoveToRoot => Item.IsSubtask;
+    protected bool CanMoveToRoot => Depth > 0;
 
     [Parameter]
     public string? GoogleListTitle { get; set; }

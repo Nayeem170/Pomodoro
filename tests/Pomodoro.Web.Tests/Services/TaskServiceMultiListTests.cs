@@ -1385,6 +1385,26 @@ public class TaskServiceMultiListTests
     }
 
     [Fact]
+    public async Task GetTasksForListAsync_OrphanOfDeletedParent_RoutedByItsOwnDates()
+    {
+        var deletedParentId = Guid.NewGuid();
+        _appState.Tasks =
+        [
+            new() { Id = deletedParentId, Name = "Dead Parent", CreatedAt = DateTime.UtcNow, ScheduledDate = DateTime.UtcNow.Date, IsDeleted = true },
+            new() { Id = Guid.NewGuid(), Name = "Orphan", CreatedAt = DateTime.UtcNow, ParentTaskId = deletedParentId }
+        ];
+        _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
+
+        var sut = CreateSut();
+
+        var schedule = await sut.GetTasksForListAsync(Constants.TaskLists.ScheduleListId);
+        var tasks = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+
+        schedule.Should().BeEmpty("the orphan has no date of its own and its parent is gone");
+        tasks.Select(t => t.Name).Should().BeEquivalentTo(["Orphan"]);
+    }
+
+    [Fact]
     public async Task GetTasksForListAsync_SubtaskFollowsRootIntoScheduleTab()
     {
         var parentId = Guid.NewGuid();
