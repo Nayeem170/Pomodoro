@@ -42,6 +42,9 @@ public class TaskListBase : ComponentBase
     [Parameter]
     public EventCallback<Guid> OnReparentToRoot { get; set; }
 
+    [Parameter]
+    public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
+
     #endregion
 
     #region State
@@ -82,6 +85,11 @@ public class TaskListBase : ComponentBase
                 .Select(t => googleIdToLocalId[t.GoogleParentTaskId!]))
             .ToHashSet();
     }
+
+    protected string? GoogleListTitleFor(TaskItem task) =>
+        string.IsNullOrEmpty(task.GoogleListId)
+            ? null
+            : GoogleLists.FirstOrDefault(l => l.Id == task.GoogleListId)?.Title;
 
     protected void ToggleCollapse(Guid taskId)
     {

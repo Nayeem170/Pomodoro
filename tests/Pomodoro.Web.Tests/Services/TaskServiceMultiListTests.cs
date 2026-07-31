@@ -252,7 +252,7 @@ public class TaskServiceMultiListTests
     }
 
     [Fact]
-    public void TaskLists_IncludesLocalAndScheduleAndGoogleLists()
+    public void TaskLists_ContainsOnlyTasksAndSchedule_GoogleTasksMergedIn()
     {
         var localTask = new TaskItem { Id = Guid.NewGuid(), Name = "Local", CreatedAt = DateTime.UtcNow };
         var scheduledTask = new TaskItem
@@ -279,12 +279,15 @@ public class TaskServiceMultiListTests
 
         var lists = sut.TaskLists;
 
-        lists.Should().HaveCount(3);
+        lists.Should().HaveCount(2);
         lists.Should().Contain(l => l.Id == Constants.TaskLists.LocalPomodoroListId && l.Title == "Tasks");
         lists.Should().Contain(l => l.Id == Constants.TaskLists.ScheduleListId && l.Title == "Schedule");
-        lists.Should().Contain(l => l.Id == "glist-1" && l.Title == "My Google List" && l.Count == 1);
-        lists.First(l => l.Id == Constants.TaskLists.LocalPomodoroListId).Count.Should().Be(1);
-        lists.First(l => l.Id == Constants.TaskLists.ScheduleListId).Count.Should().Be(1);
+        lists.Should().NotContain(l => l.Id == "glist-1");
+
+        lists.Single(l => l.Id == Constants.TaskLists.LocalPomodoroListId).Count.Should().Be(2);
+        lists.Single(l => l.Id == Constants.TaskLists.ScheduleListId).Count.Should().Be(1);
+
+        sut.GoogleLists.Should().ContainSingle(l => l.Id == "glist-1" && l.Title == "My Google List" && l.Count == 1);
     }
 
     [Fact]
@@ -552,9 +555,11 @@ public class TaskServiceMultiListTests
         var sut = CreateSut();
         SetCachedGoogleLists(sut, googleLists);
 
-        var currentList = sut.CurrentList;
-        currentList.Should().NotBeNull();
-        currentList!.Id.Should().Be("glist-1");
+        sut.CurrentList.Should().BeNull("a Google list id is no longer a selectable tab");
+
+        _appState.CurrentListId = Constants.TaskLists.LocalPomodoroListId;
+        sut.CurrentList.Should().NotBeNull();
+        sut.CurrentList!.Id.Should().Be(Constants.TaskLists.LocalPomodoroListId);
     }
 
     [Fact]
@@ -1335,9 +1340,16 @@ public class TaskServiceMultiListTests
     }
 
     [Fact]
-    public async Task UpdateListVisibilityAsync_HidingCurrentList_FallsBackToFirstVisible()
+    public async Task UpdateListVisibilityAsync_HidingList_KeepsCurrentTabAndDropsItsTasks()
     {
-        _appState.CurrentListId = "glist-2";
+        _appState.CurrentListId = Constants.TaskLists.LocalPomodoroListId;
+        _appState.Tasks =
+        [
+            new() { Id = Guid.NewGuid(), Name = "From 1", GoogleTaskId = "gt-1", GoogleListId = "glist-1", CreatedAt = DateTime.UtcNow },
+            new() { Id = Guid.NewGuid(), Name = "From 2", GoogleTaskId = "gt-2", GoogleListId = "glist-2", CreatedAt = DateTime.UtcNow }
+        ];
+        _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
+
         var sut = CreateSut();
         SetCachedGoogleLists(sut, [
             new GoogleListCacheEntry("glist-1", "List 1", "#4285F4", true),
@@ -1346,25 +1358,54 @@ public class TaskServiceMultiListTests
 
         await sut.UpdateListVisibilityAsync("glist-2", false);
 
-        _appState.CurrentListId.Should().Be("glist-1");
-    }
-
-    [Fact]
-    public async Task UpdateListVisibilityAsync_HidingCurrentList_NoVisibleGoogleLists_FallsBackToLocal()
-    {
-        _appState.CurrentListId = "glist-1";
-        var sut = CreateSut();
-        SetCachedGoogleLists(sut, [
-            new GoogleListCacheEntry("glist-1", "List 1", "#4285F4", true)
-        ]);
-
-        await sut.UpdateListVisibilityAsync("glist-1", false);
-
         _appState.CurrentListId.Should().Be(Constants.TaskLists.LocalPomodoroListId);
+
+        var result = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+        result.Select(t => t.Name).Should().BeEquivalentTo(["From 1"]);
     }
 
     [Fact]
-    public async Task GetTasksForListAsync_GoogleList_ReturnsFilteredTasks()
+    public async Task GetTasksForListAsync_ScheduleTab_IncludesGoogleTasksWithDueDate()
+    {
+        _appState.Tasks =
+        [
+            new() { Id = Guid.NewGuid(), Name = "Undated Google", GoogleTaskId = "gt-1", GoogleListId = "glist-1", CreatedAt = DateTime.UtcNow },
+            new() { Id = Guid.NewGuid(), Name = "Due Google", GoogleTaskId = "gt-2", GoogleListId = "glist-1", CreatedAt = DateTime.UtcNow, DueDate = DateTime.UtcNow.Date }
+        ];
+        _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
+
+        var sut = CreateSut();
+        SetCachedGoogleLists(sut, [new GoogleListCacheEntry("glist-1", "List 1", "#4285F4", true)]);
+
+        var schedule = await sut.GetTasksForListAsync(Constants.TaskLists.ScheduleListId);
+        var tasks = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+
+        schedule.Select(t => t.Name).Should().BeEquivalentTo(["Due Google"]);
+        tasks.Select(t => t.Name).Should().BeEquivalentTo(["Undated Google"]);
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_SubtaskFollowsRootIntoScheduleTab()
+    {
+        var parentId = Guid.NewGuid();
+        _appState.Tasks =
+        [
+            new() { Id = parentId, Name = "Scheduled Parent", CreatedAt = DateTime.UtcNow, ScheduledDate = DateTime.UtcNow.Date },
+            new() { Id = Guid.NewGuid(), Name = "Undated Child", CreatedAt = DateTime.UtcNow, ParentTaskId = parentId }
+        ];
+        _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
+
+        var sut = CreateSut();
+
+        var schedule = await sut.GetTasksForListAsync(Constants.TaskLists.ScheduleListId);
+        var tasks = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+
+        schedule.Select(t => t.Name).Should().BeEquivalentTo(["Scheduled Parent", "Undated Child"]);
+        tasks.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_TasksTab_MergesAllVisibleGoogleLists()
     {
         var tasks = new List<TaskItem>
         {
@@ -1380,10 +1421,10 @@ public class TaskServiceMultiListTests
             new GoogleListCacheEntry("glist-2", "List 2", "var(--pomodoro-color)", true)
         ]);
 
-        var result = await sut.GetTasksForListAsync("glist-1");
+        var result = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
 
-        result.Should().HaveCount(1);
-        result[0].Name.Should().Be("Google");
+        result.Should().HaveCount(3);
+        result.Select(t => t.Name).Should().BeEquivalentTo(["Local", "Google", "Other Google"]);
     }
 
     [Fact]

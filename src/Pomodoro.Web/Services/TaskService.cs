@@ -34,23 +34,31 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         get
         {
             var allTasks = _appState.Tasks;
-            var lists = new List<TaskListRef>
-            {
+            var roots = BuildRootLookup(allTasks);
+
+            bool InTab(TaskItem t, bool scheduled) =>
+                !t.IsDeleted && IsFromVisibleSource(t) && HasScheduleDate(roots(t)) == scheduled;
+
+            return
+            [
                 new(Constants.TaskLists.LocalPomodoroListId, "Tasks", "var(--pomodoro-color)",
-                    allTasks.Count(t => !t.IsGoogleTask && !t.IsScheduled && !t.IsDeleted), true, true),
+                    allTasks.Count(t => InTab(t, false)), true, true),
                 new(Constants.TaskLists.ScheduleListId, "Schedule", "#eab308",
-                    allTasks.Count(t => t.IsScheduled && !t.IsDeleted), true, true)
-            };
-
-            foreach (var entry in _cachedGoogleLists)
-            {
-                var count = allTasks.Count(t => t.GoogleListId == entry.Id && !t.IsDeleted);
-                lists.Add(new TaskListRef(entry.Id, entry.Title, entry.Color, count, entry.IsVisible, false));
-            }
-
-            return lists;
+                    allTasks.Count(t => InTab(t, true)), true, true)
+            ];
         }
     }
+
+    public IReadOnlyList<TaskListRef> GoogleLists =>
+        _cachedGoogleLists
+            .Select(e => new TaskListRef(
+                e.Id,
+                e.Title,
+                e.Color,
+                _appState.Tasks.Count(t => t.GoogleListId == e.Id && !t.IsDeleted),
+                e.IsVisible,
+                false))
+            .ToList();
 
     public TaskListRef? CurrentList => TaskLists.FirstOrDefault(l => l.Id == _appState.CurrentListId);
     public string? CurrentListId => _appState.CurrentListId;
@@ -520,12 +528,11 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         }
 
         var allTasks = _appState.Tasks;
-        IEnumerable<TaskItem> filtered = listId switch
-        {
-            Constants.TaskLists.LocalPomodoroListId => allTasks.Where(t => !t.IsGoogleTask && !t.IsScheduled && !t.IsDeleted),
-            Constants.TaskLists.ScheduleListId => allTasks.Where(t => t.IsScheduled && !t.IsDeleted),
-            _ => allTasks.Where(t => t.GoogleListId == listId && !t.IsDeleted)
-        };
+        var roots = BuildRootLookup(allTasks);
+        var wantScheduled = listId == Constants.TaskLists.ScheduleListId;
+
+        IEnumerable<TaskItem> filtered = allTasks.Where(t =>
+            !t.IsDeleted && IsFromVisibleSource(t) && HasScheduleDate(roots(t)) == wantScheduled);
 
         var tasks = filtered.ToList();
 
@@ -748,7 +755,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         var current = _appState.CurrentListId;
         if (!string.IsNullOrEmpty(current) && !IsKnownList(current))
         {
-            Console.WriteLine($"[TABDBG] EnsureCurrentListSelectableAsync RESET: {current} -> local (known={IsKnownList(current)} googleLists={_cachedGoogleLists.Count})");
             await SelectListAsync(Constants.TaskLists.LocalPomodoroListId);
         }
     }
@@ -758,15 +764,68 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         var current = _appState.CurrentListId;
         if (!string.IsNullOrEmpty(current) && current != Constants.TaskLists.LocalPomodoroListId && current != Constants.TaskLists.ScheduleListId)
         {
-            Console.WriteLine($"[TABDBG] EnsureLocalListSelectedAsync RESET: {current} -> local");
             await SelectListAsync(Constants.TaskLists.LocalPomodoroListId);
         }
     }
 
-    private bool IsKnownList(string? listId) =>
+    private static bool IsKnownList(string? listId) =>
         listId == Constants.TaskLists.LocalPomodoroListId ||
-        listId == Constants.TaskLists.ScheduleListId ||
-        _cachedGoogleLists.Any(l => l.Id == listId);
+        listId == Constants.TaskLists.ScheduleListId;
+
+    private bool IsFromVisibleSource(TaskItem task) =>
+        !task.IsGoogleTask ||
+        _cachedGoogleLists.Any(l => l.Id == task.GoogleListId && l.IsVisible);
+
+    private static bool HasScheduleDate(TaskItem task) =>
+        task.ScheduledDate.HasValue ||
+        task.DueDate.HasValue ||
+        task.Repeat is { IsActive: true };
+
+    /// <summary>
+    /// Builds a task-to-root-ancestor resolver. Subtasks carry no date of their own, so tab
+    /// routing is decided by their root; classifying per-task would split a parent and its
+    /// children across tabs and leave the children orphaned when the tree is rebuilt.
+    /// </summary>
+    private static Func<TaskItem, TaskItem> BuildRootLookup(IReadOnlyList<TaskItem> tasks)
+    {
+        var byId = new Dictionary<Guid, TaskItem>();
+        foreach (var t in tasks) byId[t.Id] = t;
+
+        var byGoogleId = new Dictionary<string, TaskItem>();
+        foreach (var t in tasks)
+        {
+            if (!string.IsNullOrEmpty(t.GoogleTaskId))
+                byGoogleId[t.GoogleTaskId] = t;
+        }
+
+        var resolved = new Dictionary<Guid, TaskItem>();
+
+        return task =>
+        {
+            if (resolved.TryGetValue(task.Id, out var cached)) return cached;
+
+            var current = task;
+            var seen = new HashSet<Guid> { current.Id };
+
+            while (true)
+            {
+                TaskItem? parent = null;
+
+                if (current.ParentTaskId.HasValue)
+                    byId.TryGetValue(current.ParentTaskId.Value, out parent);
+
+                if (parent == null && !string.IsNullOrEmpty(current.GoogleParentTaskId))
+                    byGoogleId.TryGetValue(current.GoogleParentTaskId, out parent);
+
+                if (parent == null || !seen.Add(parent.Id)) break;
+
+                current = parent;
+            }
+
+            resolved[task.Id] = current;
+            return current;
+        };
+    }
 
     private async Task SaveTaskAsync(TaskItem task)
     {
@@ -1032,15 +1091,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         if (entry != null)
         {
             _cachedGoogleLists[_cachedGoogleLists.IndexOf(entry)] = entry with { IsVisible = isVisible };
-        }
-
-        if (!isVisible && _appState.CurrentListId == listId)
-        {
-            var fallback = _cachedGoogleLists.FirstOrDefault(l => l.IsVisible);
-            if (fallback != null)
-                await SelectListAsync(fallback.Id);
-            else
-                await SelectListAsync(Constants.TaskLists.LocalPomodoroListId);
         }
 
         NotifyStateChanged();

@@ -90,6 +90,10 @@ Trigger is noted so the rule can be traced back.
 - `Should().Be()`, `Should().Contain()`, `Should().ThrowAsync()` patterns.
 - Trigger: initial
 
+### R22: Verify all claims against source
+- When reviewing a bug diagnosis, fix plan, or implementation, grep/read the actual source files to confirm every method, property, and code path referenced in the claim actually exists and behaves as described. If any claim references a nonexistent method or property, flag as BLOCKING and demand re-investigation from source.
+- Trigger: fix-nested-tasks (prior session diagnosed GetTodayTasksAsync as root cause; method did not exist)
+
 ## Adding rules
 
 When a reviewer identifies a recurring issue:

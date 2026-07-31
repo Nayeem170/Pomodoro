@@ -942,12 +942,18 @@ input, textarea, [contenteditable="true"] {
 }
 
 .gtag {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 1px 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    padding: 2px;
     border-radius: 4px;
     background: rgba(66, 133, 244, 0.18);
-    color: #4285F4;
+    line-height: 0;
+}
+
+.gtag svg {
+    display: block;
 }
 
 .task-row {

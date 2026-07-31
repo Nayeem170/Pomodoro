@@ -76,6 +76,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     public string? ErrorMessage { get; set; }
     public bool IsPipOpen { get; set; }
     protected IReadOnlyList<TaskListRef> TaskLists { get; set; } = [];
+    protected IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
     protected string? ActiveListId { get; set; }
     protected TaskListRef? ActiveList { get; set; }
 
@@ -293,6 +294,7 @@ public partial class IndexBase : ComponentBase, IDisposable
             IsTimerPaused = state.IsTimerPaused;
             IsTimerStarted = state.IsTimerStarted;
             TaskLists = state.TaskLists;
+            GoogleLists = state.GoogleLists;
             ActiveListId = state.CurrentListId;
             ActiveList = TaskLists.FirstOrDefault(l => l.Id == ActiveListId);
             ErrorMessage = null;
@@ -365,7 +367,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     {
         if (task.OccurrenceDate?.Date == date) return true;
         if (task.Repeat is { IsActive: true } rule) return RepeatOccursOn(rule, task, date);
-        return task.ScheduledDate?.Date == date;
+        return task.ScheduledDate?.Date == date || task.DueDate?.Date == date;
     }
 
     private static bool RepeatOccursOn(RepeatRule rule, TaskItem task, DateTime date)

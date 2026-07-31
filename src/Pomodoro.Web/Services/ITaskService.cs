@@ -23,6 +23,11 @@ public interface ITaskService
     TaskItem? CurrentTask { get; }
 
     IReadOnlyList<TaskListRef> TaskLists { get; }
+
+    /// <summary>
+    /// Connected Google lists. These are sources feeding the two tabs, not tabs themselves.
+    /// </summary>
+    IReadOnlyList<TaskListRef> GoogleLists { get; }
     TaskListRef? CurrentList { get; }
     string? CurrentListId { get; }
 

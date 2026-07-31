@@ -68,6 +68,12 @@ public class TaskItemBase : ComponentBase
 
     protected bool CanMoveToRoot => Item.IsSubtask;
 
+    [Parameter]
+    public string? GoogleListTitle { get; set; }
+
+    protected string GoogleBadgeTooltip =>
+        string.IsNullOrEmpty(GoogleListTitle) ? "Google task" : $"Google task — {GoogleListTitle}";
+
     protected bool IsAddSubtaskDisabled => string.IsNullOrWhiteSpace(NewSubtaskName);
 
     protected string? RepeatLabelText => Item.Repeat?.Type switch
