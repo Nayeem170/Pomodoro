@@ -49,17 +49,27 @@ public class TaskItem
 
     public DateTime? ScheduledDate { get; set; }
 
+    public DateTime? OccurrenceDate { get; set; }
+
     public bool IsScheduled => ScheduledDate.HasValue;
 
     public bool IsRecurring => Repeat is { Type: not RepeatType.None };
+
+    public bool IsRepeatInstance => RepeatSeriesId.HasValue;
 
     public bool IsVisible => !IsDeleted && (!IsScheduled || ScheduledDate <= DateTime.UtcNow.Date);
 
     public bool IsGoogleTask => !string.IsNullOrEmpty(GoogleTaskId);
 
+    public bool IsSubtask => ParentTaskId.HasValue || !string.IsNullOrEmpty(GoogleParentTaskId);
+
     public string? GoogleTaskId { get; set; }
     public string? GoogleListId { get; set; }
     public string? ETag { get; set; }
+    public string? GoogleParentTaskId { get; set; }
+    public string? GooglePosition { get; set; }
+    public Guid? RepeatSeriesId { get; set; }
+    public Guid? ParentTaskId { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public string? Notes { get; set; }
     public DateTime? DueDate { get; set; }
@@ -81,9 +91,14 @@ public class TaskItem
             DeletedAt = DeletedAt,
             Repeat = Repeat,
             ScheduledDate = ScheduledDate,
+            OccurrenceDate = OccurrenceDate,
             GoogleTaskId = GoogleTaskId,
             GoogleListId = GoogleListId,
             ETag = ETag,
+            GoogleParentTaskId = GoogleParentTaskId,
+            GooglePosition = GooglePosition,
+            RepeatSeriesId = RepeatSeriesId,
+            ParentTaskId = ParentTaskId,
             UpdatedAt = UpdatedAt,
             Notes = Notes,
             DueDate = DueDate,
