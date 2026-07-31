@@ -1,0 +1,222 @@
+@using Pomodoro.Web.Models
+
+<div class="sched-day">
+    <div class="day-header" aria-label="@Day.DayLabel">@Day.DayLabel</div>
+    <ul class="day-items" role="list">
+        @if (Day.Items.Count == 0)
+        {
+            <li class="day-empty">—</li>
+        }
+        else
+        {
+            @foreach (var item in Day.Items)
+            {
+                var taskId = item.Task?.Id;
+                var googleTaskId = item.Task?.GoogleTaskId;
+                var isEditing = _editingTaskId == taskId;
+                var isAddingSubtask = _addingSubtaskId == taskId;
+                var isCollapsed = taskId.HasValue && _collapsedIds.Contains(taskId.Value);
+                var children = !taskId.HasValue ? [] :
+                    _allSubtasks.Where(s =>
+                        s.ParentTaskId == taskId.Value ||
+                        (!string.IsNullOrEmpty(googleTaskId) && s.GoogleParentTaskId == googleTaskId)).ToList();
+                var hasChildren = children.Count > 0;
+                var canAddSubtask = item.Task is not null && !item.Task.IsGoogleTask;
+                <li class="day-item @(item.IsCompleted ? "done" : "")">
+                    @if (hasChildren)
+                    {
+                        <button class="collapse-toggle @(isCollapsed ? "collapsed" : "")" @onclick="() => ToggleCollapse(taskId!.Value)" title="@(isCollapsed ? "Expand" : "Collapse")" aria-label="@(isCollapsed ? "Expand" : "Collapse")">
+                            <svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 1.5l4 3.5-4 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    }
+                    <span class="item-title">@item.Title</span>
+                    <div class="item-actions">
+                        @if (item.IsRepeat && item.RepeatLabel is not null)
+                        {
+                            <span class="capsule" title="@item.RepeatLabel">@item.RepeatLabel</span>
+                        }
+                        @if (item.IsGoogle)
+                        {
+                            <span class="gtag" title="Google">G</span>
+                        }
+                        @if (canAddSubtask && OnAddSubtask.HasDelegate)
+                        {
+                            <button class="item-edit-btn" @onclick="() => StartAddSubtask(item)" title="Add subtask" aria-label="Add subtask">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            </button>
+                        }
+                        <button class="item-edit-btn" @onclick="() => StartEdit(item)" title="Edit" aria-label="Edit task">
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8.5 1.5l2 2L4 10H2V8l6.5-6.5z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    </div>
+                </li>
+                @if (hasChildren && !isCollapsed)
+                {
+                    @foreach (var child in children)
+                    {
+                        var grandChildren = _allSubtasks.Where(s =>
+                            s.ParentTaskId == child.Id ||
+                            (!string.IsNullOrEmpty(child.GoogleTaskId) && s.GoogleParentTaskId == child.GoogleTaskId)).ToList();
+                        var hasGrandChildren = grandChildren.Count > 0;
+                        var childCollapsed = _collapsedIds.Contains(child.Id);
+                        <li class="day-subitem">
+                            @if (hasGrandChildren)
+                            {
+                                <button class="collapse-toggle @(childCollapsed ? "collapsed" : "")" @onclick="() => ToggleCollapse(child.Id)" aria-label="@(childCollapsed ? "Expand" : "Collapse")">
+                                    <svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 1.5l4 3.5-4 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="collapse-spacer" aria-hidden="true"></span>
+                            }
+                            <span class="subtask-title">@child.Name</span>
+                        </li>
+                        @if (hasGrandChildren && !childCollapsed)
+                        {
+                            @foreach (var grand in grandChildren)
+                            {
+                                var greatGrandChildren = _allSubtasks.Where(s =>
+                                    s.ParentTaskId == grand.Id ||
+                                    (!string.IsNullOrEmpty(grand.GoogleTaskId) && s.GoogleParentTaskId == grand.GoogleTaskId)).ToList();
+                                var hasGGChildren = greatGrandChildren.Count > 0;
+                                var grandCollapsed = _collapsedIds.Contains(grand.Id);
+                                <li class="day-subitem subtask-nested">
+                                    @if (hasGGChildren)
+                                    {
+                                        <button class="collapse-toggle @(grandCollapsed ? "collapsed" : "")" @onclick="() => ToggleCollapse(grand.Id)" aria-label="@(grandCollapsed ? "Expand" : "Collapse")">
+                                            <svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 1.5l4 3.5-4 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="collapse-spacer" aria-hidden="true"></span>
+                                    }
+                                    <span class="subtask-title">@grand.Name</span>
+                                </li>
+                                @if (hasGGChildren && !grandCollapsed)
+                                {
+                                    @foreach (var gg in greatGrandChildren)
+                                    {
+                                        <li class="day-subitem subtask-nested">
+                                            <span class="collapse-spacer" aria-hidden="true"></span>
+                                            <span class="subtask-title">@gg.Name</span>
+                                        </li>
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                @if (isAddingSubtask && item.Task is not null)
+                {
+                    <li class="day-subtask-form">
+                        <input type="text"
+                               @bind="_newSubtaskName"
+                               @bind:event="oninput"
+                               @onkeydown="HandleSubtaskKeyPress"
+                               placeholder="Subtask name..."
+                               class="subtask-input"
+                               aria-label="New subtask name" />
+                        <button class="subtask-btn add" @onclick="HandleAddSubtask" disabled="@IsSubtaskDisabled" title="Add" aria-label="Add">+</button>
+                        <button class="subtask-btn cancel" @onclick="CancelAddSubtask" title="Cancel" aria-label="Cancel">x</button>
+                    </li>
+                }
+                @if (isEditing && item.Task is not null)
+                {
+                    <li class="day-edit">
+                        <TaskEditPanel Task="item.Task" OnSave="HandleEditSave" OnCancel="HandleEditCancel" />
+                    </li>
+                }
+            }
+        }
+    </ul>
+</div>
+
+@code {
+    [Microsoft.AspNetCore.Components.Parameter]
+    public ScheduleDay Day { get; set; } = default!;
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<TaskItem> OnEditTask { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<AddSubtaskRequest> OnAddSubtask { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public IReadOnlyList<TaskItem>? AllTasks { get; set; }
+
+    private Guid? _editingTaskId;
+    private Guid? _addingSubtaskId;
+    private string _newSubtaskName = string.Empty;
+    private bool IsSubtaskDisabled => string.IsNullOrWhiteSpace(_newSubtaskName);
+    private readonly HashSet<Guid> _collapsedIds = new();
+    private IReadOnlyList<TaskItem> _allSubtasks = [];
+    private Dictionary<string, Guid> _googleIdToLocalId = new();
+
+    protected override void OnParametersSet()
+    {
+        var all = AllTasks ?? [];
+        _googleIdToLocalId = all
+            .Where(t => !string.IsNullOrEmpty(t.GoogleTaskId))
+            .ToDictionary(t => t.GoogleTaskId!, t => t.Id);
+        _allSubtasks = all.Where(t => t.IsSubtask && !t.IsDeleted).ToList();
+    }
+
+    private void ToggleCollapse(Guid taskId)
+    {
+        if (!_collapsedIds.Add(taskId))
+            _collapsedIds.Remove(taskId);
+    }
+
+    private void StartEdit(ScheduleItem item)
+    {
+        _editingTaskId = _editingTaskId == item.Task?.Id ? null : item.Task?.Id;
+        _addingSubtaskId = null;
+    }
+
+    private void StartAddSubtask(ScheduleItem item)
+    {
+        _addingSubtaskId = item.Task?.Id;
+        _newSubtaskName = string.Empty;
+    }
+
+    private async Task HandleEditSave(TaskItem updatedTask)
+    {
+        _editingTaskId = null;
+        await OnEditTask.InvokeAsync(updatedTask);
+    }
+
+    private void HandleEditCancel()
+    {
+        _editingTaskId = null;
+    }
+
+    private void CancelAddSubtask()
+    {
+        _addingSubtaskId = null;
+        _newSubtaskName = string.Empty;
+    }
+
+    private async Task HandleAddSubtask()
+    {
+        if (_addingSubtaskId.HasValue && !string.IsNullOrWhiteSpace(_newSubtaskName))
+        {
+            await OnAddSubtask.InvokeAsync(new AddSubtaskRequest(_addingSubtaskId.Value, _newSubtaskName.Trim()));
+            _newSubtaskName = string.Empty;
+            _addingSubtaskId = null;
+        }
+    }
+
+    private async Task HandleSubtaskKeyPress(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !IsSubtaskDisabled)
+        {
+            await HandleAddSubtask();
+        }
+        else if (e.Key == "Escape")
+        {
+            CancelAddSubtask();
+        }
+    }
+}

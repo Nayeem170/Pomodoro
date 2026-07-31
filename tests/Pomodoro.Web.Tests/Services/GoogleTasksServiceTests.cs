@@ -395,6 +395,59 @@ public class GoogleTasksServiceTests
         Assert.Contains("rate-limited", ex.Message);
     }
 
+    [Fact]
+    public async Task InsertTaskAsync_PassesParentTaskId_ToJs()
+    {
+        var responseJson = JsonSerializer.Serialize(new { id = "child-1", title = "Sub", status = "needsAction", updated = "2026-01-01T00:00:00Z", etag = "e1", parent = "parent-1" });
+        _jsRuntime.QueueResult(responseJson);
+
+        var inserted = await _service.InsertTaskAsync("list-1", new GoogleTask { Title = "Sub" }, "parent-1");
+
+        Assert.Equal("googleTasks.insertTask", _jsRuntime.LastMethod);
+        Assert.Equal("parent-1", _jsRuntime.LastArgs![3]);
+        Assert.Equal("parent-1", inserted.Parent);
+    }
+
+    [Fact]
+    public async Task InsertTaskAsync_OmitsParent_WhenNull()
+    {
+        var responseJson = JsonSerializer.Serialize(new { id = "top-1", title = "Top", status = "needsAction", updated = "2026-01-01T00:00:00Z", etag = "e1" });
+        _jsRuntime.QueueResult(responseJson);
+
+        await _service.InsertTaskAsync("list-1", new GoogleTask { Title = "Top" });
+
+        Assert.Equal("googleTasks.insertTask", _jsRuntime.LastMethod);
+        Assert.Null(_jsRuntime.LastArgs![3]);
+    }
+
+    [Fact]
+    public async Task MoveTaskAsync_InvokesMoveEndpoint_WithParent()
+    {
+        var responseJson = JsonSerializer.Serialize(new { id = "task-1", title = "Moved", status = "needsAction", updated = "2026-01-01T00:00:00Z", etag = "e2", parent = "parent-9" });
+        _jsRuntime.QueueResult(responseJson);
+
+        var moved = await _service.MoveTaskAsync("list-1", "task-1", "parent-9");
+
+        Assert.Equal("googleTasks.moveTask", _jsRuntime.LastMethod);
+        Assert.Equal("task-1", _jsRuntime.LastArgs![2]);
+        Assert.Equal("parent-9", _jsRuntime.LastArgs![3]);
+        Assert.NotNull(moved);
+        Assert.Equal("parent-9", moved!.Parent);
+    }
+
+    [Fact]
+    public async Task MoveTaskAsync_MovesToRoot_WhenParentNull()
+    {
+        var responseJson = JsonSerializer.Serialize(new { id = "task-1", title = "Root", status = "needsAction", updated = "2026-01-01T00:00:00Z", etag = "e3" });
+        _jsRuntime.QueueResult(responseJson);
+
+        var moved = await _service.MoveTaskAsync("list-1", "task-1", null);
+
+        Assert.Equal("googleTasks.moveTask", _jsRuntime.LastMethod);
+        Assert.Null(_jsRuntime.LastArgs![3]);
+        Assert.Null(moved!.Parent);
+    }
+
     private class TestJsRuntime : IJSRuntime
     {
         private int _callIndex;

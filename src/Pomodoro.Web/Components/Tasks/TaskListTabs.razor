@@ -6,7 +6,6 @@
     {
         var isActive = list.Id == EffectiveCurrentListId;
         <button class="lt @(isActive ? "act" : "")"
-                style="@(isActive ? $"--list-color: {list.Color}" : "")"
                 @onclick="() => HandleTabClick(list.Id)"
                 @onkeydown="OnKeyDown"
                 aria-selected="@isActive.ToString().ToLower()"
@@ -52,7 +51,6 @@
 
     protected async Task HandleTabClick(string listId)
     {
-        Console.WriteLine($"[TABDBG] HandleTabClick: clicked={listId} resolved={ResolvedCurrentListId} currentListId={CurrentListId} serviceCurrent={ServiceCurrentListId} suppressed={listId == ResolvedCurrentListId}");
         if (listId != ResolvedCurrentListId)
         {
             await OnTabChanged.InvokeAsync(listId);

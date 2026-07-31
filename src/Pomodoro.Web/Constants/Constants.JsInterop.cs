@@ -134,6 +134,7 @@ public static partial class Constants
         public const string InsertTask = "googleTasks.insertTask";
         public const string PatchTask = "googleTasks.patchTask";
         public const string DeleteTask = "googleTasks.deleteTask";
+        public const string MoveTask = "googleTasks.moveTask";
     }
 
     /// <summary>

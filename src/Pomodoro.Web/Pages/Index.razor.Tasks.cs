@@ -95,5 +95,42 @@ public partial class IndexBase
         }, Constants.Messages.ErrorUpdatingTask);
     }
 
+    public async Task HandleScheduleEdit(Pomodoro.Web.Models.TaskItem task)
+    {
+        if (task.RepeatSeriesId.HasValue && task.OccurrenceDate.HasValue && !task.IsDeleted)
+        {
+            var existing = AppState.Tasks.FirstOrDefault(t =>
+                t.RepeatSeriesId == task.RepeatSeriesId && t.OccurrenceDate.HasValue
+                && t.OccurrenceDate.Value.Date == task.OccurrenceDate.Value.Date);
+            if (existing is null)
+            {
+                await TaskService.MaterializeSingleAsync(task);
+                await UpdateStateAsync();
+                return;
+            }
+        }
+        await HandleTaskEdit(task);
+    }
+
+    public async Task HandleAddSubtask(Pomodoro.Web.Models.AddSubtaskRequest request)
+    {
+        await TryExecuteAsync(async () =>
+        {
+            await TaskService.AddSubtaskAsync(request.Name, request.ParentTaskId);
+            await UpdateStateAsync();
+            StateHasChanged();
+        }, Constants.Messages.ErrorAddingTask);
+    }
+
+    public async Task HandleReparentToRoot(Guid taskId)
+    {
+        await TryExecuteAsync(async () =>
+        {
+            await TaskService.ReparentTaskAsync(taskId, null);
+            await UpdateStateAsync();
+            StateHasChanged();
+        }, Constants.Messages.ErrorUpdatingTask);
+    }
+
     #endregion
 }

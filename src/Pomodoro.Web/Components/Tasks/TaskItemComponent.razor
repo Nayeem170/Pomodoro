@@ -1,7 +1,21 @@
 @inherits TaskItemBase
 @using Pomodoro.Web.Models
 
-<div class="task-row @GetTaskClass()" @onclick="HandleSelect" role="button" tabindex="0" @onkeydown="HandleKeyDown">
+<div class="task-row @GetTaskClass()" @onclick="HandleSelect" role="button" tabindex="0" aria-level="@(Depth + 1)" @onkeydown="HandleKeyDown">
+    @if (Depth > 0)
+    {
+        <span class="task-indent" aria-hidden="true" style="width:@(Depth * 16)px"></span>
+    }
+    @if (HasChildren)
+    {
+        <button class="collapse-toggle @(IsCollapsed ? "collapsed" : "")" @onclick="HandleToggleCollapse" @onclick:stopPropagation="true" aria-label="@(IsCollapsed ? "Expand" : "Collapse")">
+            <svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 1.5l4 3.5-4 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+    }
+    else
+    {
+        <span class="collapse-spacer" aria-hidden="true"></span>
+    }
     @if (Item.IsCompleted)
     {
         <button class="task-checkbox completed" style="@GetCheckboxStyle()" @onclick="HandleUncomplete" @onclick:stopPropagation="true" aria-label="Undo">
@@ -21,7 +35,27 @@
     {
         <span class="task-badge @Constants.Repeat.ScheduleCssClass" title="Scheduled for @Item.ScheduledDate.Value.ToString("MMM d")">@Constants.Repeat.ScheduleIcon</span>
     }
+    @if (RepeatLabelText is not null)
+    {
+        <span class="capsule" title="@RepeatLabelText repeat">@RepeatLabelText</span>
+    }
+    @if (Item.IsGoogleTask)
+    {
+        <span class="gtag" title="Google task">G</span>
+    }
     <div class="task-actions">
+        @if (CanAddSubtask)
+        {
+            <button class="task-action-btn" @onclick="StartAddSubtask" @onclick:stopPropagation="true" title="Add subtask" aria-label="Add subtask">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+        }
+        @if (CanMoveToRoot)
+        {
+            <button class="task-action-btn" @onclick="HandleReparentToRoot" @onclick:stopPropagation="true" title="Move to top level" aria-label="Move to top level">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 5l4-4 4 4M5 1v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+        }
         @if (Item.IsCompleted)
         {
             <button class="task-action-btn" @onclick="HandleUncomplete" @onclick:stopPropagation="true" title="Undo" aria-label="Undo">
@@ -40,4 +74,22 @@
 @if (IsEditing)
 {
     <TaskEditPanel Task="Item" OnSave="HandleEditSave" OnCancel="HandleEditCancel" />
+}
+@if (IsAddingSubtask)
+{
+    <div class="add-subtask-form" style="margin-left:@((Depth + 1) * 16)px">
+        <input type="text"
+               @bind="NewSubtaskName"
+               @bind:event="oninput"
+               @onkeydown="HandleSubtaskKeyPress"
+               placeholder="Subtask name..."
+               class="task-input"
+               aria-label="New subtask name" />
+        <button class="btn-icon-small btn-add" @onclick="HandleAddSubtask" disabled="@IsAddSubtaskDisabled" title="Add" aria-label="Add">
+            +
+        </button>
+        <button class="btn-icon-small btn-cancel" @onclick="CancelAddSubtask" title="Cancel" aria-label="Cancel">
+            x
+        </button>
+    </div>
 }

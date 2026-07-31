@@ -36,11 +36,48 @@ public class TaskItemBase : ComponentBase
     [Parameter]
     public string CheckboxColor { get; set; } = "var(--pomodoro-color)";
 
+    [Parameter]
+    public int Depth { get; set; }
+
+    [Parameter]
+    public EventCallback<AddSubtaskRequest> OnAddSubtask { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid> OnReparentToRoot { get; set; }
+
+    [Parameter]
+    public bool HasChildren { get; set; }
+
+    [Parameter]
+    public bool IsCollapsed { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid> OnToggleCollapse { get; set; }
+
     #endregion
 
     #region State
 
     protected bool IsEditing { get; set; }
+
+    protected bool IsAddingSubtask { get; set; }
+
+    protected string NewSubtaskName { get; set; } = string.Empty;
+
+    protected bool CanAddSubtask => Depth < Constants.Tasks.MaxSubtaskDepth;
+
+    protected bool CanMoveToRoot => Item.IsSubtask;
+
+    protected bool IsAddSubtaskDisabled => string.IsNullOrWhiteSpace(NewSubtaskName);
+
+    protected string? RepeatLabelText => Item.Repeat?.Type switch
+    {
+        RepeatType.Daily => "Daily",
+        RepeatType.Weekly => "Weekly",
+        RepeatType.Custom => Item.Repeat.CustomDays > 0 ? $"×{Item.Repeat.CustomDays}d" : "Repeat",
+        RepeatType.Monthly => "Monthly",
+        _ => null
+    };
 
     #endregion
 
@@ -151,7 +188,7 @@ public class TaskItemBase : ComponentBase
 
     protected void HandleEdit()
     {
-        IsEditing = true;
+        IsEditing = !IsEditing;
     }
 
     protected async Task HandleEditSave(TaskItem updatedTask)
@@ -163,6 +200,50 @@ public class TaskItemBase : ComponentBase
     protected void HandleEditCancel()
     {
         IsEditing = false;
+    }
+
+    protected void StartAddSubtask()
+    {
+        IsAddingSubtask = true;
+        NewSubtaskName = string.Empty;
+    }
+
+    protected void CancelAddSubtask()
+    {
+        IsAddingSubtask = false;
+        NewSubtaskName = string.Empty;
+    }
+
+    protected async Task HandleAddSubtask()
+    {
+        if (!string.IsNullOrWhiteSpace(NewSubtaskName))
+        {
+            await OnAddSubtask.InvokeAsync(new AddSubtaskRequest(Item.Id, NewSubtaskName.Trim()));
+            NewSubtaskName = string.Empty;
+            IsAddingSubtask = false;
+        }
+    }
+
+    protected async Task HandleSubtaskKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == Constants.Keys.Enter && !string.IsNullOrWhiteSpace(NewSubtaskName))
+        {
+            await HandleAddSubtask();
+        }
+        else if (e.Key == Constants.Keys.Escape)
+        {
+            CancelAddSubtask();
+        }
+    }
+
+    protected async Task HandleReparentToRoot()
+    {
+        await OnReparentToRoot.InvokeAsync(Item.Id);
+    }
+
+    protected async Task HandleToggleCollapse()
+    {
+        await OnToggleCollapse.InvokeAsync(Item.Id);
     }
 
     #endregion

@@ -83,6 +83,9 @@ public static partial class Constants
         public const int InitialCount = 0;
         public const int InsertAtBeginning = 0;
         public const int InsertAtEnd = -1;
+        public const int MaxSubtaskDepth = 4;
+        public const int ScheduleWindowDays = 7;
+        public const string ScheduleDayFormat = "ddd, MMM d";
     }
 
     /// <summary>
@@ -108,5 +111,9 @@ public static partial class Constants
         public const int DefaultCustomDays = 1;
         public const int DefaultMonthlyDay = 1;
         public const int MaxCustomDays = 365;
+        public const string LabelDaily = "Daily";
+        public const string LabelWeekly = "Weekly";
+        public const string LabelMonthly = "Monthly";
+        public const string LabelRepeat = "Repeat";
     }
 }
