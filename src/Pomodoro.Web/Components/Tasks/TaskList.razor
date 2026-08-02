@@ -32,32 +32,46 @@
     </div>
     
     <div class="task-items">
-        @foreach (var task in ActiveTasks)
+        @foreach (var node in ActiveTaskNodes)
         {
-            <TaskItemComponent @key="task.Id" 
-                Item="task" 
-                IsSelected="task.Id == CurrentTaskId"
+            <TaskItemComponent @key="node.Task.Id" 
+                Item="node.Task" 
+                Depth="node.Depth"
+                HasChildren="node.HasChildren"
+                IsCollapsed="_collapsed.Contains(node.Task.Id)"
+                IsSelected="node.Task.Id == CurrentTaskId"
+                GoogleListTitle="@GoogleListTitleFor(node.Task)"
                 OnSelect="HandleTaskSelect"
                 OnComplete="HandleTaskComplete"
                 OnDelete="HandleTaskDelete"
                 OnUncomplete="HandleTaskUncomplete"
-                OnEdit="HandleTaskEdit" />
+                OnEdit="HandleTaskEdit"
+                OnAddSubtask="HandleAddSubtask"
+                OnReparentToRoot="HandleReparentToRoot"
+                OnToggleCollapse="ToggleCollapse" />
         }
         
         @if (HasCompletedTasks)
         {
             <div class="completed-section">
                 <h4>Completed</h4>
-                @foreach (var task in CompletedTasks)
+                @foreach (var node in CompletedTaskNodes)
                 {
-                    <TaskItemComponent @key="task.Id" 
-                        Item="task" 
+                    <TaskItemComponent @key="node.Task.Id" 
+                        Item="node.Task" 
+                        Depth="node.Depth"
+                        HasChildren="node.HasChildren"
+                        IsCollapsed="_collapsed.Contains(node.Task.Id)"
                         IsSelected="false"
+                        GoogleListTitle="@GoogleListTitleFor(node.Task)"
                         OnSelect="HandleTaskSelect"
                         OnComplete="HandleTaskComplete"
                         OnDelete="HandleTaskDelete"
                         OnUncomplete="HandleTaskUncomplete"
-                        OnEdit="HandleTaskEdit" />
+                        OnEdit="HandleTaskEdit"
+                        OnAddSubtask="HandleAddSubtask"
+                        OnReparentToRoot="HandleReparentToRoot"
+                        OnToggleCollapse="ToggleCollapse" />
                 }
             </div>
         }

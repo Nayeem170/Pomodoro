@@ -121,6 +121,7 @@ public static partial class Constants
         public const string DeleteFile = "googleDrive.deleteFile";
         public const string GetUserInfo = "googleDrive.getGoogleUserInfo";
         public const string GetAccessToken = "googleDrive.getAccessToken";
+        public const string SetAccessToken = "googleDrive.setAccessToken";
     }
 
     /// <summary>
@@ -133,6 +134,7 @@ public static partial class Constants
         public const string InsertTask = "googleTasks.insertTask";
         public const string PatchTask = "googleTasks.patchTask";
         public const string DeleteTask = "googleTasks.deleteTask";
+        public const string MoveTask = "googleTasks.moveTask";
     }
 
     /// <summary>

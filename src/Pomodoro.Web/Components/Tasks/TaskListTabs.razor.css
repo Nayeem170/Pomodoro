@@ -1,25 +1,27 @@
 .ltabs {
     display: flex;
     gap: 2px;
-    padding: 2px;
-    background: var(--color-background-secondary);
+    padding: 3px;
+    margin: 0 12px 8px;
+    background: var(--color-background-tertiary);
     border-radius: var(--border-radius-md);
-    margin-bottom: 8px;
 }
 
 .lt {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    padding: 4px 10px;
+    padding: 5px 10px;
     font-size: 12px;
     border: none;
     background: transparent;
-    color: var(--color-text-secondary);
+    color: var(--color-text-tertiary);
     cursor: pointer;
     border-radius: 6px;
     font-family: var(--font-sans);
-    transition: background 0.15s;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
     white-space: nowrap;
 }
 
@@ -38,7 +40,7 @@
 
 .lt-cnt {
     font-size: 10px;
-    background: var(--color-background-tertiary);
+    background: var(--color-background-secondary);
     border-radius: 8px;
     padding: 0 5px;
     line-height: 16px;
@@ -46,14 +48,18 @@
 }
 
 .lt.act {
-    background: var(--color-background-primary);
+    background: rgba(255, 255, 255, 0.18);
     color: var(--color-text-primary);
-    font-weight: 500;
-    border: 0.5px solid var(--color-border-tertiary);
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .lt:hover {
-    background: var(--color-background-tertiary);
+    color: var(--color-text-secondary);
+}
+
+.lt.act:hover {
+    color: var(--color-text-primary);
 }
 
 .lt:focus {

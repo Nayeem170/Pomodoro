@@ -1,0 +1,26 @@
+@inherits ScheduleAgendaBase
+
+<div class="schedule-agenda">
+    <div class="sched-nav">
+        <button class="sched-nav-btn" @onclick="OnPrev" disabled="@(!CanGoPrev)" aria-label="Previous week" title="Previous week">‹</button>
+        <span class="sched-window">@WindowLabel</span>
+        <button class="sched-nav-btn" @onclick="OnNext" aria-label="Next week" title="Next week">›</button>
+    </div>
+
+    @if (Days.Count == 0)
+    {
+        <p class="sched-empty">No upcoming tasks.</p>
+    }
+    else
+    {
+        <ul class="sched-days" role="list">
+            @foreach (var day in Days)
+            {
+                <ScheduleDayRow Day="day"
+                                OnEditTask="OnEditTask"
+                                OnAddSubtask="OnAddSubtask"
+                                AllTasks="AllTasks" />
+            }
+        </ul>
+    }
+</div>

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('Task Row Keyboard Accessibility', () => {

@@ -1,4 +1,4 @@
-import { test, expect, browser } from '@playwright/test';
+import { test, expect, browser } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('BroadcastChannel Cross-Tab Sync', () => {

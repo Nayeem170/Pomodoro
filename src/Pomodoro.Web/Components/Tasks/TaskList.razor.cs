@@ -36,6 +36,15 @@ public class TaskListBase : ComponentBase
     [Parameter]
     public EventCallback<TaskItem> OnTaskEdit { get; set; }
 
+    [Parameter]
+    public EventCallback<AddSubtaskRequest> OnAddSubtask { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid> OnReparentToRoot { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
+
     #endregion
 
     #region State
@@ -48,17 +57,94 @@ public class TaskListBase : ComponentBase
     /// </summary>
     protected bool IsAddDisabled => string.IsNullOrWhiteSpace(NewTaskName);
 
-    protected IReadOnlyList<TaskItem> ActiveTasks
-        => Tasks.Where(t => !t.IsCompleted)
-                .OrderByDescending(t => t.LastWorkedOn ?? t.CreatedAt)
-                .ToList();
-
-    protected IReadOnlyList<TaskItem> CompletedTasks
-        => Tasks.Where(t => t.IsCompleted)
-                .OrderByDescending(t => t.LastWorkedOn ?? t.CreatedAt)
-                .ToList();
-
     protected bool HasCompletedTasks => Tasks.Any(t => t.IsCompleted);
+
+    protected HashSet<Guid> _collapsed = new();
+    protected HashSet<Guid> _parentIds = new();
+
+    protected sealed record TaskNode(TaskItem Task, int Depth, bool HasChildren, bool IsCompletedAncestor);
+
+    protected IReadOnlyList<TaskNode> AllNodes => BuildTree(Tasks);
+
+    protected IReadOnlyList<TaskNode> ActiveTaskNodes => AllNodes.Where(n => !n.Task.IsCompleted && !n.IsCompletedAncestor).ToList();
+
+    protected IReadOnlyList<TaskNode> CompletedTaskNodes => AllNodes.Where(n => n.Task.IsCompleted || n.IsCompletedAncestor).ToList();
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        var googleIdToLocalId = Tasks
+            .Where(t => !string.IsNullOrEmpty(t.GoogleTaskId))
+            .ToDictionary(t => t.GoogleTaskId!, t => t.Id);
+        _parentIds = Tasks
+            .Where(t => t.ParentTaskId.HasValue)
+            .Select(t => t.ParentTaskId!.Value)
+            .Union(Tasks
+                .Where(t => !string.IsNullOrEmpty(t.GoogleParentTaskId))
+                .Where(t => googleIdToLocalId.ContainsKey(t.GoogleParentTaskId!))
+                .Select(t => googleIdToLocalId[t.GoogleParentTaskId!]))
+            .ToHashSet();
+    }
+
+    protected string? GoogleListTitleFor(TaskItem task) =>
+        string.IsNullOrEmpty(task.GoogleListId)
+            ? null
+            : GoogleLists.FirstOrDefault(l => l.Id == task.GoogleListId)?.Title;
+
+    protected void ToggleCollapse(Guid taskId)
+    {
+        if (!_collapsed.Add(taskId))
+            _collapsed.Remove(taskId);
+    }
+
+    private IReadOnlyList<TaskNode> BuildTree(IReadOnlyList<TaskItem> tasks)
+    {
+        var result = new List<TaskNode>();
+        if (tasks.Count == 0) return result;
+
+        var taskById = tasks.ToDictionary(t => t.Id);
+        var googleIdToTask = tasks
+            .Where(t => !string.IsNullOrEmpty(t.GoogleTaskId))
+            .GroupBy(t => t.GoogleTaskId!)
+            .ToDictionary(g => g.Key, g => g.First().Id);
+        var childrenByLocalParent = tasks
+            .Where(t => t.ParentTaskId.HasValue)
+            .GroupBy(t => t.ParentTaskId!.Value)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<TaskItem>)g.OrderBy(t => t.CreatedAt).ToList());
+        var childrenByGoogleParent = tasks
+            .Where(t => !string.IsNullOrEmpty(t.GoogleParentTaskId))
+            .GroupBy(t => t.GoogleParentTaskId!)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<TaskItem>)g
+                .OrderBy(t => t.GooglePosition ?? string.Empty, StringComparer.Ordinal)
+                .ToList());
+        var visited = new HashSet<Guid>();
+
+        bool HasKnownParent(TaskItem t) =>
+            (t.ParentTaskId.HasValue && taskById.ContainsKey(t.ParentTaskId.Value)) ||
+            (!string.IsNullOrEmpty(t.GoogleParentTaskId) && googleIdToTask.ContainsKey(t.GoogleParentTaskId));
+
+        var roots = tasks.Where(t => !HasKnownParent(t));
+
+        void Walk(TaskItem task, int depth, bool underCompleted)
+        {
+            if (!visited.Add(task.Id)) return;
+            var isUnderCompleted = underCompleted || task.IsCompleted;
+            result.Add(new TaskNode(task, depth, _parentIds.Contains(task.Id), isUnderCompleted));
+            if (_collapsed.Contains(task.Id)) return;
+            if (childrenByLocalParent.TryGetValue(task.Id, out var localKids))
+                foreach (var kid in localKids)
+                    Walk(kid, depth + 1, isUnderCompleted);
+            if (!string.IsNullOrEmpty(task.GoogleTaskId) &&
+                childrenByGoogleParent.TryGetValue(task.GoogleTaskId, out var googleKids))
+                foreach (var kid in googleKids)
+                    Walk(kid, depth + 1, isUnderCompleted);
+        }
+
+        foreach (var root in roots)
+            Walk(root, 0, false);
+
+        return result;
+    }
 
     #endregion
 
@@ -145,6 +231,16 @@ public class TaskListBase : ComponentBase
     protected async Task HandleTaskEdit(TaskItem task)
     {
         await OnTaskEdit.InvokeAsync(task);
+    }
+
+    protected async Task HandleAddSubtask(AddSubtaskRequest request)
+    {
+        await OnAddSubtask.InvokeAsync(request);
+    }
+
+    protected async Task HandleReparentToRoot(Guid taskId)
+    {
+        await OnReparentToRoot.InvokeAsync(taskId);
     }
 
     #endregion

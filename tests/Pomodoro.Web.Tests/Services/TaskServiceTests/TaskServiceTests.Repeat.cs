@@ -11,7 +11,7 @@ namespace Pomodoro.Web.Tests.Services;
 public partial class TaskServiceTests
 {
     [Fact]
-    public async Task CompleteTaskAsync_RecurringDaily_SetsNextOccurrence()
+    public async Task CompleteTaskAsync_RepeatingTask_MarksCompleteWithoutAdvancingNext()
     {
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: false);
@@ -27,68 +27,7 @@ public partial class TaskServiceTests
         await service.CompleteTaskAsync(taskId);
 
         Assert.True(service.AllTasks[0].IsCompleted);
-        Assert.NotNull(service.AllTasks[0].Repeat);
-        Assert.NotNull(service.AllTasks[0].Repeat.NextOccurrence);
-        Assert.Equal(DateTime.UtcNow.Date.AddDays(1), service.AllTasks[0].Repeat.NextOccurrence.Value.Date);
-    }
-
-    [Fact]
-    public async Task CompleteTaskAsync_RecurringWeekly_SetsNextOccurrence()
-    {
-        var taskId = Guid.NewGuid();
-        var task = CreateSampleTask(id: taskId, isCompleted: false);
-        task.Repeat = new RepeatRule { Type = RepeatType.Weekly, Weekdays = [DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday] };
-
-        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
-        MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
-        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync((AppStateRecord?)null);
-
-        var service = CreateService();
-        await service.InitializeAsync();
-        await service.CompleteTaskAsync(taskId);
-
-        Assert.NotNull(service.AllTasks[0].Repeat.NextOccurrence);
-    }
-
-    [Fact]
-    public async Task CompleteTaskAsync_RecurringCustom_SetsNextOccurrence()
-    {
-        var taskId = Guid.NewGuid();
-        var task = CreateSampleTask(id: taskId, isCompleted: false);
-        task.Repeat = new RepeatRule { Type = RepeatType.Custom, CustomDays = 3 };
-
-        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
-        MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
-        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync((AppStateRecord?)null);
-
-        var service = CreateService();
-        await service.InitializeAsync();
-        await service.CompleteTaskAsync(taskId);
-
-        Assert.Equal(DateTime.UtcNow.Date.AddDays(3), service.AllTasks[0].Repeat.NextOccurrence.Value.Date);
-    }
-
-    [Fact]
-    public async Task CompleteTaskAsync_RecurringMonthly_SetsNextOccurrence()
-    {
-        var taskId = Guid.NewGuid();
-        var task = CreateSampleTask(id: taskId, isCompleted: false);
-        task.Repeat = new RepeatRule { Type = RepeatType.Monthly, MonthlyDay = 15 };
-
-        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
-        MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
-        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync((AppStateRecord?)null);
-
-        var service = CreateService();
-        await service.InitializeAsync();
-        await service.CompleteTaskAsync(taskId);
-
-        var next = service.AllTasks[0].Repeat.NextOccurrence!.Value;
-        Assert.Equal(15, next.Day);
-        Assert.True(next > DateTime.UtcNow);
+        Assert.Null(service.AllTasks[0].Repeat!.NextOccurrence);
     }
 
     [Fact]
@@ -108,7 +47,7 @@ public partial class TaskServiceTests
         await service.CompleteTaskAsync(taskId);
 
         Assert.True(service.AllTasks[0].IsCompleted);
-        Assert.Null(service.AllTasks[0].Repeat.NextOccurrence);
+        Assert.Null(service.AllTasks[0].Repeat!.NextOccurrence);
     }
 
     [Fact]
@@ -128,7 +67,7 @@ public partial class TaskServiceTests
         await service.CompleteTaskAsync(taskId);
 
         Assert.True(service.AllTasks[0].IsCompleted);
-        Assert.Null(service.AllTasks[0].Repeat.NextOccurrence);
+        Assert.Null(service.AllTasks[0].Repeat!.NextOccurrence);
     }
 
     [Fact]
@@ -154,7 +93,7 @@ public partial class TaskServiceTests
         await service.CompleteTaskAsync(taskId);
 
         Assert.True(service.AllTasks[0].IsCompleted);
-        Assert.Null(service.AllTasks[0].Repeat.NextOccurrence);
+        Assert.Null(service.AllTasks[0].Repeat!.NextOccurrence);
     }
 
     [Fact]
@@ -289,48 +228,6 @@ public partial class TaskServiceTests
         await service.CompleteTaskAsync(taskId);
 
         Assert.True(service.AllTasks[0].IsCompleted);
-        Assert.Null(service.AllTasks[0].Repeat.NextOccurrence);
-    }
-
-    [Fact]
-    public async Task CompleteTaskAsync_RecurringCustomZeroDays_UsesDefault()
-    {
-        var today = DateTime.UtcNow.Date;
-        var taskId = Guid.NewGuid();
-        var task = CreateSampleTask(id: taskId, isCompleted: false);
-        task.Repeat = new RepeatRule { Type = RepeatType.Custom, CustomDays = 0 };
-
-        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
-        MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
-        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync((AppStateRecord?)null);
-
-        var service = CreateService();
-        await service.InitializeAsync();
-        await service.CompleteTaskAsync(taskId);
-
-        var next = service.AllTasks[0].Repeat.NextOccurrence!.Value;
-        Assert.Equal(today.AddDays(Constants.Repeat.DefaultCustomDays), next.Date);
-    }
-
-    [Fact]
-    public async Task CompleteTaskAsync_RecurringWeeklyEmptyWeekdays_UsesFallback()
-    {
-        var today = DateTime.UtcNow.Date;
-        var taskId = Guid.NewGuid();
-        var task = CreateSampleTask(id: taskId, isCompleted: false);
-        task.Repeat = new RepeatRule { Type = RepeatType.Weekly, Weekdays = [] };
-
-        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
-        MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
-        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync((AppStateRecord?)null);
-
-        var service = CreateService();
-        await service.InitializeAsync();
-        await service.CompleteTaskAsync(taskId);
-
-        var next = service.AllTasks[0].Repeat.NextOccurrence!.Value;
-        Assert.Equal(today.AddDays(7), next.Date);
+        Assert.Null(service.AllTasks[0].Repeat!.NextOccurrence);
     }
 }

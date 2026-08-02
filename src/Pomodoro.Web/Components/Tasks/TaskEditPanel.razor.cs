@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Components.Tasks;
@@ -13,6 +14,12 @@ public class TaskEditPanelBase : ComponentBase
 
     [Parameter]
     public EventCallback OnCancel { get; set; }
+
+    protected bool IsSubtask => Task.IsSubtask;
+
+    protected string EditName { get; set; } = string.Empty;
+
+    protected ElementReference _subtaskInput;
 
     protected RepeatType EditRepeatType { get; set; }
     protected DayOfWeek[] EditWeekdays { get; set; } = [];
@@ -29,6 +36,7 @@ public class TaskEditPanelBase : ComponentBase
 
     protected override void OnInitialized()
     {
+        EditName = Task.Name;
         EditRepeatType = Task.Repeat?.Type ?? RepeatType.None;
         EditWeekdays = Task.Repeat?.Weekdays ?? [];
         EditCustomDays = Task.Repeat?.CustomDays > 0 ? Task.Repeat.CustomDays : Constants.Repeat.DefaultCustomDays;
@@ -47,8 +55,26 @@ public class TaskEditPanelBase : ComponentBase
         EditWeekdays = [.. list.OrderBy(d => d)];
     }
 
+    protected async Task HandleSubtaskKey(KeyboardEventArgs e)
+    {
+        if (e.Key == Constants.Keys.Enter)
+            await HandleSave();
+        else if (e.Key == Constants.Keys.Escape)
+            await HandleCancel();
+    }
+
     protected async Task HandleSave()
     {
+        Task.Name = (EditName ?? string.Empty).Trim();
+
+        if (IsSubtask)
+        {
+            Task.Repeat = null;
+            Task.ScheduledDate = null;
+            await OnSave.InvokeAsync(Task);
+            return;
+        }
+
         if (EditRepeatType == RepeatType.None)
         {
             Task.Repeat = null;

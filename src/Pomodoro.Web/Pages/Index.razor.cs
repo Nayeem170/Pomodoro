@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Microsoft.Extensions.Logging;
@@ -75,9 +76,27 @@ public partial class IndexBase : ComponentBase, IDisposable
     public string? ErrorMessage { get; set; }
     public bool IsPipOpen { get; set; }
     protected IReadOnlyList<TaskListRef> TaskLists { get; set; } = [];
+    protected IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
     protected string? ActiveListId { get; set; }
     protected TaskListRef? ActiveList { get; set; }
 
+    protected IReadOnlyList<TaskListRef> TabLists => TaskLists.Where(l => l.IsVisible).ToList();
+
+    protected IReadOnlyList<TaskItem> TodayTasks => Tasks;
+
+    protected bool IsScheduleView => ActiveListId == Constants.TaskLists.ScheduleListId;
+
+    protected int _scheduleWeekOffset;
+
+    protected IReadOnlyList<ScheduleDay> ScheduleWindow => BuildScheduleWindow(ScheduleWindowStart);
+
+    protected string ScheduleWindowLabel =>
+        $"{ScheduleWindowStart:MMM d} – {ScheduleWindowStart.AddDays(Constants.Tasks.ScheduleWindowDays - 1):MMM d}";
+
+    private DateTime ScheduleWindowStart =>
+        DateTime.UtcNow.Date.AddDays(_scheduleWeekOffset * Constants.Tasks.ScheduleWindowDays);
+
+    private int _updateSeq;
     private (int TotalFocusMinutes, int PomodoroCount, int TasksWorkedOn)? _cachedTodayStats;
 
     private void InvalidateTodayStatsCache() => _cachedTodayStats = null;
@@ -260,9 +279,12 @@ public partial class IndexBase : ComponentBase, IDisposable
 
     private async Task UpdateStateAsync()
     {
+        var seq = ++_updateSeq;
         try
         {
             var state = await IndexPagePresenterService.UpdateStateAsync(TaskService, TimerService, ActiveListId);
+
+            if (seq != _updateSeq) return;
 
             Tasks = state.Tasks;
             CurrentTaskId = state.CurrentTaskId;
@@ -272,12 +294,15 @@ public partial class IndexBase : ComponentBase, IDisposable
             IsTimerPaused = state.IsTimerPaused;
             IsTimerStarted = state.IsTimerStarted;
             TaskLists = state.TaskLists;
+            GoogleLists = state.GoogleLists;
             ActiveListId = state.CurrentListId;
             ActiveList = TaskLists.FirstOrDefault(l => l.Id == ActiveListId);
             ErrorMessage = null;
         }
         catch (Exception ex)
         {
+            if (seq != _updateSeq) return;
+
             Logger.LogError(ex, Constants.Messages.ErrorInUpdateState);
             ErrorMessage = $"{Constants.Messages.ErrorLoadingTasks}: {ex.Message}";
         }
@@ -285,10 +310,92 @@ public partial class IndexBase : ComponentBase, IDisposable
 
     protected async Task HandleTabChange(string listId)
     {
+        Console.WriteLine($"[TABDBG] HandleTabChange: clicked={listId} activeBefore={ActiveListId} serviceBefore={TaskService.CurrentListId}");
         ActiveListId = listId;
         await TaskService.SelectListAsync(listId);
+        Console.WriteLine($"[TABDBG] HandleTabChange post-select: active={ActiveListId} service={TaskService.CurrentListId}");
         await UpdateStateAsync();
     }
+
+    protected async Task HandleSchedulePrev()
+    {
+        if (_scheduleWeekOffset == 0) return;
+        _scheduleWeekOffset--;
+        await UpdateStateAsync();
+    }
+
+    protected async Task HandleScheduleNext()
+    {
+        _scheduleWeekOffset++;
+        await UpdateStateAsync();
+    }
+
+    private IReadOnlyList<ScheduleDay> BuildScheduleWindow(DateTime start)
+    {
+        var candidates = AppState.Tasks.Where(t => !t.IsDeleted && !t.IsSubtask).ToList();
+        var days = new List<ScheduleDay>(Constants.Tasks.ScheduleWindowDays);
+
+        for (var offset = 0; offset < Constants.Tasks.ScheduleWindowDays; offset++)
+        {
+            var date = start.AddDays(offset);
+            var items = candidates
+                .Where(t => OccursOn(t, date))
+                .Select(t => new ScheduleItem
+                {
+                    TaskId = t.Id,
+                    Title = t.Name,
+                    IsRepeat = t.IsRecurring,
+                    RepeatLabel = BuildRepeatLabel(t.Repeat),
+                    IsGoogle = t.IsGoogleTask,
+                    IsCompleted = t.IsCompleted,
+                    Task = t
+                })
+                .ToList();
+
+            days.Add(new ScheduleDay
+            {
+                Date = date,
+                DayLabel = date.ToString(Constants.Tasks.ScheduleDayFormat, CultureInfo.InvariantCulture),
+                Items = items
+            });
+        }
+
+        return days;
+    }
+
+    private static bool OccursOn(TaskItem task, DateTime date)
+    {
+        if (task.OccurrenceDate?.Date == date) return true;
+        if (task.Repeat is { IsActive: true } rule) return RepeatOccursOn(rule, task, date);
+        return task.ScheduledDate?.Date == date || task.DueDate?.Date == date;
+    }
+
+    private static bool RepeatOccursOn(RepeatRule rule, TaskItem task, DateTime date)
+    {
+        var anchor = (rule.StartDate ?? task.ScheduledDate ?? task.CreatedAt).Date;
+        if (date < anchor) return false;
+        if (rule.EndDate.HasValue && date > rule.EndDate.Value.Date) return false;
+
+        return rule.Type switch
+        {
+            RepeatType.Daily => true,
+            RepeatType.Weekly => rule.Weekdays.Length == 0
+                ? date.DayOfWeek == anchor.DayOfWeek
+                : rule.Weekdays.Contains(date.DayOfWeek),
+            RepeatType.Custom => rule.CustomDays > 0 && (date - anchor).Days % rule.CustomDays == 0,
+            RepeatType.Monthly => date.Day == (rule.MonthlyDay ?? anchor.Day),
+            _ => false
+        };
+    }
+
+    private static string? BuildRepeatLabel(RepeatRule? rule) => rule?.Type switch
+    {
+        RepeatType.Daily => Constants.Repeat.LabelDaily,
+        RepeatType.Weekly => Constants.Repeat.LabelWeekly,
+        RepeatType.Monthly => Constants.Repeat.LabelMonthly,
+        RepeatType.Custom => rule.CustomDays > 0 ? $"×{rule.CustomDays}d" : Constants.Repeat.LabelRepeat,
+        _ => null
+    };
 
     #endregion
 

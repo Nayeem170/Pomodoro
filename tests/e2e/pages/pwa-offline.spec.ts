@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/consoleCheck';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { PomodoroPage } from '../fixtures/pomodoro.page';

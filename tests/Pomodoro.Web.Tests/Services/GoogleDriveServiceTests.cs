@@ -317,6 +317,30 @@ public class GoogleDriveServiceTests : IDisposable
         Assert.Null(_service.AccountEmail);
     }
 
+    [Fact]
+    public async Task RestoreAccessTokenAsync_RestoresTokenAndMarksConnected()
+    {
+        var expiry = DateTime.UtcNow.AddMinutes(50);
+
+        await _service.RestoreAccessTokenAsync("persisted-token", expiry);
+
+        Assert.Equal("googleDrive.setAccessToken", _jsRuntime.LastMethod);
+        Assert.Equal("persisted-token", _jsRuntime.LastArgs?[0]);
+        Assert.Equal("persisted-token", _service.AccessToken);
+        Assert.NotNull(_service.TokenExpiresAt);
+        Assert.True(_service.IsConnected);
+    }
+
+    [Fact]
+    public async Task RestoreAccessTokenAsync_NullToken_DoesNothing()
+    {
+        await _service.RestoreAccessTokenAsync(null, DateTime.UtcNow.AddMinutes(50));
+
+        Assert.Null(_jsRuntime.LastMethod);
+        Assert.Null(_service.AccessToken);
+        Assert.False(_service.IsConnected);
+    }
+
     private class TestJsRuntime : IJSRuntime
     {
         private int _callIndex;

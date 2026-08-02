@@ -31,7 +31,8 @@ public class IndexPagePresenterService
                 Tasks = tasks.ToList(),
                 CurrentTaskId = taskService.CurrentTaskId,
                 CurrentListId = listId,
-                TaskLists = taskService.TaskLists,
+                TaskLists = taskLists,
+                GoogleLists = taskService.GoogleLists,
                 RemainingTime = timerService.RemainingTime,
                 CurrentSessionType = timerService.CurrentSessionType,
                 IsTimerRunning = timerService.IsRunning,
@@ -53,6 +54,7 @@ public class IndexPageState
     public Guid? CurrentTaskId { get; set; }
     public string? CurrentListId { get; set; }
     public IReadOnlyList<TaskListRef> TaskLists { get; set; } = [];
+    public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
     public TimeSpan RemainingTime { get; set; }
     public SessionType CurrentSessionType { get; set; }
     public bool IsTimerRunning { get; set; }

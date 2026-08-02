@@ -718,6 +718,244 @@ input, textarea, [contenteditable="true"] {
     gap: 8px;
 }
 
+.task-indent {
+    flex-shrink: 0;
+}
+
+.add-subtask-form {
+    display: flex;
+    gap: 8px;
+    padding: 4px 0;
+}
+
+.add-subtask-form .task-input {
+    font-size: 14px;
+    padding: 6px 10px;
+}
+
+.schedule-agenda {
+    margin: 0 12px 8px;
+}
+
+.sched-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 0 10px;
+}
+
+.sched-nav-btn {
+    background: var(--color-background-tertiary);
+    color: var(--color-text-primary);
+    border: none;
+    border-radius: 6px;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.sched-nav-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.sched-window {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.sched-empty {
+    color: var(--color-text-tertiary);
+    font-size: 13px;
+    padding: 8px 0;
+}
+
+.sched-day {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-border-primary);
+}
+
+.day-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: capitalize;
+    margin-bottom: 4px;
+}
+
+.day-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.day-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    font-size: 14px;
+}
+
+.day-item.done .item-title {
+    text-decoration: line-through;
+    color: var(--color-text-tertiary);
+}
+
+.day-check {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border-primary);
+    flex-shrink: 0;
+    cursor: pointer;
+    background: transparent;
+    padding: 0;
+    transition: all 0.15s;
+}
+
+.day-check:hover {
+    border-color: var(--pomodoro-color);
+}
+
+.day-check.completed {
+    background: var(--pomodoro-color);
+    border-color: var(--pomodoro-color);
+}
+
+.day-item .item-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.day-item .item-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.item-edit-btn {
+    background: none;
+    border: none;
+    padding: 2px;
+    color: var(--color-text-tertiary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s;
+}
+
+.item-edit-btn:hover {
+    color: var(--color-text-primary);
+}
+
+.day-edit {
+    padding: 4px 0;
+}
+
+.day-edit .task-edit-panel {
+    margin: 0;
+}
+
+.day-subitem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0 2px 28px;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+.day-subitem .subtask-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.day-subitem.subtask-nested {
+    padding-left: 46px;
+}
+
+.day-subtask-form {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0 2px 28px;
+}
+
+.day-subtask-form .subtask-input {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    padding: 4px 8px;
+    border: 1px solid var(--color-border-primary);
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+}
+
+.day-subtask-form .subtask-btn {
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--color-border-primary);
+    background: transparent;
+    color: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.day-subtask-form .subtask-btn.add:hover {
+    background: var(--color-background-secondary);
+}
+
+.day-subtask-form .subtask-btn.cancel:hover {
+    background: var(--color-background-secondary);
+}
+
+.day-empty {
+    color: var(--color-text-tertiary);
+    font-size: 13px;
+    padding: 2px 0;
+}
+
+.capsule {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 9999px;
+    background: rgba(231, 76, 60, 0.18);
+    color: var(--pomodoro-color);
+}
+
+.gtag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    padding: 2px;
+    border-radius: 4px;
+    background: rgba(66, 133, 244, 0.18);
+    line-height: 0;
+}
+
+.gtag svg {
+    display: block;
+}
+
 .task-row {
     display: flex;
     align-items: center;
@@ -728,6 +966,35 @@ input, textarea, [contenteditable="true"] {
 
 .task-row:last-child {
     border-bottom: none;
+}
+
+.row-toggle {
+    width: 18px;
+    height: 18px;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-tertiary);
+    transition: transform 0.15s, color 0.15s;
+    flex-shrink: 0;
+    transform: rotate(90deg);
+}
+
+.row-toggle:hover {
+    color: var(--color-text-primary);
+}
+
+.row-toggle.collapsed {
+    transform: rotate(0deg);
+}
+
+.collapse-spacer {
+    width: 18px;
+    flex-shrink: 0;
 }
 
 .task-checkbox {
@@ -1316,5 +1583,54 @@ input, textarea, [contenteditable="true"] {
 @media (max-width: 768px) {
     .pip-btn {
         display: none;
+    }
+}
+
+/* =============================================================================
+   Console layout — timer and task list share the screen on wide viewports.
+   Below the breakpoint this is a plain column, identical to the stacked layout,
+   so the mobile composition is unchanged.
+   ============================================================================= */
+
+.timer-split {
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 900px) {
+    .timer-split {
+        display: grid;
+        grid-template-columns: minmax(320px, 0.95fr) minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        padding: 12px 12px 0;
+    }
+
+    /* The panes own the gutters now, so the children drop their own margins. */
+    .timer-split .mode-tabs {
+        margin: 0 0 10px;
+        padding: 6px 0 0;
+    }
+
+    .timer-split .timer-card,
+    .timer-split .task-card {
+        margin: 0;
+    }
+
+    /* Keep the timer in view while the task list scrolls past it. */
+    .split-timer {
+        position: sticky;
+        top: 12px;
+    }
+
+    .split-tasks {
+        min-width: 0;
+    }
+}
+
+@media (min-width: 1200px) {
+    .app-content,
+    .header-content-wrapper {
+        max-width: 1100px;
     }
 }
