@@ -12,126 +12,132 @@ else
 {
     <div class="main-container">
         <ErrorBanner ErrorMessage="@ErrorMessage" OnDismiss="@(() => ErrorMessage = null)" />
-        
-        <div class="mode-tabs" role="tablist">
-            <button class="@(CurrentSessionType == SessionType.Pomodoro ? "active" : "")"
-                    @onclick="() => HandleSessionSwitch(SessionType.Pomodoro)"
-                    title="@Constants.KeyboardShortcuts.PomodoroKey"
-                    role="tab"
-                    aria-selected="@(CurrentSessionType == SessionType.Pomodoro)">
-                Pomodoro
-            </button>
-            <button class="@(CurrentSessionType == SessionType.ShortBreak ? "active short-break-active" : "")"
-                    @onclick="() => HandleSessionSwitch(SessionType.ShortBreak)"
-                    title="@Constants.KeyboardShortcuts.ShortBreakKey"
-                    role="tab"
-                    aria-selected="@(CurrentSessionType == SessionType.ShortBreak)">
-                Short break
-            </button>
-            <button class="@(CurrentSessionType == SessionType.LongBreak ? "active long-break-active" : "")"
-                    @onclick="() => HandleSessionSwitch(SessionType.LongBreak)"
-                    title="@Constants.KeyboardShortcuts.LongBreakKey"
-                    role="tab"
-                    aria-selected="@(CurrentSessionType == SessionType.LongBreak)">
-                Long break
-            </button>
-        </div>
-        
-        <div class="timer-card @GetTimerThemeClass() @(IsTimerRunning ? "running" : "")">
-            <div class="card-top">
-                <TimerDisplay RemainingTime="RemainingTime"
-                              SessionType="CurrentSessionType"
-                              IsRunning="IsTimerRunning" />
-                
-                <CurrentTaskIndicator CurrentSessionType="@CurrentSessionType"
-                                      CurrentTaskId="@CurrentTaskId"
-                                      Tasks="@Tasks" />
-                
-                <TodaySummary TotalFocusMinutes="TodayTotalFocusMinutes"
-                              PomodoroCount="TodayPomodoroCount"
-                              DailyGoal="DailyGoal"
-                              TasksWorkedOn="TodayTasksWorkedOn" />
-                
-                <TimerControls IsRunning="IsTimerRunning"
-                               IsPaused="IsTimerPaused"
-                               IsStarted="IsTimerStarted"
-                               CanStart="CurrentTaskId.HasValue || CurrentSessionType != SessionType.Pomodoro"
-                               SessionType="CurrentSessionType"
-                               OnStart="HandleTimerStart"
-                               OnPause="HandleTimerPause"
-                               OnResume="HandleTimerResume"
-                               OnReset="HandleTimerReset" />
-            </div>
-            <div class="card-footer @(IsTimerRunning ? "" : "idle")">
-                @if (IsTimerRunning)
-                {
-                    <div class="ends-at">
-                        <span class="lbl">Ends at</span>
-                        <span class="val">@DateTime.Now.AddSeconds(RemainingTime.TotalSeconds).ToString("h:mm tt")</span>
+
+        <div class="timer-split">
+            <div class="split-timer">
+                <div class="mode-tabs" role="tablist">
+                    <button class="@(CurrentSessionType == SessionType.Pomodoro ? "active" : "")"
+                            @onclick="() => HandleSessionSwitch(SessionType.Pomodoro)"
+                            title="@Constants.KeyboardShortcuts.PomodoroKey"
+                            role="tab"
+                            aria-selected="@(CurrentSessionType == SessionType.Pomodoro)">
+                        Pomodoro
+                    </button>
+                    <button class="@(CurrentSessionType == SessionType.ShortBreak ? "active short-break-active" : "")"
+                            @onclick="() => HandleSessionSwitch(SessionType.ShortBreak)"
+                            title="@Constants.KeyboardShortcuts.ShortBreakKey"
+                            role="tab"
+                            aria-selected="@(CurrentSessionType == SessionType.ShortBreak)">
+                        Short break
+                    </button>
+                    <button class="@(CurrentSessionType == SessionType.LongBreak ? "active long-break-active" : "")"
+                            @onclick="() => HandleSessionSwitch(SessionType.LongBreak)"
+                            title="@Constants.KeyboardShortcuts.LongBreakKey"
+                            role="tab"
+                            aria-selected="@(CurrentSessionType == SessionType.LongBreak)">
+                        Long break
+                    </button>
+                </div>
+
+                <div class="timer-card @GetTimerThemeClass() @(IsTimerRunning ? "running" : "")">
+                    <div class="card-top">
+                        <TimerDisplay RemainingTime="RemainingTime"
+                                      SessionType="CurrentSessionType"
+                                      IsRunning="IsTimerRunning" />
+
+                        <CurrentTaskIndicator CurrentSessionType="@CurrentSessionType"
+                                              CurrentTaskId="@CurrentTaskId"
+                                              Tasks="@Tasks" />
+
+                        <TodaySummary TotalFocusMinutes="TodayTotalFocusMinutes"
+                                      PomodoroCount="TodayPomodoroCount"
+                                      DailyGoal="DailyGoal"
+                                      TasksWorkedOn="TodayTasksWorkedOn" />
+
+                        <TimerControls IsRunning="IsTimerRunning"
+                                       IsPaused="IsTimerPaused"
+                                       IsStarted="IsTimerStarted"
+                                       CanStart="CurrentTaskId.HasValue || CurrentSessionType != SessionType.Pomodoro"
+                                       SessionType="CurrentSessionType"
+                                       OnStart="HandleTimerStart"
+                                       OnPause="HandleTimerPause"
+                                       OnResume="HandleTimerResume"
+                                       OnReset="HandleTimerReset" />
                     </div>
-                }
-                <div class="card-footer-actions">
-                    <button class="pip-btn" @onclick="HandleTogglePip" title="@(IsPipOpen ? Constants.PipTimerUI.CloseFloatingTimerTitle : Constants.PipTimerUI.PopOutFloatingTimerTitle)" aria-label="Picture in Picture">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><rect x="7" y="7" width="5.5" height="4.5" rx="1" fill="currentColor"/></svg>
-                    </button>
-                    <button class="pip-btn" @onclick="() => ShowKeyboardHelp = true" title="@Constants.KeyboardShortcuts.HelpKey" aria-label="Keyboard shortcuts">
-                        <svg width="14" height="14" viewBox="0 0 13 13" fill="none"><rect x="1" y="2.5" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><rect x="3" y="4.5" width="2" height="1.5" rx=".4" fill="currentColor"/><rect x="5.5" y="4.5" width="2" height="1.5" rx=".4" fill="currentColor"/><rect x="8" y="4.5" width="2" height="1.5" rx=".4" fill="currentColor"/><rect x="4" y="7" width="5" height="1.5" rx=".4" fill="currentColor"/></svg>
-                    </button>
+                    <div class="card-footer @(IsTimerRunning ? "" : "idle")">
+                        @if (IsTimerRunning)
+                        {
+                            <div class="ends-at">
+                                <span class="lbl">Ends at</span>
+                                <span class="val">@DateTime.Now.AddSeconds(RemainingTime.TotalSeconds).ToString("h:mm tt")</span>
+                            </div>
+                        }
+                        <div class="card-footer-actions">
+                            <button class="pip-btn" @onclick="HandleTogglePip" title="@(IsPipOpen ? Constants.PipTimerUI.CloseFloatingTimerTitle : Constants.PipTimerUI.PopOutFloatingTimerTitle)" aria-label="Picture in Picture">
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><rect x="7" y="7" width="5.5" height="4.5" rx="1" fill="currentColor"/></svg>
+                            </button>
+                            <button class="pip-btn" @onclick="() => ShowKeyboardHelp = true" title="@Constants.KeyboardShortcuts.HelpKey" aria-label="Keyboard shortcuts">
+                                <svg width="14" height="14" viewBox="0 0 13 13" fill="none"><rect x="1" y="2.5" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><rect x="3" y="4.5" width="2" height="1.5" rx=".4" fill="currentColor"/><rect x="5.5" y="4.5" width="2" height="1.5" rx=".4" fill="currentColor"/><rect x="8" y="4.5" width="2" height="1.5" rx=".4" fill="currentColor"/><rect x="4" y="7" width="5" height="1.5" rx=".4" fill="currentColor"/></svg>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <div class="split-tasks">
+                <ErrorBoundary @ref="_tasksErrorBoundary">
+                    <ChildContent>
+                        <div class="tasks-section">
+                            <TaskListTabs Lists="TabLists"
+                                          CurrentListId="@ActiveListId"
+                                          ServiceCurrentListId="@TaskService.CurrentListId"
+                                          OnTabChanged="HandleTabChange" />
+                            @if (IsScheduleView)
+                            {
+                                <ScheduleAgenda Days="ScheduleWindow"
+                                                WindowLabel="@ScheduleWindowLabel"
+                                                CanGoPrev="@(_scheduleWeekOffset > 0)"
+                                                OnPrev="HandleSchedulePrev"
+                                                OnNext="HandleScheduleNext"
+                                                OnEditTask="HandleScheduleEdit"
+                                                OnAddSubtask="HandleAddSubtask"
+                                                AllTasks="AppState.Tasks" />
+                            }
+                            else
+                            {
+                                <TaskList Tasks="TodayTasks.ToList()"
+                                          CurrentTaskId="CurrentTaskId"
+                                          GoogleLists="GoogleLists"
+                                          OnTaskAdd="HandleTaskAdd"
+                                          OnTaskSelect="HandleTaskSelect"
+                                          OnTaskComplete="HandleTaskComplete"
+                                          OnTaskDelete="HandleTaskDelete"
+                                          OnTaskUncomplete="HandleTaskUncomplete"
+                                          OnTaskEdit="HandleTaskEdit"
+                                          OnAddSubtask="HandleAddSubtask"
+                                          OnReparentToRoot="HandleReparentToRoot" />
+                            }
+                        </div>
+                    </ChildContent>
+                    <ErrorContent Context="ex">
+                        <div class="section-error" role="alert">
+                            <p>Tasks failed to load.</p>
+                            <button class="btn-icon-small btn-cancel" @onclick="() => _tasksErrorBoundary?.Recover()">Retry</button>
+                        </div>
+                    </ErrorContent>
+                </ErrorBoundary>
+            </div>
         </div>
-        
-        <ErrorBoundary @ref="_tasksErrorBoundary">
-            <ChildContent>
-                <div class="tasks-section">
-                    <TaskListTabs Lists="TabLists"
-                                 CurrentListId="@ActiveListId"
-                                 ServiceCurrentListId="@TaskService.CurrentListId"
-                                 OnTabChanged="HandleTabChange" />
-                    @if (IsScheduleView)
-                    {
-                        <ScheduleAgenda Days="ScheduleWindow"
-                                        WindowLabel="@ScheduleWindowLabel"
-                                        CanGoPrev="@(_scheduleWeekOffset > 0)"
-                                        OnPrev="HandleSchedulePrev"
-                                        OnNext="HandleScheduleNext"
-                                        OnEditTask="HandleScheduleEdit"
-                                        OnAddSubtask="HandleAddSubtask"
-                                        AllTasks="AppState.Tasks" />
-                    }
-                    else
-                    {
-                        <TaskList Tasks="TodayTasks.ToList()"
-                                  CurrentTaskId="CurrentTaskId"
-                                  GoogleLists="GoogleLists"
-                                  OnTaskAdd="HandleTaskAdd"
-                                  OnTaskSelect="HandleTaskSelect"
-                                  OnTaskComplete="HandleTaskComplete"
-                                  OnTaskDelete="HandleTaskDelete"
-                                  OnTaskUncomplete="HandleTaskUncomplete"
-                                  OnTaskEdit="HandleTaskEdit"
-                                  OnAddSubtask="HandleAddSubtask"
-                                  OnReparentToRoot="HandleReparentToRoot" />
-                    }
-                </div>
-            </ChildContent>
-            <ErrorContent Context="ex">
-                <div class="section-error" role="alert">
-                    <p>Tasks failed to load.</p>
-                    <button class="btn-icon-small btn-cancel" @onclick="() => _tasksErrorBoundary?.Recover()">Retry</button>
-                </div>
-            </ErrorContent>
-        </ErrorBoundary>
-        
+
         <ConsentModal IsVisible="IsConsentModalVisible"
                       CompletedSessionType="ConsentService.CompletedSessionType"
                       CountdownSeconds="ConsentCountdown"
                       Options="ConsentOptions"
                       OnOptionSelected="HandleConsentOptionSelect" />
-        
+
         <KeyboardHelpModal IsVisible="ShowKeyboardHelp"
                            OnClose="() => ShowKeyboardHelp = false" />
-        
+
     </div>
 }
 

@@ -1585,3 +1585,52 @@ input, textarea, [contenteditable="true"] {
         display: none;
     }
 }
+
+/* =============================================================================
+   Console layout — timer and task list share the screen on wide viewports.
+   Below the breakpoint this is a plain column, identical to the stacked layout,
+   so the mobile composition is unchanged.
+   ============================================================================= */
+
+.timer-split {
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 900px) {
+    .timer-split {
+        display: grid;
+        grid-template-columns: minmax(320px, 0.95fr) minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        padding: 12px 12px 0;
+    }
+
+    /* The panes own the gutters now, so the children drop their own margins. */
+    .timer-split .mode-tabs {
+        margin: 0 0 10px;
+        padding: 6px 0 0;
+    }
+
+    .timer-split .timer-card,
+    .timer-split .task-card {
+        margin: 0;
+    }
+
+    /* Keep the timer in view while the task list scrolls past it. */
+    .split-timer {
+        position: sticky;
+        top: 12px;
+    }
+
+    .split-tasks {
+        min-width: 0;
+    }
+}
+
+@media (min-width: 1200px) {
+    .app-content,
+    .header-content-wrapper {
+        max-width: 1100px;
+    }
+}
