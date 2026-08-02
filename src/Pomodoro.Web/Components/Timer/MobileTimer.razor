@@ -1,0 +1,190 @@
+@using Pomodoro.Web.Models
+
+@if (IsExpanded)
+{
+    <div class="mobile-timer expanded @GetSessionClass()">
+        <button class="mt-collapse-btn" @onclick="OnToggleExpand" aria-label="Collapse timer">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="mt-ring-large">
+            <svg width="148" height="148" viewBox="0 0 148 148">
+                <circle class="ring-bg" cx="74" cy="74" r="60"/>
+                <circle class="ring-fill @GetRingSessionClass()" cx="74" cy="74" r="60"
+                        style="stroke-dashoffset: @GetDashOffset(60)"/>
+            </svg>
+            <div class="mt-ring-center">
+                <div class="mt-clock-large">@FormatTime(RemainingTime)</div>
+                <div class="mt-mode-large">@GetModeLabel()</div>
+            </div>
+        </div>
+        <div class="mt-controls-expanded">
+            <button class="mt-btn-primary @GetSessionClass()" @onclick="HandlePrimary" disabled="@(!CanStart && !IsStarted && !IsRunning)" aria-label="@GetPrimaryLabel()">
+                @GetPrimaryIcon()
+            </button>
+            @if (IsRunning || IsStarted)
+            {
+                <button class="mt-btn-secondary" @onclick="OnReset" aria-label="Reset timer">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 1 0 1.76-4.24L2 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 2v3.5H5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            }
+        </div>
+        @if (CurrentTaskName is not null)
+        {
+            <div class="mt-task-ctx">
+                <span class="mt-dot"></span>
+                <span class="mt-task-text">@CurrentTaskName</span>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="mobile-timer collapsed @GetSessionClass()">
+        <div class="mt-ring-mini">
+            <svg width="44" height="44" viewBox="0 0 44 44">
+                <circle class="ring-bg" cx="22" cy="22" r="18"/>
+                <circle class="ring-fill @GetRingSessionClass()" cx="22" cy="22" r="18"
+                        style="stroke-dashoffset: @GetDashOffset(18)"/>
+            </svg>
+            <span class="mt-pct">@GetProgressPct()</span>
+        </div>
+        <div class="mt-info">
+            <div class="mt-clock">@FormatTime(RemainingTime)</div>
+            <div class="mt-task">@GetTaskOrHint()</div>
+        </div>
+        <div class="mt-controls">
+            <button class="mt-btn-primary @GetSessionClass()" @onclick="HandlePrimary" disabled="@(!CanStart && !IsStarted && !IsRunning)" aria-label="@GetPrimaryLabel()">
+                @GetPrimaryIcon()
+            </button>
+            @if (IsRunning || IsStarted)
+            {
+                <button class="mt-btn-secondary" @onclick="OnReset" aria-label="Reset timer">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7a5 5 0 1 0 1.47-3.54L2 4.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 1.75v3H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            }
+        </div>
+        <button class="mt-expand-btn" @onclick="OnToggleExpand" aria-label="Expand timer">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+    </div>
+}
+
+@code {
+    [Microsoft.AspNetCore.Components.Inject]
+    Pomodoro.Web.Services.ITimerService TimerService { get; set; } = default!;
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public bool IsRunning { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public bool IsPaused { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public bool IsStarted { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public bool CanStart { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public SessionType SessionType { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public bool IsExpanded { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public string? CurrentTaskName { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback OnToggleExpand { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback OnStart { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback OnPause { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback OnResume { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback OnReset { get; set; }
+
+    private const double TwoPi = 2 * System.Math.PI;
+
+    private System.TimeSpan RemainingTime => TimerService.RemainingTime;
+
+    private string FormatTime(System.TimeSpan time) =>
+        string.Format(Constants.TimeFormats.TimerFormat, (int)time.TotalMinutes, time.Seconds);
+
+    private string GetSessionClass() => SessionType switch
+    {
+        SessionType.Pomodoro => Constants.SessionTypes.PomodoroClass,
+        SessionType.ShortBreak => Constants.SessionTypes.ShortBreakClass,
+        SessionType.LongBreak => Constants.SessionTypes.LongBreakClass,
+        _ => Constants.SessionTypes.PomodoroClass
+    };
+
+    private string GetRingSessionClass() => SessionType switch
+    {
+        SessionType.ShortBreak => "short-break",
+        SessionType.LongBreak => "long-break",
+        _ => ""
+    };
+
+    private string GetModeLabel() => SessionType switch
+    {
+        SessionType.Pomodoro => "POMODORO",
+        SessionType.ShortBreak => "SHORT BREAK",
+        _ => "LONG BREAK"
+    };
+
+    private string GetTaskOrHint() =>
+        CurrentTaskName ?? (CanStart ? "Ready" : "Select a task");
+
+    private string GetPrimaryLabel()
+    {
+        if (IsRunning) return "Pause";
+        if (IsStarted) return "Resume";
+        return "Start";
+    }
+
+    private Microsoft.AspNetCore.Components.MarkupString GetPrimaryIcon()
+    {
+        if (IsRunning)
+        {
+            return (Microsoft.AspNetCore.Components.MarkupString)"<svg width='18' height='18' viewBox='0 0 18 18' fill='none'><rect x='4' y='3' width='3.5' height='12' rx='1' fill='currentColor'/><rect x='10.5' y='3' width='3.5' height='12' rx='1' fill='currentColor'/></svg>";
+        }
+        return (Microsoft.AspNetCore.Components.MarkupString)"<svg width='18' height='18' viewBox='0 0 18 18' fill='none'><path d='M4 3l11 6-11 6V3z' fill='currentColor'/></svg>";
+    }
+
+    private async Task HandlePrimary()
+    {
+        if (IsRunning) await OnPause.InvokeAsync();
+        else if (IsStarted) await OnResume.InvokeAsync();
+        else await OnStart.InvokeAsync();
+    }
+
+    private string GetDashOffset(double radius)
+    {
+        var settings = TimerService.Settings;
+        if (settings == null) return "0";
+        var totalSeconds = settings.GetDurationSeconds(SessionType);
+        if (totalSeconds <= 0) return "0";
+        var circumference = TwoPi * radius;
+        var remainingSeconds = RemainingTime.TotalSeconds;
+        var progress = remainingSeconds / totalSeconds;
+        var offset = circumference * (1 - progress);
+        return offset.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private string GetProgressPct()
+    {
+        var settings = TimerService.Settings;
+        if (settings == null) return "0%";
+        var totalSeconds = settings.GetDurationSeconds(SessionType);
+        if (totalSeconds <= 0) return "0%";
+        var elapsed = totalSeconds - RemainingTime.TotalSeconds;
+        var pct = System.Math.Round(elapsed * 100.0 / totalSeconds);
+        return $"{pct}%";
+    }
+}

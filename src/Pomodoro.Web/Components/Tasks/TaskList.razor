@@ -54,24 +54,31 @@
         @if (HasCompletedTasks)
         {
             <div class="completed-section">
-                <h4>Completed</h4>
-                @foreach (var node in CompletedTaskNodes)
+                <button class="completed-toggle" @onclick="ToggleCompletedExpanded" aria-label="@(_isCompletedExpanded ? "Collapse completed" : "Expand completed")" aria-expanded="@_isCompletedExpanded.ToString().ToLowerInvariant()">
+                    <svg class="completed-caret @(_isCompletedExpanded ? "" : "collapsed")" width="12" height="12" viewBox="0 0 12 12"><path d="M3 1.5l4 4.5-4 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span class="completed-label">Completed</span>
+                    <span class="completed-count">@CompletedTaskNodes.Count</span>
+                </button>
+                @if (_isCompletedExpanded)
                 {
-                    <TaskItemComponent @key="node.Task.Id" 
-                        Item="node.Task" 
-                        Depth="node.Depth"
-                        HasChildren="node.HasChildren"
-                        IsCollapsed="_collapsed.Contains(node.Task.Id)"
-                        IsSelected="false"
-                        GoogleListTitle="@GoogleListTitleFor(node.Task)"
-                        OnSelect="HandleTaskSelect"
-                        OnComplete="HandleTaskComplete"
-                        OnDelete="HandleTaskDelete"
-                        OnUncomplete="HandleTaskUncomplete"
-                        OnEdit="HandleTaskEdit"
-                        OnAddSubtask="HandleAddSubtask"
-                        OnReparentToRoot="HandleReparentToRoot"
-                        OnToggleCollapse="ToggleCollapse" />
+                    @foreach (var node in CompletedTaskNodes)
+                    {
+                        <TaskItemComponent @key="node.Task.Id" 
+                            Item="node.Task" 
+                            Depth="node.Depth"
+                            HasChildren="node.HasChildren"
+                            IsCollapsed="_collapsed.Contains(node.Task.Id)"
+                            IsSelected="false"
+                            GoogleListTitle="@GoogleListTitleFor(node.Task)"
+                            OnSelect="HandleTaskSelect"
+                            OnComplete="HandleTaskComplete"
+                            OnDelete="HandleTaskDelete"
+                            OnUncomplete="HandleTaskUncomplete"
+                            OnEdit="HandleTaskEdit"
+                            OnAddSubtask="HandleAddSubtask"
+                            OnReparentToRoot="HandleReparentToRoot"
+                            OnToggleCollapse="ToggleCollapse" />
+                    }
                 }
             </div>
         }

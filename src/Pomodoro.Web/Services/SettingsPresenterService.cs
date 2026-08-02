@@ -31,7 +31,8 @@ public class SettingsPresenterService
             && settings.AutoStartSession == defaults.AutoStartSession
             && settings.AutoStartDelaySeconds == defaults.AutoStartDelaySeconds
             && settings.LongBreakInterval == defaults.LongBreakInterval
-            && settings.DailyGoal == defaults.DailyGoal;
+            && settings.DailyGoal == defaults.DailyGoal
+            && settings.ExpandTimerMobile == defaults.ExpandTimerMobile;
     }
 
     /// <summary>

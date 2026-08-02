@@ -1010,6 +1010,14 @@ input, textarea, [contenteditable="true"] {
     transition: all 0.15s;
     background: transparent;
     padding: 0;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.task-checkbox:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
 }
 
 .task-checkbox:hover {
@@ -1166,13 +1174,42 @@ input, textarea, [contenteditable="true"] {
     border-top: 1px solid #2d4a6f;
 }
 
-.completed-section h4 {
-    font-size: 11px;
+.completed-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 4px 0;
+    cursor: pointer;
     color: var(--color-text-tertiary);
-    margin-bottom: 8px;
+    transition: color 0.15s;
+}
+
+.completed-toggle:hover {
+    color: var(--color-text-secondary);
+}
+
+.completed-caret {
+    transition: transform 0.15s;
+    transform: rotate(90deg);
+    flex-shrink: 0;
+}
+
+.completed-caret.collapsed {
+    transform: rotate(0deg);
+}
+
+.completed-label {
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.07em;
     font-weight: 500;
+}
+
+.completed-count {
+    font-size: 11px;
 }
 
 /* Task Edit Panel */
@@ -1496,6 +1533,506 @@ input, textarea, [contenteditable="true"] {
     text-align: center;
     color: var(--color-text-tertiary);
     gap: 0.75rem;
+}
+
+/* =============================================================================
+   Two-line task row (Group A), badge labels (Group D), task-secondary wrapper
+   ============================================================================= */
+
+.task-secondary {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.repeat-badge,
+.schedule-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-family: var(--font-mono, monospace);
+    line-height: 1;
+}
+
+.repeat-badge {
+    background: rgba(234, 179, 8, 0.18);
+    color: #eab308;
+}
+
+.schedule-badge {
+    background: rgba(234, 179, 8, 0.12);
+    color: #eab308;
+}
+
+.badge-icon {
+    flex-shrink: 0;
+}
+
+.badge-label {
+    white-space: nowrap;
+}
+
+/* =============================================================================
+   Desktop/mobile visibility toggle (Groups G, I)
+   ============================================================================= */
+
+.mobile-only {
+    display: block;
+}
+
+.desktop-only {
+    display: none;
+}
+
+/* =============================================================================
+   Desktop Today Summary strip (Group G)
+   ============================================================================= */
+
+.timer-pane-summary {
+    display: flex;
+    gap: 4px;
+    padding: 8px 12px;
+    background: var(--color-surface-dark, #16213e);
+    border-radius: var(--border-radius-md);
+    margin-bottom: 8px;
+}
+
+.summary-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    gap: 2px;
+}
+
+.summary-val {
+    font-size: 18px;
+    color: var(--color-text-primary);
+    font-weight: 500;
+}
+
+.summary-lbl {
+    font-size: 10px;
+    color: var(--color-text-tertiary);
+}
+
+/* =============================================================================
+   Session Log (Group G)
+   ============================================================================= */
+
+.session-log {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface-dark, #16213e);
+    border-radius: var(--border-radius-md);
+    padding: 10px 12px;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.session-log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.session-log-title {
+    font-size: 12px;
+    color: var(--color-text-primary);
+    font-weight: 500;
+}
+
+.session-log-count {
+    font-size: 10px;
+    color: var(--color-text-tertiary);
+}
+
+.session-log-items {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.session-log-empty {
+    color: var(--color-text-tertiary);
+    font-size: 12px;
+    text-align: center;
+    padding: 12px 0;
+}
+
+.session-log-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.session-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--pomodoro-color);
+    flex-shrink: 0;
+}
+
+.session-time {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.session-task {
+    flex: 1;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.session-dur {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    flex-shrink: 0;
+}
+
+/* =============================================================================
+   Mobile expandable timer (Group I)
+   ============================================================================= */
+
+.mobile-timer {
+    background: var(--color-surface-dark, #16213e);
+    border-radius: var(--border-radius-md);
+}
+
+.mobile-timer.collapsed {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+}
+
+.mobile-timer.expanded {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+}
+
+.mt-ring-mini {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mt-ring-mini svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: rotate(-90deg);
+}
+
+.mt-ring-mini .ring-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 4;
+}
+
+.mt-ring-mini .ring-fill {
+    fill: none;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: calc(2 * 3.14159 * 18);
+    transition: stroke-dashoffset 0.3s;
+}
+
+.mt-pct {
+    font-size: 10px;
+    color: var(--pomodoro-color);
+    font-weight: 500;
+    z-index: 1;
+}
+
+.mt-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.mt-clock {
+    font-size: 24px;
+    color: var(--color-text-primary);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+
+.mt-task {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mt-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.mt-btn-primary {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: var(--pomodoro-color);
+    color: var(--color-text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.mt-btn-primary.short-break-theme {
+    background: #27ae60;
+}
+
+.mt-btn-primary.long-break-theme {
+    background: #3498db;
+}
+
+.mt-btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.mt-btn-secondary {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-text-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.mt-expand-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-text-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.mt-collapse-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-text-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    align-self: flex-end;
+}
+
+.mt-ring-large {
+    position: relative;
+    width: 148px;
+    height: 148px;
+}
+
+.mt-ring-large svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: rotate(-90deg);
+}
+
+.mt-ring-large .ring-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 7;
+}
+
+.mt-ring-large .ring-fill {
+    fill: none;
+    stroke-width: 7;
+    stroke-linecap: round;
+    stroke-dasharray: calc(2 * 3.14159 * 60);
+    transition: stroke-dashoffset 0.3s;
+}
+
+.mt-ring-center {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 148px;
+    height: 148px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+.mt-clock-large {
+    font-size: 32px;
+    color: var(--color-text-primary);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.mt-mode-large {
+    font-size: 8px;
+    color: var(--pomodoro-color);
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.mt-controls-expanded {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mt-controls-expanded .mt-btn-primary {
+    width: 44px;
+    height: 44px;
+}
+
+.mt-controls-expanded .mt-btn-secondary {
+    width: 38px;
+    height: 38px;
+}
+
+.mt-task-ctx {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+}
+
+.mt-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--pomodoro-color);
+    flex-shrink: 0;
+}
+
+.mt-task-text {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* =============================================================================
+   Split timer pane responsive (Groups G, I, A)
+   ============================================================================= */
+
+@media (min-width: 900px) {
+    .split-timer {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        height: fit-content;
+        max-height: calc(100vh - 80px);
+    }
+
+    .mobile-only {
+        display: none !important;
+    }
+
+    .desktop-only {
+        display: block;
+    }
+
+    .timer-pane-summary {
+        display: flex;
+    }
+
+    .session-log {
+        display: flex;
+    }
+
+    .task-row {
+        flex-wrap: nowrap;
+    }
+
+    .task-secondary {
+        order: 1;
+    }
+
+    .task-pomo-count {
+        order: 2;
+    }
+
+    .badge-label {
+        display: none;
+    }
+}
+
+@media (max-width: 899px) {
+    .task-row {
+        flex-wrap: wrap;
+    }
+
+    .task-secondary {
+        flex-basis: 100%;
+        justify-content: flex-start;
+        padding-left: 28px;
+    }
+
+    .badge-label {
+        display: inline;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+
+    .timer-pane-summary,
+    .session-log {
+        display: none !important;
+    }
 }
 
 /* Responsive */

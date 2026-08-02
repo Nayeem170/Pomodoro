@@ -59,6 +59,8 @@ public class TaskListBase : ComponentBase
 
     protected bool HasCompletedTasks => Tasks.Any(t => t.IsCompleted);
 
+    protected bool _isCompletedExpanded;
+
     protected HashSet<Guid> _collapsed = new();
     protected HashSet<Guid> _parentIds = new();
 
@@ -95,6 +97,11 @@ public class TaskListBase : ComponentBase
     {
         if (!_collapsed.Add(taskId))
             _collapsed.Remove(taskId);
+    }
+
+    protected void ToggleCompletedExpanded()
+    {
+        _isCompletedExpanded = !_isCompletedExpanded;
     }
 
     private IReadOnlyList<TaskNode> BuildTree(IReadOnlyList<TaskItem> tasks)

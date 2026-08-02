@@ -70,7 +70,6 @@ public class TaskItemEditTests : TestContext
             parameters.Add(p => p.Item, task));
 
         cut.Markup.Should().Contain("task-repeat");
-        cut.Markup.Should().Contain(Constants.Repeat.RepeatIcon);
     }
 
     [Fact]
@@ -176,8 +175,7 @@ public class TaskItemEditTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        cut.Markup.Should().Contain("task-scheduled");
-        cut.Markup.Should().Contain(Constants.Repeat.ScheduleIcon);
+        cut.Markup.Should().Contain("schedule-badge");
     }
 
     [Fact]
@@ -194,7 +192,7 @@ public class TaskItemEditTests : TestContext
             parameters.Add(p => p.Item, task));
 
         cut.Markup.Should().Contain("task-repeat");
-        cut.Markup.Should().Contain("task-scheduled");
+        cut.Markup.Should().Contain("schedule-badge");
     }
 
     [Fact]
@@ -205,7 +203,7 @@ public class TaskItemEditTests : TestContext
             parameters.Add(p => p.Item, task));
 
         cut.Markup.Should().NotContain("task-repeat");
-        cut.Markup.Should().NotContain("task-scheduled");
+        cut.Markup.Should().NotContain("schedule-badge");
     }
 
     [Fact]

@@ -379,6 +379,8 @@ public class TaskListTests : TestContext
             .Add(p => p.CurrentTaskId, null));
 
         Assert.Contains("completed-section", cut.Markup);
+        cut.Find(".completed-toggle").Click();
+        cut.Render();
         Assert.Contains("Completed No Work", cut.Markup);
         Assert.Contains("Completed With Work", cut.Markup);
     }
@@ -442,6 +444,8 @@ public class TaskListTests : TestContext
             .Add(p => p.CurrentTaskId, null)
             .Add(p => p.OnTaskUncomplete, EventCallback.Factory.Create<Guid>(this, id => uncompletedTaskId = id)));
 
+        cut.Find(".completed-toggle").Click();
+        cut.Render();
         cut.Find("button[aria-label=\"Undo\"]").Click();
 
         Assert.Equal(taskId, uncompletedTaskId);

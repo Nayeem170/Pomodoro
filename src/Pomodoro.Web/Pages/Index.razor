@@ -15,6 +15,28 @@ else
 
         <div class="timer-split">
             <div class="split-timer">
+                <div class="timer-pane-summary desktop-only">
+                    <div class="summary-cell">
+                        <span class="summary-val">@FormatFocusMinutes(TodayTotalFocusMinutes)</span>
+                        <span class="summary-lbl">Focused</span>
+                    </div>
+                    <div class="summary-cell">
+                        <span class="summary-val">@TodayPomodoroCount/@DailyGoal</span>
+                        <span class="summary-lbl">Pomodoros</span>
+                    </div>
+                    <div class="summary-cell">
+                        <span class="summary-val">@TodayTasksWorkedOn</span>
+                        <span class="summary-lbl">Tasks</span>
+                    </div>
+                    @if (IsTimerRunning)
+                    {
+                        <div class="summary-cell">
+                            <span class="summary-val">@DateTime.Now.AddSeconds(RemainingTime.TotalSeconds).ToString("h:mm")</span>
+                            <span class="summary-lbl">Ends at</span>
+                        </div>
+                    }
+                </div>
+
                 <div class="mode-tabs" role="tablist">
                     <button class="@(CurrentSessionType == SessionType.Pomodoro ? "active" : "")"
                             @onclick="() => HandleSessionSwitch(SessionType.Pomodoro)"
@@ -39,7 +61,22 @@ else
                     </button>
                 </div>
 
-                <div class="timer-card @GetTimerThemeClass() @(IsTimerRunning ? "running" : "")">
+                <div class="mobile-timer-wrap mobile-only">
+                    <MobileTimer IsRunning="IsTimerRunning"
+                                 IsPaused="IsTimerPaused"
+                                 IsStarted="IsTimerStarted"
+                                 CanStart="CurrentTaskId.HasValue || CurrentSessionType != SessionType.Pomodoro"
+                                 SessionType="CurrentSessionType"
+                                 IsExpanded="IsMobileTimerExpanded"
+                                 CurrentTaskName="@GetCurrentTaskName()"
+                                 OnToggleExpand="HandleToggleMobileTimerExpand"
+                                 OnStart="HandleTimerStart"
+                                 OnPause="HandleTimerPause"
+                                 OnResume="HandleTimerResume"
+                                 OnReset="HandleTimerReset" />
+                </div>
+
+                <div class="timer-card desktop-only @GetTimerThemeClass() @(IsTimerRunning ? "running" : "")">
                     <div class="card-top">
                         <TimerDisplay RemainingTime="RemainingTime"
                                       SessionType="CurrentSessionType"
@@ -48,11 +85,6 @@ else
                         <CurrentTaskIndicator CurrentSessionType="@CurrentSessionType"
                                               CurrentTaskId="@CurrentTaskId"
                                               Tasks="@Tasks" />
-
-                        <TodaySummary TotalFocusMinutes="TodayTotalFocusMinutes"
-                                      PomodoroCount="TodayPomodoroCount"
-                                      DailyGoal="DailyGoal"
-                                      TasksWorkedOn="TodayTasksWorkedOn" />
 
                         <TimerControls IsRunning="IsTimerRunning"
                                        IsPaused="IsTimerPaused"
@@ -82,6 +114,10 @@ else
                         </div>
                     </div>
                 </div>
+
+                <div class="session-log-wrap desktop-only">
+                    <SessionLog Sessions="TodayPomodoroSessions" />
+                </div>
             </div>
 
             <div class="split-tasks">
@@ -101,6 +137,11 @@ else
                                                 OnNext="HandleScheduleNext"
                                                 OnEditTask="HandleScheduleEdit"
                                                 OnAddSubtask="HandleAddSubtask"
+                                                OnComplete="HandleTaskComplete"
+                                                OnDelete="HandleTaskDelete"
+                                                OnUncomplete="HandleTaskUncomplete"
+                                                OnReparentToRoot="HandleReparentToRoot"
+                                                OnSelect="HandleTaskSelect"
                                                 AllTasks="AppState.Tasks" />
                             }
                             else

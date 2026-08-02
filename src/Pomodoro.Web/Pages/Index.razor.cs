@@ -106,6 +106,14 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected int TodayTasksWorkedOn => GetTodayStats().TasksWorkedOn;
     protected int DailyGoal => TimerService.Settings.DailyGoal;
 
+    protected bool IsMobileTimerExpanded => TimerService.Settings.ExpandTimerMobile;
+
+    protected IReadOnlyList<ActivityRecord> TodayPomodoroSessions => (ActivityService
+        .GetTodayActivities() ?? [])
+        .Where(a => a.Type == SessionType.Pomodoro)
+        .OrderByDescending(a => a.CompletedAt)
+        .ToList();
+
     private (int TotalFocusMinutes, int PomodoroCount, int TasksWorkedOn) GetTodayStats()
     {
         return _cachedTodayStats ??= TodayStatsService.GetTodayStats();
@@ -328,6 +336,27 @@ public partial class IndexBase : ComponentBase, IDisposable
     {
         _scheduleWeekOffset++;
         await UpdateStateAsync();
+    }
+
+    protected async Task HandleToggleMobileTimerExpand()
+    {
+        TimerService.Settings.ExpandTimerMobile = !TimerService.Settings.ExpandTimerMobile;
+        await TimerService.SaveSettingsAsync();
+    }
+
+    protected string? GetCurrentTaskName()
+    {
+        if (!CurrentTaskId.HasValue) return null;
+        return Tasks.FirstOrDefault(t => t.Id == CurrentTaskId.Value)?.Name;
+    }
+
+    protected static string FormatFocusMinutes(int minutes)
+    {
+        if (minutes < Constants.TimeConversion.MinutesPerHour)
+            return string.Format(Constants.TimeFormats.MinutesFormat, minutes);
+        var hours = minutes / Constants.TimeConversion.MinutesPerHour;
+        var mins = minutes % Constants.TimeConversion.MinutesPerHour;
+        return string.Format(Constants.TimeFormats.HoursMinutesFormat, hours, mins);
     }
 
     private IReadOnlyList<ScheduleDay> BuildScheduleWindow(DateTime start)
