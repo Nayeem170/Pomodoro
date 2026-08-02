@@ -21,7 +21,7 @@ test.describe('Schedule Tasks', () => {
 
     await page.switchToTaskList('Schedule');
 
-    await expect(page.page.locator('.day-item').filter({ hasText: 'Future Task' })).toBeVisible();
+    await expect(page.page.locator('.day-item-wrap').filter({ hasText: 'Future Task' })).toBeVisible();
   });
 
   // FIXME(foundation-coverage): the tests below contradict the branch's exclusive
@@ -52,7 +52,7 @@ test.describe('Schedule Tasks', () => {
 
     await page.switchToTaskList('Schedule');
 
-    await expect(page.page.locator('.day-item').filter({ hasText: 'Schedule Only' })).toBeVisible();
+    await expect(page.page.locator('.day-item-wrap').filter({ hasText: 'Schedule Only' })).toBeVisible();
   });
 
   test.fixme('can edit a scheduled task from the agenda', async () => {
@@ -67,11 +67,10 @@ test.describe('Schedule Tasks', () => {
 
     await page.switchToTaskList('Schedule');
 
-    const item = page.page.locator('.day-item').filter({ hasText: 'Editable Task' });
+    const item = page.page.locator('.day-item-wrap').filter({ hasText: 'Editable Task' });
     await expect(item).toBeVisible();
 
-    // Click the task title in the agenda to open the edit panel.
-    await item.locator('.item-title-btn').click();
+    await item.locator('button[aria-label="Edit task"]').click();
     await expect(page.page.locator('.task-edit-panel')).toBeVisible();
 
     // Rename and save.

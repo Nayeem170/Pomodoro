@@ -66,6 +66,9 @@ test.describe('Task Management', () => {
     await completeButton.click();
     await page.waitForTimeout(500);
 
+    await page.locator('.completed-toggle').click();
+    await page.waitForTimeout(200);
+
     await expect(page.locator('.completed-section .task-row')).toHaveCount(1);
   });
 
@@ -82,6 +85,9 @@ test.describe('Task Management', () => {
     const completeButton = page.locator('.task-row.selected .task-checkbox').first();
     await completeButton.click();
     await page.waitForTimeout(500);
+
+    await page.locator('.completed-toggle').click();
+    await page.waitForTimeout(200);
 
     const completedTask = page.locator('.completed-section .task-row').first();
     const undoButton = completedTask.locator('.task-checkbox').first();
