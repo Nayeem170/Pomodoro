@@ -3,7 +3,7 @@
 ## Models
 
 developer_id = glm-5-turbo
-developer_variant = xhigh
+developer_variant = high
 reviewer_id = claude-sonnet-5
 reviewer_variant = high
 
