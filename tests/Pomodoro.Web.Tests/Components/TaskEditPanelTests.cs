@@ -344,5 +344,24 @@ public class TaskEditPanelTests : TestContext
         cancelled.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task SubtaskInput_OnInput_UpdatesEditNameAndPersistsOnSave()
+    {
+        // Arrange - IsSubtask true; typing fires the @oninput handler (TaskEditPanel.razor:10).
+        var task = CreateTask(t => t.ParentTaskId = Guid.NewGuid());
+        TaskItem? saved = null;
+        var cut = RenderComponent<TaskEditPanel>(p => p
+            .Add(x => x.Task, task)
+            .Add(x => x.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => saved = t)));
+
+        // Act - type into the subtask input (exercises @oninput), then save via Enter.
+        cut.Find("input[aria-label=\"Subtask name\"]").Input("Renamed sub");
+        cut.Find("input[aria-label=\"Subtask name\"]").KeyDown(Key.Enter);
+
+        // Assert - the typed name is captured on save.
+        saved.Should().NotBeNull();
+        saved!.Name.Should().Be("Renamed sub");
+    }
+
     #endregion
 }
