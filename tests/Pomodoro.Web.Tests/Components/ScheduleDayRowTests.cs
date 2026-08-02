@@ -130,7 +130,7 @@ public class ScheduleDayRowTests : TestContext
     }
 
     [Fact]
-    public void ToggleCollapse_Click_HidesSubitems()
+    public void ToggleCollapse_Click_HidesThenShowsSubitems()
     {
         // Arrange
         var root = new TaskItem { Id = Guid.NewGuid(), Name = "Root", CreatedAt = DateTime.UtcNow };
@@ -139,12 +139,19 @@ public class ScheduleDayRowTests : TestContext
             .Add(x => x.Day, DayWithRoot(root))
             .Add(x => x.AllTasks, new List<TaskItem> { root, child }));
 
-        // Act
+        // Act - collapse (Add branch)
         cut.Find(".row-toggle").Click();
         cut.Render();
 
         // Assert
         cut.Markup.Should().NotContain("Child");
+
+        // Act - expand again (Remove branch)
+        cut.Find(".row-toggle").Click();
+        cut.Render();
+
+        // Assert
+        cut.Markup.Should().Contain("Child");
     }
 
     [Fact]
@@ -231,5 +238,29 @@ public class ScheduleDayRowTests : TestContext
 
         // Assert
         cut.FindAll(".day-subtask-form").Should().HaveCount(0);
+    }
+
+    [Fact]
+    public void HandleSubtaskKeyPress_Enter_SubmitsSubtask()
+    {
+        // Arrange
+        var root = new TaskItem { Id = Guid.NewGuid(), Name = "Root", CreatedAt = DateTime.UtcNow };
+        AddSubtaskRequest? captured = null;
+        var cut = RenderComponent<ScheduleDayRow>(p => p
+            .Add(x => x.Day, DayWithRoot(root))
+            .Add(x => x.AllTasks, new List<TaskItem> { root })
+            .Add(x => x.OnAddSubtask, EventCallback.Factory.Create<AddSubtaskRequest>(this, r => captured = r)));
+
+        // Act - open form, type, submit via Enter key (HandleSubtaskKeyPress Enter path).
+        cut.Find("button[aria-label=\"Add subtask\"]").Click();
+        cut.Render();
+        cut.Find(".subtask-input").Input("Kid");
+        cut.Find(".subtask-input").KeyDown(Key.Enter);
+        cut.Render();
+
+        // Assert
+        captured.Should().NotBeNull();
+        captured!.Name.Should().Be("Kid");
+        captured.ParentTaskId.Should().Be(root.Id);
     }
 }

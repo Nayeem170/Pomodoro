@@ -532,6 +532,30 @@ public class TaskListTests : TestContext
     }
 
     [Fact]
+    public void Render_GoogleParentWithMultipleChildren_OrdersByGooglePosition()
+    {
+        // Arrange - multiple google children with distinct positions exercise the
+        // childrenByGoogleParent OrderBy (TaskList.razor.cs:118).
+        var parent = new TaskItem { Id = Guid.NewGuid(), Name = "GParent", CreatedAt = DateTime.UtcNow, GoogleTaskId = "g1" };
+        var tasks = new List<TaskItem>
+        {
+            parent,
+            new() { Id = Guid.NewGuid(), Name = "GZeta", CreatedAt = DateTime.UtcNow, GoogleParentTaskId = "g1", GooglePosition = "z" },
+            new() { Id = Guid.NewGuid(), Name = "GAlpha", CreatedAt = DateTime.UtcNow, GoogleParentTaskId = "g1", GooglePosition = "a" }
+        };
+
+        // Act
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, tasks)
+            .Add(x => x.CurrentTaskId, null)
+            .Add(x => x.GoogleLists, [new TaskListRef("g1", "Personal", "var(--pomodoro-color)", 0, true, false)]));
+
+        // Assert - both children render under the google parent.
+        cut.Markup.Should().Contain("GZeta");
+        cut.Markup.Should().Contain("GAlpha");
+    }
+
+    [Fact]
     public void ToggleCollapse_ClickedTwice_HidesThenShowsChildren()
     {
         // Arrange

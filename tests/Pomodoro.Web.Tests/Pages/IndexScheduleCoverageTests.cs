@@ -65,11 +65,13 @@ public class IndexScheduleCoverageTests : TestHelper
         InvokeStatic("RepeatOccursOn", type, [weeklyDays, task, new DateTime(2025, 1, 13)]).Should().Be(true);
         InvokeStatic("RepeatOccursOn", type, [custom, task, anchor.AddDays(3)]).Should().Be(true);
         InvokeStatic("RepeatOccursOn", type, [monthly, task, new DateTime(2025, 2, 10)]).Should().Be(true);
-        // before anchor -> false; past end date -> false
+        // before anchor -> false; past end date -> false; None type -> switch default false
         InvokeStatic("RepeatOccursOn", type,
             [new RepeatRule { Type = RepeatType.Daily, StartDate = anchor, EndDate = anchor }, task, anchor.AddDays(2)])
             .Should().Be(false);
         InvokeStatic("RepeatOccursOn", type, [daily, task, anchor.AddDays(-1)]).Should().Be(false);
+        InvokeStatic("RepeatOccursOn", type,
+            [new RepeatRule { Type = RepeatType.None, StartDate = anchor }, task, anchor]).Should().Be(false);
     }
 
     [Fact]
