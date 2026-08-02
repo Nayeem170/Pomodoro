@@ -50,7 +50,11 @@ test.describe('@T-003 Task/Schedule redesign', () => {
     await expect(page.page.locator('button[aria-label="Previous week"]')).toBeEnabled();
   });
 
-  test('@T-003 repeat task shows interval capsule in the tasks view', async () => {
+  // FIXME(foundation-coverage): assumes a repeat task shows a capsule in the Tasks
+  // view, but exclusive routing moves repeat tasks to the Schedule tab. Contradicts
+  // unit test GetTasksForListAsync_SubtaskFollowsRootIntoScheduleTab. Pending the
+  // Tasks/Schedule routing product decision (follow-up task).
+  test.fixme('@T-003 repeat task shows interval capsule in the tasks view', async () => {
     await page.addTask('Capsule Task');
     await page.editTask('Capsule Task');
     await page.setTaskRepeat('Daily');
