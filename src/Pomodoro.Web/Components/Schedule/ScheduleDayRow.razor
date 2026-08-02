@@ -25,7 +25,7 @@
                 <li class="day-item @(item.IsCompleted ? "done" : "")">
                     @if (hasChildren)
                     {
-                        <button class="collapse-toggle @(isCollapsed ? "collapsed" : "")" @onclick="() => ToggleCollapse(taskId!.Value)" title="@(isCollapsed ? "Expand" : "Collapse")" aria-label="@(isCollapsed ? "Expand" : "Collapse")">
+                        <button class="row-toggle @(isCollapsed ? "collapsed" : "")" @onclick="() => ToggleCollapse(taskId!.Value)" title="@(isCollapsed ? "Expand" : "Collapse")" aria-label="@(isCollapsed ? "Expand" : "Collapse")">
                             <svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 1.5l4 3.5-4 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
                     }
@@ -69,7 +69,7 @@
                         <li class="day-subitem">
                             @if (hasGrandChildren)
                             {
-                                <button class="collapse-toggle @(childCollapsed ? "collapsed" : "")" @onclick="() => ToggleCollapse(child.Id)" aria-label="@(childCollapsed ? "Expand" : "Collapse")">
+                                <button class="row-toggle @(childCollapsed ? "collapsed" : "")" @onclick="() => ToggleCollapse(child.Id)" aria-label="@(childCollapsed ? "Expand" : "Collapse")">
                                     <svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 1.5l4 3.5-4 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 </button>
                             }
@@ -91,7 +91,7 @@
                                 <li class="day-subitem subtask-nested">
                                     @if (hasGGChildren)
                                     {
-                                        <button class="collapse-toggle @(grandCollapsed ? "collapsed" : "")" @onclick="() => ToggleCollapse(grand.Id)" aria-label="@(grandCollapsed ? "Expand" : "Collapse")">
+                                        <button class="row-toggle @(grandCollapsed ? "collapsed" : "")" @onclick="() => ToggleCollapse(grand.Id)" aria-label="@(grandCollapsed ? "Expand" : "Collapse")">
                                             <svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 1.5l4 3.5-4 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                         </button>
                                     }

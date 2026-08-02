@@ -968,7 +968,7 @@ input, textarea, [contenteditable="true"] {
     border-bottom: none;
 }
 
-.collapse-toggle {
+.row-toggle {
     width: 18px;
     height: 18px;
     border: none;
@@ -984,11 +984,11 @@ input, textarea, [contenteditable="true"] {
     transform: rotate(90deg);
 }
 
-.collapse-toggle:hover {
+.row-toggle:hover {
     color: var(--color-text-primary);
 }
 
-.collapse-toggle.collapsed {
+.row-toggle.collapsed {
     transform: rotate(0deg);
 }
 

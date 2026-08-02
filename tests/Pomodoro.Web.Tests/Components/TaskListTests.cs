@@ -1,4 +1,5 @@
 using Bunit;
+using FluentAssertions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Moq;
@@ -482,6 +483,125 @@ public class TaskListTests : TestContext
 
         // Assert
         Assert.Contains("Tasks", cut.Markup);
+    }
+
+    #endregion
+
+    #region BuildTree parentage / collapse / callbacks (coverage)
+
+    [Fact]
+    public void Render_LocalParentWithChild_ShowsNestedRowsAndCollapseToggle()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = parentId, Name = "Parent", CreatedAt = DateTime.UtcNow },
+            new() { Id = Guid.NewGuid(), Name = "Child", CreatedAt = DateTime.UtcNow.AddSeconds(1), ParentTaskId = parentId }
+        };
+
+        // Act
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, tasks)
+            .Add(x => x.CurrentTaskId, null));
+
+        // Assert
+        cut.Markup.Should().Contain("Parent");
+        cut.Markup.Should().Contain("Child");
+        cut.FindAll(".row-toggle").Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void Render_GoogleParentWithChild_ResolvesGoogleParentageAndNests()
+    {
+        // Arrange - child linked only by GoogleParentTaskId; plus an orphan with an unmatched google parent.
+        var parent = new TaskItem { Id = Guid.NewGuid(), Name = "GParent", CreatedAt = DateTime.UtcNow, GoogleTaskId = "g1" };
+        var child = new TaskItem { Id = Guid.NewGuid(), Name = "GChild", CreatedAt = DateTime.UtcNow.AddSeconds(1), GoogleParentTaskId = "g1" };
+        var orphan = new TaskItem { Id = Guid.NewGuid(), Name = "Orphan", CreatedAt = DateTime.UtcNow.AddSeconds(2), GoogleParentTaskId = "missing" };
+        var tasks = new List<TaskItem> { parent, child, orphan };
+
+        // Act
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, tasks)
+            .Add(x => x.CurrentTaskId, null)
+            .Add(x => x.GoogleLists, [new TaskListRef("g1", "Personal", "var(--pomodoro-color)", 0, true, false)]));
+
+        // Assert
+        cut.Markup.Should().Contain("GChild");
+        cut.FindAll(".row-toggle").Should().HaveCount(1, "only the google parent has a resolvable child");
+    }
+
+    [Fact]
+    public void ToggleCollapse_ClickedTwice_HidesThenShowsChildren()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = parentId, Name = "Parent", CreatedAt = DateTime.UtcNow },
+            new() { Id = Guid.NewGuid(), Name = "Child", CreatedAt = DateTime.UtcNow.AddSeconds(1), ParentTaskId = parentId }
+        };
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, tasks)
+            .Add(x => x.CurrentTaskId, null));
+
+        // Act - collapse
+        cut.Find(".row-toggle").Click();
+        cut.Render();
+        cut.Markup.Should().NotContain("Child");
+
+        // Act - expand again
+        cut.Find(".row-toggle").Click();
+        cut.Render();
+        cut.Markup.Should().Contain("Child");
+    }
+
+    [Fact]
+    public async Task HandleAddSubtask_ThroughChild_InvokesOnAddSubtask()
+    {
+        // Arrange
+        AddSubtaskRequest? captured = null;
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Root", CreatedAt = DateTime.UtcNow };
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem> { task })
+            .Add(x => x.CurrentTaskId, null)
+            .Add(x => x.OnAddSubtask, EventCallback.Factory.Create<AddSubtaskRequest>(this, r => captured = r)));
+
+        // Act - open subtask form, type, submit
+        cut.Find("button[aria-label=\"Add subtask\"]").Click();
+        cut.Render();
+        cut.Find("input[aria-label=\"New subtask name\"]").Input("New sub");
+        cut.Find("button[aria-label=\"Add\"]").Click();
+        cut.Render();
+
+        // Assert
+        captured.Should().NotBeNull();
+        captured!.Name.Should().Be("New sub");
+        captured.ParentTaskId.Should().Be(task.Id);
+    }
+
+    [Fact]
+    public async Task HandleReparentToRoot_ThroughChild_InvokesOnReparentToRoot()
+    {
+        // Arrange - a child node (Depth > 0) shows the "Move to top level" button.
+        var parentId = Guid.NewGuid();
+        var childId = Guid.NewGuid();
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = parentId, Name = "Parent", CreatedAt = DateTime.UtcNow },
+            new() { Id = childId, Name = "Child", CreatedAt = DateTime.UtcNow.AddSeconds(1), ParentTaskId = parentId }
+        };
+        Guid? reparented = null;
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, tasks)
+            .Add(x => x.CurrentTaskId, null)
+            .Add(x => x.OnReparentToRoot, EventCallback.Factory.Create<Guid>(this, id => reparented = id)));
+
+        // Act
+        cut.Find("button[aria-label=\"Move to top level\"]").Click();
+
+        // Assert
+        reparented.Should().Be(childId);
     }
 
     #endregion
