@@ -255,5 +255,27 @@ public class IndexScheduleCoverageTests : TestHelper
         cut.Instance.ErrorMessage.Should().Contain("boom");
     }
 
+    [Fact]
+    public void ErrorBoundary_RendersRetryFallback_WhenTaskRenderThrows()
+    {
+        // Arrange - render Index normally, then force a render-time fault by nulling Tasks.
+        // TodayTasks => Tasks, so TodayTasks.ToList() throws NRE inside the ErrorBoundary's
+        // ChildContent; the boundary catches it and renders its ErrorContent (Retry button).
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var tasksProp = typeof(IndexBase).GetProperty("Tasks", NonPublic);
+        tasksProp!.SetValue(cut.Instance, null);
+
+        // Act
+        cut.Render();
+
+        // Assert
+        cut.FindAll(".section-error").Should().HaveCount(1);
+        cut.Find("button.btn-cancel").TextContent.Should().Contain("Retry");
+
+        // Act - click Retry -> ErrorBoundary.Recover() (covers the onclick handler).
+        cut.Find("button.btn-cancel").Click();
+        cut.Render();
+    }
+
     #endregion
 }
