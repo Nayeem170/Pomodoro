@@ -20,7 +20,7 @@ test.describe('Repeat Tasks', () => {
     await page.setTaskRepeat('Daily');
     await page.saveTaskEdit();
 
-    await expect(page.page.locator('.task-row').filter({ hasText: 'Daily Task' }).locator('.task-badge.task-repeat')).toBeVisible();
+    await expect(page.page.locator('.task-row').filter({ hasText: 'Daily Task' }).locator('.task-badge.repeat-badge')).toBeVisible();
   });
 
   test.fixme('set weekly repeat with day selection', async () => {
@@ -32,7 +32,7 @@ test.describe('Repeat Tasks', () => {
     await page.page.locator('.tep-weekday-btn').filter({ hasText: 'Fr' }).click();
     await page.saveTaskEdit();
 
-    await expect(page.page.locator('.task-row').filter({ hasText: 'Weekly Task' }).locator('.task-badge.task-repeat')).toBeVisible();
+    await expect(page.page.locator('.task-row').filter({ hasText: 'Weekly Task' }).locator('.task-badge.repeat-badge')).toBeVisible();
   });
 
   test.fixme('set custom repeat with N days', async () => {
@@ -42,7 +42,7 @@ test.describe('Repeat Tasks', () => {
     await page.page.locator('.tep-input-sm').fill('3');
     await page.saveTaskEdit();
 
-    await expect(page.page.locator('.task-row').filter({ hasText: 'Custom Task' }).locator('.task-badge.task-repeat')).toBeVisible();
+    await expect(page.page.locator('.task-row').filter({ hasText: 'Custom Task' }).locator('.task-badge.repeat-badge')).toBeVisible();
   });
 
   test.fixme('set monthly repeat', async () => {
@@ -51,7 +51,7 @@ test.describe('Repeat Tasks', () => {
     await page.setTaskRepeat('Monthly');
     await page.saveTaskEdit();
 
-    await expect(page.page.locator('.task-row').filter({ hasText: 'Monthly Task' }).locator('.task-badge.task-repeat')).toBeVisible();
+    await expect(page.page.locator('.task-row').filter({ hasText: 'Monthly Task' }).locator('.task-badge.repeat-badge')).toBeVisible();
   });
 
   test('pause recurring task shows paused badge', async () => {
@@ -61,7 +61,7 @@ test.describe('Repeat Tasks', () => {
     await page.toggleTaskPause();
     await page.saveTaskEdit();
 
-    await expect(page.page.locator('.task-row').filter({ hasText: 'Paused Task' }).locator('.task-badge.repeat-paused')).toBeVisible();
+    await expect(page.page.locator('.task-row').filter({ hasText: 'Paused Task' }).locator('.task-badge.paused-badge')).toBeVisible();
   });
 
   test('cancel edit does not save repeat', async () => {
@@ -70,7 +70,7 @@ test.describe('Repeat Tasks', () => {
     await page.setTaskRepeat('Daily');
     await page.cancelTaskEdit();
 
-    await expect(page.page.locator('.task-row').filter({ hasText: 'No Repeat Task' }).locator('.task-badge.task-repeat')).not.toBeVisible();
+    await expect(page.page.locator('.task-row').filter({ hasText: 'No Repeat Task' }).locator('.task-badge.repeat-badge')).not.toBeVisible();
   });
 
   test.fixme('recurring task stays in list after completion', async () => {

@@ -150,7 +150,7 @@ public class IndexBaseTests : TestHelper
         KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut("p", It.IsAny<Action>(), It.IsAny<string>()), Times.Once);
         KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut("s", It.IsAny<Action>(), It.IsAny<string>()), Times.Once);
         KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut("l", It.IsAny<Action>(), It.IsAny<string>()), Times.Once);
-        KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut("?", It.IsAny<Action>(), It.IsAny<string>()), Times.Once);
+        KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut("?", It.IsAny<Action>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
@@ -312,7 +312,7 @@ public class IndexBaseTests : TestHelper
         KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut("p", It.IsAny<Action>(), "Switch to Pomodoro"), Times.Once);
         KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut("s", It.IsAny<Action>(), "Switch to Short Break"), Times.Once);
         KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut("l", It.IsAny<Action>(), "Switch to Long Break"), Times.Once);
-        KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut("?", It.IsAny<Action>(), "Show keyboard shortcuts"), Times.Once);
+        KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut("?", It.IsAny<Action>(), "Show keyboard shortcuts"), Times.Never);
     }
 
     [Fact]

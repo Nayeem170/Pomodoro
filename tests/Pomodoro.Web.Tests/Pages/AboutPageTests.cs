@@ -45,7 +45,7 @@ namespace Pomodoro.Web.Tests.Pages
 
             // Assert
             Assert.Contains("about-hero", cut.Markup);
-            Assert.Contains("about-hero-icon", cut.Markup);
+            Assert.Contains("about-hero-logo", cut.Markup);
             Assert.Contains("about-hero-title", cut.Markup);
             Assert.Contains("about-hero-sub", cut.Markup);
             Assert.Contains("about-hero-desc", cut.Markup);
@@ -58,7 +58,7 @@ namespace Pomodoro.Web.Tests.Pages
             var cut = RenderComponent<About>();
 
             // Assert
-            Assert.Contains("Pomodoro", cut.Markup);
+            Assert.Contains("Tarkeez", cut.Markup);
         }
 
         [Fact]

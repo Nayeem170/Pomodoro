@@ -3,9 +3,6 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Services.Repositories;
 
-/// <summary>
-/// Repository implementation for activity record persistence using IndexedDB
-/// </summary>
 public class ActivityRepository : IActivityRepository
 {
     private readonly IIndexedDbService _indexedDb;

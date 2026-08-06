@@ -1,13 +1,7 @@
 namespace Pomodoro.Web;
 
-/// <summary>
-/// Validation, error handling, and logging constants
-/// </summary>
 public static partial class Constants
 {
-    /// <summary>
-    /// Validation-related constants
-    /// </summary>
     public static class Validation
     {
         /// <summary>Maximum length for task names</summary>
@@ -23,9 +17,6 @@ public static partial class Constants
         public const int MaxImportFileSizeBytes = 10 * 1024 * 1024;
     }
 
-    /// <summary>
-    /// Error display related constants
-    /// </summary>
     public static class ErrorDisplay
     {
         /// <summary>Error icon emoji</summary>
@@ -44,9 +35,6 @@ public static partial class Constants
         public const string ReloadButtonText = "Reload Page";
     }
 
-    /// <summary>
-    /// SafeTaskRunner operation names for logging
-    /// </summary>
     public static class SafeTaskOperations
     {
         /// <summary>Default operation name when none provided</summary>
@@ -94,9 +82,6 @@ public static partial class Constants
         public const string ErrorInOperationLogFormat = "Error in {OperationName}";
     }
 
-    /// <summary>
-    /// Logging-related constants
-    /// </summary>
     public static class Logging
     {
         /// <summary>Category filter for Microsoft framework logs</summary>

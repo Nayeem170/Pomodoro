@@ -55,7 +55,7 @@ public partial class TaskServiceTests
     {
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: false);
-        task.Repeat = new RepeatRule { Type = RepeatType.Daily, EndDate = DateTime.UtcNow.Date.AddDays(-1) };
+        task.Repeat = new RepeatRule { Type = RepeatType.Daily, EndDate = DateTime.Now.Date.AddDays(-1) };
 
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
         MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
@@ -73,7 +73,7 @@ public partial class TaskServiceTests
     [Fact]
     public async Task CompleteTaskAsync_RecurringNextAfterEnd_DoesNotSetNextOccurrence()
     {
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.Now.Date;
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: false);
         task.Repeat = new RepeatRule
@@ -120,7 +120,7 @@ public partial class TaskServiceTests
     {
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: true);
-        task.Repeat = new RepeatRule { Type = RepeatType.Daily, LastCompletedDate = DateTime.UtcNow.Date.AddDays(-1) };
+        task.Repeat = new RepeatRule { Type = RepeatType.Daily, LastCompletedDate = DateTime.Now.Date.AddDays(-1) };
 
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
         MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
@@ -141,7 +141,7 @@ public partial class TaskServiceTests
     {
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: true);
-        task.ScheduledDate = DateTime.UtcNow.Date;
+        task.ScheduledDate = DateTime.Now.Date;
 
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
         MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
@@ -161,7 +161,7 @@ public partial class TaskServiceTests
     {
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: true);
-        task.ScheduledDate = DateTime.UtcNow.Date.AddDays(1);
+        task.ScheduledDate = DateTime.Now.Date.AddDays(1);
 
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
         MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
@@ -179,7 +179,7 @@ public partial class TaskServiceTests
     {
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: true);
-        task.Repeat = new RepeatRule { Type = RepeatType.Daily, LastCompletedDate = DateTime.UtcNow.Date, IsPaused = true };
+        task.Repeat = new RepeatRule { Type = RepeatType.Daily, LastCompletedDate = DateTime.Now.Date, IsPaused = true };
 
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
         MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
@@ -197,8 +197,8 @@ public partial class TaskServiceTests
     {
         var taskId = Guid.NewGuid();
         var task = CreateSampleTask(id: taskId, isCompleted: true);
-        task.Repeat = new RepeatRule { Type = RepeatType.Daily, LastCompletedDate = DateTime.UtcNow.Date };
-        task.Repeat.NextOccurrence = DateTime.UtcNow.Date.AddDays(1);
+        task.Repeat = new RepeatRule { Type = RepeatType.Daily, LastCompletedDate = DateTime.Now.Date };
+        task.Repeat.NextOccurrence = DateTime.Now.Date.AddDays(1);
 
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
         MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);

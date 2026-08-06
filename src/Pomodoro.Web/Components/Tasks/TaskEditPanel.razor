@@ -17,9 +17,15 @@
     }
     else
     {
+        <div class="tep-header">
+            <span class="tep-title">EDITING TASK</span>
+            <button type="button" class="tep-collapse" @onclick="HandleCancel" aria-label="Close edit panel">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 7.5l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+        </div>
         <div class="tep-row">
             <label class="tep-label">Name</label>
-            <input class="tep-input" @bind="EditName" @bind:event="oninput" aria-label="Task name" />
+            <input class="tep-input tep-input-name" @bind="EditName" @bind:event="oninput" aria-label="Task name" />
         </div>
 
         <div class="tep-row">
@@ -80,8 +86,9 @@
 
             <div class="tep-row">
                 <label class="tep-label">Pause</label>
-                <button type="button" class="tep-toggle @(EditIsPaused ? "active" : "")" @onclick="() => EditIsPaused = !EditIsPaused">
+                <button type="button" class="tep-toggle @(EditIsPaused ? "active" : "")" @onclick="TogglePause">
                     @Constants.Repeat.PausedIcon
+                    <span class="tep-toggle-label">@(EditIsPaused ? "Paused" : "Not paused")</span>
                 </button>
             </div>
         }

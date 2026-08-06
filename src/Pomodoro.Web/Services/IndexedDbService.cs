@@ -4,10 +4,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Service for IndexedDB operations via JavaScript interop
-/// Provides persistent storage with larger capacity than localStorage
-/// </summary>
 public class IndexedDbService : IIndexedDbService, IAsyncDisposable
 {
     private readonly IJSRuntime _jsRuntime;
@@ -15,9 +11,6 @@ public class IndexedDbService : IIndexedDbService, IAsyncDisposable
     private readonly ILogger<IndexedDbService> _logger;
     private bool _isInitialized;
 
-    /// <summary>
-    /// Event raised when a storage error occurs
-    /// </summary>
     public event Action<string>? OnStorageError;
 
     public IndexedDbService(IJSRuntime jsRuntime, ILogger<IndexedDbService> logger)
@@ -50,9 +43,6 @@ public class IndexedDbService : IIndexedDbService, IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Initializes JavaScript constants with user settings for consistency across JS interop
-    /// </summary>
     public async Task InitializeJsConstantsAsync(int pomodoroMinutes, int shortBreakMinutes, int longBreakMinutes)
     {
         try
@@ -171,8 +161,8 @@ public class IndexedDbService : IIndexedDbService, IAsyncDisposable
     }
 
     /// <summary>
-    /// Puts all items in a single transaction for better performance.
-    /// Note: Uses a single transaction for atomicity - if one item fails, all changes are rolled back.
+    /// Puts all items in a single transaction for atomicity: if one item fails, all
+    /// changes are rolled back.
     /// </summary>
     public async Task<bool> PutAllAsync<T>(string storeName, List<T> items)
     {
@@ -254,9 +244,6 @@ public class IndexedDbService : IIndexedDbService, IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Notifies subscribers of storage errors
-    /// </summary>
     private void NotifyStorageError(string errorMessage)
     {
         OnStorageError?.Invoke(errorMessage);

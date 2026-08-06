@@ -1,143 +1,82 @@
 @using Pomodoro.Web.Models
+@using Pomodoro.Web.Components.Tasks
 
 <div class="sched-day">
-    <div class="day-header" aria-label="@Day.DayLabel">@Day.DayLabel</div>
-    <ul class="day-items" role="list">
-        @if (Day.Items.Count == 0)
+    <div class="day-header @(Day.Items.Count == 0 ? "empty" : "")" aria-label="@Day.DayLabel">
+        <span class="day-badge @(Day.Items.Count == 0 ? "empty" : "")" aria-hidden="true">@Day.Date.Day</span>
+        <span class="day-weekday-full">@Day.Date.ToString("dddd")</span>
+        <span class="day-weekday-short">@Day.Date.ToString("ddd")</span>
+        @if (Day.Items.Count > 0)
         {
-            <li class="day-empty">—</li>
+            <span class="day-count-full">@(Day.Items.Count == 1 ? "1 task" : $"{Day.Items.Count} tasks")</span>
+            <span class="day-count-short">@Day.Items.Count</span>
         }
-        else
-        {
+    </div>
+    @if (Day.Items.Count == 0)
+    {
+        <div class="day-empty">No tasks scheduled</div>
+    }
+    else
+    {
+        <ul class="day-items" role="list">
             @foreach (var item in Day.Items)
             {
                 var taskId = item.Task?.Id;
                 var googleTaskId = item.Task?.GoogleTaskId;
-                var isEditing = _editingTaskId == taskId;
-                var isAddingSubtask = _addingSubtaskId == taskId;
-                var isCollapsed = taskId.HasValue && _collapsedIds.Contains(taskId.Value);
                 var children = !taskId.HasValue ? [] :
                     _allSubtasks.Where(s =>
                         s.ParentTaskId == taskId.Value ||
                         (!string.IsNullOrEmpty(googleTaskId) && s.GoogleParentTaskId == googleTaskId)).ToList();
                 var hasChildren = children.Count > 0;
-                var canAddSubtask = item.Task is not null && !item.Task.IsGoogleTask;
-                <li class="day-item @(item.IsCompleted ? "done" : "")">
-                    @if (hasChildren)
+                <li class="day-item-wrap">
+                    @if (item.Task is not null)
                     {
-                        <button class="row-toggle @(isCollapsed ? "collapsed" : "")" @onclick="() => ToggleCollapse(taskId!.Value)" title="@(isCollapsed ? "Expand" : "Collapse")" aria-label="@(isCollapsed ? "Expand" : "Collapse")">
-                            <svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 1.5l4 3.5-4 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        </button>
+                        <TaskItemComponent Item="item.Task"
+                                           Depth="0"
+                                           HasChildren="hasChildren"
+                                           IsCollapsed="_collapsedIds.Contains(item.Task.Id)"
+                                           IsSelected="false"
+                                           ContextDate="Day.Date"
+                                           GoogleListTitle="@GoogleListTitleFor(item.Task)"
+                                           OnSelect="HandleSelect"
+                                           OnComplete="OnComplete"
+                                           OnDelete="OnDelete"
+                                           OnUncomplete="OnUncomplete"
+                                           OnEdit="OnEditTask"
+                                           OnAddSubtask="OnAddSubtask"
+                                           OnReparentToRoot="OnReparentToRoot"
+                                           OnToggleCollapse="ToggleCollapse" />
                     }
-                    <span class="item-title">@item.Title</span>
-                    <div class="item-actions">
-                        @if (item.IsRepeat && item.RepeatLabel is not null)
+                    else
+                    {
+                        <div class="day-item @(item.IsCompleted ? "done" : "")">
+                            <span class="item-title">@item.Title</span>
+                        </div>
+                    }
+                    @if (hasChildren && !_collapsedIds.Contains(taskId!.Value))
+                    {
+                        @foreach (var child in children)
                         {
-                            <span class="capsule" title="@item.RepeatLabel">@item.RepeatLabel</span>
+                            <TaskItemComponent Item="child"
+                                               Depth="1"
+                                               HasChildren="false"
+                                               IsCollapsed="false"
+                                               IsSelected="false"
+                                               GoogleListTitle="@GoogleListTitleFor(child)"
+                                               OnSelect="HandleSelect"
+                                               OnComplete="OnComplete"
+                                               OnDelete="OnDelete"
+                                               OnUncomplete="OnUncomplete"
+                                               OnEdit="OnEditTask"
+                                               OnAddSubtask="OnAddSubtask"
+                                               OnReparentToRoot="OnReparentToRoot"
+                                               OnToggleCollapse="ToggleCollapse" />
                         }
-                        @if (item.IsGoogle)
-                        {
-                            <span class="gtag" title="Google task" aria-label="Google task" role="img">
-                                <svg width="11" height="11" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-                                    <path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.7-2 5-4.4 6.6v5.5h7.1c4.1-3.8 6.6-9.4 6.6-16.1z"/>
-                                    <path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.6-3.9-12.3-9.1H4.4v5.7C8 41.1 15.4 46 24 46z"/>
-                                    <path fill="#FBBC05" d="M11.7 28.1c-.4-1.3-.7-2.7-.7-4.1s.2-2.8.7-4.1v-5.7H4.4C2.9 17.1 2 20.4 2 24s.9 6.9 2.4 9.8l7.3-5.7z"/>
-                                    <path fill="#EA4335" d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3C34.9 4.3 29.9 2 24 2 15.4 2 8 6.9 4.4 14.2l7.3 5.7c1.7-5.2 6.6-9.1 12.3-9.1z"/>
-                                </svg>
-                            </span>
-                        }
-                        @if (canAddSubtask && OnAddSubtask.HasDelegate)
-                        {
-                            <button class="item-edit-btn" @onclick="() => StartAddSubtask(item)" title="Add subtask" aria-label="Add subtask">
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                            </button>
-                        }
-                        <button class="item-edit-btn" @onclick="() => StartEdit(item)" title="Edit" aria-label="Edit task">
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8.5 1.5l2 2L4 10H2V8l6.5-6.5z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        </button>
-                    </div>
+                    }
                 </li>
-                @if (hasChildren && !isCollapsed)
-                {
-                    @foreach (var child in children)
-                    {
-                        var grandChildren = _allSubtasks.Where(s =>
-                            s.ParentTaskId == child.Id ||
-                            (!string.IsNullOrEmpty(child.GoogleTaskId) && s.GoogleParentTaskId == child.GoogleTaskId)).ToList();
-                        var hasGrandChildren = grandChildren.Count > 0;
-                        var childCollapsed = _collapsedIds.Contains(child.Id);
-                        <li class="day-subitem">
-                            @if (hasGrandChildren)
-                            {
-                                <button class="row-toggle @(childCollapsed ? "collapsed" : "")" @onclick="() => ToggleCollapse(child.Id)" aria-label="@(childCollapsed ? "Expand" : "Collapse")">
-                                    <svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 1.5l4 3.5-4 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                </button>
-                            }
-                            else
-                            {
-                                <span class="collapse-spacer" aria-hidden="true"></span>
-                            }
-                            <span class="subtask-title">@child.Name</span>
-                        </li>
-                        @if (hasGrandChildren && !childCollapsed)
-                        {
-                            @foreach (var grand in grandChildren)
-                            {
-                                var greatGrandChildren = _allSubtasks.Where(s =>
-                                    s.ParentTaskId == grand.Id ||
-                                    (!string.IsNullOrEmpty(grand.GoogleTaskId) && s.GoogleParentTaskId == grand.GoogleTaskId)).ToList();
-                                var hasGGChildren = greatGrandChildren.Count > 0;
-                                var grandCollapsed = _collapsedIds.Contains(grand.Id);
-                                <li class="day-subitem subtask-nested">
-                                    @if (hasGGChildren)
-                                    {
-                                        <button class="row-toggle @(grandCollapsed ? "collapsed" : "")" @onclick="() => ToggleCollapse(grand.Id)" aria-label="@(grandCollapsed ? "Expand" : "Collapse")">
-                                            <svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 1.5l4 3.5-4 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                        </button>
-                                    }
-                                    else
-                                    {
-                                        <span class="collapse-spacer" aria-hidden="true"></span>
-                                    }
-                                    <span class="subtask-title">@grand.Name</span>
-                                </li>
-                                @if (hasGGChildren && !grandCollapsed)
-                                {
-                                    @foreach (var gg in greatGrandChildren)
-                                    {
-                                        <li class="day-subitem subtask-nested">
-                                            <span class="collapse-spacer" aria-hidden="true"></span>
-                                            <span class="subtask-title">@gg.Name</span>
-                                        </li>
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                @if (isAddingSubtask && item.Task is not null)
-                {
-                    <li class="day-subtask-form">
-                        <input type="text"
-                               @bind="_newSubtaskName"
-                               @bind:event="oninput"
-                               @onkeydown="HandleSubtaskKeyPress"
-                               placeholder="Subtask name..."
-                               class="subtask-input"
-                               aria-label="New subtask name" />
-                        <button class="subtask-btn add" @onclick="HandleAddSubtask" disabled="@IsSubtaskDisabled" title="Add" aria-label="Add">+</button>
-                        <button class="subtask-btn cancel" @onclick="CancelAddSubtask" title="Cancel" aria-label="Cancel">x</button>
-                    </li>
-                }
-                @if (isEditing && item.Task is not null)
-                {
-                    <li class="day-edit">
-                        <TaskEditPanel Task="item.Task" OnSave="HandleEditSave" OnCancel="HandleEditCancel" />
-                    </li>
-                }
             }
-        }
-    </ul>
+        </ul>
+    }
 </div>
 
 @code {
@@ -151,12 +90,26 @@
     public Microsoft.AspNetCore.Components.EventCallback<AddSubtaskRequest> OnAddSubtask { get; set; }
 
     [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<Guid> OnComplete { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<Guid> OnDelete { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<Guid> OnUncomplete { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<Guid> OnReparentToRoot { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
     public IReadOnlyList<TaskItem>? AllTasks { get; set; }
 
-    private Guid? _editingTaskId;
-    private Guid? _addingSubtaskId;
-    private string _newSubtaskName = string.Empty;
-    private bool IsSubtaskDisabled => string.IsNullOrWhiteSpace(_newSubtaskName);
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<Guid> OnSelect { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
+
     private readonly HashSet<Guid> _collapsedIds = new();
     private IReadOnlyList<TaskItem> _allSubtasks = [];
     private Dictionary<string, Guid> _googleIdToLocalId = new();
@@ -170,60 +123,19 @@
         _allSubtasks = all.Where(t => t.IsSubtask && !t.IsDeleted).ToList();
     }
 
+    private string? GoogleListTitleFor(TaskItem task) =>
+        string.IsNullOrEmpty(task.GoogleListId)
+            ? null
+            : GoogleLists.FirstOrDefault(l => l.Id == task.GoogleListId)?.Title;
+
+    private async Task HandleSelect(Guid taskId)
+    {
+        await OnSelect.InvokeAsync(taskId);
+    }
+
     private void ToggleCollapse(Guid taskId)
     {
         if (!_collapsedIds.Add(taskId))
             _collapsedIds.Remove(taskId);
-    }
-
-    private void StartEdit(ScheduleItem item)
-    {
-        _editingTaskId = _editingTaskId == item.Task?.Id ? null : item.Task?.Id;
-        _addingSubtaskId = null;
-    }
-
-    private void StartAddSubtask(ScheduleItem item)
-    {
-        _addingSubtaskId = item.Task?.Id;
-        _newSubtaskName = string.Empty;
-    }
-
-    private async Task HandleEditSave(TaskItem updatedTask)
-    {
-        _editingTaskId = null;
-        await OnEditTask.InvokeAsync(updatedTask);
-    }
-
-    private void HandleEditCancel()
-    {
-        _editingTaskId = null;
-    }
-
-    private void CancelAddSubtask()
-    {
-        _addingSubtaskId = null;
-        _newSubtaskName = string.Empty;
-    }
-
-    private async Task HandleAddSubtask()
-    {
-        if (_addingSubtaskId.HasValue && !string.IsNullOrWhiteSpace(_newSubtaskName))
-        {
-            await OnAddSubtask.InvokeAsync(new AddSubtaskRequest(_addingSubtaskId.Value, _newSubtaskName.Trim()));
-            _newSubtaskName = string.Empty;
-            _addingSubtaskId = null;
-        }
-    }
-
-    private async Task HandleSubtaskKeyPress(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter" && !IsSubtaskDisabled)
-        {
-            await HandleAddSubtask();
-        }
-        else if (e.Key == "Escape")
-        {
-            CancelAddSubtask();
-        }
     }
 }

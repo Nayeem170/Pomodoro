@@ -96,22 +96,19 @@ test.describe('Keyboard Shortcuts', () => {
 
   test('should not trigger shortcuts when typing in task input', async () => {
     await pomodoroPage.closeKeyboardHelp();
-    await pomodoroPage.page.locator('.task-add-btn').click();
-    await expect(pomodoroPage.page.locator('.task-input')).toBeVisible();
     await pomodoroPage.page.locator('.task-input').click();
     await pomodoroPage.page.locator('.task-input').pressSequentially('typing test');
     const pomodoroButton = pomodoroPage.page.locator('.mode-tabs button').filter({ hasText: 'Pomodoro' });
     await expect(pomodoroButton).toHaveClass(/active/);
     await pomodoroPage.page.keyboard.press('Escape');
-    await expect(pomodoroPage.page.locator('.task-input')).not.toBeVisible({ timeout: 5000 });
+    await expect(pomodoroPage.page.locator('.task-input')).toHaveValue('');
   });
 
-  test('should cancel add task form with Escape key', async () => {
+  test('should clear add task input with Escape key', async () => {
     await pomodoroPage.closeKeyboardHelp();
-    await pomodoroPage.page.locator('.task-add-btn').click();
-    await expect(pomodoroPage.page.locator('.task-input')).toBeVisible();
     await pomodoroPage.page.locator('.task-input').click();
+    await pomodoroPage.page.locator('.task-input').pressSequentially('escape test');
     await pomodoroPage.page.keyboard.press('Escape');
-    await expect(pomodoroPage.page.locator('.task-input')).not.toBeVisible({ timeout: 5000 });
+    await expect(pomodoroPage.page.locator('.task-input')).toHaveValue('');
   });
 });

@@ -1,13 +1,7 @@
 namespace Pomodoro.Web;
 
-/// <summary>
-/// Time and date formatting constants
-/// </summary>
 public static partial class Constants
 {
-    /// <summary>
-    /// Time formatting constants
-    /// </summary>
     public static class TimeFormats
     {
         public const string MinutesFormat = "{0}m";
@@ -29,9 +23,6 @@ public static partial class Constants
         public const string DaysAgoFormat = "{0}d ago";
     }
 
-    /// <summary>
-    /// Date format strings
-    /// </summary>
     public static class DateFormats
     {
         public const string IsoFormat = "O";
@@ -39,17 +30,11 @@ public static partial class Constants
         public const string GuidNoDashesFormat = "N";
     }
 
-    /// <summary>
-    /// Duration format strings
-    /// </summary>
     public static class DurationFormats
     {
         public const string MinutesFormat = "{0} min";
     }
 
-    /// <summary>
-    /// Formatting-related constants
-    /// </summary>
     public static class Formatting
     {
         /// <summary>Separator between emoji and title text</summary>

@@ -13,6 +13,13 @@ public class ScheduleAgendaBase : ComponentBase
     [Parameter] public EventCallback<TaskItem> OnEditTask { get; set; }
 
     [Parameter] public EventCallback<AddSubtaskRequest> OnAddSubtask { get; set; }
+    [Parameter] public EventCallback<Guid> OnComplete { get; set; }
+    [Parameter] public EventCallback<Guid> OnDelete { get; set; }
+    [Parameter] public EventCallback<Guid> OnUncomplete { get; set; }
+    [Parameter] public EventCallback<Guid> OnReparentToRoot { get; set; }
+    [Parameter] public EventCallback<Guid> OnSelect { get; set; }
 
     [Parameter] public IReadOnlyList<TaskItem> AllTasks { get; set; } = [];
+
+    [Parameter] public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
 }

@@ -140,7 +140,7 @@ public partial class TaskServiceTests
     {
         var task = CreateSampleTask();
         task.IsCompleted = true;
-        task.Repeat = new RepeatRule { Type = RepeatType.Daily, IsPaused = false, LastCompletedDate = DateTime.UtcNow.Date.AddDays(-1) };
+        task.Repeat = new RepeatRule { Type = RepeatType.Daily, IsPaused = false, LastCompletedDate = DateTime.Now.Date.AddDays(-1) };
 
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))

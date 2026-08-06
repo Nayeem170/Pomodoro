@@ -48,8 +48,7 @@ public class IndexScheduleCoverageTests : TestHelper
     [Fact]
     public void RepeatOccursOn_DailyWeeklyCustomMonthly_Branches()
     {
-        // Arrange
-        var anchor = new DateTime(2025, 1, 10); // Friday
+        var anchor = new DateTime(2025, 1, 10);
         var daily = new RepeatRule { Type = RepeatType.Daily, StartDate = anchor };
         var weeklyEmpty = new RepeatRule { Type = RepeatType.Weekly, StartDate = anchor, Weekdays = [] };
         var weeklyDays = new RepeatRule { Type = RepeatType.Weekly, StartDate = anchor, Weekdays = [DayOfWeek.Monday] };
@@ -57,21 +56,16 @@ public class IndexScheduleCoverageTests : TestHelper
         var monthly = new RepeatRule { Type = RepeatType.Monthly, StartDate = anchor, MonthlyDay = 10 };
 
         var task = new TaskItem { CreatedAt = anchor };
-        var type = new[] { typeof(RepeatRule), typeof(TaskItem), typeof(DateTime) };
 
-        // Act / Assert
-        InvokeStatic("RepeatOccursOn", type, [daily, task, anchor]).Should().Be(true);
-        InvokeStatic("RepeatOccursOn", type, [weeklyEmpty, task, anchor.AddDays(7)]).Should().Be(true);
-        InvokeStatic("RepeatOccursOn", type, [weeklyDays, task, new DateTime(2025, 1, 13)]).Should().Be(true);
-        InvokeStatic("RepeatOccursOn", type, [custom, task, anchor.AddDays(3)]).Should().Be(true);
-        InvokeStatic("RepeatOccursOn", type, [monthly, task, new DateTime(2025, 2, 10)]).Should().Be(true);
-        // before anchor -> false; past end date -> false; None type -> switch default false
-        InvokeStatic("RepeatOccursOn", type,
-            [new RepeatRule { Type = RepeatType.Daily, StartDate = anchor, EndDate = anchor }, task, anchor.AddDays(2)])
-            .Should().Be(false);
-        InvokeStatic("RepeatOccursOn", type, [daily, task, anchor.AddDays(-1)]).Should().Be(false);
-        InvokeStatic("RepeatOccursOn", type,
-            [new RepeatRule { Type = RepeatType.None, StartDate = anchor }, task, anchor]).Should().Be(false);
+        daily.OccursOn(task, anchor).Should().Be(true);
+        weeklyEmpty.OccursOn(task, anchor.AddDays(7)).Should().Be(true);
+        weeklyDays.OccursOn(task, new DateTime(2025, 1, 13)).Should().Be(true);
+        custom.OccursOn(task, anchor.AddDays(3)).Should().Be(true);
+        monthly.OccursOn(task, new DateTime(2025, 2, 10)).Should().Be(true);
+        new RepeatRule { Type = RepeatType.Daily, StartDate = anchor, EndDate = anchor }
+            .OccursOn(task, anchor.AddDays(2)).Should().Be(false);
+        daily.OccursOn(task, anchor.AddDays(-1)).Should().Be(false);
+        new RepeatRule { Type = RepeatType.None, StartDate = anchor }.OccursOn(task, anchor).Should().Be(false);
     }
 
     [Fact]

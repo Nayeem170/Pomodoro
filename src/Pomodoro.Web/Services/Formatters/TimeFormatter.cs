@@ -2,14 +2,8 @@ using static Pomodoro.Web.Constants;
 
 namespace Pomodoro.Web.Services.Formatters;
 
-/// <summary>
-/// Service for formatting time values into human-readable strings
-/// </summary>
 public class TimeFormatter
 {
-    /// <summary>
-    /// Formats minutes into a human-readable time string
-    /// </summary>
     /// <param name="minutes">Total minutes to format</param>
     /// <returns>Formatted time string (e.g., "2h 30m", "45m", "1h")</returns>
     public virtual string FormatTime(int minutes)
@@ -33,9 +27,6 @@ public class TimeFormatter
         }
     }
 
-    /// <summary>
-    /// Formats minutes into a simple time string (hours and minutes only)
-    /// </summary>
     /// <param name="minutes">Total minutes to format</param>
     /// <returns>Formatted time string (e.g., "2h 30m", "45m")</returns>
     public string FormatSimpleTime(int minutes)

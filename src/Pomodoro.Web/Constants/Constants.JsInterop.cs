@@ -1,13 +1,7 @@
 namespace Pomodoro.Web;
 
-/// <summary>
-/// JavaScript interop function names and related constants
-/// </summary>
 public static partial class Constants
 {
-    /// <summary>
-    /// JavaScript interop function names
-    /// </summary>
     public static class JsFunctions
     {
         public const string TimerStart = "timerFunctions.start";
@@ -16,9 +10,6 @@ public static partial class Constants
         public const string RemoveUrlParameter = "removeUrlParameter";
     }
 
-    /// <summary>
-    /// JSInvokable method names
-    /// </summary>
     public static class JsInvokableMethods
     {
         public const string OnTimerTick = "OnTimerTickJs";
@@ -29,9 +20,6 @@ public static partial class Constants
         public const string OnNotificationActionClick = "OnNotificationActionClick";
     }
 
-    /// <summary>
-    /// IndexedDB JavaScript function names
-    /// </summary>
     public static class IndexedDbJsFunctions
     {
         public const string InitDatabase = "indexedDbInterop.initDatabase";
@@ -47,9 +35,6 @@ public static partial class Constants
         public const string PomodoroConstantsInitialize = "pomodoroConstants.initialize";
     }
 
-    /// <summary>
-    /// PiP JavaScript function names
-    /// </summary>
     public static class PipJsFunctions
     {
         public const string IsSupported = "pipTimer.isSupported";
@@ -60,9 +45,6 @@ public static partial class Constants
         public const string Update = "pipTimer.update";
     }
 
-    /// <summary>
-    /// Notification JavaScript function names
-    /// </summary>
     public static class NotificationJsFunctions
     {
         public const string RegisterDotNetRef = "notificationFunctions.registerDotNetRef";
@@ -74,9 +56,6 @@ public static partial class Constants
         public const string UnlockAudio = "notificationFunctions.unlockAudio";
     }
 
-    /// <summary>
-    /// Local date/time JavaScript function names
-    /// </summary>
     public static class LocalDateTimeJsFunctions
     {
         public const string GetLocalDate = "localDateTime.getLocalDate";
@@ -84,18 +63,12 @@ public static partial class Constants
         public const string GetTimezoneOffset = "localDateTime.getTimezoneOffset";
     }
 
-    /// <summary>
-    /// Keyboard shortcut JavaScript function names
-    /// </summary>
     public static class KeyboardShortcutJsFunctions
     {
         public const string Initialize = "keyboardShortcuts.initialize";
         public const string Dispose = "keyboardShortcuts.dispose";
     }
 
-    /// <summary>
-    /// Infinite scroll JavaScript function names
-    /// </summary>
     public static class InfiniteScrollJsFunctions
     {
         public const string IsSupported = "infiniteScroll.isSupported";
@@ -104,9 +77,6 @@ public static partial class Constants
         public const string DestroyAllObservers = "infiniteScroll.destroyAllObservers";
     }
 
-    /// <summary>
-    /// Google Drive JavaScript function names
-    /// </summary>
     public static class GoogleDriveJsFunctions
     {
         public const string Init = "googleDrive.init";
@@ -124,9 +94,6 @@ public static partial class Constants
         public const string SetAccessToken = "googleDrive.setAccessToken";
     }
 
-    /// <summary>
-    /// Google Tasks JavaScript function names
-    /// </summary>
     public static class GoogleTasksJsFunctions
     {
         public const string ListTaskLists = "googleTasks.listTaskLists";
@@ -137,26 +104,17 @@ public static partial class Constants
         public const string MoveTask = "googleTasks.moveTask";
     }
 
-    /// <summary>
-    /// Compression JavaScript function names
-    /// </summary>
     public static class CompressionJsFunctions
     {
         public const string GzipCompress = "compressionInterop.gzipCompress";
         public const string GzipDecompress = "compressionInterop.gzipDecompress";
     }
 
-    /// <summary>
-    /// Notification permission values
-    /// </summary>
     public static class NotificationPermissions
     {
         public const string Granted = "granted";
     }
 
-    /// <summary>
-    /// URL parameter names
-    /// </summary>
     public static class UrlParameters
     {
         public const string NotificationAction = "notification_action";

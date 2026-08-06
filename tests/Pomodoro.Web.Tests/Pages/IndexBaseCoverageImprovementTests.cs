@@ -78,11 +78,11 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public async Task HandleTaskAdd_WhenServiceThrowsException_SetsErrorMessage()
         {
-            TaskServiceMock.Setup(x => x.AddTaskAsync(It.IsAny<string>()))
+            TaskServiceMock.Setup(x => x.AddTaskAsync(It.IsAny<string>(), It.IsAny<string?>()))
                 .ThrowsAsync(new InvalidOperationException("Cannot add task"));
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            await cut.InvokeAsync(() => cut.Instance.HandleTaskAdd("New Task"));
+            await cut.InvokeAsync(() => cut.Instance.HandleTaskAdd(new NewTaskRequest("New Task")));
 
             var errorMessage = cut.Instance.ErrorMessage;
             errorMessage.Should().Contain("Cannot add task");
@@ -93,9 +93,9 @@ namespace Pomodoro.Web.Tests.Pages
         {
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            _ = cut.Instance.HandleTaskAdd("New Task");
+            _ = cut.Instance.HandleTaskAdd(new NewTaskRequest("New Task"));
 
-            TaskServiceMock.Verify(x => x.AddTaskAsync("New Task"), Times.Once);
+            TaskServiceMock.Verify(x => x.AddTaskAsync("New Task", It.IsAny<string?>()), Times.Once);
         }
 
         #endregion
@@ -132,17 +132,19 @@ namespace Pomodoro.Web.Tests.Pages
         #region HandleTaskComplete Tests
 
         [Fact]
-        public void HandleTaskComplete_WhenServiceThrowsException_SetsErrorMessage()
+        public async Task HandleTaskComplete_WhenServiceThrowsInvalidOperationException_ShowsToast()
         {
             var taskId = Guid.NewGuid();
             TaskServiceMock.Setup(x => x.CompleteTaskAsync(taskId))
                 .ThrowsAsync(new InvalidOperationException("Cannot complete task"));
             var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-            _ = cut.Instance.HandleTaskComplete(taskId);
+            await cut.InvokeAsync(() => cut.Instance.HandleTaskComplete(taskId));
+            cut.Render();
 
-            var errorMessage = cut.Instance.ErrorMessage;
-            errorMessage.Should().Contain("Cannot complete task");
+            cut.Instance.ErrorMessage.Should().Be("Cannot complete task");
+            cut.Markup.Should().Contain("error-toast");
+            cut.Markup.Should().Contain("Cannot complete task");
         }
 
         [Fact]
@@ -826,13 +828,15 @@ namespace Pomodoro.Web.Tests.Pages
         [Fact]
         public async Task SpaceShortcut_WhenTimerIdle_CallsStartPomodoro()
         {
+            var taskId = Guid.NewGuid();
             TimerServiceMock.SetupGet(x => x.IsRunning).Returns(false);
             TimerServiceMock.SetupGet(x => x.IsPaused).Returns(false);
+            TaskServiceMock.SetupGet(x => x.CurrentTaskId).Returns(taskId);
             var actions = CaptureAllShortcuts(out var cut);
 
             await cut.InvokeAsync(() => actions["space"].Invoke());
             await Task.Delay(100);
-            TimerServiceMock.Verify(x => x.StartPomodoroAsync(It.IsAny<Guid?>()), Times.Once);
+            TimerServiceMock.Verify(x => x.StartPomodoroAsync(taskId), Times.Once);
         }
 
         [Fact]
@@ -873,38 +877,6 @@ namespace Pomodoro.Web.Tests.Pages
             await cut.InvokeAsync(() => actions["l"].Invoke());
             await Task.Delay(100);
             TimerServiceMock.Verify(x => x.StartLongBreakAsync(), Times.Once);
-        }
-
-        [Fact]
-        public async Task HelpShortcut_SetsShowKeyboardHelpToTrue()
-        {
-            var actions = CaptureAllShortcuts(out var cut);
-
-            await cut.InvokeAsync(() => actions["?"].Invoke());
-            Assert.True(cut.Instance.ShowKeyboardHelp);
-        }
-
-        [Fact]
-        public async Task EscapeShortcut_WhenHelpVisible_SetsShowKeyboardHelpToFalse()
-        {
-            var actions = CaptureAllShortcuts(out var cut);
-
-            await cut.InvokeAsync(() => actions["?"].Invoke());
-            Assert.True(cut.Instance.ShowKeyboardHelp);
-
-            await cut.InvokeAsync(() => actions["escape"].Invoke());
-            Assert.False(cut.Instance.ShowKeyboardHelp);
-        }
-
-        [Fact]
-        public async Task EscapeShortcut_WhenHelpNotVisible_DoesNothing()
-        {
-            var actions = CaptureAllShortcuts(out var cut);
-
-            Assert.False(cut.Instance.ShowKeyboardHelp);
-
-            await cut.InvokeAsync(() => actions["escape"].Invoke());
-            Assert.False(cut.Instance.ShowKeyboardHelp);
         }
 
         #endregion

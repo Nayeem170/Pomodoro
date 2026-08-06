@@ -184,18 +184,18 @@ public class IndexKeyboardShortcutTests : TestHelper
     #region Help Shortcut Tests
 
     [Fact]
-    public async Task KeyboardShortcut_Help_IsRegistered()
+    public async Task KeyboardShortcut_Help_IsNotRegisteredByIndex()
     {
         // Arrange & Act
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
         await Task.Delay(100); // Allow async initialization
 
-        // Assert - Verify help shortcut is registered
+        // Assert - Help lives on MainLayout, not the Index page
         KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut(
             "?",
             It.IsAny<Action>(),
-            It.IsAny<string>()), Times.Once,
-            "Help shortcut should be registered");
+            It.IsAny<string>()), Times.Never,
+            "Help shortcut is owned by MainLayout");
     }
 
     #endregion
@@ -224,7 +224,7 @@ public class IndexKeyboardShortcutTests : TestHelper
         registeredKeys.Should().Contain("p", "Pomodoro shortcut should be registered");
         registeredKeys.Should().Contain("s", "Short break shortcut should be registered");
         registeredKeys.Should().Contain("l", "Long break shortcut should be registered");
-        registeredKeys.Should().Contain("?", "Help shortcut should be registered");
+        registeredKeys.Should().NotContain("?", "Help shortcut is owned by MainLayout");
     }
 
     #endregion

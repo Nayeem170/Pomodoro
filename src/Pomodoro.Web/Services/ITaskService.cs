@@ -2,21 +2,12 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Interface for task management operations
-/// </summary>
 public interface ITaskService
 {
     event Action? OnChange;
 
-    /// <summary>
-    /// Active tasks (excludes soft-deleted)
-    /// </summary>
     List<TaskItem> Tasks { get; }
 
-    /// <summary>
-    /// All tasks including soft-deleted (for history)
-    /// </summary>
     IReadOnlyList<TaskItem> AllTasks { get; }
 
     Guid? CurrentTaskId { get; }
@@ -24,9 +15,7 @@ public interface ITaskService
 
     IReadOnlyList<TaskListRef> TaskLists { get; }
 
-    /// <summary>
-    /// Connected Google lists. These are sources feeding the two tabs, not tabs themselves.
-    /// </summary>
+    /// <summary>Connected Google lists; these are sources feeding the two tabs, not tabs themselves.</summary>
     IReadOnlyList<TaskListRef> GoogleLists { get; }
     TaskListRef? CurrentList { get; }
     string? CurrentListId { get; }
@@ -35,6 +24,7 @@ public interface ITaskService
     Task AddTaskAsync(string name);
     Task UpdateTaskAsync(TaskItem task);
     Task DeleteTaskAsync(Guid taskId);
+    Task RestoreTaskAsync(Guid taskId);
     Task CompleteTaskAsync(Guid taskId);
     Task UncompleteTaskAsync(Guid taskId);
     Task SelectTaskAsync(Guid taskId);
@@ -46,15 +36,12 @@ public interface ITaskService
     Task RefreshGoogleListsAsync();
     Task UpdateListVisibilityAsync(string listId, bool isVisible);
 
-    /// <summary>Adds a child task under <paramref name="parentTaskId"/>, mirroring the hierarchy to Google when the parent is a Google task.</summary>
     Task AddSubtaskAsync(string name, Guid parentTaskId);
 
-    /// <summary>Moves a task under a new parent, or to the root when <paramref name="newParentId"/> is null.</summary>
     Task ReparentTaskAsync(Guid taskId, Guid? newParentId);
 
     /// <summary>Persists a virtual repeat occurrence as a real task so it can be edited independently of its series.</summary>
     Task MaterializeSingleAsync(TaskItem occurrence);
 
-    /// <summary>Reloads all task data from storage, refreshing the in-memory cache. Call this after import operations to reflect changes.</summary>
     Task ReloadAsync();
 }

@@ -4,10 +4,6 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Components.Tasks;
 
-/// <summary>
-/// Code-behind for TaskList component
-/// Separates business logic from view
-/// </summary>
 public class TaskListBase : ComponentBase
 {
     #region Parameters (Model)
@@ -19,7 +15,7 @@ public class TaskListBase : ComponentBase
     public Guid? CurrentTaskId { get; set; }
 
     [Parameter]
-    public EventCallback<string> OnTaskAdd { get; set; }
+    public EventCallback<NewTaskRequest> OnTaskAdd { get; set; }
 
     [Parameter]
     public EventCallback<Guid> OnTaskSelect { get; set; }
@@ -45,30 +41,55 @@ public class TaskListBase : ComponentBase
     [Parameter]
     public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
 
+    [Parameter]
+    public string? ActiveListId { get; set; }
+
     #endregion
 
     #region State
 
-    protected bool IsAddingTask { get; set; }
     protected string NewTaskName { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Determines if the Add button should be disabled
-    /// </summary>
+    protected bool _isMoreExpanded;
+
+    protected RepeatType _newTaskRepeatType = RepeatType.None;
+
+    protected DayOfWeek[] _newTaskWeekdays = [];
+
+    protected int _newTaskCustomDays = Constants.Repeat.DefaultCustomDays;
+
+    protected int _newTaskMonthlyDay = Constants.Repeat.DefaultMonthlyDay;
+
+    protected bool _newTaskIsPaused;
+
+    protected DateTime? _newTaskPausedDate;
+
+    protected DateTime? _newTaskScheduledDate;
+
+    protected string? _newTaskListId;
+
+    protected static DayOfWeek[] WeekdayOptions =>
+    [
+        DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+        DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
+    ];
+
     protected bool IsAddDisabled => string.IsNullOrWhiteSpace(NewTaskName);
 
-    protected bool HasCompletedTasks => Tasks.Any(t => t.IsCompleted);
+    protected bool HasCompletedTasks => CompletedTaskNodes.Any();
+
+    protected bool _isCompletedExpanded;
 
     protected HashSet<Guid> _collapsed = new();
     protected HashSet<Guid> _parentIds = new();
 
-    protected sealed record TaskNode(TaskItem Task, int Depth, bool HasChildren, bool IsCompletedAncestor);
+    protected sealed record TaskNode(TaskItem Task, int Depth, bool HasChildren, int ChildCount, bool IsUnderCompletedRoot);
 
     protected IReadOnlyList<TaskNode> AllNodes => BuildTree(Tasks);
 
-    protected IReadOnlyList<TaskNode> ActiveTaskNodes => AllNodes.Where(n => !n.Task.IsCompleted && !n.IsCompletedAncestor).ToList();
+    protected IReadOnlyList<TaskNode> ActiveTaskNodes => AllNodes.Where(n => !n.IsUnderCompletedRoot).ToList();
 
-    protected IReadOnlyList<TaskNode> CompletedTaskNodes => AllNodes.Where(n => n.Task.IsCompleted || n.IsCompletedAncestor).ToList();
+    protected IReadOnlyList<TaskNode> CompletedTaskNodes => AllNodes.Where(n => n.IsUnderCompletedRoot).ToList();
 
     protected override void OnParametersSet()
     {
@@ -97,6 +118,44 @@ public class TaskListBase : ComponentBase
             _collapsed.Remove(taskId);
     }
 
+    protected void ToggleCompletedExpanded()
+    {
+        _isCompletedExpanded = !_isCompletedExpanded;
+    }
+
+    protected void ToggleMore()
+    {
+        if (!_isMoreExpanded)
+        {
+            _newTaskListId = ActiveListId ?? Constants.TaskLists.LocalPomodoroListId;
+        }
+        _isMoreExpanded = !_isMoreExpanded;
+    }
+
+    protected void CancelMore()
+    {
+        NewTaskName = string.Empty;
+        _newTaskRepeatType = RepeatType.None;
+        _newTaskWeekdays = [];
+        _newTaskCustomDays = Constants.Repeat.DefaultCustomDays;
+        _newTaskMonthlyDay = Constants.Repeat.DefaultMonthlyDay;
+        _newTaskIsPaused = false;
+        _newTaskPausedDate = null;
+        _newTaskScheduledDate = null;
+        _newTaskListId = null;
+        _isMoreExpanded = false;
+    }
+
+    protected void ToggleNewWeekday(DayOfWeek day)
+    {
+        var list = _newTaskWeekdays.ToList();
+        if (list.Contains(day))
+            list.Remove(day);
+        else
+            list.Add(day);
+        _newTaskWeekdays = [.. list.OrderBy(d => d)];
+    }
+
     private IReadOnlyList<TaskNode> BuildTree(IReadOnlyList<TaskItem> tasks)
     {
         var result = new List<TaskNode>();
@@ -123,21 +182,32 @@ public class TaskListBase : ComponentBase
             (t.ParentTaskId.HasValue && taskById.ContainsKey(t.ParentTaskId.Value)) ||
             (!string.IsNullOrEmpty(t.GoogleParentTaskId) && googleIdToTask.ContainsKey(t.GoogleParentTaskId));
 
+        int ChildCountFor(TaskItem t)
+        {
+            var count = 0;
+            if (childrenByLocalParent.TryGetValue(t.Id, out var localKids))
+                count += localKids.Count;
+            if (!string.IsNullOrEmpty(t.GoogleTaskId) &&
+                childrenByGoogleParent.TryGetValue(t.GoogleTaskId, out var googleKids))
+                count += googleKids.Count;
+            return count;
+        }
+
         var roots = tasks.Where(t => !HasKnownParent(t));
 
-        void Walk(TaskItem task, int depth, bool underCompleted)
+        void Walk(TaskItem task, int depth, bool rootIsCompleted)
         {
             if (!visited.Add(task.Id)) return;
-            var isUnderCompleted = underCompleted || task.IsCompleted;
-            result.Add(new TaskNode(task, depth, _parentIds.Contains(task.Id), isUnderCompleted));
+            var nodeRootCompleted = depth == 0 ? task.IsCompleted : rootIsCompleted;
+            result.Add(new TaskNode(task, depth, _parentIds.Contains(task.Id), ChildCountFor(task), nodeRootCompleted));
             if (_collapsed.Contains(task.Id)) return;
             if (childrenByLocalParent.TryGetValue(task.Id, out var localKids))
                 foreach (var kid in localKids)
-                    Walk(kid, depth + 1, isUnderCompleted);
+                    Walk(kid, depth + 1, nodeRootCompleted);
             if (!string.IsNullOrEmpty(task.GoogleTaskId) &&
                 childrenByGoogleParent.TryGetValue(task.GoogleTaskId, out var googleKids))
                 foreach (var kid in googleKids)
-                    Walk(kid, depth + 1, isUnderCompleted);
+                    Walk(kid, depth + 1, nodeRootCompleted);
         }
 
         foreach (var root in roots)
@@ -150,79 +220,63 @@ public class TaskListBase : ComponentBase
 
     #region Business Logic Methods
 
-    /// <summary>
-    /// Starts the add task form
-    /// </summary>
-    protected void StartAddTask()
-    {
-        IsAddingTask = true;
-        NewTaskName = string.Empty;
-    }
-
-    /// <summary>
-    /// Cancels adding a new task
-    /// </summary>
-    protected void CancelAddTask()
-    {
-        IsAddingTask = false;
-        NewTaskName = string.Empty;
-    }
-
-    /// <summary>
-    /// Handles adding a new task
-    /// </summary>
     protected async Task HandleAddTask()
     {
         if (!string.IsNullOrWhiteSpace(NewTaskName))
         {
-            await OnTaskAdd.InvokeAsync(NewTaskName.Trim());
+            await OnTaskAdd.InvokeAsync(new NewTaskRequest(
+                NewTaskName.Trim(),
+                _newTaskRepeatType,
+                _newTaskScheduledDate,
+                _newTaskWeekdays.Length > 0 ? _newTaskWeekdays : null,
+                _newTaskCustomDays,
+                _newTaskMonthlyDay,
+                _newTaskIsPaused,
+                _newTaskPausedDate,
+                _newTaskListId));
             NewTaskName = string.Empty;
-            IsAddingTask = false;
+            _newTaskRepeatType = RepeatType.None;
+            _newTaskWeekdays = [];
+            _newTaskCustomDays = Constants.Repeat.DefaultCustomDays;
+            _newTaskMonthlyDay = Constants.Repeat.DefaultMonthlyDay;
+            _newTaskIsPaused = false;
+            _newTaskPausedDate = null;
+            _newTaskScheduledDate = null;
+            _newTaskListId = null;
         }
     }
 
-    /// <summary>
-    /// Handles keyboard events in the add task input
-    /// </summary>
     protected async Task HandleKeyPress(KeyboardEventArgs e)
     {
-        if (e.Key == Constants.Keys.Enter && !string.IsNullOrWhiteSpace(NewTaskName))
+        if (e.ShiftKey && e.Key == Constants.Keys.Enter)
+        {
+            _isMoreExpanded = true;
+        }
+        else if (e.Key == Constants.Keys.Enter && !string.IsNullOrWhiteSpace(NewTaskName))
         {
             await HandleAddTask();
         }
         else if (e.Key == Constants.Keys.Escape)
         {
-            CancelAddTask();
+            CancelMore();
         }
     }
 
-    /// <summary>
-    /// Handles task selection
-    /// </summary>
     protected async Task HandleTaskSelect(Guid taskId)
     {
         await OnTaskSelect.InvokeAsync(taskId);
     }
 
-    /// <summary>
-    /// Handles task completion
-    /// </summary>
     protected async Task HandleTaskComplete(Guid taskId)
     {
         await OnTaskComplete.InvokeAsync(taskId);
     }
 
-    /// <summary>
-    /// Handles task deletion
-    /// </summary>
     protected async Task HandleTaskDelete(Guid taskId)
     {
         await OnTaskDelete.InvokeAsync(taskId);
     }
 
-    /// <summary>
-    /// Handles task uncomplete (undo completion)
-    /// </summary>
     protected async Task HandleTaskUncomplete(Guid taskId)
     {
         await OnTaskUncomplete.InvokeAsync(taskId);

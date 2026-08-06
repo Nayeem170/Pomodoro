@@ -11,16 +11,13 @@ test.describe('Task Management', () => {
 
   test('should display task list', async ({ page }) => {
     await expect(page.locator('.task-card')).toBeVisible();
-    await expect(page.locator('.task-card-title')).toContainText('Tasks');
   });
 
-  test('should display add task button', async ({ page }) => {
-    await expect(page.locator('.task-add-btn')).toBeVisible();
-    await expect(page.locator('.task-add-btn')).toContainText('+ Add');
+  test('should display add task input', async ({ page }) => {
+    await expect(page.locator('.task-input')).toBeVisible();
   });
 
-  test('should show task input when add task button is clicked', async ({ page }) => {
-    await page.locator('.task-add-btn').click();
+  test('should always show task input', async ({ page }) => {
     await expect(page.locator('.add-task-form')).toBeVisible();
     await expect(page.locator('.task-input')).toBeVisible();
   });
@@ -28,9 +25,8 @@ test.describe('Task Management', () => {
   test('should add a new task', async ({ page }) => {
     const initialCount = await page.locator('.task-row').count();
 
-    await page.locator('.task-add-btn').click();
     await page.locator('.task-input').pressSequentially('Test Task');
-    await page.locator('.btn-icon-small.btn-add').click();
+    await page.locator('.btn-add-text').click();
     await page.waitForTimeout(500);
 
     const newCount = await page.locator('.task-row').count();
@@ -40,9 +36,8 @@ test.describe('Task Management', () => {
   });
 
   test('should select a task', async ({ page }) => {
-    await page.locator('.task-add-btn').click();
     await page.locator('.task-input').pressSequentially('Test Task');
-    await page.locator('.btn-icon-small.btn-add').click();
+    await page.locator('.btn-add-text').click();
     await page.waitForTimeout(500);
 
     const taskRows = page.locator('.task-row');
@@ -53,9 +48,8 @@ test.describe('Task Management', () => {
   });
 
   test('should complete a task', async ({ page }) => {
-    await page.locator('.task-add-btn').click();
     await page.locator('.task-input').pressSequentially('Test Task');
-    await page.locator('.btn-icon-small.btn-add').click();
+    await page.locator('.btn-add-text').click();
     await page.waitForTimeout(500);
 
     const taskRows = page.locator('.task-row');
@@ -65,14 +59,16 @@ test.describe('Task Management', () => {
     const completeButton = page.locator('.task-row.selected .task-checkbox').first();
     await completeButton.click();
     await page.waitForTimeout(500);
+
+    await page.locator('.completed-toggle').click();
+    await page.waitForTimeout(200);
 
     await expect(page.locator('.completed-section .task-row')).toHaveCount(1);
   });
 
   test('should uncomplete a task', async ({ page }) => {
-    await page.locator('.task-add-btn').click();
     await page.locator('.task-input').pressSequentially('Test Task');
-    await page.locator('.btn-icon-small.btn-add').click();
+    await page.locator('.btn-add-text').click();
     await page.waitForTimeout(500);
 
     const taskRows = page.locator('.task-row');
@@ -82,6 +78,9 @@ test.describe('Task Management', () => {
     const completeButton = page.locator('.task-row.selected .task-checkbox').first();
     await completeButton.click();
     await page.waitForTimeout(500);
+
+    await page.locator('.completed-toggle').click();
+    await page.waitForTimeout(200);
 
     const completedTask = page.locator('.completed-section .task-row').first();
     const undoButton = completedTask.locator('.task-checkbox').first();
@@ -92,9 +91,8 @@ test.describe('Task Management', () => {
   });
 
   test('should delete a task', async ({ page }) => {
-    await page.locator('.task-add-btn').click();
     await page.locator('.task-input').pressSequentially('Test Task');
-    await page.locator('.btn-icon-small.btn-add').click();
+    await page.locator('.btn-add-text').click();
     await page.waitForTimeout(500);
 
     const initialCount = await page.locator('.task-row').count();
@@ -111,11 +109,14 @@ test.describe('Task Management', () => {
     expect(newCount).toBe(initialCount - 1);
   });
 
-  test('should cancel adding a task', async ({ page }) => {
-    await page.locator('.task-add-btn').click();
+  test('should clear task input with Escape key', async ({ page }) => {
+    await page.locator('.task-input').pressSequentially('Some task');
     await expect(page.locator('.add-task-form')).toBeVisible();
 
-    await page.locator('.btn-icon-small.btn-cancel').click();
-    await expect(page.locator('.add-task-form')).not.toBeVisible();
+    await page.locator('.task-input').press('Escape');
+    await page.waitForTimeout(300);
+
+    await expect(page.locator('.add-task-form')).toBeVisible();
+    await expect(page.locator('.task-input')).toHaveValue('');
   });
 });

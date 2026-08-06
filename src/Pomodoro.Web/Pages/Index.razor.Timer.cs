@@ -4,19 +4,12 @@ using Pomodoro.Web.Services.Formatters;
 
 namespace Pomodoro.Web.Pages;
 
-/// <summary>
-/// Timer actions partial for Index page
-/// Contains all timer-related event handlers and theme logic
-/// </summary>
 public partial class IndexBase
 {
     [Inject] protected TimerThemeFormatter TimerThemeFormatter { get; set; } = default!;
 
     #region Timer Actions
 
-    /// <summary>
-    /// Handles starting of timer based on current session type
-    /// </summary>
     public async Task HandleTimerStart()
     {
         try
@@ -50,9 +43,6 @@ public partial class IndexBase
         }
     }
 
-    /// <summary>
-    /// Handles pausing of timer
-    /// </summary>
     public async Task HandleTimerPause()
     {
         try
@@ -67,9 +57,6 @@ public partial class IndexBase
         }
     }
 
-    /// <summary>
-    /// Handles resuming of timer
-    /// </summary>
     public async Task HandleTimerResume()
     {
         try
@@ -84,9 +71,6 @@ public partial class IndexBase
         }
     }
 
-    /// <summary>
-    /// Handles resetting of timer
-    /// </summary>
     public async Task HandleTimerReset()
     {
         try
@@ -101,9 +85,6 @@ public partial class IndexBase
         }
     }
 
-    /// <summary>
-    /// Handles switching to a different session type
-    /// </summary>
     public async Task HandleSessionSwitch(SessionType sessionType)
     {
         try
@@ -118,9 +99,6 @@ public partial class IndexBase
         }
     }
 
-    /// <summary>
-    /// Handles toggling of Picture-in-Picture timer window
-    /// </summary>
     public async Task HandleTogglePip()
     {
         try
@@ -151,9 +129,6 @@ public partial class IndexBase
 
     #region Timer Theme
 
-    /// <summary>
-    /// Gets the CSS class for the current timer theme based on session type
-    /// </summary>
     public string GetTimerThemeClass()
     {
         return TimerThemeFormatter.GetTimerThemeClass(CurrentSessionType);

@@ -10,6 +10,9 @@ public class TaskEditPanelBase : ComponentBase
     public TaskItem Task { get; set; } = default!;
 
     [Parameter]
+    public DateTime? ContextDate { get; set; }
+
+    [Parameter]
     public EventCallback<TaskItem> OnSave { get; set; }
 
     [Parameter]
@@ -27,6 +30,7 @@ public class TaskEditPanelBase : ComponentBase
     protected int EditMonthlyDay { get; set; } = Constants.Repeat.DefaultMonthlyDay;
     protected DateTime? EditScheduledDate { get; set; }
     protected bool EditIsPaused { get; set; }
+    protected DateTime? EditPausedDate { get; set; }
 
     protected static DayOfWeek[] WeekdayOptions =>
     [
@@ -43,6 +47,13 @@ public class TaskEditPanelBase : ComponentBase
         EditMonthlyDay = Task.Repeat?.MonthlyDay ?? Constants.Repeat.DefaultMonthlyDay;
         EditScheduledDate = Task.ScheduledDate;
         EditIsPaused = Task.Repeat?.IsPaused ?? false;
+        EditPausedDate = Task.Repeat?.PausedDate ?? null;
+    }
+
+    protected void TogglePause()
+    {
+        EditIsPaused = !EditIsPaused;
+        EditPausedDate = EditIsPaused ? ContextDate : null;
     }
 
     protected void ToggleWeekday(DayOfWeek day)
@@ -89,6 +100,7 @@ public class TaskEditPanelBase : ComponentBase
                     CustomDays = EditCustomDays,
                     MonthlyDay = EditMonthlyDay,
                     IsPaused = EditIsPaused,
+                    PausedDate = EditIsPaused ? EditPausedDate : null,
                     StartDate = Task.Repeat.StartDate,
                     EndDate = Task.Repeat.EndDate,
                     LastCompletedDate = Task.Repeat.LastCompletedDate,
@@ -100,7 +112,9 @@ public class TaskEditPanelBase : ComponentBase
                     Weekdays = EditWeekdays,
                     CustomDays = EditCustomDays,
                     MonthlyDay = EditMonthlyDay,
-                    IsPaused = EditIsPaused
+                    IsPaused = EditIsPaused,
+                    PausedDate = EditIsPaused ? EditPausedDate : null,
+                    StartDate = EditScheduledDate
                 };
             Task.Repeat = repeat;
         }

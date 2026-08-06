@@ -66,9 +66,9 @@ public static partial class Constants
         public const string LogUserInfoFetchFailed = "Failed to fetch Google user info: {Error}";
         public const string LogUserInfoSuccess = "Google account email resolved: {Email}";
         public const string LogTasksRateLimited = "Google Tasks API rate-limited, retrying";
-        public const string LogTasksForbidden = "Tasks API access forbidden — check scope";
-        public const string TasksAccessForbidden = "Google Tasks access forbidden — enable the Tasks API or grant the tasks scope";
-        public const string TasksReconnectRequired = "Tasks connection lost — reconnect required";
+        public const string LogTasksForbidden = "Tasks API access forbidden - check scope";
+        public const string TasksAccessForbidden = "Google Tasks access forbidden - enable the Tasks API or grant the tasks scope";
+        public const string TasksReconnectRequired = "Tasks connection lost - reconnect required";
         public const string TasksRateLimitExceeded = "Google Tasks API rate-limited after {MaxRetries} retries";
         public const string TasksUnavailable = "Google Tasks API unavailable after retries";
         public const string LogTasksApiError = "Google Tasks API error: {Error}";

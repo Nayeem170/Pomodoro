@@ -3,25 +3,16 @@ using Microsoft.AspNetCore.Components.Routing;
 
 namespace Pomodoro.Web.Services
 {
-    /// <summary>
-    /// Service for managing layout-related presentation logic
-    /// </summary>
     public class LayoutPresenterService
     {
         private bool _collapseNavMenu = true;
 
-        /// <summary>
-        /// Gets the CSS class for the navigation menu based on its collapsed state
-        /// </summary>
         /// <returns>CSS class name or null if not collapsed</returns>
         public virtual string? GetNavMenuCssClass()
         {
             return _collapseNavMenu ? "collapse" : null;
         }
 
-        /// <summary>
-        /// Toggles the navigation menu's collapsed state
-        /// </summary>
         /// <returns>New collapsed state</returns>
         public virtual bool ToggleNavMenu()
         {
@@ -29,36 +20,24 @@ namespace Pomodoro.Web.Services
             return _collapseNavMenu;
         }
 
-        /// <summary>
-        /// Gets the current collapsed state of the navigation menu
-        /// </summary>
         /// <returns>True if collapsed, false if expanded</returns>
         public bool GetNavMenuCollapsedState()
         {
             return _collapseNavMenu;
         }
 
-        /// <summary>
-        /// Sets the navigation menu's collapsed state
-        /// </summary>
         /// <param name="collapsed">True to collapse, false to expand</param>
         public void SetNavMenuCollapsedState(bool collapsed)
         {
             _collapseNavMenu = collapsed;
         }
 
-        /// <summary>
-        /// Gets the current year for footer copyright display
-        /// </summary>
         /// <returns>Current UTC year</returns>
         public virtual int GetCurrentYear()
         {
             return DateTime.UtcNow.Year;
         }
 
-        /// <summary>
-        /// Determines if a navigation link should be highlighted based on the current URI
-        /// </summary>
         /// <param name="href">The href of the navigation link</param>
         /// <param name="currentUri">The current page URI</param>
         /// <param name="match">The NavLinkMatch behavior</param>
@@ -77,9 +56,6 @@ namespace Pomodoro.Web.Services
             return currentUri.AbsolutePath.StartsWith(href, StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>
-        /// Gets navigation link data for the application
-        /// </summary>
         /// <returns>Collection of navigation link information</returns>
         public virtual IEnumerable<NavLinkData> GetNavigationLinks()
         {
@@ -118,9 +94,6 @@ namespace Pomodoro.Web.Services
 
     }
 
-    /// <summary>
-    /// Data model for navigation links
-    /// </summary>
     public class NavLinkData
     {
         public string Href { get; set; } = string.Empty;

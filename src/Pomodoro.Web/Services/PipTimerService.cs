@@ -5,10 +5,6 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Service for Picture-in-Picture timer functionality
-/// Provides a floating, always-on-top timer window
-/// </summary>
 public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
 {
     private readonly IJSRuntime _jsRuntime;
@@ -118,10 +114,7 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
         }
     }
 
-    /// <summary>
-    /// Starts the current session type timer.
-    /// Only starts pomodoro if a task is selected.
-    /// </summary>
+    /// <summary>Starts the current session type timer. Only starts a pomodoro if a task is selected.</summary>
     private async Task StartCurrentSessionAsync()
     {
         var sessionType = _timerService.CurrentSessionType;
@@ -142,10 +135,7 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
         }
     }
 
-    /// <summary>
-    /// Gets the current timer state for the PiP window.
-    /// Single source of truth for UI state - PiP uses pre-computed values.
-    /// </summary>
+    /// <summary>Single source of truth for PiP UI state; uses pre-computed values.</summary>
     private object GetTimerState()
     {
         var remainingSeconds = _timerService.RemainingSeconds;
@@ -172,11 +162,8 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
         };
     }
 
-    /// <summary>
-    /// Called from JavaScript when timer toggle is clicked in PiP window.
-    /// Handles play/pause toggle and ensures PiP window state is synchronized.
-    /// </summary>
     [JSInvokable(Constants.JsInvokableMethods.OnPipToggleTimer)]
+    /// <summary>JS callback for the PiP toggle button. Synchronizes PiP window state after play/pause.</summary>
     public async Task OnPipToggleTimer()
     {
         try
@@ -213,9 +200,6 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
         }
     }
 
-    /// <summary>
-    /// Called from JavaScript when reset is clicked in PiP window
-    /// </summary>
     [JSInvokable(Constants.JsInvokableMethods.OnPipResetTimer)]
     public async Task OnPipResetTimer()
     {
@@ -230,9 +214,6 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
         }
     }
 
-    /// <summary>
-    /// Called from JavaScript when session switch is clicked in PiP window
-    /// </summary>
     [JSInvokable(Constants.JsInvokableMethods.OnPipSwitchSession)]
     public async Task OnPipSwitchSession(int sessionType)
     {
@@ -248,9 +229,6 @@ public class PipTimerService : IPipTimerService, ITimerEventPublisherSubscriber
         }
     }
 
-    /// <summary>
-    /// Called from JavaScript when PiP window is closed
-    /// </summary>
     [JSInvokable(Constants.JsInvokableMethods.OnPipClosed)]
     public void OnPipClosedJs()
     {

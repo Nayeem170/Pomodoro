@@ -2,9 +2,15 @@
 
 <div class="schedule-agenda">
     <div class="sched-nav">
-        <button class="sched-nav-btn" @onclick="OnPrev" disabled="@(!CanGoPrev)" aria-label="Previous week" title="Previous week">‹</button>
+        <button class="sched-nav-btn" @onclick="OnPrev" disabled="@(!CanGoPrev)" aria-label="Previous week" title="Previous week">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            <span>Prev week</span>
+        </button>
         <span class="sched-window">@WindowLabel</span>
-        <button class="sched-nav-btn" @onclick="OnNext" aria-label="Next week" title="Next week">›</button>
+        <button class="sched-nav-btn" @onclick="OnNext" aria-label="Next week" title="Next week">
+            <span>Next week</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
     </div>
 
     @if (Days.Count == 0)
@@ -19,7 +25,13 @@
                 <ScheduleDayRow Day="day"
                                 OnEditTask="OnEditTask"
                                 OnAddSubtask="OnAddSubtask"
-                                AllTasks="AllTasks" />
+                                OnComplete="OnComplete"
+                                OnDelete="OnDelete"
+                                OnUncomplete="OnUncomplete"
+                                OnReparentToRoot="OnReparentToRoot"
+                                OnSelect="OnSelect"
+                                AllTasks="AllTasks"
+                                GoogleLists="GoogleLists" />
             }
         </ul>
     }

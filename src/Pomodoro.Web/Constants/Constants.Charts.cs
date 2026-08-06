@@ -1,13 +1,7 @@
 namespace Pomodoro.Web;
 
-/// <summary>
-/// Chart-related constants for Chart.js integration
-/// </summary>
 public static partial class Constants
 {
-    /// <summary>
-    /// Chart-related constants
-    /// </summary>
     public static class Charts
     {
         public const string TimeDistributionCanvasId = "timeDistributionChart";
@@ -23,9 +17,6 @@ public static partial class Constants
 
     }
 
-    /// <summary>
-    /// Chart.js JavaScript interop function names
-    /// </summary>
     public static class ChartJsFunctions
     {
         /// <summary>Creates a bar chart</summary>

@@ -12,7 +12,7 @@ test.describe('IndexedDB Persistence', () => {
   test.describe.configure({ timeout: 60000 });
 
   test('should persist tasks after page reload', async ({ page }) => {
-    await expect(page.locator('.task-add-btn')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.task-input')).toBeVisible({ timeout: 30000 });
 
     await pomodoroPage.addTask('Persistence Test Task');
 
@@ -49,7 +49,7 @@ test.describe('IndexedDB Persistence', () => {
   });
 
   test('should persist selected task after page reload', async ({ page }) => {
-    await expect(page.locator('.task-add-btn')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.task-input')).toBeVisible({ timeout: 30000 });
 
     await pomodoroPage.addTask('Selected Task');
     await page.waitForTimeout(500);

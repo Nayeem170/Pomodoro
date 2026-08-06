@@ -1,13 +1,7 @@
 namespace Pomodoro.Web;
 
-/// <summary>
-/// Navigation, routing, and keyboard shortcut constants
-/// </summary>
 public static partial class Constants
 {
-    /// <summary>
-    /// Keyboard key constants
-    /// </summary>
     public static class Keys
     {
         public const string Enter = "Enter";
@@ -16,9 +10,6 @@ public static partial class Constants
         public const string ArrowRight = "ArrowRight";
     }
 
-    /// <summary>
-    /// Routing and navigation related constants
-    /// </summary>
     public static class Routing
     {
         /// <summary>Page title for 404 Not Found page</summary>
@@ -46,9 +37,6 @@ public static partial class Constants
         public const string AboutRoute = "/about";
     }
 
-    /// <summary>
-    /// Keyboard shortcuts related constants
-    /// </summary>
     public static class KeyboardShortcuts
     {
         /// <summary>Key for starting/pausing timer</summary>
@@ -69,6 +57,9 @@ public static partial class Constants
         /// <summary>Key for showing keyboard shortcuts help</summary>
         public const string HelpKey = "?";
 
+        /// <summary>Key for closing the keyboard shortcuts help</summary>
+        public const string EscapeKey = "escape";
+
         /// <summary>Description for play/pause shortcut</summary>
         public const string PlayPauseDescription = "Start/Pause timer";
 
@@ -86,11 +77,11 @@ public static partial class Constants
 
         /// <summary>Description for help shortcut</summary>
         public const string HelpDescription = "Show keyboard shortcuts";
+
+        /// <summary>Description for close help shortcut</summary>
+        public const string CloseHelpDescription = "Close keyboard shortcuts";
     }
 
-    /// <summary>
-    /// Keyboard help modal UI text constants
-    /// </summary>
     public static class KeyboardHelp
     {
         /// <summary>Modal title with icon</summary>

@@ -1,47 +1,37 @@
 import { test, expect } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
-test.describe('Today Summary Progress Bar', () => {
+test.describe('Today Summary Stats', () => {
   let pomodoroPage: PomodoroPage;
 
   test.describe.configure({ timeout: 60000 });
 
-  test('should show progress bar fill with 0% width when no pomodoros completed', async ({ page }) => {
+  test('should show zero pomodoros and zero focus initially', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    await expect(page.locator('.progress-bar')).toBeVisible({ timeout: 30000 });
-    await expect(page.locator('.progress-bar-fill')).toBeAttached();
-
-    const widthStyle = await page.locator('.progress-bar-fill').getAttribute('style');
-    expect(widthStyle).toContain('width:');
-    expect(widthStyle).toContain('0%');
+    const cells = page.locator('.summary-cell');
+    await expect(cells.nth(0).locator('.summary-val')).toContainText('0m', { timeout: 30000 });
+    await expect(cells.nth(1).locator('.summary-val')).toContainText('0', { timeout: 30000 });
   });
 
-  test('should increase progress bar fill width after completing a pomodoro', async ({ page }) => {
+  test('should update pomodoro count after completing a pomodoro', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/');
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const fillBefore = page.locator('.progress-bar-fill');
-    const styleBefore = await fillBefore.getAttribute('style');
-    const widthBeforeMatch = styleBefore?.match(/width:\s*([\d.]+)%/);
-    const widthBefore = widthBeforeMatch ? parseFloat(widthBeforeMatch[1]) : 0;
+    const pomCellBefore = page.locator('.summary-cell').nth(1).locator('.summary-val');
+    await expect(pomCellBefore).toContainText('0', { timeout: 30000 });
 
     await pomodoroPage.seedHistoryViaDB('Progress Task');
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const fillAfter = page.locator('.progress-bar-fill');
-    await expect(fillAfter).toBeAttached();
-    const styleAfter = await fillAfter.getAttribute('style');
-    const widthAfterMatch = styleAfter?.match(/width:\s*([\d.]+)%/);
-    const widthAfter = widthAfterMatch ? parseFloat(widthAfterMatch[1]) : 0;
-
-    expect(widthAfter).toBeGreaterThan(widthBefore);
+    const pomCellAfter = page.locator('.summary-cell').nth(1).locator('.summary-val');
+    await expect(pomCellAfter).toContainText('1');
   });
 
-  test('should calculate progress bar fill width as percentage of daily goal', async ({ page }) => {
+  test('should display daily goal in pomodoros stat', async ({ page }) => {
     pomodoroPage = new PomodoroPage(page);
     await pomodoroPage.goto('/settings');
     await pomodoroPage.setPomodoroMinutes(1);
@@ -58,15 +48,10 @@ test.describe('Today Summary Progress Bar', () => {
       }
     }
 
-    await pomodoroPage.seedHistoryViaDB('Progress Calc Task');
+    await pomodoroPage.goto('/');
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const fill = page.locator('.progress-bar-fill');
-    await expect(fill).toBeAttached();
-    const style = await fill.getAttribute('style');
-    const widthMatch = style?.match(/width:\s*([\d.]+)%/);
-    const widthPercent = widthMatch ? parseFloat(widthMatch[1]) : 0;
-
-    expect(widthPercent).toBeCloseTo(25, 0);
+    const pomCell = page.locator('.summary-cell').nth(1).locator('.summary-val');
+    await expect(pomCell).toContainText('/4', { timeout: 30000 });
   });
 });

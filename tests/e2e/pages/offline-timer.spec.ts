@@ -53,7 +53,7 @@ test.describe('Offline Timer', () => {
 
     await pomodoroPage.switchToPomodoro();
     const timerTypePom = await pomodoroPage.getTimerType();
-    expect(timerTypePom.toUpperCase()).toContain('FOCUSING');
+    expect(timerTypePom.toUpperCase()).toContain('FOCUS');
 
     await page.unroute('**/*');
   });

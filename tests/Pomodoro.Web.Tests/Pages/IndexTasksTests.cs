@@ -44,11 +44,11 @@ public class IndexTasksTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         // Act
-        await cut.Instance.HandleTaskAdd(taskName);
+        await cut.Instance.HandleTaskAdd(new NewTaskRequest(taskName));
 
         // Assert
         TaskServiceMock.Verify(
-            x => x.AddTaskAsync(taskName),
+            x => x.AddTaskAsync(taskName, It.IsAny<string?>()),
             Times.Once);
     }
 
@@ -58,13 +58,13 @@ public class IndexTasksTests : TestHelper
         // Arrange
         var taskName = "Test Task";
         TaskServiceMock
-            .Setup(x => x.AddTaskAsync(taskName))
+            .Setup(x => x.AddTaskAsync(taskName, It.IsAny<string?>()))
             .ThrowsAsync(new Exception("Test exception"));
 
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         // Act
-        await cut.Instance.HandleTaskAdd(taskName);
+        await cut.Instance.HandleTaskAdd(new NewTaskRequest(taskName));
 
         // Assert
         cut.Instance.ErrorMessage.Should().Be($"Error adding task: Test exception");
@@ -144,6 +144,24 @@ public class IndexTasksTests : TestHelper
 
         // Assert
         cut.Instance.ErrorMessage.Should().Be($"Error completing task: Test exception");
+    }
+
+    [Fact]
+    public async Task HandleTaskComplete_ShowsErrorToast_WhenSubtasksIncomplete()
+    {
+        var taskId = Guid.NewGuid();
+        TaskServiceMock
+            .Setup(x => x.CompleteTaskAsync(taskId))
+            .ThrowsAsync(new InvalidOperationException(Constants.Messages.CompleteSubtasksFirst));
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        await cut.InvokeAsync(() => cut.Instance.HandleTaskComplete(taskId));
+        cut.Render();
+
+        cut.Instance.ErrorMessage.Should().Be(Constants.Messages.CompleteSubtasksFirst);
+        cut.Markup.Should().Contain("error-toast");
+        cut.Markup.Should().Contain(Constants.Messages.CompleteSubtasksFirst);
     }
 
     #endregion
@@ -232,13 +250,13 @@ public class IndexTasksTests : TestHelper
         // Arrange
         string taskName = string.Empty;
         TaskServiceMock
-            .Setup(x => x.AddTaskAsync(taskName))
+            .Setup(x => x.AddTaskAsync(taskName, It.IsAny<string?>()))
             .ThrowsAsync(new ArgumentException("Task name cannot be empty", nameof(taskName)));
 
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         // Act
-        await cut.Instance.HandleTaskAdd(taskName);
+        await cut.Instance.HandleTaskAdd(new NewTaskRequest(taskName));
 
         // Assert
         cut.Instance.ErrorMessage.Should().Be($"Error adding task: Task name cannot be empty (Parameter 'taskName')");

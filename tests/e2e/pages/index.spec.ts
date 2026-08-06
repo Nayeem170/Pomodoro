@@ -67,7 +67,7 @@ test.describe('Index Page', () => {
   });
 
   test('should render today summary', async ({ page }) => {
-    await expect(page.locator('.pomo-row')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.timer-pane-summary')).toBeVisible({ timeout: 30000 });
   });
 
   test('should render pip and keyboard help buttons', async ({ page }) => {
