@@ -5,10 +5,10 @@
     gap: 10px;
     padding: 10px 14px;
     margin: 0 0 10px;
-    background: #e74c3c1f;
-    border: 1px solid #e74c3c4d;
+    background: #F42A411f;
+    border: 1px solid #F42A414d;
     border-radius: var(--border-radius-md);
-    color: #e08b7f;
+    color: #f08a92;
 }
 
 .error-banner p {

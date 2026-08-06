@@ -120,7 +120,7 @@ window.pipTimer = {
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
                 font-family: system-ui, -apple-system, sans-serif;
-                background: #162032;
+                background: #142e28;
                 color: #ffffff;
                 min-height: 100vh;
                 display: flex;
@@ -137,7 +137,7 @@ window.pipTimer = {
                 display: flex;
                 padding: 6px 10px 0;
                 gap: 2px;
-                background: #162032;
+                background: #142e28;
             }
             .pip-tab {
                 flex: 1;
@@ -153,12 +153,12 @@ window.pipTimer = {
                 border-bottom: 2px solid transparent;
             }
             .pip-tab.act {
-                color: #e8edf8;
+                color: #9db8ae;
                 font-weight: 600;
             }
-            .pip-tab.act.pomodoro { border-bottom-color: #e74c3c; }
-            .pip-tab.act.short-break { border-bottom-color: #27ae60; }
-            .pip-tab.act.long-break { border-bottom-color: #3498db; }
+            .pip-tab.act.pomodoro { border-bottom-color: #F42A41; }
+            .pip-tab.act.short-break { border-bottom-color: #34D399; }
+            .pip-tab.act.long-break { border-bottom-color: #C0C0C0; }
             .pip-timer-area {
                 display: flex;
                 flex-direction: column;
@@ -167,28 +167,28 @@ window.pipTimer = {
                 gap: 14px;
             }
             .pip-container.pomodoro-theme .pip-timer-area {
-                background: linear-gradient(180deg, rgba(231,76,60,.12), #162032);
+                background: linear-gradient(180deg, rgba(244,42,65,.12), #142e28);
             }
             .pip-container.short-break-theme .pip-timer-area {
-                background: linear-gradient(180deg, rgba(39,174,96,.12), #162032);
+                background: linear-gradient(180deg, rgba(52,211,153,.12), #142e28);
             }
             .pip-container.long-break-theme .pip-timer-area {
-                background: linear-gradient(180deg, rgba(52,152,219,.12), #162032);
+                background: linear-gradient(180deg, rgba(192,192,192,.12), #142e28);
             }
             .ring-wrap { position: relative; }
             .ring-wrap svg { display: block; transform: rotate(-90deg); }
-            .ring-bg { fill: none; stroke: #1e2a40; stroke-width: 14; }
+            .ring-bg { fill: none; stroke: #1c3d35; stroke-width: 14; }
             .ring-fill {
                 fill: none;
-                stroke: #e74c3c;
+                stroke: #F42A41;
                 stroke-width: 14;
                 stroke-linecap: round;
                 stroke-dasharray: 553;
                 stroke-dashoffset: 0;
                 transition: stroke-dashoffset 0.4s ease;
             }
-            .ring-fill.short-break { stroke: #27ae60; }
-            .ring-fill.long-break { stroke: #3498db; }
+            .ring-fill.short-break { stroke: #34D399; }
+            .ring-fill.long-break { stroke: #C0C0C0; }
             .ring-center {
                 position: absolute;
                 top: 50%;
@@ -200,24 +200,24 @@ window.pipTimer = {
             .ring-time {
                 font-size: 42px;
                 font-weight: 700;
-                color: #e8edf8;
+                color: #9db8ae;
                 letter-spacing: -1px;
                 line-height: 1;
                 font-family: 'Courier New', 'Lucida Console', monospace;
                 font-variant-numeric: tabular-nums;
             }
-            .pip-container.running.pomodoro-theme .ring-time { color: #e74c3c; }
-            .pip-container.running.short-break-theme .ring-time { color: #27ae60; }
-            .pip-container.running.long-break-theme .ring-time { color: #3498db; }
+            .pip-container.running.pomodoro-theme .ring-time { color: #F42A41; }
+            .pip-container.running.short-break-theme .ring-time { color: #34D399; }
+            .pip-container.running.long-break-theme .ring-time { color: #C0C0C0; }
             .ring-label {
                 font-size: 13px;
-                color: #8a97b8;
+                color: #5f7d73;
                 letter-spacing: .1em;
                 margin-top: 5px;
             }
             .pip-task {
                 width: 100%;
-                background: #1e2a40;
+                background: #1c3d35;
                 border-radius: 8px;
                 padding: 8px 12px;
                 display: flex;
@@ -228,14 +228,14 @@ window.pipTimer = {
                 width: 7px;
                 height: 7px;
                 border-radius: 50%;
-                background: #e74c3c;
+                background: #F42A41;
                 flex-shrink: 0;
             }
-            .pip-task-dot.short-break { background: #27ae60; }
-            .pip-task-dot.long-break { background: #3498db; }
+            .pip-task-dot.short-break { background: #34D399; }
+            .pip-task-dot.long-break { background: #C0C0C0; }
             .pip-task-name {
                 font-size: 13px;
-                color: #e8edf8;
+                color: #9db8ae;
                 flex: 1;
                 max-width: 100%;
                 overflow: hidden;
@@ -252,21 +252,21 @@ window.pipTimer = {
                 width: 52px;
                 height: 52px;
                 border-radius: 50%;
-                background: #e74c3c;
+                background: #F42A41;
                 border: none;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 cursor: pointer;
-                box-shadow: 0 4px 18px rgba(231,76,60,.45);
+                box-shadow: 0 4px 18px rgba(244,42,65,.45);
             }
             .pip-play.short-break {
-                background: #27ae60;
-                box-shadow: 0 4px 18px rgba(39,174,96,.45);
+                background: #34D399;
+                box-shadow: 0 4px 18px rgba(52,211,153,.45);
             }
             .pip-play.long-break {
-                background: #3498db;
-                box-shadow: 0 4px 18px rgba(52,152,219,.45);
+                background: #C0C0C0;
+                box-shadow: 0 4px 18px rgba(192,192,192,.45);
             }
             .pip-reset {
                 width: 36px;
@@ -282,7 +282,7 @@ window.pipTimer = {
             }
             .pip-hint {
                 font-size: 12px;
-                color: #6e7a8a;
+                color: #5f7d73;
                 text-align: center;
             }
             .pip-footer {
@@ -290,11 +290,11 @@ window.pipTimer = {
                 align-items: center;
                 justify-content: space-between;
                 padding: 10px 20px 14px;
-                background: #162032;
+                background: #142e28;
             }
             .pip-footer span { font-size: 12px; }
-            .pip-footer .lbl { color: #6e7a8a; }
-            .pip-footer .val { color: #a0aec0; font-weight: 600; }
+            .pip-footer .lbl { color: #5f7d73; }
+            .pip-footer .val { color: #9db8ae; font-weight: 600; }
         `;
         this.pipDocument.head.appendChild(pipStyles);
     },
