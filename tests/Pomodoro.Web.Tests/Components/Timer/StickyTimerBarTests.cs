@@ -187,4 +187,52 @@ public class StickyTimerBarTests : TestHelper
 
         changedTo.Should().Be(SessionType.LongBreak);
     }
+
+    [Fact]
+    public async Task ClickPomodoroTab_InvokesOnSessionChange()
+    {
+        SessionType? changedTo = null;
+        var cut = RenderComponent<Pomodoro.Web.Components.Timer.StickyTimerBar>(parameters => parameters
+            .Add(p => p.SessionType, SessionType.ShortBreak)
+            .Add(p => p.OnSessionChange, EventCallback.Factory.Create<SessionType>(this, st => changedTo = st)));
+
+        await cut.InvokeAsync(() => cut.FindAll(".stb-tab")[0].Click());
+
+        changedTo.Should().Be(SessionType.Pomodoro);
+    }
+
+    [Fact]
+    public async Task ClickShortBreakTab_InvokesOnSessionChange()
+    {
+        SessionType? changedTo = null;
+        var cut = RenderComponent<Pomodoro.Web.Components.Timer.StickyTimerBar>(parameters => parameters
+            .Add(p => p.SessionType, SessionType.Pomodoro)
+            .Add(p => p.OnSessionChange, EventCallback.Factory.Create<SessionType>(this, st => changedTo = st)));
+
+        await cut.InvokeAsync(() => cut.FindAll(".stb-tab")[1].Click());
+
+        changedTo.Should().Be(SessionType.ShortBreak);
+    }
+
+    [Fact]
+    public void GetSessionClass_DefaultCase_ReturnsPomodoroTheme()
+    {
+        var cut = RenderComponent<Pomodoro.Web.Components.Timer.StickyTimerBar>(parameters => parameters
+            .Add(p => p.SessionType, (SessionType)999));
+
+        cut.Markup.Should().Contain("pomodoro");
+    }
+
+    [Fact]
+    public void GetModePrefix_PomodoroCase_ReturnsFocusViaReflection()
+    {
+        var cut = RenderComponent<Pomodoro.Web.Components.Timer.StickyTimerBar>(parameters => parameters
+            .Add(p => p.SessionType, SessionType.Pomodoro));
+
+        var method = typeof(Pomodoro.Web.Components.Timer.StickyTimerBar)
+            .GetMethod("GetModePrefix", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var result = (string)method!.Invoke(cut.Instance, null)!;
+
+        result.Should().Be("Focus");
+    }
 }
