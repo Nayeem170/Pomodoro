@@ -5,9 +5,8 @@ using Pomodoro.Web.Services.Repositories;
 namespace Pomodoro.Web.Services;
 
 /// <summary>
-/// Service for managing activity history records using IndexedDB
-/// Stores unlimited history in IndexedDB but keeps a sliding window cache in memory
-/// Implements ITimerEventSubscriber to handle timer completion events
+/// Manages activity history: stores full history in IndexedDB while keeping a sliding
+/// window cache in memory. Implements ITimerEventSubscriber to record completed sessions.
 /// </summary>
 public partial class ActivityService : IActivityService, ITimerEventSubscriber
 {
@@ -17,14 +16,8 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
     private List<ActivityRecord> _cachedActivities = new();
     private bool _isCacheLoaded;
 
-    /// <summary>
-    /// Date-based cache for activities grouped by local date
-    /// </summary>
     private Dictionary<DateTime, List<ActivityRecord>> _activitiesByDate = new();
 
-    /// <summary>
-    /// Cache for daily statistics (pomodoro count, focus minutes, break minutes)
-    /// </summary>
     private readonly struct DailyStatsCache
     {
         public int PomodoroCount { get; init; }
@@ -33,9 +26,6 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
     }
     private Dictionary<DateTime, DailyStatsCache> _dailyStatsCache = new();
 
-    /// <summary>
-    /// Cache for time distribution data by date
-    /// </summary>
     private Dictionary<DateTime, Dictionary<string, int>> _timeDistributionCache = new();
 
     public event Action? OnActivityChanged;
@@ -51,10 +41,6 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         await LoadCacheAsync();
     }
 
-    /// <summary>
-    /// Reloads all activity data from storage, clearing and rebuilding caches.
-    /// Called after import operations to refresh in-memory data.
-    /// </summary>
     public async Task ReloadAsync()
     {
         var activities = await _activityRepository.GetAllAsync();
@@ -97,17 +83,11 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         return GetActivitiesForDate(todayLocal);
     }
 
-    /// <summary>
-    /// Gets paged activities for a date range
-    /// </summary>
     public async Task<List<ActivityRecord>> GetActivitiesPagedAsync(DateTime startDate, DateTime endDate, int skip = 0, int take = 20)
     {
         return await _activityRepository.GetPagedAsync(startDate, endDate, skip, take);
     }
 
-    /// <summary>
-    /// Gets the total count of activities for a date range
-    /// </summary>
     public async Task<int> GetActivityCountAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
         return await _activityRepository.GetCountAsync(startDate, endDate);
@@ -121,10 +101,6 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         }
     }
 
-    /// <summary>
-    /// Gets all activities for a specific date (in local time)
-    /// Uses date-based cache for O(1) lookup on repeated access
-    /// </summary>
     public List<ActivityRecord> GetActivitiesForDate(DateTime date)
     {
         var targetDate = date.Date;
@@ -150,15 +126,6 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         }
     }
 
-    /// <summary>
-    /// Gets daily break minutes for a date range (in local time)
-    /// Returns total minutes of both short and long breaks per day
-    /// Uses date-based cache for improved performance
-    /// </summary>
-
-    /// This is more efficient than computing each date separately when querying a range.
-    /// </summary>
-    /// <param name="dates">The dates to compute stats for</param>
     private void ComputeDailyStatsForRange(List<DateTime> dates)
     {
         // Initialize stats for all dates
@@ -201,10 +168,6 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         _logger.LogDebug("Computed stats for {Count} dates in single pass", dates.Count);
     }
 
-
-    /// <summary>
-    /// Gets task pomodoro counts for a date range (in local time)
-    /// </summary>
     public Dictionary<string, int> GetTaskPomodoroCounts(DateTime from, DateTime to)
     {
         var fromDate = from.Date;
@@ -225,11 +188,6 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         }
     }
 
-    /// <summary>
-    /// Gets time distribution data for a specific date (in local time)
-    /// Returns a dictionary with labels (task names or break types) as keys and minutes as values
-    /// Uses date-based cache for O(1) lookup on repeated access
-    /// </summary>
     public Dictionary<string, int> GetTimeDistribution(DateTime date)
     {
         var targetDate = date.Date;
@@ -280,9 +238,6 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         }
     }
 
-    /// <summary>
-    /// Gets weekly statistics for a given week start date
-    /// </summary>
     public async Task AddActivityAsync(ActivityRecord activity)
     {
         // Persist first to ensure cache and storage stay consistent
@@ -321,7 +276,6 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
 
     public async Task ClearAllActivitiesAsync()
     {
-        // Persist first to ensure cache and storage stay consistent
         await _activityRepository.ClearAllAsync();
 
         lock (_cacheLock)
@@ -334,18 +288,14 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
     }
 
     /// <summary>
-    /// Gets activities for a date range directly from IndexedDB
-    /// Useful for large datasets where caching everything isn't practical
+    /// Reads activities directly from IndexedDB, bypassing the in-memory cache. Useful for
+    /// large date ranges where caching everything is impractical.
     /// </summary>
     public async Task<List<ActivityRecord>> GetActivitiesByDateRangeAsync(DateTime from, DateTime to)
     {
         return await _activityRepository.GetByDateRangeAsync(from, to);
     }
 
-    /// <summary>
-    /// Handles timer completion events from ITimerEventSubscriber
-    /// Creates an activity record for the completed session
-    /// </summary>
     public async Task HandleTimerCompletedAsync(TimerCompletedEventArgs args)
     {
         var activity = new ActivityRecord
@@ -364,9 +314,6 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
 
     #region Cache Management
 
-    /// <summary>
-    /// Invalidates all cached data for a specific date
-    /// </summary>
     private void InvalidateDateCache(DateTime date)
     {
         var localDate = date.Date;
@@ -376,9 +323,6 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         _logger.LogDebug("Invalidated cache for date: {Date}", localDate);
     }
 
-    /// <summary>
-    /// Clears all derived caches (called when primary cache is cleared)
-    /// </summary>
     private void ClearAllDerivedCaches()
     {
         _activitiesByDate.Clear();
@@ -387,9 +331,6 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
         _logger.LogDebug("Cleared all derived caches");
     }
 
-    /// <summary>
-    /// Gets cache statistics for debugging/monitoring
-    /// </summary>
     public (int ActivityCount, int DatesCached, int StatsCached, int DistributionCached) GetCacheStatistics()
     {
         lock (_cacheLock)
@@ -402,7 +343,6 @@ public partial class ActivityService : IActivityService, ITimerEventSubscriber
             );
         }
     }
-
 
     #endregion
 }

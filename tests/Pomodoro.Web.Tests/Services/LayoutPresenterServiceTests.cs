@@ -402,13 +402,13 @@ namespace Pomodoro.Web.Tests.Services
         }
 
         [Fact]
-        public void GetNavigationLinks_FirstLinkIsTimer()
+        public void GetNavigationLinks_FirstLinkIsFocus()
         {
             // Act
             var links = _service.GetNavigationLinks().ToList();
 
             // Assert
-            links[0].Title.Should().Be("Timer");
+            links[0].Title.Should().Be("Focus");
             links[0].Href.Should().Be("/");
             links[0].Match.Should().Be(NavLinkMatch.All);
         }

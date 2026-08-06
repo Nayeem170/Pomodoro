@@ -55,7 +55,7 @@ public class IndexPageCoverageTests : TestHelper
     {
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-        cut.Markup.Should().Contain("pip-btn");
+        cut.Markup.Should().Contain("aria-label=\"Picture in Picture\"");
     }
 
     [Fact]

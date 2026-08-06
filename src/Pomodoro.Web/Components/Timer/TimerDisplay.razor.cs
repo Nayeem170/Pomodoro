@@ -31,6 +31,9 @@ public class TimerDisplayBase : ComponentBase, IDisposable
     [Parameter]
     public bool? IsRunning { get; set; }
 
+    [Parameter]
+    public string? CurrentTaskName { get; set; }
+
     #endregion
 
     #region Properties - Always read from service for real-time updates
@@ -39,7 +42,7 @@ public class TimerDisplayBase : ComponentBase, IDisposable
     protected SessionType CurrentSessionType => TimerService.CurrentSessionType;
     protected bool CurrentIsRunning => TimerService.IsRunning;
 
-    private const double Circumference = 2 * Math.PI * 88;
+    private const double Circumference = 2 * Math.PI * 72;
 
     #endregion
 
@@ -100,7 +103,7 @@ public class TimerDisplayBase : ComponentBase, IDisposable
     internal string GetSessionTypeLabel()
     {
         var sessionType = CurrentSessionType;
-        if (sessionType == Models.SessionType.Pomodoro) return "FOCUSING";
+        if (sessionType == Models.SessionType.Pomodoro) return "FOCUS";
         if (sessionType == Models.SessionType.ShortBreak) return "SHORT BREAK";
         return "LONG BREAK";
     }

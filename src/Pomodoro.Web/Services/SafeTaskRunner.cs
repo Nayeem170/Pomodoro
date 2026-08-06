@@ -4,13 +4,10 @@ namespace Pomodoro.Web.Services;
 
 /// <summary>
 /// Provides safe fire-and-forget task execution with exception logging.
-/// Use this instead of discard pattern to ensure exceptions are logged.
+/// Use this instead of the discard pattern to ensure exceptions are logged.
 /// </summary>
 public static class SafeTaskRunner
 {
-    /// <summary>
-    /// Runs a task asynchronously without awaiting, logging any exceptions.
-    /// </summary>
     /// <param name="task">The async task to execute.</param>
     /// <param name="logger">The logger to use for exception logging.</param>
     /// <param name="operationName">A descriptive name for the operation for logging purposes.</param>
@@ -34,9 +31,6 @@ public static class SafeTaskRunner
         }
     }
 
-    /// <summary>
-    /// Runs a task asynchronously without awaiting, logging any exceptions.
-    /// </summary>
     /// <typeparam name="T">The type of the task result.</typeparam>
     /// <param name="task">The async task to execute.</param>
     /// <param name="logger">The logger to use for exception logging.</param>

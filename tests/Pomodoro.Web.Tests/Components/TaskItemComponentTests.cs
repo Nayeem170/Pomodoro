@@ -589,7 +589,7 @@ public class TaskItemComponentTests : TestContext
 
         var badge = cut.Find(".task-badge");
         badge.GetAttribute("title").Should().Be("Daily");
-        badge.ClassList.Should().NotContain("repeat-paused");
+        badge.ClassList.Should().Contain("repeat-badge");
     }
 
     [Fact]
@@ -627,8 +627,8 @@ public class TaskItemComponentTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        var badge = cut.Find(".task-badge");
-        badge.ClassList.Should().Contain("repeat-paused");
+        var badge = cut.Find(".paused-badge");
+        badge.ClassList.Should().Contain("paused-badge");
     }
 
     #region Subtask / reparent / collapse handlers (coverage)
@@ -651,7 +651,7 @@ public class TaskItemComponentTests : TestContext
             .Add(x => x.GoogleListTitle, "Personal"));
 
         // Assert
-        var gtag = cut.Find(".gtag");
+        var gtag = cut.Find(".google-badge");
         gtag.GetAttribute("title").Should().Contain("Personal");
     }
 

@@ -2,9 +2,6 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Interface for consent modal operations
-/// </summary>
 public interface IConsentService
 {
     event Action? OnConsentRequired;
@@ -24,9 +21,6 @@ public interface IConsentService
     Task HandleTimeoutAsync();
 }
 
-/// <summary>
-/// Represents an option in the consent modal
-/// </summary>
 public class ConsentOption
 {
     public SessionType SessionType { get; set; }

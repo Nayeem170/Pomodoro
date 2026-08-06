@@ -23,17 +23,11 @@
 @code {
     private ErrorBoundary? _errorBoundary;
 
-    /// <summary>
-    /// Gets the page title for the NotFound page
-    /// </summary>
     public string GetNotFoundPageTitle()
     {
         return Constants.Routing.NotFoundPageTitle;
     }
 
-    /// <summary>
-    /// Recovers from an error by resetting the ErrorBoundary
-    /// </summary>
     public void RecoverError()
     {
         _errorBoundary?.Recover();

@@ -3,10 +3,6 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Components.Timer;
 
-/// <summary>
-/// Code-behind for TimerControls component
-/// Separates business logic from view
-/// </summary>
 public class TimerControlsBase : ComponentBase
 {
     #region Parameters (Model)
@@ -38,22 +34,19 @@ public class TimerControlsBase : ComponentBase
     [Parameter]
     public EventCallback OnReset { get; set; }
 
+    [Parameter]
+    public RenderFragment? TrailingAction { get; set; }
+
     #endregion
 
     #region Computed Properties
 
-    /// <summary>
-    /// Determines if the Start button should be disabled
-    /// </summary>
     protected bool IsStartDisabled => !CanStart;
 
     #endregion
 
     #region Business Logic Methods
 
-    /// <summary>
-    /// Gets the display label for the current session type
-    /// </summary>
     internal string GetSessionLabel()
     {
         return SessionType switch
@@ -65,10 +58,6 @@ public class TimerControlsBase : ComponentBase
         };
     }
 
-    /// <summary>
-    /// Gets the CSS class for buttons based on current session type
-    /// Matches PIP window behavior for consistent styling
-    /// </summary>
     internal string GetSessionClass()
     {
         return SessionType switch

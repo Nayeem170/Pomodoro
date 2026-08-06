@@ -1,8 +1,5 @@
 namespace Pomodoro.Web.Models;
 
-/// <summary>
-/// Represents daily statistics for persistence
-/// </summary>
 public class DailyStats
 {
     public DateTime Date { get; set; }

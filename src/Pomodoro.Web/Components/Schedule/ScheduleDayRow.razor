@@ -2,14 +2,23 @@
 @using Pomodoro.Web.Components.Tasks
 
 <div class="sched-day">
-    <div class="day-header" aria-label="@Day.DayLabel">@Day.DayLabel</div>
-    <ul class="day-items" role="list">
-        @if (Day.Items.Count == 0)
+    <div class="day-header @(Day.Items.Count == 0 ? "empty" : "")" aria-label="@Day.DayLabel">
+        <span class="day-badge @(Day.Items.Count == 0 ? "empty" : "")" aria-hidden="true">@Day.Date.Day</span>
+        <span class="day-weekday-full">@Day.Date.ToString("dddd")</span>
+        <span class="day-weekday-short">@Day.Date.ToString("ddd")</span>
+        @if (Day.Items.Count > 0)
         {
-            <li class="day-empty">No tasks scheduled</li>
+            <span class="day-count-full">@(Day.Items.Count == 1 ? "1 task" : $"{Day.Items.Count} tasks")</span>
+            <span class="day-count-short">@Day.Items.Count</span>
         }
-        else
-        {
+    </div>
+    @if (Day.Items.Count == 0)
+    {
+        <div class="day-empty">No tasks scheduled</div>
+    }
+    else
+    {
+        <ul class="day-items" role="list">
             @foreach (var item in Day.Items)
             {
                 var taskId = item.Task?.Id;
@@ -27,6 +36,7 @@
                                            HasChildren="hasChildren"
                                            IsCollapsed="_collapsedIds.Contains(item.Task.Id)"
                                            IsSelected="false"
+                                           ContextDate="Day.Date"
                                            GoogleListTitle="@GoogleListTitleFor(item.Task)"
                                            OnSelect="HandleSelect"
                                            OnComplete="OnComplete"
@@ -65,8 +75,8 @@
                     }
                 </li>
             }
-        }
-    </ul>
+        </ul>
+    }
 </div>
 
 @code {
@@ -97,10 +107,12 @@
     [Microsoft.AspNetCore.Components.Parameter]
     public Microsoft.AspNetCore.Components.EventCallback<Guid> OnSelect { get; set; }
 
+    [Microsoft.AspNetCore.Components.Parameter]
+    public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
+
     private readonly HashSet<Guid> _collapsedIds = new();
     private IReadOnlyList<TaskItem> _allSubtasks = [];
     private Dictionary<string, Guid> _googleIdToLocalId = new();
-    private IReadOnlyList<TaskListRef> _googleLists = [];
 
     protected override void OnParametersSet()
     {
@@ -112,7 +124,9 @@
     }
 
     private string? GoogleListTitleFor(TaskItem task) =>
-        string.IsNullOrEmpty(task.GoogleListId) ? null : null;
+        string.IsNullOrEmpty(task.GoogleListId)
+            ? null
+            : GoogleLists.FirstOrDefault(l => l.Id == task.GoogleListId)?.Title;
 
     private async Task HandleSelect(Guid taskId)
     {

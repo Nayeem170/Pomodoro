@@ -20,4 +20,6 @@ public class ScheduleAgendaBase : ComponentBase
     [Parameter] public EventCallback<Guid> OnSelect { get; set; }
 
     [Parameter] public IReadOnlyList<TaskItem> AllTasks { get; set; } = [];
+
+    [Parameter] public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
 }

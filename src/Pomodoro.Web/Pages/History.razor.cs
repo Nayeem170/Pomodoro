@@ -8,10 +8,6 @@ using System.Threading;
 
 namespace Pomodoro.Web.Pages;
 
-/// <summary>
-/// Code-behind for History page
-/// Displays activity history with summary cards and timeline
-/// </summary>
 public class HistoryBase : ComponentBase, IAsyncDisposable
 {
     #region Services (Dependency Injection)
@@ -62,51 +58,27 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
     protected bool IsSelectedDateToday { get; set; }
     protected bool IsSelectedWeekCurrent { get; set; }
 
-    /// <summary>
-    /// Component parameter for testing: Sets initial active tab
-    /// </summary>
     [Parameter]
     public HistoryTab InitialActiveTab { get; set; } = HistoryTab.Daily;
 
-    /// <summary>
-    /// Component parameter for testing: Sets the initial weekly stats
-    /// </summary>
     [Parameter]
     public WeeklyStats? InitialWeeklyStats { get; set; }
 
-    /// <summary>
-    /// Component parameter for testing: Sets whether there are more activities to load
-    /// </summary>
     [Parameter]
     public bool InitialHasMoreActivities { get; set; } = false;
 
-    /// <summary>
-    /// Component parameter for testing: Sets whether more activities are loading
-    /// </summary>
     [Parameter]
     public bool InitialIsLoadingMore { get; set; } = false;
 
-    /// <summary>
-    /// Component parameter for testing: Sets the initial activities list
-    /// </summary>
     [Parameter]
     public List<ActivityRecord> InitialActivities { get; set; } = new();
 
-    /// <summary>
-    /// Component parameter for testing: Sets the initial current stats
-    /// </summary>
     [Parameter]
     public DailyStatsSummary? InitialCurrentStats { get; set; }
 
-    /// <summary>
-    /// Component parameter for testing: Sets the initial selected date
-    /// </summary>
     [Parameter]
     public DateTime? InitialSelectedDate { get; set; }
 
-    /// <summary>
-    /// Component parameter for testing: Sets the initial selected week start
-    /// </summary>
     [Parameter]
     public DateTime? InitialSelectedWeekStart { get; set; }
 
@@ -197,9 +169,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Determines if the infinite scroll observer should be set up
-    /// </summary>
     /// <returns>True if observer setup should be attempted</returns>
     private bool ShouldSetupInfiniteScrollObserver()
     {
@@ -216,9 +185,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
                ActiveTab == HistoryTab.Daily;
     }
 
-    /// <summary>
-    /// Sets up the Intersection Observer for infinite scroll
-    /// </summary>
     /// <param name="retryCount">Current retry attempt (0-2 for max 3 attempts)</param>
     private async Task SetupInfiniteScrollObserverAsync(int retryCount = 0)
     {
@@ -230,18 +196,12 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         await ExecuteObserverSetupWithLockAsync(retryCount);
     }
 
-    /// <summary>
-    /// Determines if observer setup can proceed
-    /// </summary>
     /// <returns>True if setup can proceed, false otherwise</returns>
     private async Task<bool> CanProceedWithObserverSetupAsync()
     {
         return await AcquireObserverLockAsync();
     }
 
-    /// <summary>
-    /// Executes the observer setup with proper lock management
-    /// </summary>
     /// <param name="retryCount">Current retry attempt</param>
     private async Task ExecuteObserverSetupWithLockAsync(int retryCount)
     {
@@ -261,9 +221,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Determines if observer setup should be retried
-    /// </summary>
     /// <param name="setupResult">The result of the observer setup attempt</param>
     /// <returns>True if retry is needed, false otherwise</returns>
     private bool ShouldRetryObserverSetup(ObserverSetupResult setupResult)
@@ -271,9 +228,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         return setupResult.ShouldRetry && !_isDisposed && !_observerInitialized;
     }
 
-    /// <summary>
-    /// Acquires the observer setup lock
-    /// </summary>
     /// <returns>True if lock was acquired, false if another setup is in progress</returns>
     private async Task<bool> AcquireObserverLockAsync()
     {
@@ -287,9 +241,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         return true;
     }
 
-    /// <summary>
-    /// Handles the retry logic for observer setup
-    /// </summary>
     /// <param name="setupResult">The result of the observer setup attempt</param>
     private async Task HandleRetryAsync(ObserverSetupResult setupResult)
     {
@@ -298,9 +249,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         await ExecuteRetryAsync(setupResult.NextRetryCount, setupResult.BackoffDelay);
     }
 
-    /// <summary>
-    /// Releases the observer lock if it's still held
-    /// </summary>
     private void ReleaseObserverLockIfHeld()
     {
         // Only release if we didn't already release for retry
@@ -310,9 +258,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Attempts to create the infinite scroll observer
-    /// </summary>
     /// <param name="retryCount">Current retry attempt</param>
     /// <returns>Setup result indicating success and whether retry is needed</returns>
     private async Task<ObserverSetupResult> TryCreateObserverAsync(int retryCount)
@@ -338,9 +283,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         return result;
     }
 
-    /// <summary>
-    /// Checks if Intersection Observer API is supported
-    /// </summary>
     /// <returns>True if supported, false otherwise</returns>
     private async Task<bool> IsIntersectionObserverSupportedAsync()
     {
@@ -352,9 +294,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         return supported;
     }
 
-    /// <summary>
-    /// Creates the observer using interop
-    /// </summary>
     /// <returns>True if creation was successful, false otherwise</returns>
     private async Task<bool> CreateObserverWithInteropAsync()
     {
@@ -366,9 +305,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
             Constants.UI.InfiniteScrollTimeoutMs);
     }
 
-    /// <summary>
-    /// Handles the result of observer creation
-    /// </summary>
     /// <param name="success">Whether observer creation was successful</param>
     /// <param name="retryCount">Current retry attempt</param>
     /// <param name="result">Result object to update</param>
@@ -385,9 +321,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Handles failure of observer creation
-    /// </summary>
     /// <param name="retryCount">Current retry attempt</param>
     /// <param name="result">Result object to update</param>
     private void HandleObserverCreationFailure(int retryCount, ObserverSetupResult result)
@@ -404,9 +337,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Sets up retry parameters
-    /// </summary>
     /// <param name="retryCount">Current retry attempt</param>
     /// <param name="result">Result object to update</param>
     private void SetupRetryParameters(int retryCount, ObserverSetupResult result)
@@ -416,9 +346,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         result.BackoffDelay = 100 * (retryCount + 1);
     }
 
-    /// <summary>
-    /// Executes retry attempt with proper locking
-    /// </summary>
     /// <param name="nextRetryCount">Next retry attempt number</param>
     /// <param name="backoffDelay">Delay before retry in milliseconds</param>
     private async Task ExecuteRetryAsync(int nextRetryCount, int backoffDelay)
@@ -447,9 +374,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Result of observer setup attempt
-    /// </summary>
     private class ObserverSetupResult
     {
         public bool ShouldRetry { get; set; }
@@ -457,9 +381,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         public int BackoffDelay { get; set; }
     }
 
-    /// <summary>
-    /// Callback from JavaScript when sentinel element is visible
-    /// </summary>
     [JSInvokable]
     public async Task OnSentinelIntersecting()
     {
@@ -553,9 +474,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         return HistoryStatsService.CalculateStats(activities);
     }
 
-    /// <summary>
-    /// Format focus time for display
-    /// </summary>
     protected string FormatFocusTime(int minutes)
     {
         return HistoryPagePresenterService.FormatFocusTime(minutes);
@@ -678,9 +596,6 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
         StateHasChanged();
     }
 
-    /// <summary>
-    /// Loads more activities with lazy loading
-    /// </summary>
     protected async Task LoadMoreActivitiesAsync()
     {
         if (IsLoadingMore || !HasMoreActivities) return;

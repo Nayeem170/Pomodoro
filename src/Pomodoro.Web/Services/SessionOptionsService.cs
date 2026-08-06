@@ -2,19 +2,12 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Interface for session options generation
-/// </summary>
 public interface ISessionOptionsService
 {
     List<ConsentOption> GetOptionsForSessionType(SessionType sessionType, TimerSession? interruptedPomodoro);
     SessionType GetDefaultOption(SessionType completedSessionType);
 }
 
-/// <summary>
-/// Service for generating session options based on completed session type
-/// Separated from ConsentService for better single responsibility
-/// </summary>
 public class SessionOptionsService : ISessionOptionsService
 {
     private readonly AppState _appState;

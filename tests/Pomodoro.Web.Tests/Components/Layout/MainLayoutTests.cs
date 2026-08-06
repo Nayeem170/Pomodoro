@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using Bunit;
 using Moq;
 using Xunit;
@@ -15,13 +17,85 @@ namespace Pomodoro.Web.Tests.Layout
     public class MainLayoutTests : TestContext
     {
         private readonly Mock<LayoutPresenterService> _mockLayoutPresenter;
+        private readonly Mock<IKeyboardShortcutService> _mockKeyboardShortcutService;
 
         public MainLayoutTests()
         {
             _mockLayoutPresenter = new Mock<LayoutPresenterService>();
+            _mockKeyboardShortcutService = new Mock<IKeyboardShortcutService>();
             Services.AddSingleton(_mockLayoutPresenter.Object);
             Services.AddSingleton(Mock.Of<ICloudSyncService>());
+            Services.AddSingleton(_mockKeyboardShortcutService.Object);
             JSInterop.Mode = JSRuntimeMode.Loose;
+        }
+
+        private Dictionary<string, Action> CaptureShortcuts(out IRenderedComponent<MainLayout> cut)
+        {
+            var actions = new Dictionary<string, Action>();
+            _mockKeyboardShortcutService
+                .Setup(x => x.RegisterShortcut(It.IsAny<string>(), It.IsAny<Action>(), It.IsAny<string>()))
+                .Callback((string key, Action action, string? desc) => actions[key] = action);
+
+            _mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(Array.Empty<NavLinkData>());
+            cut = RenderComponent<MainLayout>();
+            return actions;
+        }
+
+        [Fact]
+        public void MainLayout_ClickKeyboardHelp_ShowsModal()
+        {
+            _mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(Array.Empty<NavLinkData>());
+
+            var cut = RenderComponent<MainLayout>();
+            cut.Find("button[aria-label='Keyboard shortcuts']").Click();
+
+            Assert.True(cut.Instance.IsKeyboardHelpVisible);
+        }
+
+        [Fact]
+        public void MainLayout_CloseKeyboardHelp_HidesModal()
+        {
+            _mockLayoutPresenter.Setup(x => x.GetNavigationLinks()).Returns(Array.Empty<NavLinkData>());
+
+            var cut = RenderComponent<MainLayout>();
+            cut.Find("button[aria-label='Keyboard shortcuts']").Click();
+            cut.Find("button.modal-close").Click();
+
+            Assert.False(cut.Instance.IsKeyboardHelpVisible);
+        }
+
+        [Fact]
+        public async Task HelpShortcut_SetsKeyboardHelpVisible()
+        {
+            var actions = CaptureShortcuts(out var cut);
+
+            await cut.InvokeAsync(() => actions["?"].Invoke());
+
+            Assert.True(cut.Instance.IsKeyboardHelpVisible);
+        }
+
+        [Fact]
+        public async Task EscapeShortcut_WhenHelpVisible_HidesKeyboardHelp()
+        {
+            var actions = CaptureShortcuts(out var cut);
+
+            await cut.InvokeAsync(() => actions["?"].Invoke());
+            Assert.True(cut.Instance.IsKeyboardHelpVisible);
+
+            await cut.InvokeAsync(() => actions["escape"].Invoke());
+            Assert.False(cut.Instance.IsKeyboardHelpVisible);
+        }
+
+        [Fact]
+        public async Task EscapeShortcut_WhenHelpNotVisible_DoesNothing()
+        {
+            var actions = CaptureShortcuts(out var cut);
+
+            Assert.False(cut.Instance.IsKeyboardHelpVisible);
+
+            await cut.InvokeAsync(() => actions["escape"].Invoke());
+
+            Assert.False(cut.Instance.IsKeyboardHelpVisible);
         }
 
         [Fact]

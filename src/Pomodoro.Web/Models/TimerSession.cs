@@ -1,8 +1,5 @@
 namespace Pomodoro.Web.Models;
 
-/// <summary>
-/// Represents an active or completed timer session
-/// </summary>
 public class TimerSession
 {
     public Guid Id { get; set; } = Guid.NewGuid();

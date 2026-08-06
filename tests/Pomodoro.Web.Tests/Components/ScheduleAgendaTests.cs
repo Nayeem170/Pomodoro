@@ -40,7 +40,8 @@ public class ScheduleAgendaTests : TestContext
             .Add(c => c.WindowLabel, "29 Jul - 4 Aug"));
 
         cut.FindAll(".day-header").Should().HaveCount(2);
-        cut.FindAll(".day-header")[0].TextContent.Should().Contain("Tue 29 Jul");
+        cut.FindAll(".day-badge")[0].TextContent.Trim().Should().Be(DateTime.Today.AddDays(1).Day.ToString());
+        cut.FindAll(".day-weekday-full")[0].TextContent.Trim().Should().Be(DateTime.Today.AddDays(1).ToString("dddd"));
     }
 
     [Fact]
@@ -148,7 +149,7 @@ public class ScheduleAgendaTests : TestContext
             .Add(c => c.WindowLabel, "x"));
 
         cut.FindAll("button[aria-label=\"Edit task\"]").Should().HaveCount(1);
-        cut.Markup.Should().Contain("task-repeat");
+        cut.Markup.Should().Contain("repeat-badge");
     }
 
     [Fact]

@@ -380,8 +380,8 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     }
 
     /// <summary>
-    /// Safe async wrapper for HandleTimerCompleteAsync to avoid fire-and-forget issues
-    /// Uses semaphore to prevent concurrent timer completion handling
+    /// Safe async wrapper for HandleTimerCompleteAsync to avoid fire-and-forget issues.
+    /// Uses a semaphore to prevent concurrent timer completion handling.
     /// </summary>
     private async Task HandleTimerCompleteSafeAsync()
     {

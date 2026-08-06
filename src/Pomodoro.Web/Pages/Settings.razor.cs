@@ -7,9 +7,6 @@ using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Pages;
 
-/// <summary>
-/// Code-behind for Settings page
-/// </summary>
 public class SettingsPageBase : ComponentBase
 {
     #region Services (Dependency Injection)
@@ -61,9 +58,6 @@ public class SettingsPageBase : ComponentBase
     protected bool ShowClearConfirmation { get; set; }
     protected string? ImportResult { get; set; }
 
-    /// <summary>
-    /// Indicates whether current settings differ from the original saved settings
-    /// </summary>
     protected bool HasChanges => !Settings.Equals(OriginalSettings);
 
     protected void MarkDirty() => SaveAndRefresh();
@@ -100,9 +94,6 @@ public class SettingsPageBase : ComponentBase
         );
     }
 
-    /// <summary>
-    /// Indicates whether current settings differ from default values
-    /// </summary>
     protected bool IsAtDefaults => SettingsPresenterService.IsAtDefaults(Settings);
 
     #endregion
