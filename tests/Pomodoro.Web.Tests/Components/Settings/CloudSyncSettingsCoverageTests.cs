@@ -206,4 +206,20 @@ public class CloudSyncSettingsCoverageTests : TestContext
         cut.Markup.Should().Contain("reconnect-banner");
         cut.Markup.Should().Contain("Reconnect");
     }
+
+    [Fact]
+    public void ClickReconnectButton_CallsConnect()
+    {
+        _cloudSyncServiceMock.SetupGet(x => x.IsConnected).Returns(true);
+        _cloudSyncServiceMock.SetupGet(x => x.ReconnectRequired).Returns(true);
+        _cloudSyncServiceMock.SetupGet(x => x.ClientId).Returns((string?)null);
+        _cloudSyncServiceMock.Setup(x => x.ConnectAsync(It.IsAny<string>())).ReturnsAsync(true);
+
+        var cut = RenderComponent<CloudSyncSettings>(p =>
+            p.Add(x => x.OnShowToast, EventCallback.Factory.Create<string>(this, _ => { })));
+
+        cut.Find(".reconnect-banner button.sec-btn").Click();
+
+        _cloudSyncServiceMock.Verify(x => x.ConnectAsync(It.IsAny<string>()), Times.Once);
+    }
 }
