@@ -27,9 +27,9 @@ test.describe('Mobile Viewport (375x812)', () => {
     await expect(page.locator('.task-card')).toBeVisible({ timeout: 30000 });
   });
 
-  test('should show add task button on mobile', async ({ page }) => {
+  test('should show add task input on mobile', async ({ page }) => {
     await pomodoroPage.goto('/');
-    await expect(page.locator('.task-add-btn')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.task-input')).toBeVisible({ timeout: 30000 });
   });
 
   test('should navigate to settings on mobile', async ({ page }) => {

@@ -18,7 +18,7 @@ test.describe('Mobile Nav Menu', () => {
   });
 
   test('should have all four navigation links with correct titles', async ({ page }) => {
-    await expect(page.locator('.header-nav a[title="Timer"]')).toBeVisible();
+    await expect(page.locator('.header-nav a[title="Focus"]')).toBeVisible();
     await expect(page.locator('.header-nav a[title="History"]')).toBeVisible();
     await expect(page.locator('.header-nav a[title="Settings"]')).toBeVisible();
     await expect(page.locator('.header-nav a[title="About"]')).toBeVisible();
@@ -37,7 +37,7 @@ test.describe('Mobile Nav Menu', () => {
     await page.waitForLoadState('domcontentloaded');
     await expect(page.locator('.about-body')).toBeVisible({ timeout: 30000 });
 
-    await page.locator('.header-nav a[title="Timer"]').click();
+    await page.locator('.header-nav a[title="Focus"]').click();
     await page.waitForLoadState('domcontentloaded');
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
   });
@@ -85,11 +85,7 @@ test.describe('Round Button', () => {
     await pomodoroPage.goto('/');
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    await page.locator('.task-add-btn').waitFor({ state: 'visible', timeout: 30000 });
-    await page.locator('.task-add-btn').click();
-    await page.waitForTimeout(500);
-
-    const addButton = page.locator('.btn-icon-small.btn-add');
+    const addButton = page.locator('.btn-add-text');
     await expect(addButton).toBeVisible();
 
     const dimensions = await addButton.evaluate(el => {
@@ -105,11 +101,7 @@ test.describe('Round Button', () => {
     await pomodoroPage.goto('/');
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    await page.locator('.task-add-btn').waitFor({ state: 'visible', timeout: 30000 });
-    await page.locator('.task-add-btn').click();
-    await page.waitForTimeout(500);
-
-    const addButton = page.locator('.btn-icon-small.btn-add');
+    const addButton = page.locator('.btn-add-text');
     const dimensions = await addButton.evaluate(el => {
       const style = window.getComputedStyle(el);
       return { width: style.width, height: style.height };

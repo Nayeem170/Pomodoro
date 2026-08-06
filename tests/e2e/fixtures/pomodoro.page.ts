@@ -27,11 +27,9 @@ export class PomodoroPage {
   }
 
   async addTask(taskName: string) {
-    await this.page.locator('.task-add-btn').waitFor({ state: 'visible', timeout: 30000 });
-    await this.page.locator('.task-add-btn').click();
-    await this.page.locator('.task-input').waitFor({ state: 'visible', timeout: 5000 });
+    await this.page.locator('.task-input').waitFor({ state: 'visible', timeout: 30000 });
     await this.page.locator('.task-input').pressSequentially(taskName);
-    await this.page.locator('.btn-icon-small.btn-add').click();
+    await this.page.locator('.btn-add-text').click();
   }
 
   async completeTask(taskName: string) {
@@ -476,7 +474,7 @@ export class PomodoroPage {
 
   async hasRepeatBadge(taskName: string): Promise<boolean> {
     const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
-    return await taskItem.locator('.task-badge.task-repeat').isVisible().catch(() => false);
+    return await taskItem.locator('.task-badge.repeat-badge').isVisible().catch(() => false);
   }
 
   async hasScheduleBadge(taskName: string): Promise<boolean> {
@@ -486,6 +484,6 @@ export class PomodoroPage {
 
   async hasPausedBadge(taskName: string): Promise<boolean> {
     const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
-    return await taskItem.locator('.task-badge.repeat-paused').isVisible().catch(() => false);
+    return await taskItem.locator('.task-badge.paused-badge').isVisible().catch(() => false);
   }
 }
