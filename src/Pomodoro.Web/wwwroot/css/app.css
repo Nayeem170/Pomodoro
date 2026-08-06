@@ -18,7 +18,7 @@
     --font-mono: 'JetBrains Mono', 'Courier New', monospace;
 
     --pomodoro-color: #F42A41;
-    --short-break-color: #34D399;
+    --short-break-color: #FCA5A5;
     --long-break-color: #C0C0C0;
 }
 
@@ -371,8 +371,8 @@ input, textarea, [contenteditable="true"] {
 }
 
 .timer-card.short-break-theme {
-    background: linear-gradient(180deg, rgba(52, 211, 153, 0.12), var(--color-background-primary));
-    border: 1px solid rgba(52, 211, 153, 0.3);
+    background: linear-gradient(180deg, rgba(252, 165, 165, 0.12), var(--color-background-primary));
+    border: 1px solid rgba(252, 165, 165, 0.3);
 }
 
 .timer-card.long-break-theme {
@@ -648,7 +648,7 @@ input, textarea, [contenteditable="true"] {
 
 .ibtn.lg.short-break {
     background: var(--short-break-color);
-    box-shadow: 0 4px 18px rgba(52,211,153,.45);
+    box-shadow: 0 4px 18px rgba(252,165,165,.45);
 }
 
 .ibtn.lg.long-break {
@@ -1263,8 +1263,8 @@ input, textarea, [contenteditable="true"] {
 }
 
 .task-checkbox.completed {
-    background: #34D399;
-    border-color: #34D399;
+    background: #FCA5A5;
+    border-color: #FCA5A5;
 }
 
 .task-items {
@@ -2521,7 +2521,7 @@ input, textarea, [contenteditable="true"] {
     }
 
     .sticky-timer-bar.short-break-theme {
-        border-color: rgba(52, 211, 153, 0.3);
+        border-color: rgba(252, 165, 165, 0.3);
     }
 
     .sticky-timer-bar.long-break-theme {
