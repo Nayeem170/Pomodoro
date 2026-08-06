@@ -2,7 +2,7 @@
 
 ## Status
 
-`Draft — pending sign-off`
+`Approved — signed off`
 
 ## Background
 
@@ -88,9 +88,8 @@ task**: delete all non-final variants once this RSD ships (tracked as REQ-11 bel
   - `manifest.webmanifest` icon entries (already reference `icon-192.svg`/`icon-512.svg`
     by filename, no path change needed)
 - **REQ-10**: THE SYSTEM SHALL replace the header brand emoji (`Constants.Layout.AppIcon`,
-  currently `🍅`) — decision needed: drop the icon glyph entirely and let the SVG mark
-  stand alone in the header, or inline a small `<img>`/embedded SVG. Flagged as an open
-  question below, not pre-decided by this RSD.
+  currently `🍅`) with an inline `<img>` of the Tarkeez SVG mark (`Constants.Layout.LogoPath`).
+  Decision: inline SVG mark, not text-only, not emoji.
 - **REQ-11**: THE SYSTEM SHALL NOT retain draft/rejected logo SVG files
   (`logo-tarkeez-v1-ring.svg`, `-v2-target.svg`, `-v2-target-bd.svg`,
   `-v2-target-final.svg`, `-v3-converge.svg`) in `wwwroot/` after this task ships.
@@ -123,15 +122,16 @@ task**: delete all non-final variants once this RSD ships (tracked as REQ-11 bel
 
 ## Open Questions
 
-1. **REQ-10**: Keep an emoji/glyph next to the header wordmark, or go text-only /
-   inline-SVG mark? Needs a decision before TDS.
-2. Does `sitemap.xml` / `robots.txt` / any SEO copy reference `Pomodoro` as a brand name
-   that also needs updating? Not found in this scan — confirm before implementation.
+1. **REQ-10**: **Resolved** — inline `<img>` of the Tarkeez SVG mark in header and About
+   hero. Not text-only, not emoji.
+2. **sitemap.xml / robots.txt**: Checked. Both reference only the domain URL
+   (`pomodoro.bitops.bd`), no brand-name text. Domain migration is out of scope. No
+   changes needed.
 3. Domain migration (`bitops` subdomain, DNS, deploy config) — explicitly **out of scope**
    for this RSD; brand text/logo only.
 
 ## Sign-off
 
-- [ ] Product owner (Nayeem) approves scope boundary (brand vs. technique term split)
-- [ ] Product owner approves REQ-10 decision
-- [ ] RSD signed off → proceed to TDS
+- [x] Product owner (Nayeem) approves scope boundary (brand vs. technique term split)
+- [x] Product owner approves REQ-10 decision (inline SVG `<img>` mark)
+- [x] RSD signed off → proceed to implementation
