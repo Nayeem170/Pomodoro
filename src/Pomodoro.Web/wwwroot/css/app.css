@@ -153,8 +153,8 @@ input, textarea, [contenteditable="true"] {
 }
 
 .nav-icon-logo {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     vertical-align: middle;
 }
 
@@ -210,8 +210,8 @@ input, textarea, [contenteditable="true"] {
 }
 
 .mobile-tab-icon-logo {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
 }
 
 .mobile-tab-label {
