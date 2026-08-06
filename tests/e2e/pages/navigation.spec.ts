@@ -13,7 +13,7 @@ test.describe('Navigation', () => {
 
   test('should display header with app title', async ({ page }) => {
     await expect(page.locator('.header-title')).toBeVisible();
-    await expect(page.locator('.header-text')).toContainText('Pomodoro');
+    await expect(page.locator('.header-text')).toContainText('Tarkeez');
   });
 
   test('should not display footer', async ({ page }) => {

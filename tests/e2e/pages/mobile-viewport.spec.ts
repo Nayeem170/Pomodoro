@@ -13,8 +13,8 @@ test.describe('Mobile Viewport (375x812)', () => {
 
   test('should render timer page on mobile', async ({ page }) => {
     await pomodoroPage.goto('/');
-    await expect(page.locator('.mobile-timer')).toBeVisible({ timeout: 30000 });
-    await expect(page.locator('.mt-clock')).toBeVisible();
+    await expect(page.locator('.sticky-timer-bar')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.stb-time')).toBeVisible();
   });
 
   test('should show mode tabs on mobile', async ({ page }) => {
@@ -76,7 +76,7 @@ test.describe('Tablet Viewport (768x1024)', () => {
 
   test('should render timer page on tablet', async ({ page }) => {
     await pomodoroPage.goto('/');
-    await expect(page.locator('.mobile-timer')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.sticky-timer-bar')).toBeVisible({ timeout: 30000 });
   });
 
   test('should show task list on tablet', async ({ page }) => {

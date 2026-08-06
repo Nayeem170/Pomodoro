@@ -19,7 +19,7 @@ test.describe('Timer Controls', () => {
   });
 
   test('should show task hint when no task is selected', async ({ page }) => {
-    await expect(page.locator('.active-task')).toBeVisible();
+    await expect(page.locator('.timer-task-pill')).toBeVisible();
     await expect(page.locator('.task-hint')).toBeVisible();
     await expect(page.locator('.task-hint')).toContainText('Select a task to start');
   });
@@ -166,8 +166,8 @@ test.describe('Timer Controls', () => {
     await taskItems.first().click();
     await page.waitForTimeout(200);
     
-    await expect(page.locator('.active-task')).toBeVisible();
-    await expect(page.locator('.active-task')).toContainText('Test Task');
+    await expect(page.locator('.timer-task-text')).toBeVisible();
+    await expect(page.locator('.timer-task-text')).toContainText('Test Task');
   });
 
   test('should show select task prompt when no task selected', async ({ page }) => {
