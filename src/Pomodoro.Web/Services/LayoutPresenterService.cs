@@ -62,9 +62,10 @@ namespace Pomodoro.Web.Services
             yield return new NavLinkData
             {
                 Href = Constants.Routing.HomeRoute,
-                Icon = "",
+                Icon = Constants.Layout.FocusNavLogoPath,
                 Title = Constants.Layout.TimerNavLinkTitle,
-                Match = NavLinkMatch.All
+                Match = NavLinkMatch.All,
+                IsLogoIcon = true
             };
 
             yield return new NavLinkData
@@ -78,9 +79,10 @@ namespace Pomodoro.Web.Services
             yield return new NavLinkData
             {
                 Href = Constants.Routing.SettingsRoute,
-                Icon = Constants.Layout.SettingsNavIcon,
+                Icon = Constants.Layout.SettingsNavLogoPath,
                 Title = Constants.Layout.SettingsNavLinkTitle,
-                Match = NavLinkMatch.Prefix
+                Match = NavLinkMatch.Prefix,
+                IsLogoIcon = true
             };
 
             yield return new NavLinkData
@@ -100,5 +102,6 @@ namespace Pomodoro.Web.Services
         public string Icon { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public NavLinkMatch Match { get; set; } = NavLinkMatch.Prefix;
+        public bool IsLogoIcon { get; set; }
     }
 }

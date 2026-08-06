@@ -131,6 +131,9 @@ public static partial class Constants
         /// <summary>Ring-mark SVG for Focus nav tab (preserved from 003 design)</summary>
         public const string FocusNavLogoPath = "logo-tarkeez-ring.svg";
 
+        /// <summary>Gear-mark SVG for Settings nav tab</summary>
+        public const string SettingsNavLogoPath = "logo-tarkeez-gear.svg";
+
         /// <summary>Application title displayed in header</summary>
         public const string AppTitle = "Tarkeez";
 
