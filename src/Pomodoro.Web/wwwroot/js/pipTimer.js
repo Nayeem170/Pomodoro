@@ -157,7 +157,7 @@ window.pipTimer = {
                 font-weight: 600;
             }
             .pip-tab.act.pomodoro { border-bottom-color: #F42A41; }
-            .pip-tab.act.short-break { border-bottom-color: #34D399; }
+            .pip-tab.act.short-break { border-bottom-color: #FCA5A5; }
             .pip-tab.act.long-break { border-bottom-color: #C0C0C0; }
             .pip-timer-area {
                 display: flex;
@@ -170,7 +170,7 @@ window.pipTimer = {
                 background: linear-gradient(180deg, rgba(244,42,65,.12), #142e28);
             }
             .pip-container.short-break-theme .pip-timer-area {
-                background: linear-gradient(180deg, rgba(52,211,153,.12), #142e28);
+                background: linear-gradient(180deg, rgba(252,165,165,.12), #142e28);
             }
             .pip-container.long-break-theme .pip-timer-area {
                 background: linear-gradient(180deg, rgba(192,192,192,.12), #142e28);
@@ -187,7 +187,7 @@ window.pipTimer = {
                 stroke-dashoffset: 0;
                 transition: stroke-dashoffset 0.4s ease;
             }
-            .ring-fill.short-break { stroke: #34D399; }
+            .ring-fill.short-break { stroke: #FCA5A5; }
             .ring-fill.long-break { stroke: #C0C0C0; }
             .ring-center {
                 position: absolute;
@@ -207,7 +207,7 @@ window.pipTimer = {
                 font-variant-numeric: tabular-nums;
             }
             .pip-container.running.pomodoro-theme .ring-time { color: #F42A41; }
-            .pip-container.running.short-break-theme .ring-time { color: #34D399; }
+            .pip-container.running.short-break-theme .ring-time { color: #FCA5A5; }
             .pip-container.running.long-break-theme .ring-time { color: #C0C0C0; }
             .ring-label {
                 font-size: 13px;
@@ -231,7 +231,7 @@ window.pipTimer = {
                 background: #F42A41;
                 flex-shrink: 0;
             }
-            .pip-task-dot.short-break { background: #34D399; }
+            .pip-task-dot.short-break { background: #FCA5A5; }
             .pip-task-dot.long-break { background: #C0C0C0; }
             .pip-task-name {
                 font-size: 13px;
@@ -261,8 +261,8 @@ window.pipTimer = {
                 box-shadow: 0 4px 18px rgba(244,42,65,.45);
             }
             .pip-play.short-break {
-                background: #34D399;
-                box-shadow: 0 4px 18px rgba(52,211,153,.45);
+                background: #FCA5A5;
+                box-shadow: 0 4px 18px rgba(252,165,165,.45);
             }
             .pip-play.long-break {
                 background: #C0C0C0;
