@@ -2003,6 +2003,73 @@ public class TaskServiceMultiListTests
         occurrence.Repeat.Should().NotBeNull("original occurrence must not be mutated");
     }
 
+    [Fact]
+    public async Task MaterializeSingleAsync_WithSubtasks_ClonessubtaskTree()
+    {
+        var seriesId = Guid.NewGuid();
+        var occurrenceDate = DateTime.UtcNow.Date;
+        var rootTemplate = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Root",
+            CreatedAt = DateTime.UtcNow,
+            RepeatSeriesId = seriesId,
+            Repeat = new RepeatRule { Type = RepeatType.Daily }
+        };
+        var child = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Child",
+            CreatedAt = DateTime.UtcNow,
+            ParentTaskId = rootTemplate.Id
+        };
+        _appState.Tasks = [rootTemplate, child];
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+
+        var occurrence = rootTemplate.WithUpdates(c => { c.OccurrenceDate = occurrenceDate; });
+        var sut = CreateSut();
+        await sut.MaterializeSingleAsync(occurrence);
+
+        var materializedRoot = _appState.Tasks.FirstOrDefault(t => t.Id != rootTemplate.Id && t.OccurrenceDate == occurrenceDate);
+        materializedRoot.Should().NotBeNull();
+        var clonedChild = _appState.Tasks.FirstOrDefault(t => t.ParentTaskId == materializedRoot!.Id && t.Name == "Child");
+        clonedChild.Should().NotBeNull();
+        clonedChild!.Id.Should().NotBe(child.Id);
+        clonedChild.OccurrenceDate.Should().Be(occurrenceDate);
+        clonedChild.Repeat.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task MaterializeSingleAsync_WithNestedSubtasks_ClonessFullTree()
+    {
+        var seriesId = Guid.NewGuid();
+        var occurrenceDate = DateTime.UtcNow.Date;
+        var rootTemplate = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Root",
+            CreatedAt = DateTime.UtcNow,
+            RepeatSeriesId = seriesId,
+            Repeat = new RepeatRule { Type = RepeatType.Daily }
+        };
+        var child = new TaskItem { Id = Guid.NewGuid(), Name = "Child", CreatedAt = DateTime.UtcNow, ParentTaskId = rootTemplate.Id };
+        var grand = new TaskItem { Id = Guid.NewGuid(), Name = "Grand", CreatedAt = DateTime.UtcNow, ParentTaskId = child.Id };
+        _appState.Tasks = [rootTemplate, child, grand];
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+
+        var occurrence = rootTemplate.WithUpdates(c => { c.OccurrenceDate = occurrenceDate; });
+        var sut = CreateSut();
+        await sut.MaterializeSingleAsync(occurrence);
+
+        var materializedRoot = _appState.Tasks.FirstOrDefault(t => t.Id != rootTemplate.Id && t.OccurrenceDate == occurrenceDate);
+        materializedRoot.Should().NotBeNull();
+        var clonedChild = _appState.Tasks.FirstOrDefault(t => t.ParentTaskId == materializedRoot!.Id && t.Name == "Child");
+        clonedChild.Should().NotBeNull();
+        var clonedGrand = _appState.Tasks.FirstOrDefault(t => t.ParentTaskId == clonedChild!.Id && t.Name == "Grand");
+        clonedGrand.Should().NotBeNull();
+        clonedGrand!.Id.Should().NotBe(grand.Id);
+    }
+
     #endregion
 
     #region ComputeNextOccurrence (private static, via reflection)

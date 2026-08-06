@@ -81,6 +81,21 @@ public class ScheduleDayRowTests : TestContext
     }
 
     [Fact]
+    public void Render_NestedSubtasks_ShowsGrandchild()
+    {
+        var root = new TaskItem { Id = Guid.NewGuid(), Name = "Root", CreatedAt = DateTime.UtcNow };
+        var child = new TaskItem { Id = Guid.NewGuid(), Name = "Child", CreatedAt = DateTime.UtcNow, ParentTaskId = root.Id };
+        var grand = new TaskItem { Id = Guid.NewGuid(), Name = "Grand", CreatedAt = DateTime.UtcNow, ParentTaskId = child.Id };
+        var all = new List<TaskItem> { root, child, grand };
+
+        var cut = RenderComponent<ScheduleDayRow>(p => p
+            .Add(x => x.Day, DayWithRoot(root))
+            .Add(x => x.AllTasks, all));
+
+        cut.Markup.Should().Contain("Grand");
+    }
+
+    [Fact]
     public void Render_TaskWithEditButton()
     {
         var root = new TaskItem { Id = Guid.NewGuid(), Name = "Local", CreatedAt = DateTime.UtcNow };
