@@ -15,7 +15,14 @@
                 @foreach (var navLink in LayoutPresenter.GetNavigationLinks())
                 {
                     <NavLink @key="navLink.Href" href="@navLink.Href" Match="@navLink.Match" title="@navLink.Title">
-                        <span class="nav-icon">@navLink.Icon</span>
+                        @if (navLink.Href == Constants.Routing.HomeRoute)
+                        {
+                            <img class="nav-icon nav-icon-logo" src="@Constants.Layout.FocusNavLogoPath" alt="" />
+                        }
+                        else
+                        {
+                            <span class="nav-icon">@navLink.Icon</span>
+                        }
                         @navLink.Title
                     </NavLink>
                 }
@@ -44,7 +51,14 @@
         @foreach (var navLink in LayoutPresenter.GetNavigationLinks())
         {
             <NavLink class="mobile-tab" @key="navLink.Href" href="@navLink.Href" Match="@navLink.Match">
-                <span class="mobile-tab-icon">@navLink.Icon</span>
+                @if (navLink.Href == Constants.Routing.HomeRoute)
+                {
+                    <img class="mobile-tab-icon mobile-tab-icon-logo" src="@Constants.Layout.FocusNavLogoPath" alt="" />
+                }
+                else
+                {
+                    <span class="mobile-tab-icon">@navLink.Icon</span>
+                }
                 <span class="mobile-tab-label">@navLink.Title</span>
             </NavLink>
         }

@@ -128,14 +128,14 @@ public static partial class Constants
         /// <summary>Logo SVG path for inline img</summary>
         public const string LogoPath = "logo-tarkeez.svg";
 
+        /// <summary>Ring-mark SVG for Focus nav tab (preserved from 003 design)</summary>
+        public const string FocusNavLogoPath = "logo-tarkeez-ring.svg";
+
         /// <summary>Application title displayed in header</summary>
         public const string AppTitle = "Tarkeez";
 
         /// <summary>Application tagline</summary>
         public const string Tagline = "Focus. Work. Achieve.";
-
-        /// <summary>Timer navigation link icon</summary>
-        public const string TimerNavIcon = "⏱️";
 
         /// <summary>History navigation link icon</summary>
         public const string HistoryNavIcon = "📊";

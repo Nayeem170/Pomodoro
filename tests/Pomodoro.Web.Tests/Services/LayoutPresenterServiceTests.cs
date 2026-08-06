@@ -452,12 +452,11 @@ namespace Pomodoro.Web.Tests.Services
         [Fact]
         public void GetNavigationLinks_AllLinksHaveIcons()
         {
-            // Act
             var links = _service.GetNavigationLinks().ToList();
 
-            // Assert
             foreach (var link in links)
             {
+                if (link.Href == Constants.Routing.HomeRoute) continue;
                 link.Icon.Should().NotBeNullOrEmpty();
             }
         }
