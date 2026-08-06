@@ -278,7 +278,7 @@ window.pipTimer = {
                 align-items: center;
                 justify-content: center;
                 cursor: pointer;
-                color: #8a97b8;
+                color: #ffffff;
             }
             .pip-hint {
                 font-size: 12px;
@@ -335,7 +335,7 @@ window.pipTimer = {
         var progress = totalSeconds > 0 ? remainingSeconds / totalSeconds : 0;
         var dashOffset = circumference * (1 - progress);
 
-        var modeLabel = sessionType === 0 ? 'FOCUSING' : sessionType === 1 ? 'SHORT BREAK' : 'LONG BREAK';
+        var modeLabel = sessionType === 0 ? 'FOCUS' : sessionType === 1 ? 'SHORT BREAK' : 'LONG BREAK';
         var isRunning = state.isRunning || false;
         var isStarted = state.isStarted || false;
         var canStart = state.canStart !== false;
@@ -477,6 +477,7 @@ window.pipTimer = {
             '    };',
             '    window.addEventListener("keydown", function(event) {',
             '        if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;',
+            '        if (event.code === "Space") { event.preventDefault(); event.stopPropagation(); window.pipToggleTimer(); return; }',
             '        var key = event.key.toLowerCase();',
             '        if (key === "p") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(0); }',
             '        else if (key === "s") { event.preventDefault(); event.stopPropagation(); window.pipSwitchSession(1); }',
