@@ -125,11 +125,11 @@ public static partial class Constants
 
     public static class Layout
     {
-        /// <summary>Application icon emoji</summary>
-        public const string AppIcon = "🍅";
+        /// <summary>Logo SVG path for inline img</summary>
+        public const string LogoPath = "logo-tarkeez.svg";
 
         /// <summary>Application title displayed in header</summary>
-        public const string AppTitle = "Pomodoro";
+        public const string AppTitle = "Tarkeez";
 
         /// <summary>Application tagline</summary>
         public const string Tagline = "Focus. Work. Achieve.";
@@ -209,6 +209,7 @@ public static partial class Constants
     public static class AboutPageContent
     {
         // Header Section
+        public const string HeroTitle = "Tarkeez";
         public const string Subtitle = "A time management method to boost your productivity";
 
         // What is it Section

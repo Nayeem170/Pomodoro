@@ -118,8 +118,9 @@ input, textarea, [contenteditable="true"] {
     color: var(--color-text-primary);
 }
 
-.header-icon {
-    font-size: 16px;
+.header-logo {
+    width: 18px;
+    height: 18px;
 }
 
 /* Header Navigation - Desktop */
@@ -270,8 +271,9 @@ input, textarea, [contenteditable="true"] {
     .header-text {
         font-size: 16px;
     }
-    .header-icon {
-        font-size: 18px;
+    .header-logo {
+        width: 20px;
+        height: 20px;
     }
 }
 
@@ -2655,8 +2657,9 @@ input, textarea, [contenteditable="true"] {
         font-size: 16px;
     }
 
-    .header-icon {
-        font-size: 18px;
+    .header-logo {
+        width: 20px;
+        height: 20px;
     }
 
     .task-edit-panel {

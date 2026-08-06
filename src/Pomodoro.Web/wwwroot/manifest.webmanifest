@@ -1,6 +1,6 @@
 {
-  "name": "Pomodoro",
-  "short_name": "Pomodoro",
+  "name": "Tarkeez",
+  "short_name": "Tarkeez",
   "description": "A Pomodoro-style focus timer to boost your productivity",
   "id": "./",
   "start_url": "./",

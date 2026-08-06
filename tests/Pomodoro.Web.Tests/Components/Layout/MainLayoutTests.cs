@@ -131,7 +131,7 @@ namespace Pomodoro.Web.Tests.Layout
             var component = RenderComponent<MainLayout>();
 
             // Assert
-            Assert.Contains("Pomodoro", component.Markup);
+            Assert.Contains("Tarkeez", component.Markup);
         }
 
         [Fact]
@@ -236,7 +236,8 @@ namespace Pomodoro.Web.Tests.Layout
             Assert.NotNull(headerNav);
 
             var headerTitleSpans = headerTitle.QuerySelectorAll("span");
-            Assert.Equal(2, headerTitleSpans.Length);
+            Assert.Single(headerTitleSpans);
+            Assert.NotNull(headerTitle.QuerySelector("img.header-logo"));
         }
 
         [Fact]
@@ -325,7 +326,7 @@ namespace Pomodoro.Web.Tests.Layout
             var headerText = component.Find(".header-text");
 
             Assert.NotNull(headerText);
-            Assert.Contains("Pomodoro", headerText.TextContent);
+            Assert.Contains("Tarkeez", headerText.TextContent);
         }
 
         [Fact]
