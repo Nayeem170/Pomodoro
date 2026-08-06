@@ -1,25 +1,25 @@
 /* Pomodoro - Clean Minimal Design System */
 
 :root {
-    --color-background-primary: #16213e;
-    --color-background-secondary: #1a1a2e;
-    --color-background-tertiary: #0f3460;
-    --color-text-primary: #ffffff;
-    --color-text-secondary: #a0a0a0;
-    --color-text-tertiary: #6e7a8a;
-    --color-border-tertiary: rgba(45, 74, 111, 0.4);
-    --color-border-secondary: rgba(45, 74, 111, 0.6);
-    --color-border-primary: rgba(45, 74, 111, 0.8);
-    --color-surface-light: #1f3460;
+    --color-background-primary: #0f1f1c;
+    --color-background-secondary: #142e28;
+    --color-background-tertiary: #1c3d35;
+    --color-text-primary: #f0faf7;
+    --color-text-secondary: #9db8ae;
+    --color-text-tertiary: #5f7d73;
+    --color-border-tertiary: rgba(40, 90, 75, 0.4);
+    --color-border-secondary: rgba(40, 90, 75, 0.6);
+    --color-border-primary: rgba(40, 90, 75, 0.8);
+    --color-surface-light: #234d40;
     --border-radius-md: 8px;
     --border-radius-sm: 6px;
     --border-radius-lg: 12px;
     --font-sans: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     --font-mono: 'JetBrains Mono', 'Courier New', monospace;
 
-    --pomodoro-color: #e74c3c;
-    --short-break-color: #27ae60;
-    --long-break-color: #3498db;
+    --pomodoro-color: #F42A41;
+    --short-break-color: #34D399;
+    --long-break-color: #C0C0C0;
 }
 
 * {
@@ -342,8 +342,8 @@ input, textarea, [contenteditable="true"] {
 
 .mode-tabs button.active {
     color: var(--color-text-primary);
-    background: #1a1a2e;
-    border-color: #2d4a6f;
+    background: #142e28;
+    border-color: #285a4b;
     font-weight: 600;
 }
 
@@ -358,7 +358,7 @@ input, textarea, [contenteditable="true"] {
 /* Timer Card */
 .timer-card {
     background-color: var(--color-background-primary);
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     border-radius: var(--border-radius-lg);
     margin: 0 12px 10px;
     overflow: hidden;
@@ -366,18 +366,18 @@ input, textarea, [contenteditable="true"] {
 }
 
 .timer-card.pomodoro-theme {
-    background: linear-gradient(180deg, rgba(231, 76, 60, 0.12), var(--color-background-primary));
-    border: 1px solid rgba(231, 76, 60, 0.3);
+    background: linear-gradient(180deg, rgba(244, 42, 65, 0.12), var(--color-background-primary));
+    border: 1px solid rgba(244, 42, 65, 0.3);
 }
 
 .timer-card.short-break-theme {
-    background: linear-gradient(180deg, rgba(39, 174, 96, 0.12), var(--color-background-primary));
-    border: 1px solid rgba(39, 174, 96, 0.3);
+    background: linear-gradient(180deg, rgba(52, 211, 153, 0.12), var(--color-background-primary));
+    border: 1px solid rgba(52, 211, 153, 0.3);
 }
 
 .timer-card.long-break-theme {
-    background: linear-gradient(180deg, rgba(52, 152, 219, 0.12), var(--color-background-primary));
-    border: 1px solid rgba(52, 152, 219, 0.3);
+    background: linear-gradient(180deg, rgba(192, 192, 192, 0.12), var(--color-background-primary));
+    border: 1px solid rgba(192, 192, 192, 0.3);
 }
 
 .card-top {
@@ -393,7 +393,7 @@ input, textarea, [contenteditable="true"] {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #1e2a40;
+    background: #1c3d35;
     border: none;
     border-radius: 8px;
     padding: 8px 12px;
@@ -410,7 +410,7 @@ input, textarea, [contenteditable="true"] {
 
 .timer-task-text {
     font-size: 13px;
-    color: #e8edf8;
+    color: #9db8ae;
     font-family: var(--font-sans);
     flex: 1;
     text-align: left;
@@ -472,7 +472,7 @@ input, textarea, [contenteditable="true"] {
 
 .timer-mode-label {
     font-size: 13px;
-    color: #8a97b8;
+    color: #5f7d73;
     letter-spacing: .1em;
     margin-top: 5px;
 }
@@ -617,7 +617,7 @@ input, textarea, [contenteditable="true"] {
     width: 44px;
     height: 44px;
     border-radius: 99px;
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     background: #ffffff0a;
     color: #fff;
     display: flex;
@@ -643,17 +643,17 @@ input, textarea, [contenteditable="true"] {
 
 .ibtn.lg.pomodoro {
     background: var(--pomodoro-color);
-    box-shadow: 0 4px 18px rgba(231,76,60,.45);
+    box-shadow: 0 4px 18px rgba(244,42,65,.45);
 }
 
 .ibtn.lg.short-break {
     background: var(--short-break-color);
-    box-shadow: 0 4px 18px rgba(39,174,96,.45);
+    box-shadow: 0 4px 18px rgba(52,211,153,.45);
 }
 
 .ibtn.lg.long-break {
     background: var(--long-break-color);
-    box-shadow: 0 4px 18px rgba(52,152,219,.45);
+    box-shadow: 0 4px 18px rgba(192,192,192,.45);
 }
 
 .ibtn.lg:hover {
@@ -713,7 +713,7 @@ input, textarea, [contenteditable="true"] {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     background: transparent;
     border-radius: var(--border-radius-md);
     cursor: pointer;
@@ -779,7 +779,7 @@ input, textarea, [contenteditable="true"] {
 
 .task-pane-card {
     background-color: var(--color-background-primary);
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     border-radius: var(--border-radius-lg);
     padding: 14px;
     display: flex;
@@ -804,7 +804,7 @@ input, textarea, [contenteditable="true"] {
     gap: 8px;
     padding: 12px;
     background: var(--color-background-primary);
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     border-radius: 10px;
 }
 
@@ -817,7 +817,7 @@ input, textarea, [contenteditable="true"] {
 
 .add-task-form .task-input {
     background: #ffffff0d;
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     border-radius: 6px;
     padding: 9px 11px;
     padding-right: 130px;
@@ -855,7 +855,7 @@ input, textarea, [contenteditable="true"] {
     align-items: center;
     gap: 4px;
     background: #ffffff0d;
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     border-radius: 6px;
     color: #fff;
     font-size: 12px;
@@ -993,7 +993,7 @@ input, textarea, [contenteditable="true"] {
 
 .day-badge.empty {
     background: transparent;
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     color: var(--color-text-tertiary);
 }
 
@@ -1179,7 +1179,7 @@ input, textarea, [contenteditable="true"] {
     font-weight: 600;
     padding: 1px 6px;
     border-radius: 9999px;
-    background: rgba(231, 76, 60, 0.18);
+    background: rgba(244, 42, 65, 0.18);
     color: var(--pomodoro-color);
 }
 
@@ -1239,7 +1239,7 @@ input, textarea, [contenteditable="true"] {
     width: 16px;
     height: 16px;
     border-radius: 5px;
-    border: 1.5px solid #6e7a8a;
+    border: 1.5px solid #5f7d73;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -1255,7 +1255,7 @@ input, textarea, [contenteditable="true"] {
 
 .task-checkbox:focus {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
+    box-shadow: 0 0 0 2px rgba(244, 42, 65, 0.2);
 }
 
 .task-checkbox:hover {
@@ -1263,8 +1263,8 @@ input, textarea, [contenteditable="true"] {
 }
 
 .task-checkbox.completed {
-    background: #27ae60;
-    border-color: #27ae60;
+    background: #34D399;
+    border-color: #34D399;
 }
 
 .task-items {
@@ -1304,7 +1304,7 @@ input, textarea, [contenteditable="true"] {
 }
 
 .task-row.selected {
-    background: rgba(231, 76, 60, 0.12);
+    background: rgba(244, 42, 65, 0.12);
 }
 
 /* Task actions (delete, uncomplete) */
@@ -1336,7 +1336,7 @@ input, textarea, [contenteditable="true"] {
 }
 
 .task-action-btn.delete {
-    background: #e74c3c1f;
+    background: #F42A411f;
     color: #fff;
 }
 
@@ -1349,7 +1349,7 @@ input, textarea, [contenteditable="true"] {
     flex: 1;
     padding: 10px 12px;
     background: var(--color-surface-light);
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     border-radius: var(--border-radius-md);
     color: var(--color-text-primary);
     font-size: 13px;
@@ -1391,7 +1391,7 @@ input, textarea, [contenteditable="true"] {
 .btn-icon-small.btn-cancel {
     background: var(--color-surface-light);
     color: #fff;
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
 }
 
 .btn-icon-small.btn-cancel:hover {
@@ -1402,7 +1402,7 @@ input, textarea, [contenteditable="true"] {
 .completed-section {
     margin-top: 10px;
     padding-top: 10px;
-    border-top: 1px solid #2d4a6f;
+    border-top: 1px solid #285a4b;
 }
 
 .completed-toggle {
@@ -1446,7 +1446,7 @@ input, textarea, [contenteditable="true"] {
 .task-edit-panel {
     padding: 12px;
     background: #ffffff0a;
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
@@ -1500,7 +1500,7 @@ input, textarea, [contenteditable="true"] {
 .tep-input {
     padding: 9px 10px;
     background: #00000038;
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     border-radius: var(--border-radius-sm);
     color: var(--color-text-primary);
     font-size: 13px;
@@ -1510,12 +1510,12 @@ input, textarea, [contenteditable="true"] {
 }
 
 .tep-select option {
-    background: #16213e;
+    background: #0f1f1c;
     color: #ffffff;
 }
 
 .tep-select option[disabled] {
-    color: #6e7a8a;
+    color: #5f7d73;
     font-weight: 600;
     font-size: 11px;
     letter-spacing: 0.5px;
@@ -1559,7 +1559,7 @@ input, textarea, [contenteditable="true"] {
 .tep-weekday-btn {
     flex: 1;
     height: 30px;
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     border-radius: var(--border-radius-sm);
     background: #00000038;
     color: #fff;
@@ -1585,7 +1585,7 @@ input, textarea, [contenteditable="true"] {
     justify-content: center;
     gap: 7px;
     padding: 8px 12px;
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     border-radius: var(--border-radius-sm);
     background: #00000038;
     color: #fff;
@@ -1633,7 +1633,7 @@ input, textarea, [contenteditable="true"] {
     height: 38px;
     background: transparent;
     color: #fff;
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     border-radius: var(--border-radius-sm);
     font-size: 13px;
     cursor: pointer;
@@ -1663,7 +1663,7 @@ input, textarea, [contenteditable="true"] {
 .consent-modal {
     background-color: var(--color-background-primary);
     border-radius: var(--border-radius-lg);
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     max-width: 400px;
     width: 100%;
     overflow: hidden;
@@ -1678,8 +1678,8 @@ input, textarea, [contenteditable="true"] {
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: rgba(231, 76, 60, 0.15);
-    border: 0.5px solid rgba(231, 76, 60, 0.3);
+    background: rgba(244, 42, 65, 0.15);
+    border: 0.5px solid rgba(244, 42, 65, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1711,7 +1711,7 @@ input, textarea, [contenteditable="true"] {
     width: 100%;
     padding: 12px;
     border-radius: var(--border-radius-md);
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     background: var(--color-surface-light);
     cursor: pointer;
     font-family: var(--font-sans);
@@ -1728,11 +1728,11 @@ input, textarea, [contenteditable="true"] {
 
 .btn-option.default {
     border-color: var(--pomodoro-color);
-    background: rgba(231, 76, 60, 0.07);
+    background: rgba(244, 42, 65, 0.07);
 }
 
 .btn-option.default:hover {
-    background: rgba(231, 76, 60, 0.13);
+    background: rgba(244, 42, 65, 0.13);
 }
 
 .option-label {
@@ -1753,7 +1753,7 @@ input, textarea, [contenteditable="true"] {
 
 .consent-footer {
     padding: 12px;
-    border-top: 1px solid #2d4a6f;
+    border-top: 1px solid #285a4b;
     background: var(--color-surface-light);
 }
 
@@ -1870,7 +1870,7 @@ input, textarea, [contenteditable="true"] {
 }
 
 .schedule-badge {
-    background: rgba(52, 152, 219, 0.18);
+    background: rgba(192, 192, 192, 0.18);
     color: #5dade2;
 }
 
@@ -1906,7 +1906,7 @@ input, textarea, [contenteditable="true"] {
 
 .delete-confirm {
     background: var(--color-background-primary);
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     border-radius: 10px;
     padding: 16px;
     display: flex;
@@ -1936,7 +1936,7 @@ input, textarea, [contenteditable="true"] {
 .delete-confirm-cancel {
     padding: 8px 16px;
     border-radius: 6px;
-    border: 1px solid #2d4a6f;
+    border: 1px solid #285a4b;
     background: transparent;
     color: var(--color-text-secondary);
     font-size: 12px;
@@ -1972,7 +1972,7 @@ input, textarea, [contenteditable="true"] {
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--deep-blue, #0f3460);
+    background: var(--deep-blue, #1c3d35);
     border-radius: 10px;
     padding: 10px 14px;
     display: flex;
@@ -2014,7 +2014,7 @@ input, textarea, [contenteditable="true"] {
     bottom: 60px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(231, 76, 60, 0.95);
+    background: rgba(244, 42, 65, 0.95);
     border-radius: 10px;
     padding: 10px 14px;
     display: flex;
@@ -2052,8 +2052,8 @@ input, textarea, [contenteditable="true"] {
     display: flex;
     gap: 0;
     padding: 10px 14px;
-    background: var(--color-surface-dark, #16213e);
-    border: 1px solid #2d4a6f;
+    background: var(--color-surface-dark, #0f1f1c);
+    border: 1px solid #285a4b;
     border-radius: 10px;
 }
 
@@ -2085,8 +2085,8 @@ input, textarea, [contenteditable="true"] {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: var(--color-surface-dark, #16213e);
-    border: 1px solid #2d4a6f;
+    background: var(--color-surface-dark, #0f1f1c);
+    border: 1px solid #285a4b;
     border-radius: 10px;
     padding: 10px 14px;
     overflow: hidden;
@@ -2472,8 +2472,8 @@ input, textarea, [contenteditable="true"] {
         flex-direction: column;
         padding: 0;
         gap: 0;
-        background: var(--color-surface-dark, #16213e);
-        border: 1px solid rgba(231, 76, 60, 0.3);
+        background: var(--color-surface-dark, #0f1f1c);
+        border: 1px solid rgba(244, 42, 65, 0.3);
         border-radius: 8px;
         position: sticky;
         top: 0;
@@ -2500,7 +2500,7 @@ input, textarea, [contenteditable="true"] {
     }
 
     .stb-tab.act {
-        color: #e8edf8;
+        color: #9db8ae;
         font-weight: 600;
         border-bottom-color: var(--pomodoro-color);
     }
@@ -2521,11 +2521,11 @@ input, textarea, [contenteditable="true"] {
     }
 
     .sticky-timer-bar.short-break-theme {
-        border-color: rgba(39, 174, 96, 0.3);
+        border-color: rgba(52, 211, 153, 0.3);
     }
 
     .sticky-timer-bar.long-break-theme {
-        border-color: rgba(52, 152, 219, 0.3);
+        border-color: rgba(192, 192, 192, 0.3);
     }
 }
 
@@ -2672,7 +2672,7 @@ input, textarea, [contenteditable="true"] {
     .task-edit-panel {
         padding: 13px 14px;
         gap: 9px;
-        border: 1px solid #2d4a6f;
+        border: 1px solid #285a4b;
         border-radius: 8px;
     }
 
