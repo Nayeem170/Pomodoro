@@ -33,7 +33,7 @@ else
                 </div>
 
                 <div class="mode-tabs" role="tablist">
-                    <button class="@(CurrentSessionType == SessionType.Pomodoro ? "active" : "")"
+                    <button class="@(CurrentSessionType == SessionType.Pomodoro ? "active pomodoro-active" : "")"
                             @onclick="() => HandleSessionSwitch(SessionType.Pomodoro)"
                             title="@Constants.KeyboardShortcuts.PomodoroKey"
                             role="tab"

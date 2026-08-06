@@ -130,3 +130,41 @@ kbd {
     font-weight: 500;
     flex-shrink: 0;
 }
+
+@media (min-width: 768px) {
+    .modal-content {
+        max-width: 560px;
+    }
+
+    .modal-body {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        max-height: none;
+        overflow-y: visible;
+    }
+
+    .shortcut-section {
+        margin-bottom: 0;
+    }
+
+    .shortcut-section h4 {
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+
+    .shortcut-item {
+        gap: 8px;
+        padding: 6px 0;
+    }
+
+    .shortcut-item span {
+        font-size: 14px;
+    }
+
+    kbd {
+        min-width: 36px;
+        padding: 4px 8px;
+        font-size: 14px;
+    }
+}

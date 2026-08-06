@@ -315,6 +315,29 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
         await SaveTaskAsync(materialized);
         _appState.InsertTask(materialized, Constants.Tasks.InsertAtEnd);
+
+        var idMapping = new Dictionary<Guid, Guid> { [occurrence.Id] = materialized.Id };
+        var descendants = GetDescendantsByParentId(occurrence.Id, _appState.Tasks);
+        foreach (var desc in descendants)
+        {
+            if (!desc.ParentTaskId.HasValue || !idMapping.TryGetValue(desc.ParentTaskId.Value, out var clonedParentId))
+                continue;
+
+            var clonedDesc = desc.WithUpdates(c =>
+            {
+                c.Id = Guid.NewGuid();
+                c.CreatedAt = DateTime.UtcNow;
+                c.ParentTaskId = clonedParentId;
+                c.Repeat = null;
+                c.ScheduledDate = occurrenceDate;
+                c.OccurrenceDate = occurrenceDate;
+            });
+
+            idMapping[desc.Id] = clonedDesc.Id;
+            await SaveTaskAsync(clonedDesc);
+            _appState.InsertTask(clonedDesc, Constants.Tasks.InsertAtEnd);
+        }
+
         NotifyStateChanged();
         MarkDirty();
     }
@@ -468,6 +491,33 @@ public class TaskService : ITaskService, ITimerEventSubscriber
             current = parent;
         }
         return false;
+    }
+
+    private static List<TaskItem> GetDescendantsByParentId(Guid rootId, IReadOnlyList<TaskItem> all)
+    {
+        var childrenByParent = all
+            .Where(t => t.ParentTaskId.HasValue)
+            .GroupBy(t => t.ParentTaskId!.Value)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<TaskItem>)g.OrderBy(t => t.CreatedAt).ToList());
+
+        var result = new List<TaskItem>();
+        var queue = new Queue<Guid>();
+        queue.Enqueue(rootId);
+        var seen = new HashSet<Guid> { rootId };
+
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+            if (!childrenByParent.TryGetValue(current, out var children)) continue;
+            foreach (var child in children)
+            {
+                if (!seen.Add(child.Id)) continue;
+                result.Add(child);
+                queue.Enqueue(child.Id);
+            }
+        }
+
+        return result;
     }
 
     public async Task CompleteTaskAsync(Guid taskId)
