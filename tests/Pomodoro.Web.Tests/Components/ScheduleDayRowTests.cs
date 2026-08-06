@@ -222,4 +222,19 @@ public class ScheduleDayRowTests : TestContext
         captured!.Name.Should().Be("Kid");
         captured.ParentTaskId.Should().Be(root.Id);
     }
+
+    [Fact]
+    public void ClickTaskRow_InvokesOnSelect()
+    {
+        var root = new TaskItem { Id = Guid.NewGuid(), Name = "Root", CreatedAt = DateTime.UtcNow };
+        Guid? selectedId = null;
+        var cut = RenderComponent<ScheduleDayRow>(p => p
+            .Add(x => x.Day, DayWithRoot(root))
+            .Add(x => x.AllTasks, new List<TaskItem> { root })
+            .Add(x => x.OnSelect, EventCallback.Factory.Create<Guid>(this, id => selectedId = id)));
+
+        cut.Find(".task-row").Click();
+
+        selectedId.Should().Be(root.Id);
+    }
 }

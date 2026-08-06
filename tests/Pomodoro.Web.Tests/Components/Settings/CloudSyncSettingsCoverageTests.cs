@@ -194,4 +194,16 @@ public class CloudSyncSettingsCoverageTests : TestContext
             _cloudSyncServiceMock.Raise(x => x.OnSyncStatusChanged += null));
         Assert.Null(ex);
     }
+
+    [Fact]
+    public void RendersReconnectBanner_WhenReconnectRequired()
+    {
+        _cloudSyncServiceMock.SetupGet(x => x.IsConnected).Returns(true);
+        _cloudSyncServiceMock.SetupGet(x => x.ReconnectRequired).Returns(true);
+
+        var cut = RenderComponent<CloudSyncSettings>();
+
+        cut.Markup.Should().Contain("reconnect-banner");
+        cut.Markup.Should().Contain("Reconnect");
+    }
 }

@@ -721,5 +721,123 @@ public class TaskListTests : TestContext
     }
 
     #endregion
+
+    #region More Options Panel
+
+    [Fact]
+    public void MorePanel_ShowsWhenMoreButtonClicked()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+
+        cut.Markup.Should().Contain("task-edit-panel");
+    }
+
+    [Fact]
+    public void MorePanel_ShowsGoogleLists_WhenGoogleListsProvided()
+    {
+        var googleLists = new List<TaskListRef>
+        {
+            new("google-1", "Work", "var(--pomodoro-color)", 2, true, true)
+        };
+
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null)
+            .Add(x => x.GoogleLists, googleLists));
+
+        cut.Find(".btn-more").Click();
+
+        cut.Markup.Should().Contain("Work");
+        cut.Markup.Should().Contain("google-1");
+    }
+
+    [Fact]
+    public void MorePanel_ShowsWeekdayButtons_WhenWeeklySelected()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        var repeatSelect = cut.FindAll("select.tep-select")[1];
+        repeatSelect.Change(RepeatType.Weekly);
+
+        cut.Markup.Should().Contain("tep-weekday-btn");
+        cut.FindAll(".tep-weekday-btn").Should().HaveCount(7);
+    }
+
+    [Fact]
+    public void MorePanel_TogglesWeekday_WhenWeekdayClicked()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Weekly);
+
+        var mondayBtn = cut.FindAll(".tep-weekday-btn")[0];
+        mondayBtn.Click();
+        cut.Render();
+
+        cut.FindAll(".tep-weekday-btn.active").Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void MorePanel_ShowsPauseToggle_WhenRepeatTypeSelected()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Daily);
+
+        cut.Markup.Should().Contain("tep-toggle");
+        cut.Markup.Should().Contain("Not paused");
+    }
+
+    [Fact]
+    public void MorePanel_TogglesPauseState_WhenPauseClicked()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Daily);
+
+        cut.Find(".tep-toggle").Click();
+        cut.Render();
+
+        cut.Markup.Should().Contain("Paused");
+    }
+
+    [Fact]
+    public void MorePanel_TogglesWeekdayOff_WhenAlreadyActive()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Weekly);
+
+        var mondayBtn = cut.FindAll(".tep-weekday-btn")[0];
+        mondayBtn.Click();
+        cut.Render();
+        cut.FindAll(".tep-weekday-btn.active").Should().HaveCount(1);
+
+        mondayBtn = cut.FindAll(".tep-weekday-btn")[0];
+        mondayBtn.Click();
+        cut.Render();
+        cut.FindAll(".tep-weekday-btn.active").Should().HaveCount(0);
+    }
+
+    #endregion
 }
 

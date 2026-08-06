@@ -776,5 +776,52 @@ public class TaskItemComponentTests : TestContext
     }
 
     #endregion
+
+    #region Delete Confirmation
+
+    [Fact]
+    public void HandleDelete_ShowsConfirmation_WhenHasChildren()
+    {
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Parent", IsCompleted = false };
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.HasChildren, true));
+
+        cut.Find("button[aria-label='Delete']").Click();
+
+        cut.Markup.Should().Contain("delete-confirm");
+    }
+
+    [Fact]
+    public void CancelDelete_HidesConfirmation()
+    {
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Parent", IsCompleted = false };
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.HasChildren, true));
+
+        cut.Find("button[aria-label='Delete']").Click();
+        cut.Find(".delete-confirm-cancel").Click();
+
+        cut.Markup.Should().NotContain("delete-confirm");
+    }
+
+    [Fact]
+    public void ConfirmDelete_InvokesOnDelete()
+    {
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Parent", IsCompleted = false };
+        Guid? deletedId = null;
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.HasChildren, true)
+            .Add(x => x.OnDelete, EventCallback.Factory.Create<Guid>(this, id => deletedId = id)));
+
+        cut.Find("button[aria-label='Delete']").Click();
+        cut.Find(".delete-confirm-go").Click();
+
+        deletedId.Should().Be(task.Id);
+    }
+
+    #endregion
 }
 
