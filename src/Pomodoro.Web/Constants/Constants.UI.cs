@@ -137,6 +137,9 @@ public static partial class Constants
         /// <summary>Bar-mark SVG for History nav tab</summary>
         public const string HistoryNavLogoPath = "logo-tarkeez-history.svg";
 
+        /// <summary>Info-circle SVG for About nav tab</summary>
+        public const string AboutNavLogoPath = "logo-tarkeez-about.svg";
+
         /// <summary>Application title displayed in header</summary>
         public const string AppTitle = "Tarkeez";
 

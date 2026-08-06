@@ -89,9 +89,10 @@ namespace Pomodoro.Web.Services
             yield return new NavLinkData
             {
                 Href = Constants.Routing.AboutRoute,
-                Icon = Constants.Layout.AboutNavIcon,
+                Icon = Constants.Layout.AboutNavLogoPath,
                 Title = Constants.Layout.AboutNavLinkTitle,
-                Match = NavLinkMatch.Prefix
+                Match = NavLinkMatch.Prefix,
+                IsLogoIcon = true
             };
         }
 
