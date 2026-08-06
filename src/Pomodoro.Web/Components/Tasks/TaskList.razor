@@ -2,35 +2,6 @@
 @using Pomodoro.Web.Models
 
 <div class="task-card">
-    <div class="task-card-header">
-        <span class="task-card-title">Tasks</span>
-        @if (!IsAddingTask)
-        {
-            <button class="task-add-btn" @onclick="StartAddTask">+ Add</button>
-        }
-    </div>
-    
-    <div class="add-task-section">
-        @if (IsAddingTask)
-        {
-            <div class="add-task-form">
-                <input type="text" 
-                       @bind="NewTaskName" 
-                       @bind:event="oninput"
-                       @onkeydown="HandleKeyPress"
-                       placeholder="Enter task name..." 
-                       class="task-input" 
-                       aria-label="New task name" />
-                <button class="btn-icon-small btn-add" @onclick="HandleAddTask" disabled="@IsAddDisabled" title="Add" aria-label="Add task">
-                    +
-                </button>
-                <button class="btn-icon-small btn-cancel" @onclick="CancelAddTask" title="Cancel" aria-label="Cancel">
-                    x
-                </button>
-            </div>
-        }
-    </div>
-    
     <div class="task-items">
         @foreach (var node in ActiveTaskNodes)
         {
@@ -38,6 +9,7 @@
                 Item="node.Task" 
                 Depth="node.Depth"
                 HasChildren="node.HasChildren"
+                ChildCount="node.ChildCount"
                 IsCollapsed="_collapsed.Contains(node.Task.Id)"
                 IsSelected="node.Task.Id == CurrentTaskId"
                 GoogleListTitle="@GoogleListTitleFor(node.Task)"
@@ -67,6 +39,7 @@
                             Item="node.Task" 
                             Depth="node.Depth"
                             HasChildren="node.HasChildren"
+                            ChildCount="node.ChildCount"
                             IsCollapsed="_collapsed.Contains(node.Task.Id)"
                             IsSelected="false"
                             GoogleListTitle="@GoogleListTitleFor(node.Task)"
@@ -80,6 +53,124 @@
                             OnToggleCollapse="ToggleCollapse" />
                     }
                 }
+            </div>
+        }
+    </div>
+
+    <div class="add-task-section">
+        @if (_isMoreExpanded)
+        {
+            <div class="task-edit-panel">
+                <div class="tep-header">
+                    <span class="tep-title">DETAILS</span>
+                    <button class="tep-collapse" @onclick="ToggleMore" aria-label="Hide options" aria-expanded="true">
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 7.5l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                </div>
+                <div class="tep-row">
+                    <label class="tep-label">Name</label>
+                    <input class="tep-input tep-input-name" @bind="NewTaskName" @bind:event="oninput" @onkeydown="HandleKeyPress" placeholder="Add a task..." aria-label="New task name" />
+                </div>
+                <div class="tep-row">
+                    <label class="tep-label">List</label>
+                    <select class="tep-select" @bind="_newTaskListId" @bind:event="onchange">
+                        <option value="@Constants.TaskLists.LocalPomodoroListId">Pomodoro</option>
+                        @if (GoogleLists.Any())
+                        {
+                            <option value="" disabled>— Google Tasks —</option>
+                            @foreach (var list in GoogleLists)
+                            {
+                                <option value="@list.Id">@list.Title</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="tep-row">
+                    <label class="tep-label">Repeat</label>
+                    <select class="tep-select" @bind="_newTaskRepeatType" @bind:event="onchange">
+                        <option value="@RepeatType.None">None</option>
+                        <option value="@RepeatType.Daily">Daily</option>
+                        <option value="@RepeatType.Weekly">Weekly</option>
+                        <option value="@RepeatType.Custom">Every N days</option>
+                        <option value="@RepeatType.Monthly">Monthly</option>
+                    </select>
+                </div>
+                @if (_newTaskRepeatType == RepeatType.Weekly)
+                {
+                    <div class="tep-row tep-weekdays">
+                        <label class="tep-label">Days</label>
+                        <div class="tep-weekday-btns">
+                            @foreach (var day in WeekdayOptions)
+                            {
+                                var isSelected = _newTaskWeekdays.Contains(day);
+                                var dayVal = day;
+                                <button type="button"
+                                        class="tep-weekday-btn @(isSelected ? "active" : "")"
+                                        @onclick="() => ToggleNewWeekday(dayVal)">
+                                    @day.ToString().Substring(0, 2)
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+                @if (_newTaskRepeatType == RepeatType.Custom)
+                {
+                    <div class="tep-row">
+                        <label class="tep-label">Every</label>
+                        <input type="number" class="tep-input tep-input-sm" min="1" max="@Constants.Repeat.MaxCustomDays"
+                               @bind="_newTaskCustomDays" @bind:event="oninput" />
+                        <span class="tep-unit">days</span>
+                    </div>
+                }
+                @if (_newTaskRepeatType == RepeatType.Monthly)
+                {
+                    <div class="tep-row">
+                        <label class="tep-label">Day</label>
+                        <input type="number" class="tep-input tep-input-sm" min="1" max="31"
+                               @bind="_newTaskMonthlyDay" @bind:event="oninput" />
+                        <span class="tep-unit">of month</span>
+                    </div>
+                }
+                <div class="tep-row">
+                    <label class="tep-label">Schedule</label>
+                    <input type="date" class="tep-input" @bind="_newTaskScheduledDate" @bind:event="onchange" />
+                </div>
+                @if (_newTaskRepeatType != RepeatType.None)
+                {
+                    <div class="tep-row">
+                        <label class="tep-label">Pause</label>
+                        <button type="button" class="tep-toggle @(_newTaskIsPaused ? "active" : "")" @onclick="() => _newTaskIsPaused = !_newTaskIsPaused">
+                            @Constants.Repeat.PausedIcon
+                            <span class="tep-toggle-label">@(_newTaskIsPaused ? "Paused" : "Not paused")</span>
+                        </button>
+                    </div>
+                }
+                <div class="tep-actions">
+                    <button class="tep-save-btn" @onclick="HandleAddTask" disabled="@IsAddDisabled">Create</button>
+                    <button class="tep-cancel-btn" @onclick="CancelMore">Cancel</button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="add-task-form">
+                <div class="task-input-wrap">
+                    <input type="text"
+                           @bind="NewTaskName"
+                           @bind:event="oninput"
+                           @onkeydown="HandleKeyPress"
+                           placeholder="Add a task..."
+                           class="task-input"
+                           aria-label="New task name" />
+                    <span class="task-input-hint">Shift+Enter for details</span>
+                </div>
+                <button class="btn-more" @onclick="ToggleMore" aria-label="Show more options" aria-expanded="false">
+                    <span>More</span>
+                    <svg width="12" height="12" viewBox="0 0 10 10" fill="none"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="btn-add-text" @onclick="HandleAddTask" disabled="@IsAddDisabled" aria-label="Add task">
+                    Add
+                </button>
             </div>
         }
     </div>

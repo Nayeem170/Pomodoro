@@ -420,6 +420,124 @@ public partial class TaskServiceTests
         Assert.True(eventFired);
     }
 
+    [Fact]
+    public async Task RestoreTaskAsync_ClearsIsDeletedFlag()
+    {
+        var taskId = Guid.NewGuid();
+        var task = CreateSampleTask(id: taskId);
+        task.IsDeleted = true;
+        task.DeletedAt = DateTime.UtcNow;
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
+        MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        await service.RestoreTaskAsync(taskId);
+
+        Assert.False(service.AllTasks.First(t => t.Id == taskId).IsDeleted);
+        Assert.Single(service.Tasks);
+    }
+
+    [Fact]
+    public async Task RestoreTaskAsync_NonDeletedTask_DoesNothing()
+    {
+        var taskId = Guid.NewGuid();
+        var task = CreateSampleTask(id: taskId);
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
+        MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        await service.RestoreTaskAsync(taskId);
+
+        MockTaskRepository.Verify(r => r.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RestoreTaskAsync_RestoresDescendants()
+    {
+        var parentId = Guid.NewGuid();
+        var childId = Guid.NewGuid();
+        var parent = CreateSampleTask(id: parentId);
+        parent.IsDeleted = true;
+        parent.DeletedAt = DateTime.UtcNow;
+        var child = CreateSampleTask(id: childId);
+        child.ParentTaskId = parentId;
+        child.IsDeleted = true;
+        child.DeletedAt = DateTime.UtcNow;
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { parent, child });
+        MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        await service.RestoreTaskAsync(parentId);
+
+        Assert.False(service.AllTasks.First(t => t.Id == parentId).IsDeleted);
+        Assert.False(service.AllTasks.First(t => t.Id == childId).IsDeleted);
+    }
+
+    [Fact]
+    public async Task DeleteTaskAsync_CascadeDeletesDescendants()
+    {
+        var parentId = Guid.NewGuid();
+        var childId = Guid.NewGuid();
+        var grandchildId = Guid.NewGuid();
+        var parent = CreateSampleTask(id: parentId);
+        var child = CreateSampleTask(id: childId);
+        child.ParentTaskId = parentId;
+        var grandchild = CreateSampleTask(id: grandchildId);
+        grandchild.ParentTaskId = childId;
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { parent, child, grandchild });
+        MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        await service.DeleteTaskAsync(parentId);
+
+        Assert.True(service.AllTasks.First(t => t.Id == parentId).IsDeleted);
+        Assert.True(service.AllTasks.First(t => t.Id == childId).IsDeleted);
+        Assert.True(service.AllTasks.First(t => t.Id == grandchildId).IsDeleted);
+    }
+
+    [Fact]
+    public async Task DeleteTaskAsync_WhenChildIsCurrentTask_ClearsCurrentTaskId()
+    {
+        var parentId = Guid.NewGuid();
+        var childId = Guid.NewGuid();
+        var parent = CreateSampleTask(id: parentId);
+        var child = CreateSampleTask(id: childId);
+        child.ParentTaskId = parentId;
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { parent, child });
+        MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        MockIndexedDb.Setup(d => d.PutAsync(It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(true);
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new AppStateRecord { CurrentTaskId = childId });
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        await service.DeleteTaskAsync(parentId);
+
+        Assert.Null(service.CurrentTaskId);
+    }
+
     #endregion
 }
 
