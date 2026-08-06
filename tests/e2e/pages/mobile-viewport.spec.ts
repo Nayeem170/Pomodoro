@@ -17,9 +17,9 @@ test.describe('Mobile Viewport (375x812)', () => {
     await expect(page.locator('.stb-time')).toBeVisible();
   });
 
-  test('should show mode tabs on mobile', async ({ page }) => {
+  test('should show session tabs on mobile', async ({ page }) => {
     await pomodoroPage.goto('/');
-    await expect(page.locator('.mode-tabs')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.stb-tabs')).toBeVisible({ timeout: 30000 });
   });
 
   test('should show task list on mobile', async ({ page }) => {

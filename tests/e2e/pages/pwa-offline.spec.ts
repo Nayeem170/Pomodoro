@@ -53,6 +53,6 @@ test.describe('PWA and Offline Support', () => {
   test('should have meta theme-color tag', async ({ page }) => {
     const html = readFileSync(resolve(__dirname, '../../../src/Pomodoro.Web/wwwroot/index.html'), 'utf-8');
     expect(html).toContain('name="theme-color"');
-    expect(html).toContain('content="#374151"');
+    expect(html).toContain('content="#1c3d35"');
   });
 });

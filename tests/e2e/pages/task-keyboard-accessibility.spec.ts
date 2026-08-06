@@ -44,11 +44,14 @@ test.describe('Task Row Keyboard Accessibility', () => {
     await pomodoroPage.addTask('Tab Task');
     await page.waitForTimeout(500);
 
-    await page.keyboard.press('Tab');
-    await page.waitForTimeout(200);
-
-    const focusedElement = page.locator(':focus');
-    const isTaskRow = await focusedElement.evaluate(el => el.closest('.task-row') !== null);
+    let isTaskRow = false;
+    for (let i = 0; i < 15; i++) {
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(100);
+      const focusedElement = page.locator(':focus');
+      isTaskRow = await focusedElement.evaluate(el => el.closest('.task-row') !== null);
+      if (isTaskRow) break;
+    }
     expect(isTaskRow).toBe(true);
   });
 });

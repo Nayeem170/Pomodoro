@@ -13,7 +13,7 @@ test.describe('Page Title', () => {
 
     const title = await page.title();
     expect(title).toBeTruthy();
-    expect(title.toLowerCase()).toContain('pomodoro');
+    expect(title.toLowerCase()).toContain('tarkeez');
   });
 
   test('should have default title on history page', async ({ page }) => {
@@ -23,7 +23,7 @@ test.describe('Page Title', () => {
 
     const title = await page.title();
     expect(title).toBeTruthy();
-    expect(title.toLowerCase()).toContain('pomodoro');
+    expect(title.toLowerCase()).toContain('tarkeez');
   });
 
   test('should have default title on settings page', async ({ page }) => {
@@ -33,7 +33,7 @@ test.describe('Page Title', () => {
 
     const title = await page.title();
     expect(title).toBeTruthy();
-    expect(title.toLowerCase()).toContain('pomodoro');
+    expect(title.toLowerCase()).toContain('tarkeez');
   });
 
   test('should have default title on about page', async ({ page }) => {
@@ -43,7 +43,7 @@ test.describe('Page Title', () => {
 
     const title = await page.title();
     expect(title).toBeTruthy();
-    expect(title.toLowerCase()).toContain('pomodoro');
+    expect(title.toLowerCase()).toContain('tarkeez');
   });
 
   test('should have not found title on non-existent route', async ({ page }) => {
