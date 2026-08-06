@@ -106,14 +106,14 @@ test.describe('Google Tasks Connect Flow', () => {
     await expect(page.locator('.task-row').filter({ hasText: 'Buy groceries' })).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.task-row').filter({ hasText: 'Write code' })).toBeVisible();
     await expect(page.locator('.task-row').filter({ hasText: 'Team standup' })).toBeVisible();
-    await expect(page.locator('.gtag')).toHaveCount(3);
+    await expect(page.locator('.google-badge')).toHaveCount(3);
   });
 
   test('should show Google tag badge on Google tasks', async ({ page }) => {
     await expect(page.locator('.ltabs')).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('.gtag').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.google-badge').first()).toBeVisible({ timeout: 10000 });
     const googleTask = page.locator('.task-row').filter({ hasText: 'Buy groceries' });
-    await expect(googleTask.locator('.gtag')).toBeVisible();
+    await expect(googleTask.locator('.google-badge')).toBeVisible();
   });
 
   test('should not show sync strip for local Tasks tab', async ({ page }) => {
