@@ -347,6 +347,10 @@ input, textarea, [contenteditable="true"] {
     font-weight: 600;
 }
 
+.mode-tabs button.active.pomodoro-active {
+    border-color: var(--pomodoro-color);
+}
+
 .mode-tabs button.active.short-break-active {
     border-color: var(--short-break-color);
 }
