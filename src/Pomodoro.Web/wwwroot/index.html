@@ -42,7 +42,7 @@
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/history.css" />
     <link rel="stylesheet" href="css/settings.css" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><circle cx='96' cy='96' r='54' fill='none' stroke='%231a1a1a' stroke-width='10'/><circle cx='96' cy='96' r='34' fill='none' stroke='%23006A4E' stroke-width='10'/><circle cx='96' cy='96' r='19' fill='%23F42A41'/></svg>" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><circle cx='96' cy='96' r='54' fill='none' stroke='%23C0C0C0' stroke-width='10'/><circle cx='96' cy='96' r='34' fill='none' stroke='%23006A4E' stroke-width='10'/><circle cx='96' cy='96' r='19' fill='%23F42A41'/></svg>" />
     <link href="Pomodoro.Web.styles.css" rel="stylesheet" />
     <link href="manifest.webmanifest" rel="manifest" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.svg" />
@@ -73,8 +73,11 @@
 <body>
     <div id="app">
         <div class="loading-container">
-            <div class="loading-spinner"><svg width="42" height="42" viewBox="0 0 192 192"><circle cx="96" cy="96" r="54" fill="none" stroke="#1a1a1a" stroke-width="10"/><circle cx="96" cy="96" r="34" fill="none" stroke="#006A4E" stroke-width="10"/><circle cx="96" cy="96" r="19" fill="#F42A41"/></svg></div>
-            <div class="loading-text">Loading Tarkeez...</div>
+            <div class="loading-spinner"><svg width="100%" height="100%" viewBox="0 0 192 192">
+                <circle class="ls-outer" cx="96" cy="96" r="54" fill="none" stroke="#C0C0C0" stroke-width="10"/>
+                <circle class="ls-middle" cx="96" cy="96" r="34" fill="none" stroke="#006A4E" stroke-width="10"/>
+                <circle class="ls-dot" cx="96" cy="96" r="19" fill="#F42A41"/>
+            </svg></div>
         </div>
     </div>
 

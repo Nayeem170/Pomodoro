@@ -119,8 +119,8 @@ input, textarea, [contenteditable="true"] {
 }
 
 .header-logo {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
 }
 
 /* Header Navigation - Desktop */
@@ -272,8 +272,8 @@ input, textarea, [contenteditable="true"] {
         font-size: 16px;
     }
     .header-logo {
-        width: 20px;
-        height: 20px;
+        width: 28px;
+        height: 28px;
     }
 }
 
@@ -1806,19 +1806,26 @@ input, textarea, [contenteditable="true"] {
 }
 
 .loading-spinner {
-    font-size: 42px;
-    animation: bounce 1s infinite;
+    width: 160px;
+    height: 160px;
 }
 
-.loading-text {
-    margin-top: 14px;
-    font-size: 16px;
-    color: var(--color-text-tertiary);
+.loading-spinner .ls-outer {
+    animation: ls-step-outer 3s infinite;
 }
 
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+.loading-spinner .ls-middle {
+    animation: ls-step-middle 3s infinite;
+}
+
+@keyframes ls-step-outer {
+    0%, 33.33% { opacity: 1; }
+    33.34%, 100% { opacity: 0; }
+}
+
+@keyframes ls-step-middle {
+    0%, 66.66% { opacity: 1; }
+    66.67%, 100% { opacity: 0; }
 }
 
 /* Section Error */
@@ -2658,8 +2665,8 @@ input, textarea, [contenteditable="true"] {
     }
 
     .header-logo {
-        width: 20px;
-        height: 20px;
+        width: 28px;
+        height: 28px;
     }
 
     .task-edit-panel {
