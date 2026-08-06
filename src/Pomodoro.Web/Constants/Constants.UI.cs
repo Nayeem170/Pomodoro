@@ -1,13 +1,7 @@
 namespace Pomodoro.Web;
 
-/// <summary>
-/// UI-related constants for display, layout, and user interface elements
-/// </summary>
 public static partial class Constants
 {
-    /// <summary>
-    /// Activity-related display strings
-    /// </summary>
     public static class Activity
     {
         public const string FocusTimeLabel = "Focus time";
@@ -16,9 +10,6 @@ public static partial class Constants
         public const string BreaksLabel = "Breaks";
     }
 
-    /// <summary>
-    /// UI-related constants
-    /// </summary>
     public static class UI
     {
         /// <summary>Default consent modal countdown in seconds</summary>
@@ -35,6 +26,10 @@ public static partial class Constants
 
         /// <summary>Toast notification display duration in milliseconds</summary>
         public const int ToastDurationMs = 2000;
+
+        public const int UndoToastDurationMs = 5000;
+
+        public const int ErrorToastDurationMs = 4000;
 
         /// <summary>Percentage multiplier for progress calculations</summary>
         public const int PercentageMultiplier = 100;
@@ -87,9 +82,6 @@ public static partial class Constants
         #endregion
     }
 
-    /// <summary>
-    /// History page tab labels
-    /// </summary>
     public static class History
     {
         public const string DailyTabLabel = "Daily";
@@ -110,9 +102,6 @@ public static partial class Constants
         public const string RightArrowIcon = "▶";
     }
 
-    /// <summary>
-    /// Notification-related constants
-    /// </summary>
     public static class Notifications
     {
         /// <summary>Notification tag for timer notifications</summary>
@@ -125,9 +114,6 @@ public static partial class Constants
         public const int CountdownIntervalSeconds = 1;
     }
 
-    /// <summary>
-    /// Blazor framework-related constants
-    /// </summary>
     public static class Blazor
     {
         /// <summary>Root component selector for the main app</summary>
@@ -137,9 +123,6 @@ public static partial class Constants
         public const string HeadOutletSelector = "head::after";
     }
 
-    /// <summary>
-    /// Layout related constants for MainLayout.razor
-    /// </summary>
     public static class Layout
     {
         /// <summary>Application icon emoji</summary>
@@ -164,7 +147,7 @@ public static partial class Constants
         public const string AboutNavIcon = "ℹ️";
 
         /// <summary>Timer navigation link title</summary>
-        public const string TimerNavLinkTitle = "Timer";
+        public const string TimerNavLinkTitle = "Focus";
 
         /// <summary>History navigation link title</summary>
         public const string HistoryNavLinkTitle = "History";
@@ -192,18 +175,12 @@ public static partial class Constants
         public const string FooterCopyrightOwner = "BitOps";
     }
 
-    /// <summary>
-    /// Page title constants
-    /// </summary>
     public static class PageTitles
     {
         /// <summary>About page title</summary>
         public const string AboutPageTitle = "About";
     }
 
-    /// <summary>
-    /// Task-related UI text constants
-    /// </summary>
     public static class TaskUI
     {
         /// <summary>Current task label prefix with emoji</summary>
@@ -213,9 +190,6 @@ public static partial class Constants
         public const string SelectTaskPrompt = "📌 Select a task to start";
     }
 
-    /// <summary>
-    /// Picture-in-Picture timer UI text constants
-    /// </summary>
     public static class PipTimerUI
     {
         /// <summary>Title for close floating timer button</summary>
@@ -225,9 +199,6 @@ public static partial class Constants
         public const string PopOutFloatingTimerTitle = "Pop out floating timer";
     }
 
-    /// <summary>
-    /// CSS file path constants
-    /// </summary>
     public static class CssPaths
     {
         /// <summary>About page CSS file path</summary>
@@ -235,9 +206,6 @@ public static partial class Constants
     }
 
 
-    /// <summary>
-    /// About page content text constants for translation/localization
-    /// </summary>
     public static class AboutPageContent
     {
         // Header Section
