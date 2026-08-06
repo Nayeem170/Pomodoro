@@ -423,6 +423,26 @@ public class IndexTasksTests : TestHelper
     }
 
     [Fact]
+    public async Task HandleTaskDelete_RendersUndoToast_WhenSuccessful()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem { Id = taskId, Name = "My Task" };
+        AppState.Tasks = new List<TaskItem> { task };
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var loadingProp = typeof(IndexBase).GetProperty("IsLoading",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        loadingProp!.SetValue(cut.Instance, false);
+        cut.Render();
+
+        await cut.Instance.HandleTaskDelete(taskId);
+        cut.Render();
+
+        cut.Markup.Should().Contain("undo-toast");
+        cut.Markup.Should().Contain("My Task");
+    }
+
+    [Fact]
     public async Task HandleUndoDelete_DoesNothing_WhenNoDeletePending()
     {
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
@@ -446,6 +466,30 @@ public class IndexTasksTests : TestHelper
         await cut.Instance.HandleUndoDelete();
 
         cut.Instance.ErrorMessage.Should().Contain("Restore failed");
+    }
+
+    #endregion
+
+    #region Session Log Rendering
+
+    [Fact]
+    public void RendersSessionLog_WhenActivitiesExist()
+    {
+        var activities = new List<ActivityRecord>
+        {
+            new() { Type = SessionType.Pomodoro, CompletedAt = DateTime.Today.AddHours(10) },
+            new() { Type = SessionType.Pomodoro, CompletedAt = DateTime.Today.AddHours(9) },
+            new() { Type = SessionType.ShortBreak, CompletedAt = DateTime.Today.AddHours(11) }
+        };
+        ActivityServiceMock.Setup(x => x.GetTodayActivities()).Returns(activities);
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var loadingProp = typeof(IndexBase).GetProperty("IsLoading",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        loadingProp!.SetValue(cut.Instance, false);
+        cut.Render();
+
+        cut.Markup.Should().Contain("session-log");
     }
 
     #endregion

@@ -823,5 +823,26 @@ public class TaskItemComponentTests : TestContext
     }
 
     #endregion
+
+    #region Repeat Label Edge Cases
+
+    [Fact]
+    public void RendersWithoutError_WhenRepeatTypeIsUnexpected()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Edge",
+            Repeat = new RepeatRule { Type = (RepeatType)999 }
+        };
+
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.HasChildren, false));
+
+        cut.Markup.Should().Contain("Edge");
+    }
+
+    #endregion
 }
 
