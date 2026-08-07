@@ -62,7 +62,7 @@ public class SessionLogTests : TestContext
         var cut = RenderComponent<SessionLog>(p => p
             .Add(x => x.Sessions, sessions));
 
-        cut.Markup.Should().Contain("3 done");
+        cut.Find(".session-log-count").TextContent.Should().Contain("3");
     }
 
     [Fact]
