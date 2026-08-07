@@ -314,7 +314,7 @@ input, textarea, [contenteditable="true"] {
     }
 
     .app-content {
-        padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(74px + env(safe-area-inset-bottom, 0px));
     }
 
     .header-content-wrapper {
@@ -396,12 +396,12 @@ input, textarea, [contenteditable="true"] {
 }
 
 .card-top {
-    padding: 20px 16px 12px;
+    padding: 16px 16px 24px;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 14px;
+    gap: 18px;
 }
 
 .timer-task-pill {
@@ -437,8 +437,8 @@ input, textarea, [contenteditable="true"] {
 /* Circular Progress Ring */
 .ring-area {
     position: relative;
-    width: 160px;
-    height: 160px;
+    width: 200px;
+    height: 200px;
     flex-shrink: 0;
 }
 
@@ -451,13 +451,13 @@ input, textarea, [contenteditable="true"] {
 .ring-bg {
     fill: none;
     stroke: #ffffff17;
-    stroke-width: 12;
+    stroke-width: 14;
 }
 
 .ring-fill {
     fill: none;
     stroke: var(--pomodoro-color);
-    stroke-width: 12;
+    stroke-width: 14;
     stroke-linecap: round;
     stroke-dashoffset: 0;
     transition: stroke-dashoffset 0.4s ease;
@@ -610,6 +610,7 @@ input, textarea, [contenteditable="true"] {
     flex-direction: column;
     align-items: center;
     gap: 10px;
+    padding: 10px 0;
 }
 
 .ctrl-row {
@@ -2127,7 +2128,6 @@ input, textarea, [contenteditable="true"] {
     padding: 8px;
     overflow: hidden;
     min-height: 0;
-    max-height: 200px;
 }
 
 .session-log-header {
@@ -2139,21 +2139,53 @@ input, textarea, [contenteditable="true"] {
 }
 
 .session-log-title {
-    font-size: 11px;
-    color: var(--color-text-tertiary);
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.session-log-count {
-    font-size: 11px;
-    color: var(--pomodoro-color);
+.session-log-counts {
+    display: flex;
+    gap: 8px;
+}
+
+.slc-complete, .slc-partial {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
     font-family: var(--font-mono);
     font-weight: 600;
-    background: rgba(244, 42, 65, 0.12);
-    padding: 1px 8px;
+    padding: 1px 7px;
     border-radius: 10px;
+}
+
+.slc-complete {
+    color: var(--pomodoro-color);
+    background: rgba(244, 42, 65, 0.12);
+}
+
+.slc-partial {
+    color: rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.slc-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--pomodoro-color);
+    flex-shrink: 0;
+}
+
+.slc-ring {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.7);
+    flex-shrink: 0;
 }
 
 .session-log-items {
@@ -2184,22 +2216,20 @@ input, textarea, [contenteditable="true"] {
 }
 
 .session-log-empty {
-    color: var(--color-text-tertiary);
-    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
     text-align: center;
     padding: 12px 0;
     margin: auto 0;
-    opacity: 0.5;
 }
 
 .session-log-row {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: 8px;
     line-height: 1.4;
     padding: 3px 8px;
     border-radius: 6px;
-    border-left: 2px solid var(--pomodoro-color);
     transition: background 0.15s ease;
 }
 
@@ -2207,37 +2237,47 @@ input, textarea, [contenteditable="true"] {
     background: rgba(255, 255, 255, 0.04);
 }
 
-.session-log-row.partial {
-    border-left-style: dashed;
-    border-left-color: rgba(244, 42, 65, 0.4);
+.session-bullet {
+    box-sizing: border-box;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    align-self: center;
+    background: var(--pomodoro-color);
 }
 
-.session-log-row.partial .session-dur {
-    opacity: 0.4;
+.session-log-row.partial .session-bullet {
+    background: transparent;
+    border: 1.5px solid var(--pomodoro-color);
 }
 
 .session-time {
-    font-size: 10px;
-    color: var(--color-text-tertiary);
+    font-size: 12px;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.75);
     flex-shrink: 0;
     font-variant-numeric: tabular-nums;
     font-family: var(--font-mono);
-    min-width: 34px;
+    min-width: 68px;
 }
 
 .session-task {
     flex: 1;
-    font-size: 11px;
-    color: var(--color-text-secondary);
+    font-size: 13px;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.9);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .session-dur {
-    font-size: 10px;
-    color: var(--color-text-tertiary);
+    font-size: 12px;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.75);
     flex-shrink: 0;
+    align-self: center;
     font-family: var(--font-mono);
     font-weight: 500;
     background: rgba(255, 255, 255, 0.06);
@@ -2345,17 +2385,20 @@ input, textarea, [contenteditable="true"] {
     }
 
     .session-log-wrap {
+        flex: 1 1 0;
         min-height: 0;
         display: flex;
         flex-direction: column;
     }
 
     .session-log {
+        flex: 1;
         display: flex;
     }
 
     .timer-card {
-        flex: 1;
+        flex: 2 1 0;
+        min-height: 420px;
         display: flex;
         flex-direction: column;
     }
@@ -2646,7 +2689,7 @@ input, textarea, [contenteditable="true"] {
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        margin-top: 0;
+        margin-top: 10px;
     }
 
     .task-card {
@@ -2743,7 +2786,7 @@ input, textarea, [contenteditable="true"] {
 @media (min-width: 900px) {
     .timer-split {
         display: grid;
-        grid-template-columns: 520px minmax(0, 1fr);
+        grid-template-columns: 1fr 1fr;
         gap: 14px;
         align-items: stretch;
         padding: 18px 20px;
@@ -2908,5 +2951,121 @@ input, textarea, [contenteditable="true"] {
     .app-content,
     .header-content-wrapper {
         max-width: 1100px;
+    }
+}
+
+/* =============================================================================
+   Height-based progressive compression (desktop only)
+   Tier 1: reduce gaps and padding
+   Tier 2: compress further
+   Tier 3: switch to compact mobile timer bar
+   ============================================================================= */
+
+@media (max-height: 720px) and (min-width: 900px) {
+    .card-top {
+        gap: 10px;
+        padding: 8px 16px 12px;
+    }
+
+    .timer-controls {
+        padding: 4px 0;
+    }
+
+    .timer-card {
+        min-height: 380px;
+    }
+}
+
+@media (max-height: 620px) and (min-width: 900px) {
+    .card-top {
+        gap: 6px;
+        padding: 4px 16px 8px;
+    }
+
+    .timer-controls {
+        padding: 0;
+    }
+
+    .timer-card {
+        min-height: 350px;
+    }
+}
+
+@media (max-height: 540px) and (min-width: 900px) {
+    .timer-split {
+        display: flex !important;
+        flex-direction: column;
+        padding: 10px 14px;
+    }
+
+    .split-timer {
+        display: none !important;
+    }
+
+    .split-tasks {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        margin-top: 8px;
+    }
+
+    .sticky-timer-bar {
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        gap: 0;
+        background: var(--color-surface-dark, #0f1f1c);
+        border: 1px solid rgba(244, 42, 65, 0.3);
+        border-radius: 8px;
+    }
+
+    .sticky-timer-bar.short-break-theme {
+        border-color: rgba(252, 165, 165, 0.3);
+    }
+
+    .sticky-timer-bar.long-break-theme {
+        border-color: rgba(192, 192, 192, 0.3);
+    }
+
+    .stb-tabs {
+        display: flex;
+        gap: 0;
+    }
+
+    .stb-tab {
+        flex: 1;
+        padding: 8px 0;
+        border: none;
+        background: transparent;
+        font-size: 12px;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        font-family: var(--font-sans);
+        border-bottom: 2px solid transparent;
+        text-align: center;
+    }
+
+    .stb-tab.act {
+        color: #9db8ae;
+        font-weight: 600;
+        border-bottom-color: var(--pomodoro-color);
+    }
+
+    .stb-tab.act.sb {
+        border-bottom-color: var(--short-break-color);
+    }
+
+    .stb-tab.act.lb {
+        border-bottom-color: var(--long-break-color);
+    }
+
+    .stb-body {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 11px;
     }
 }

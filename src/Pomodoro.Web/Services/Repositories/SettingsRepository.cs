@@ -27,7 +27,7 @@ public class SettingsRepository : ISettingsRepository
             LongBreakInterval = record.LongBreakInterval,
             DailyGoal = record.DailyGoal,
             ExpandTimerMobile = record.ExpandTimerMobile,
-            RecordPartialSessions = record.RecordPartialSessions ?? false
+            RecordPartialSessions = record.RecordPartialSessions ?? true
         };
 
         if (record.AutoStartSession.HasValue)

@@ -105,6 +105,8 @@ public interface ITimerService
 
     Task<bool> TryRecordPartialSessionAsync();
 
+    void ChangeCurrentTask(Guid taskId);
+
     /// <param name="settings">The new settings to apply.</param>
     /// <returns>A task that completes when settings are updated.</returns>
     /// <remarks>

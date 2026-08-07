@@ -344,6 +344,14 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         return true;
     }
 
+    public void ChangeCurrentTask(Guid taskId)
+    {
+        if (_appState.CurrentSession != null)
+        {
+            _appState.CurrentSession.TaskId = taskId;
+        }
+    }
+
     private async Task NotifySessionInterruptedAsync(TimerCompletedEventArgs args)
     {
         if (OnSessionInterrupted != null)
