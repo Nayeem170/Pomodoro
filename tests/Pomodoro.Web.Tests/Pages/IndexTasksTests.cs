@@ -1,6 +1,7 @@
 using Bunit;
 using FluentAssertions;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Pages;
 using Xunit;
@@ -278,6 +279,91 @@ public class IndexTasksTests : TestHelper
 
         // Assert
         cut.Instance.ErrorMessage.Should().Be($"Error selecting task: Task ID cannot be empty (Parameter 'taskId')");
+    }
+
+    [Fact]
+    public async Task HandleTaskSelect_WhenTimerRunningAndSettingOn_RecordsPartialAndRestarts()
+    {
+        // Arrange
+        var taskId = Guid.NewGuid();
+        TimerServiceMock.SetupGet(x => x.IsRunning).Returns(true);
+        TimerServiceMock.SetupGet(x => x.CurrentSessionType).Returns(SessionType.Pomodoro);
+        var appState = Services.GetRequiredService<AppState>();
+        appState.Settings.RecordPartialSessions = true;
+        TimerServiceMock.Setup(x => x.TryRecordPartialSessionAsync()).ReturnsAsync(true);
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        // Act
+        await cut.Instance.HandleTaskSelect(taskId);
+
+        // Assert
+        TimerServiceMock.Verify(x => x.TryRecordPartialSessionAsync(), Times.Once);
+        TimerServiceMock.Verify(x => x.PauseAsync(), Times.Once);
+        TaskServiceMock.Verify(x => x.SelectTaskAsync(taskId), Times.Once);
+        TimerServiceMock.Verify(x => x.StartPomodoroAsync(taskId), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleTaskSelect_WhenTimerNotRunning_DoesNotRecordPartial()
+    {
+        // Arrange
+        var taskId = Guid.NewGuid();
+        TimerServiceMock.SetupGet(x => x.IsRunning).Returns(false);
+        var appState = Services.GetRequiredService<AppState>();
+        appState.Settings.RecordPartialSessions = true;
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        // Act
+        await cut.Instance.HandleTaskSelect(taskId);
+
+        // Assert
+        TimerServiceMock.Verify(x => x.TryRecordPartialSessionAsync(), Times.Never);
+        TimerServiceMock.Verify(x => x.StartPomodoroAsync(It.IsAny<Guid?>()), Times.Never);
+        TaskServiceMock.Verify(x => x.SelectTaskAsync(taskId), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleTaskSelect_WhenSettingOff_DoesNotRecordPartial()
+    {
+        // Arrange
+        var taskId = Guid.NewGuid();
+        TimerServiceMock.SetupGet(x => x.IsRunning).Returns(true);
+        TimerServiceMock.SetupGet(x => x.CurrentSessionType).Returns(SessionType.Pomodoro);
+        var appState = Services.GetRequiredService<AppState>();
+        appState.Settings.RecordPartialSessions = false;
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        // Act
+        await cut.Instance.HandleTaskSelect(taskId);
+
+        // Assert
+        TimerServiceMock.Verify(x => x.TryRecordPartialSessionAsync(), Times.Never);
+        TimerServiceMock.Verify(x => x.StartPomodoroAsync(It.IsAny<Guid?>()), Times.Never);
+        TaskServiceMock.Verify(x => x.SelectTaskAsync(taskId), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleTaskSelect_WhenBreakSession_DoesNotRecordPartial()
+    {
+        // Arrange
+        var taskId = Guid.NewGuid();
+        TimerServiceMock.SetupGet(x => x.IsRunning).Returns(true);
+        TimerServiceMock.SetupGet(x => x.CurrentSessionType).Returns(SessionType.ShortBreak);
+        var appState = Services.GetRequiredService<AppState>();
+        appState.Settings.RecordPartialSessions = true;
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        // Act
+        await cut.Instance.HandleTaskSelect(taskId);
+
+        // Assert
+        TimerServiceMock.Verify(x => x.TryRecordPartialSessionAsync(), Times.Never);
+        TimerServiceMock.Verify(x => x.StartPomodoroAsync(It.IsAny<Guid?>()), Times.Never);
+        TaskServiceMock.Verify(x => x.SelectTaskAsync(taskId), Times.Once);
     }
 
     [Fact]
