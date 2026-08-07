@@ -54,6 +54,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ ((github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'workflow_dispatch' && inputs.branch == 'main')) && 'production' || 'preview' }}
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           name: publish
@@ -68,3 +70,15 @@ jobs:
           projectName: tarkeez
           branch: ${{ github.event_name == 'push' && github.ref_name || inputs.branch }}
           directory: publish/wwwroot
+
+      - name: Provision custom domain (production only)
+        if: github.event_name == 'push' && github.ref_name == 'main'
+        env:
+          PROJECT_NAME: tarkeez
+          CUSTOM_DOMAIN: tarkeez.bitops.bd
+          ZONE_NAME: bitops.bd
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          chmod +x scripts/provision-pages-domain.sh
+          bash scripts/provision-pages-domain.sh
