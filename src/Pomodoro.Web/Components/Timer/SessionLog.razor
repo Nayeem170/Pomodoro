@@ -14,7 +14,7 @@
         {
             @foreach (var session in Sessions)
             {
-                <div class="session-log-row">
+                <div class="session-log-row @(session.WasCompleted ? "" : "partial")">
                     <span class="session-dot"></span>
                     <span class="session-time">@session.CompletedAt.ToLocalTime().ToString("h:mm tt")</span>
                     <span class="session-task">@(session.TaskName ?? "Focus")</span>
