@@ -51,6 +51,9 @@ public abstract class TestHelper : TestContext
         // Create mocks for all services
         TimerServiceMock = new Mock<ITimerService>();
         TimerServiceMock.SetupGet(x => x.Settings).Returns(new TimerSettings());
+        TimerServiceMock.SetupGet(x => x.IsRunning).Returns(false);
+        TimerServiceMock.SetupGet(x => x.CurrentSessionType).Returns(SessionType.Pomodoro);
+        TimerServiceMock.Setup(x => x.TryRecordPartialSessionAsync()).ReturnsAsync(false);
         TimerEventPublisherMock = new Mock<ITimerEventPublisher>();
         TaskServiceMock = new Mock<ITaskService>();
         TaskServiceMock.Setup(x => x.GetTasksForListAsync(It.IsAny<string>()))

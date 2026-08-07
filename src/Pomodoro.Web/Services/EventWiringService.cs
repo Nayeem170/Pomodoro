@@ -39,6 +39,7 @@ public class EventWiringService : IEventWiringService
             if (activityService is ITimerEventSubscriber activitySubscriber)
             {
                 timerPublisher.OnTimerCompleted += activitySubscriber.HandleTimerCompletedAsync;
+                timerPublisher.OnSessionInterrupted += activitySubscriber.HandleTimerCompletedAsync;
             }
 
             // Subscribe ConsentService to timer events
