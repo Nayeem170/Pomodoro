@@ -1858,13 +1858,6 @@ input, textarea, [contenteditable="true"] {
     75%, 100% { stroke-dashoffset: 0; }
 }
 
-.loading-text {
-    margin-top: 16px;
-    font-size: 13px;
-    color: var(--color-text-tertiary);
-    letter-spacing: 0.5px;
-}
-
 /* Section Error */
 .section-error {
     display: flex;
