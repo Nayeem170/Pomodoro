@@ -2557,6 +2557,79 @@ input, textarea, [contenteditable="true"] {
     .sticky-timer-bar.long-break-theme {
         border-color: rgba(192, 192, 192, 0.3);
     }
+
+    .app-wrapper {
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .app-content {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .main-container {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .timer-split {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .split-tasks {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tasks-section {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        margin-top: 0;
+    }
+
+    .task-card {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .task-items {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    .add-task-section {
+        flex-shrink: 0;
+    }
+
+    .schedule-agenda {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sched-nav {
+        flex-shrink: 0;
+    }
+
+    .sched-days {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+    }
 }
 
 /* Responsive */
