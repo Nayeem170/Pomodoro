@@ -195,7 +195,7 @@ public class AutomationSettingsTests : TestContext
         var settings = new TimerSettings();
         var cut = RenderComponent<AutomationSettings>(p => p.Add(x => x.Settings, settings));
 
-        cut.FindAll(".tog").Should().HaveCount(1);
+        cut.FindAll(".tog").Should().HaveCount(2);
     }
 }
 

@@ -11,15 +11,7 @@ public partial class IndexBase
     {
         try
         {
-            if (option.IsResume)
-            {
-                await TimerService.ResumeInterruptedPomodoroAsync();
-                ConsentService.HideConsentModal();
-            }
-            else
-            {
-                await ConsentService.SelectOptionAsync(option.SessionType);
-            }
+            await ConsentService.SelectOptionAsync(option.SessionType);
         }
         catch (Exception ex)
         {

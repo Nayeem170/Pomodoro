@@ -65,6 +65,8 @@ public class TimerSettings
 
     public bool ExpandTimerMobile { get; set; }
 
+    public bool RecordPartialSessions { get; set; }
+
     private int _autoStartDelaySeconds = Constants.Timer.DefaultAutoStartDelaySeconds;
 
     public int AutoStartDelaySeconds
@@ -85,7 +87,8 @@ public class TimerSettings
             && NotificationsEnabled == other.NotificationsEnabled
             && AutoStartSession == other.AutoStartSession
             && AutoStartDelaySeconds == other.AutoStartDelaySeconds
-            && ExpandTimerMobile == other.ExpandTimerMobile;
+            && ExpandTimerMobile == other.ExpandTimerMobile
+            && RecordPartialSessions == other.RecordPartialSessions;
     }
 
     /// <inheritdoc/>
@@ -109,7 +112,7 @@ public class TimerSettings
         LongBreakMinutes,
         DailyGoal,
         LongBreakInterval,
-        HashCode.Combine(SoundEnabled, NotificationsEnabled, AutoStartSession, AutoStartDelaySeconds, ExpandTimerMobile));
+        HashCode.Combine(SoundEnabled, NotificationsEnabled, AutoStartSession, AutoStartDelaySeconds, ExpandTimerMobile, RecordPartialSessions));
 
     /// <returns>A new TimerSettings instance with the same values</returns>
     public TimerSettings Clone() => new()
@@ -123,6 +126,7 @@ public class TimerSettings
         NotificationsEnabled = NotificationsEnabled,
         AutoStartSession = AutoStartSession,
         AutoStartDelaySeconds = AutoStartDelaySeconds,
-        ExpandTimerMobile = ExpandTimerMobile
+        ExpandTimerMobile = ExpandTimerMobile,
+        RecordPartialSessions = RecordPartialSessions
     };
 }

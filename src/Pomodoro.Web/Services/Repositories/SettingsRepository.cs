@@ -26,7 +26,8 @@ public class SettingsRepository : ISettingsRepository
             AutoStartDelaySeconds = record.AutoStartDelaySeconds,
             LongBreakInterval = record.LongBreakInterval,
             DailyGoal = record.DailyGoal,
-            ExpandTimerMobile = record.ExpandTimerMobile
+            ExpandTimerMobile = record.ExpandTimerMobile,
+            RecordPartialSessions = record.RecordPartialSessions ?? false
         };
 
         if (record.AutoStartSession.HasValue)
@@ -57,7 +58,8 @@ public class SettingsRepository : ISettingsRepository
             AutoStartDelaySeconds = settings.AutoStartDelaySeconds,
             LongBreakInterval = settings.LongBreakInterval,
             DailyGoal = settings.DailyGoal,
-            ExpandTimerMobile = settings.ExpandTimerMobile
+            ExpandTimerMobile = settings.ExpandTimerMobile,
+            RecordPartialSessions = settings.RecordPartialSessions
         };
         return await _indexedDb.PutAsync(Constants.Storage.SettingsStore, record);
     }
@@ -82,6 +84,7 @@ public class TimerSettingsRecord
     public int LongBreakInterval { get; set; }
     public int DailyGoal { get; set; }
     public bool ExpandTimerMobile { get; set; }
+    public bool? RecordPartialSessions { get; set; }
 
     [System.Text.Json.Serialization.JsonPropertyName("AutoStartPomodoros")]
     public bool? AutoStartPomodoros { get; set; }

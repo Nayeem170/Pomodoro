@@ -145,7 +145,7 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
         var settings = _appState?.Settings;
         CountdownSeconds = settings?.AutoStartDelaySeconds ?? Constants.UI.DefaultConsentCountdownSeconds;
 
-        AvailableOptions = _sessionOptionsService.GetOptionsForSessionType(completedSessionType, _timerService?.InterruptedPomodoro);
+        AvailableOptions = _sessionOptionsService.GetOptionsForSessionType(completedSessionType);
         IsModalVisible = true;
 
         StartCountdown();
@@ -174,7 +174,7 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
     {
         if (IsModalVisible)
         {
-            AvailableOptions = _sessionOptionsService.GetOptionsForSessionType(CompletedSessionType, _timerService?.InterruptedPomodoro);
+            AvailableOptions = _sessionOptionsService.GetOptionsForSessionType(CompletedSessionType);
             OnConsentRequired?.Invoke();
         }
     }

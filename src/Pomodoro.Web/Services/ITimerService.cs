@@ -103,6 +103,8 @@ public interface ITimerService
     /// </remarks>
     Task ResetAsync();
 
+    Task<bool> TryRecordPartialSessionAsync();
+
     /// <param name="settings">The new settings to apply.</param>
     /// <returns>A task that completes when settings are updated.</returns>
     /// <remarks>
@@ -112,9 +114,4 @@ public interface ITimerService
 
     /// <returns>A task that completes when settings are saved.</returns>
     Task SaveSettingsAsync();
-
-    TimerSession? InterruptedPomodoro { get; }
-
-    /// <returns>A task that completes when the session has been resumed.</returns>
-    Task ResumeInterruptedPomodoroAsync();
 }

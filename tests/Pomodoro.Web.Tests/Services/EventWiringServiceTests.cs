@@ -39,6 +39,7 @@ public class EventWiringServiceTests
         _service.WireEventSubscribers(sp);
 
         mockTimer.VerifyAdd(x => x.OnTimerCompleted += It.IsAny<Func<TimerCompletedEventArgs, Task>>(), Times.Exactly(3));
+        mockTimer.VerifyAdd(x => x.OnSessionInterrupted += It.IsAny<Func<TimerCompletedEventArgs, Task>>(), Times.Once);
         mockTimer.VerifyAdd(x => x.OnTick += It.IsAny<Action>(), Times.Once);
         mockTimer.VerifyAdd(x => x.OnTimerStateChanged += It.IsAny<Action>(), Times.Once);
     }

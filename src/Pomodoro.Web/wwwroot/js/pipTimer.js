@@ -458,23 +458,18 @@ window.pipTimer = {
             return;
         }
         
-        var bcName = pipTimer.getBroadcastChannelName();
-        var msgToggleTimer = pipTimer.getMessageType('toggleTimer');
-        var msgResetTimer = pipTimer.getMessageType('resetTimer');
-        var msgSwitchSession = pipTimer.getMessageType('switchSession');
-        var msgTimerUpdate = pipTimer.getMessageType('timerUpdate');
+        if (this.pipWindow) {
+            this.pipWindow.__pipTimer = pipTimer;
+        }
         
         var pipScript = this.pipDocument.createElement('script');
         pipScript.id = 'pip-control-script';
         pipScript.textContent = [
             '(function() {',
-            '    var bc = new BroadcastChannel("' + bcName + '");',
-            '    window.pipToggleTimer = function() { bc.postMessage({ type: "' + msgToggleTimer + '" }); };',
-            '    window.pipResetTimer = function() { bc.postMessage({ type: "' + msgResetTimer + '" }); };',
-            '    window.pipSwitchSession = function(sessionType) { bc.postMessage({ type: "' + msgSwitchSession + '", sessionType: sessionType }); };',
-            '    bc.onmessage = function(event) {',
-            '        if (event.data.type === "' + msgTimerUpdate + '") {}',
-            '    };',
+            '    var pip = window.__pipTimer;',
+            '    window.pipToggleTimer = function() { if (pip) pip.toggleTimer(); };',
+            '    window.pipResetTimer = function() { if (pip) pip.resetTimer(); };',
+            '    window.pipSwitchSession = function(sessionType) { if (pip) pip.switchSession(sessionType); };',
             '    window.addEventListener("keydown", function(event) {',
             '        if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;',
             '        if (event.code === "Space") { event.preventDefault(); event.stopPropagation(); window.pipToggleTimer(); return; }',
