@@ -2121,10 +2121,10 @@ input, textarea, [contenteditable="true"] {
 .session-log {
     display: flex;
     flex-direction: column;
-    background: var(--color-surface-dark, #0f1f1c);
-    border: 1px solid #285a4b;
-    border-radius: 10px;
-    padding: 10px 14px;
+    background: linear-gradient(180deg, rgba(40, 90, 75, 0.08), rgba(15, 31, 28, 0.6));
+    border: 1px solid rgba(40, 90, 75, 0.4);
+    border-radius: 12px;
+    padding: 8px;
     overflow: hidden;
     min-height: 0;
     max-height: 200px;
@@ -2134,19 +2134,26 @@ input, textarea, [contenteditable="true"] {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
+    padding: 2px 4px;
 }
 
 .session-log-title {
-    font-size: 12px;
-    color: var(--color-text-primary);
-    font-weight: 600;
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .session-log-count {
-    font-size: 10px;
-    color: var(--color-text-tertiary);
+    font-size: 11px;
+    color: var(--pomodoro-color);
     font-family: var(--font-mono);
+    font-weight: 600;
+    background: rgba(244, 42, 65, 0.12);
+    padding: 1px 8px;
+    border-radius: 10px;
 }
 
 .session-log-items {
@@ -2154,8 +2161,22 @@ input, textarea, [contenteditable="true"] {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
     min-height: 0;
+    padding-right: 2px;
+}
+
+.session-log-items::-webkit-scrollbar {
+    width: 3px;
+}
+
+.session-log-items::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.session-log-items::-webkit-scrollbar-thumb {
+    background: rgba(40, 90, 75, 0.5);
+    border-radius: 2px;
 }
 
 .session-log-items:not(:has(.session-log-row)) {
@@ -2164,48 +2185,49 @@ input, textarea, [contenteditable="true"] {
 
 .session-log-empty {
     color: var(--color-text-tertiary);
-    font-size: 12px;
+    font-size: 11px;
     text-align: center;
-    padding: 8px 0;
+    padding: 12px 0;
     margin: auto 0;
+    opacity: 0.5;
 }
 
 .session-log-row {
     display: flex;
     align-items: center;
     gap: 8px;
-    line-height: 1.3;
-    padding: 1px 0;
+    line-height: 1.4;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border-left: 2px solid var(--pomodoro-color);
+    transition: background 0.15s ease;
 }
 
-.session-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--pomodoro-color);
-    flex-shrink: 0;
+.session-log-row:hover {
+    background: rgba(255, 255, 255, 0.04);
 }
 
-.session-log-row.partial .session-dot {
-    background: transparent;
-    border: 1px solid var(--pomodoro-color);
+.session-log-row.partial {
+    border-left-style: dashed;
+    border-left-color: rgba(244, 42, 65, 0.4);
 }
 
 .session-log-row.partial .session-dur {
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
 .session-time {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--color-text-tertiary);
     flex-shrink: 0;
     font-variant-numeric: tabular-nums;
     font-family: var(--font-mono);
+    min-width: 34px;
 }
 
 .session-task {
     flex: 1;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--color-text-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2213,10 +2235,14 @@ input, textarea, [contenteditable="true"] {
 }
 
 .session-dur {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--color-text-tertiary);
     flex-shrink: 0;
     font-family: var(--font-mono);
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0px 6px;
+    border-radius: 4px;
 }
 
 /* =============================================================================
