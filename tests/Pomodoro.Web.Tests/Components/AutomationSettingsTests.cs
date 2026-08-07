@@ -14,7 +14,7 @@ public class AutomationSettingsTests : TestContext
         var settings = new TimerSettings { AutoStartSession = true };
         var cut = RenderComponent<AutomationSettings>(parameters => parameters.Add(p => p.Settings, settings));
 
-        cut.Find(".tog").Click();
+        cut.FindAll(".tog")[0].Click();
 
         Assert.False(settings.AutoStartSession);
     }
@@ -25,8 +25,30 @@ public class AutomationSettingsTests : TestContext
         var settings = new TimerSettings { AutoStartSession = false };
         var cut = RenderComponent<AutomationSettings>(parameters => parameters.Add(p => p.Settings, settings));
 
-        cut.Find(".tog").Click();
+        cut.FindAll(".tog")[0].Click();
 
         Assert.True(settings.AutoStartSession);
+    }
+
+    [Fact]
+    public void ToggleRecordPartialSessions_TogglesValue()
+    {
+        var settings = new TimerSettings { RecordPartialSessions = true };
+        var cut = RenderComponent<AutomationSettings>(parameters => parameters.Add(p => p.Settings, settings));
+
+        cut.FindAll(".tog")[1].Click();
+
+        Assert.False(settings.RecordPartialSessions);
+    }
+
+    [Fact]
+    public void ToggleRecordPartialSessions_WhenFalse_TurnsTrue()
+    {
+        var settings = new TimerSettings { RecordPartialSessions = false };
+        var cut = RenderComponent<AutomationSettings>(parameters => parameters.Add(p => p.Settings, settings));
+
+        cut.FindAll(".tog")[1].Click();
+
+        Assert.True(settings.RecordPartialSessions);
     }
 }

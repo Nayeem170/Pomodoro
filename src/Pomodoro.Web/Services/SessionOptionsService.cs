@@ -4,25 +4,23 @@ namespace Pomodoro.Web.Services;
 
 public interface ISessionOptionsService
 {
-    List<ConsentOption> GetOptionsForSessionType(SessionType sessionType, TimerSession? interruptedPomodoro);
+    List<ConsentOption> GetOptionsForSessionType(SessionType sessionType);
     SessionType GetDefaultOption(SessionType completedSessionType);
 }
 
 public class SessionOptionsService : ISessionOptionsService
 {
     private readonly AppState _appState;
-    private readonly ITimerService _timerService;
 
-    public SessionOptionsService(AppState appState, ITimerService timerService)
+    public SessionOptionsService(AppState appState)
     {
         _appState = appState;
-        _timerService = timerService;
     }
 
-    public List<ConsentOption> GetOptionsForSessionType(SessionType sessionType, TimerSession? interruptedPomodoro = null)
+    public List<ConsentOption> GetOptionsForSessionType(SessionType sessionType)
     {
         var settings = _appState.Settings;
-        var options = sessionType switch
+        return sessionType switch
         {
             SessionType.Pomodoro => new List<ConsentOption>
             {
@@ -32,37 +30,16 @@ public class SessionOptionsService : ISessionOptionsService
             },
             SessionType.ShortBreak => new List<ConsentOption>
             {
-                new() { SessionType = SessionType.Pomodoro, Label = Constants.SessionOptionLabels.StartPomodoro, Duration = string.Format(Constants.DurationFormats.MinutesFormat, settings.PomodoroMinutes), IsDefault = true }
+                new() { SessionType = SessionType.ShortBreak, Label = Constants.SessionOptionLabels.ContinueShortBreak, Duration = string.Format(Constants.DurationFormats.MinutesFormat, settings.ShortBreakMinutes), IsDefault = true },
+                new() { SessionType = SessionType.Pomodoro, Label = Constants.SessionOptionLabels.StartPomodoro, Duration = string.Format(Constants.DurationFormats.MinutesFormat, settings.PomodoroMinutes), IsDefault = false }
             },
             SessionType.LongBreak => new List<ConsentOption>
             {
-                new() { SessionType = SessionType.Pomodoro, Label = Constants.SessionOptionLabels.StartPomodoro, Duration = string.Format(Constants.DurationFormats.MinutesFormat, settings.PomodoroMinutes), IsDefault = true }
+                new() { SessionType = SessionType.LongBreak, Label = Constants.SessionOptionLabels.ContinueLongBreak, Duration = string.Format(Constants.DurationFormats.MinutesFormat, settings.LongBreakMinutes), IsDefault = true },
+                new() { SessionType = SessionType.Pomodoro, Label = Constants.SessionOptionLabels.StartPomodoro, Duration = string.Format(Constants.DurationFormats.MinutesFormat, settings.PomodoroMinutes), IsDefault = false }
             },
             _ => new List<ConsentOption>()
         };
-
-        if (sessionType != SessionType.Pomodoro && interruptedPomodoro != null)
-        {
-            var remainingMin = interruptedPomodoro.RemainingSeconds / 60;
-            var sec = interruptedPomodoro.RemainingSeconds % 60;
-            var duration = sec > 0 ? $"{remainingMin}:{sec:D2} left" : $"{remainingMin}m left";
-
-            options.Insert(0, new ConsentOption
-            {
-                SessionType = SessionType.Pomodoro,
-                Label = Constants.SessionOptionLabels.ResumePomodoro,
-                Duration = duration,
-                IsDefault = true,
-                IsResume = true
-            });
-
-            foreach (var opt in options.Where(o => !o.IsResume))
-            {
-                opt.IsDefault = false;
-            }
-        }
-
-        return options;
     }
 
     public SessionType GetDefaultOption(SessionType completedSessionType)
@@ -78,8 +55,8 @@ public class SessionOptionsService : ISessionOptionsService
 
         return completedSessionType switch
         {
-            SessionType.ShortBreak => SessionType.Pomodoro,
-            SessionType.LongBreak => SessionType.Pomodoro,
+            SessionType.ShortBreak => SessionType.ShortBreak,
+            SessionType.LongBreak => SessionType.LongBreak,
             _ => SessionType.Pomodoro
         };
     }

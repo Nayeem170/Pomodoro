@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-using Moq;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
 using Xunit;
@@ -20,13 +18,13 @@ public class SessionOptionsServiceTests
                 LongBreakMinutes = 15
             }
         };
-        return new SessionOptionsService(appState, Mock.Of<ITimerService>());
+        return new SessionOptionsService(appState);
     }
 
     [Theory]
     [InlineData(SessionType.Pomodoro, 3)]
-    [InlineData(SessionType.ShortBreak, 1)]
-    [InlineData(SessionType.LongBreak, 1)]
+    [InlineData(SessionType.ShortBreak, 2)]
+    [InlineData(SessionType.LongBreak, 2)]
     public void GetOptionsForSessionType_ReturnsCorrectCount(SessionType sessionType, int expectedCount)
     {
         var service = CreateService();
@@ -41,7 +39,9 @@ public class SessionOptionsServiceTests
     [InlineData(SessionType.Pomodoro, SessionType.LongBreak)]
     [InlineData(SessionType.Pomodoro, SessionType.Pomodoro)]
     [InlineData(SessionType.ShortBreak, SessionType.Pomodoro)]
+    [InlineData(SessionType.ShortBreak, SessionType.ShortBreak)]
     [InlineData(SessionType.LongBreak, SessionType.Pomodoro)]
+    [InlineData(SessionType.LongBreak, SessionType.LongBreak)]
     public void GetOptionsForSessionType_ContainsExpectedOption(SessionType completedType, SessionType expectedOption)
     {
         var service = CreateService();
@@ -55,8 +55,10 @@ public class SessionOptionsServiceTests
     [InlineData(SessionType.Pomodoro, SessionType.Pomodoro, true)]
     [InlineData(SessionType.Pomodoro, SessionType.ShortBreak, false)]
     [InlineData(SessionType.Pomodoro, SessionType.LongBreak, false)]
-    [InlineData(SessionType.ShortBreak, SessionType.Pomodoro, true)]
-    [InlineData(SessionType.LongBreak, SessionType.Pomodoro, true)]
+    [InlineData(SessionType.ShortBreak, SessionType.ShortBreak, true)]
+    [InlineData(SessionType.ShortBreak, SessionType.Pomodoro, false)]
+    [InlineData(SessionType.LongBreak, SessionType.LongBreak, true)]
+    [InlineData(SessionType.LongBreak, SessionType.Pomodoro, false)]
     public void GetOptionsForSessionType_DefaultOptionIsCorrect(
         SessionType completedType, SessionType optionType, bool shouldBeDefault)
     {
@@ -87,6 +89,40 @@ public class SessionOptionsServiceTests
     }
 
     [Fact]
+    public void GetOptionsForSessionType_ShortBreak_UsesSettingsDurations()
+    {
+        var settings = new TimerSettings
+        {
+            PomodoroMinutes = 25,
+            ShortBreakMinutes = 7,
+            LongBreakMinutes = 15
+        };
+        var service = CreateService(settings);
+
+        var options = service.GetOptionsForSessionType(SessionType.ShortBreak);
+
+        Assert.Contains(options, o => o.SessionType == SessionType.ShortBreak && o.Duration.Contains("7"));
+        Assert.Contains(options, o => o.SessionType == SessionType.Pomodoro && o.Duration.Contains("25"));
+    }
+
+    [Fact]
+    public void GetOptionsForSessionType_LongBreak_UsesSettingsDurations()
+    {
+        var settings = new TimerSettings
+        {
+            PomodoroMinutes = 25,
+            ShortBreakMinutes = 5,
+            LongBreakMinutes = 20
+        };
+        var service = CreateService(settings);
+
+        var options = service.GetOptionsForSessionType(SessionType.LongBreak);
+
+        Assert.Contains(options, o => o.SessionType == SessionType.LongBreak && o.Duration.Contains("20"));
+        Assert.Contains(options, o => o.SessionType == SessionType.Pomodoro && o.Duration.Contains("25"));
+    }
+
+    [Fact]
     public void GetOptionsForSessionType_UnknownType_ReturnsEmptyList()
     {
         var service = CreateService();
@@ -98,8 +134,8 @@ public class SessionOptionsServiceTests
 
     [Theory]
     [InlineData(SessionType.Pomodoro, SessionType.Pomodoro)]
-    [InlineData(SessionType.ShortBreak, SessionType.Pomodoro)]
-    [InlineData(SessionType.LongBreak, SessionType.Pomodoro)]
+    [InlineData(SessionType.ShortBreak, SessionType.ShortBreak)]
+    [InlineData(SessionType.LongBreak, SessionType.LongBreak)]
     public void GetDefaultOption_ReturnsSameType(SessionType completedType, SessionType expectedDefault)
     {
         var service = CreateService();
@@ -117,54 +153,5 @@ public class SessionOptionsServiceTests
         var defaultOption = service.GetDefaultOption((SessionType)999);
 
         Assert.Equal(SessionType.Pomodoro, defaultOption);
-    }
-
-    [Fact]
-    public void GetOptionsForSessionType_WithInterruptedPomodoro_WithSeconds_ShowsMinutesColonSeconds()
-    {
-        var service = CreateService();
-        var interrupted = new TimerSession
-        {
-            Type = SessionType.Pomodoro,
-            RemainingSeconds = 90
-        };
-
-        var options = service.GetOptionsForSessionType(SessionType.ShortBreak, interrupted);
-
-        var resumeOption = Assert.Single(options, o => o.IsResume);
-        Assert.Contains("1:30", resumeOption.Duration);
-    }
-
-    [Fact]
-    public void GetOptionsForSessionType_WithInterruptedPomodoro_ZeroSeconds_ShowsMinutesOnly()
-    {
-        var service = CreateService();
-        var interrupted = new TimerSession
-        {
-            Type = SessionType.Pomodoro,
-            RemainingSeconds = 300
-        };
-
-        var options = service.GetOptionsForSessionType(SessionType.LongBreak, interrupted);
-
-        var resumeOption = Assert.Single(options, o => o.IsResume);
-        Assert.Contains("5m left", resumeOption.Duration);
-    }
-
-    [Fact]
-    public void GetOptionsForSessionType_WithInterruptedPomodoro_SetsAsDefault()
-    {
-        var service = CreateService();
-        var interrupted = new TimerSession
-        {
-            Type = SessionType.Pomodoro,
-            RemainingSeconds = 300
-        };
-
-        var options = service.GetOptionsForSessionType(SessionType.ShortBreak, interrupted);
-
-        var resumeOption = Assert.Single(options, o => o.IsResume);
-        Assert.True(resumeOption.IsDefault);
-        Assert.All(options.Where(o => !o.IsResume), o => Assert.False(o.IsDefault));
     }
 }

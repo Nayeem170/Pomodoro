@@ -425,6 +425,6 @@ test.describe('PiP Window Content and Communication', () => {
     expect(scriptContent).not.toBeNull();
     expect(scriptContent).toContain('pipSwitchSession');
     expect(scriptContent).toContain('keydown');
-    expect(scriptContent).toContain('BroadcastChannel');
+    expect(scriptContent).toContain('__pipTimer');
   });
 });

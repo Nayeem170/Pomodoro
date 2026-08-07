@@ -69,7 +69,19 @@ public partial class IndexBase
     {
         await TryExecuteAsync(async () =>
         {
-            await TaskService.SelectTaskAsync(taskId);
+            if (TimerService.IsRunning
+                && TimerService.CurrentSessionType == SessionType.Pomodoro
+                && AppState.Settings.RecordPartialSessions)
+            {
+                await TimerService.TryRecordPartialSessionAsync();
+                await TimerService.PauseAsync();
+                await TaskService.SelectTaskAsync(taskId);
+                await TimerService.StartPomodoroAsync(taskId);
+            }
+            else
+            {
+                await TaskService.SelectTaskAsync(taskId);
+            }
             await UpdateStateAsync();
             StateHasChanged();
         }, Constants.Messages.ErrorSelectingTask);

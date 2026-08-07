@@ -59,23 +59,11 @@ public class IndexCoverageTests : TestHelper
     }
 
     [Fact]
-    public async Task HandleConsentOptionSelect_IsResume_CallsResumeInterrupted()
-    {
-        TimerServiceMock.Setup(x => x.ResumeInterruptedPomodoroAsync()).Returns(Task.CompletedTask);
-        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        var option = new ConsentOption { IsResume = true, SessionType = SessionType.Pomodoro };
-
-        await cut.Instance.HandleConsentOptionSelect(option);
-
-        TimerServiceMock.Verify(x => x.ResumeInterruptedPomodoroAsync(), Times.Once);
-    }
-
-    [Fact]
-    public async Task HandleConsentOptionSelect_NotResume_CallsSelectOptionAsync()
+    public async Task HandleConsentOptionSelect_CallsSelectOptionAsync()
     {
         ConsentServiceMock.Setup(x => x.SelectOptionAsync(It.IsAny<SessionType>())).Returns(Task.CompletedTask);
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        var option = new ConsentOption { IsResume = false, SessionType = SessionType.ShortBreak };
+        var option = new ConsentOption { SessionType = SessionType.ShortBreak };
 
         await cut.Instance.HandleConsentOptionSelect(option);
 
@@ -85,13 +73,13 @@ public class IndexCoverageTests : TestHelper
     [Fact]
     public async Task HandleConsentOptionSelect_OnException_SetsErrorMessage()
     {
-        TimerServiceMock.Setup(x => x.ResumeInterruptedPomodoroAsync()).ThrowsAsync(new Exception("resume failed"));
+        ConsentServiceMock.Setup(x => x.SelectOptionAsync(It.IsAny<SessionType>())).ThrowsAsync(new Exception("consent error"));
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        var option = new ConsentOption { IsResume = true, SessionType = SessionType.Pomodoro };
+        var option = new ConsentOption { SessionType = SessionType.Pomodoro };
 
         await cut.Instance.HandleConsentOptionSelect(option);
 
-        cut.Instance.ErrorMessage.Should().Contain("resume failed");
+        cut.Instance.ErrorMessage.Should().Contain("consent error");
     }
 
     [Fact]
@@ -417,7 +405,7 @@ public class IndexPageRenderingTests : TestHelper
         cut.Render();
 
         cut.Markup.Should().Contain("loading-container");
-        cut.Markup.Should().Contain("Loading...");
+        cut.Markup.Should().Contain("ls-ring");
     }
 
     [Fact]

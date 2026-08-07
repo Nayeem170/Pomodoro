@@ -25,6 +25,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
     // ITimerEventPublisher events
     public event Func<TimerCompletedEventArgs, Task>? OnTimerCompleted;
+    public event Func<TimerCompletedEventArgs, Task>? OnSessionInterrupted;
     public event Action? OnTimerStateChanged;
     public event Action? OnTick;
 
@@ -194,6 +195,8 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
     public async Task SwitchSessionTypeAsync(SessionType sessionType)
     {
+        await TryRecordPartialSessionAsync();
+
         await _jsTimerInterop.StopAsync();
 
         if (_appState.CurrentSession is { WasStarted: true, IsCompleted: false } currentSession)
@@ -257,6 +260,8 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
     public async Task ResetAsync()
     {
+        await TryRecordPartialSessionAsync();
+
         await _jsTimerInterop.StopAsync();
 
         TickCount = 0;
@@ -298,28 +303,64 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         _cloudSyncService?.ScheduleSyncAsync();
     }
 
-    public TimerSession? InterruptedPomodoro =>
-        _pausedSessions.TryGetValue(SessionType.Pomodoro, out var session) ? session : null;
-
-    public async Task ResumeInterruptedPomodoroAsync()
-    {
-        if (!_pausedSessions.TryGetValue(SessionType.Pomodoro, out var session)) return;
-
-        await _jsTimerInterop.StopAsync();
-
-        session.IsRunning = true;
-        session.EndAt = DateTime.UtcNow.AddSeconds(session.RemainingSeconds);
-        _appState.CurrentSession = session;
-        _pausedSessions.Remove(SessionType.Pomodoro);
-
-        NotifyStateChanged();
-        _dotNetRef ??= DotNetObjectReference.Create<object>(this);
-        await _jsTimerInterop.StartAsync(_dotNetRef);
-    }
-
     public async Task SaveSettingsAsync()
     {
         await _settingsRepository.SaveAsync(_appState.Settings);
+    }
+
+    private string? ResolveTaskName(Guid? taskId)
+    {
+        if (!taskId.HasValue) return null;
+        var task = _appState.Tasks.FirstOrDefault(t => t.Id == taskId.Value);
+        return task?.Name;
+    }
+
+    public async Task<bool> TryRecordPartialSessionAsync()
+    {
+        var session = _appState.CurrentSession;
+        if (session == null || !session.IsRunning || !session.WasStarted)
+            return false;
+
+        if (!_appState.Settings.RecordPartialSessions)
+            return false;
+
+        var elapsedSeconds = session.DurationSeconds - session.RemainingSeconds;
+        if (elapsedSeconds < Constants.Timer.PartialSessionMinSeconds)
+            return false;
+
+        var taskName = ResolveTaskName(session.TaskId);
+        var elapsedMinutes = (int)Math.Round(elapsedSeconds / 60.0);
+
+        var args = new TimerCompletedEventArgs(
+            session.Type,
+            session.TaskId,
+            taskName,
+            elapsedMinutes,
+            WasCompleted: false,
+            CompletedAt: DateTime.UtcNow
+        );
+
+        await NotifySessionInterruptedAsync(args);
+        return true;
+    }
+
+    private async Task NotifySessionInterruptedAsync(TimerCompletedEventArgs args)
+    {
+        if (OnSessionInterrupted != null)
+        {
+            var handlers = OnSessionInterrupted.GetInvocationList();
+            foreach (var handler in handlers)
+            {
+                try
+                {
+                    await ((Func<TimerCompletedEventArgs, Task>)handler)(args);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, Constants.Messages.TimerCompletionHandlerError);
+                }
+            }
+        }
     }
 
     private async Task HandleTimerCompleteAsync()
@@ -339,12 +380,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         session.RemainingSeconds = session.DurationSeconds;
 
         // Get task name for event args (thread-safe)
-        string? taskName = null;
-        if (session.TaskId.HasValue)
-        {
-            var task = _appState.Tasks.FirstOrDefault(t => t.Id == session.TaskId.Value);
-            taskName = task?.Name;
-        }
+        var taskName = ResolveTaskName(session.TaskId);
 
         // Calculate duration using helper method
         var durationMinutes = _appState.Settings.GetDurationMinutes(session.Type);

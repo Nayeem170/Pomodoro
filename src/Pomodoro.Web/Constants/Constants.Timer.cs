@@ -54,6 +54,8 @@ public static partial class Constants
 
         /// <summary>Maximum long break interval</summary>
         public const int MaxLongBreakInterval = 10;
+
+        public const int PartialSessionMinSeconds = 60;
     }
 
     public static class TimerDisplay

@@ -719,7 +719,14 @@ input, textarea, [contenteditable="true"] {
 }
 
 .sd.current {
-    background: var(--pomodoro-color);
+    background: transparent;
+    border: 1.5px solid var(--pomodoro-color);
+    animation: sd-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes sd-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
 }
 
 .header-action {
@@ -1858,13 +1865,6 @@ input, textarea, [contenteditable="true"] {
     75%, 100% { stroke-dashoffset: 0; }
 }
 
-.loading-text {
-    margin-top: 16px;
-    font-size: 13px;
-    color: var(--color-text-tertiary);
-    letter-spacing: 0.5px;
-}
-
 /* Section Error */
 .section-error {
     display: flex;
@@ -2119,34 +2119,41 @@ input, textarea, [contenteditable="true"] {
    ============================================================================= */
 
 .session-log {
-    flex: 1;
     display: flex;
     flex-direction: column;
-    background: var(--color-surface-dark, #0f1f1c);
-    border: 1px solid #285a4b;
-    border-radius: 10px;
-    padding: 10px 14px;
+    background: linear-gradient(180deg, rgba(40, 90, 75, 0.08), rgba(15, 31, 28, 0.6));
+    border: 1px solid rgba(40, 90, 75, 0.4);
+    border-radius: 12px;
+    padding: 8px;
     overflow: hidden;
     min-height: 0;
+    max-height: 200px;
 }
 
 .session-log-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
+    padding: 2px 4px;
 }
 
 .session-log-title {
-    font-size: 12px;
-    color: var(--color-text-primary);
-    font-weight: 600;
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .session-log-count {
-    font-size: 10px;
-    color: var(--color-text-tertiary);
+    font-size: 11px;
+    color: var(--pomodoro-color);
     font-family: var(--font-mono);
+    font-weight: 600;
+    background: rgba(244, 42, 65, 0.12);
+    padding: 1px 8px;
+    border-radius: 10px;
 }
 
 .session-log-items {
@@ -2154,8 +2161,22 @@ input, textarea, [contenteditable="true"] {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 1px;
     min-height: 0;
+    padding-right: 2px;
+}
+
+.session-log-items::-webkit-scrollbar {
+    width: 3px;
+}
+
+.session-log-items::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.session-log-items::-webkit-scrollbar-thumb {
+    background: rgba(40, 90, 75, 0.5);
+    border-radius: 2px;
 }
 
 .session-log-items:not(:has(.session-log-row)) {
@@ -2164,37 +2185,49 @@ input, textarea, [contenteditable="true"] {
 
 .session-log-empty {
     color: var(--color-text-tertiary);
-    font-size: 12px;
+    font-size: 11px;
     text-align: center;
-    padding: 8px 0;
+    padding: 12px 0;
     margin: auto 0;
+    opacity: 0.5;
 }
 
 .session-log-row {
     display: flex;
     align-items: center;
     gap: 8px;
+    line-height: 1.4;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border-left: 2px solid var(--pomodoro-color);
+    transition: background 0.15s ease;
 }
 
-.session-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--pomodoro-color);
-    flex-shrink: 0;
+.session-log-row:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.session-log-row.partial {
+    border-left-style: dashed;
+    border-left-color: rgba(244, 42, 65, 0.4);
+}
+
+.session-log-row.partial .session-dur {
+    opacity: 0.4;
 }
 
 .session-time {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--color-text-tertiary);
     flex-shrink: 0;
     font-variant-numeric: tabular-nums;
     font-family: var(--font-mono);
+    min-width: 34px;
 }
 
 .session-task {
     flex: 1;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--color-text-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2202,10 +2235,14 @@ input, textarea, [contenteditable="true"] {
 }
 
 .session-dur {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--color-text-tertiary);
     flex-shrink: 0;
     font-family: var(--font-mono);
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0px 6px;
+    border-radius: 4px;
 }
 
 /* =============================================================================
@@ -2308,7 +2345,6 @@ input, textarea, [contenteditable="true"] {
     }
 
     .session-log-wrap {
-        flex: 1;
         min-height: 0;
         display: flex;
         flex-direction: column;
@@ -2316,6 +2352,17 @@ input, textarea, [contenteditable="true"] {
 
     .session-log {
         display: flex;
+    }
+
+    .timer-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-top {
+        flex: 1;
+        justify-content: center;
     }
 
     .task-row {
@@ -2563,6 +2610,79 @@ input, textarea, [contenteditable="true"] {
 
     .sticky-timer-bar.long-break-theme {
         border-color: rgba(192, 192, 192, 0.3);
+    }
+
+    .app-wrapper {
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .app-content {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .main-container {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .timer-split {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .split-tasks {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tasks-section {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        margin-top: 0;
+    }
+
+    .task-card {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .task-items {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    .add-task-section {
+        flex-shrink: 0;
+    }
+
+    .schedule-agenda {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sched-nav {
+        flex-shrink: 0;
+    }
+
+    .sched-days {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
     }
 }
 

@@ -7,6 +7,13 @@
             <div class="tog-k"></div>
         </div>
     </div>
+    
+    <div class="sr">
+        <span class="sr-lbl">Record partial sessions</span>
+        <div class="tog @(Settings.RecordPartialSessions ? "on" : "")" @onclick="ToggleRecordPartialSessions">
+            <div class="tog-k"></div>
+        </div>
+    </div>
 </div>
 
 @code {
@@ -19,6 +26,12 @@
     private async Task ToggleAutoStartSession()
     {
         Settings.AutoStartSession = !Settings.AutoStartSession;
+        await OnChanged.InvokeAsync();
+    }
+
+    private async Task ToggleRecordPartialSessions()
+    {
+        Settings.RecordPartialSessions = !Settings.RecordPartialSessions;
         await OnChanged.InvokeAsync();
     }
 }
