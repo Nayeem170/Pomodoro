@@ -719,7 +719,14 @@ input, textarea, [contenteditable="true"] {
 }
 
 .sd.current {
-    background: var(--pomodoro-color);
+    background: transparent;
+    border: 1.5px solid var(--pomodoro-color);
+    animation: sd-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes sd-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
 }
 
 .header-action {
