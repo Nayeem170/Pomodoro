@@ -16,7 +16,7 @@
                     var dashArray = $"{segLen:F0} {circumference:F0}";
                     var dashOffset = -offset;
                     <circle cx="50" cy="50" r="38" fill="none" stroke="@seg.Color" stroke-width="10"
-                            stroke-dasharray="@dashArray" stroke-dashoffset="@dashOffset:F0"
+                            stroke-dasharray="@dashArray" stroke-dashoffset="@(dashOffset.ToString("F0"))"
                             transform="rotate(-90 50 50)"/>
                     offset += segLen;
                 }

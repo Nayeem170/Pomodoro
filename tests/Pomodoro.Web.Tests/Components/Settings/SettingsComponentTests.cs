@@ -168,7 +168,7 @@ public class AutomationSettingsTests : TestContext
     [Fact]
     public void Render_BindsAutoStartSession()
     {
-        var settings = new TimerSettings { AutoStartSession = true };
+        var settings = new TimerSettings { AutoStartSession = true, RecordPartialSessions = false };
         var cut = RenderComponent<AutomationSettings>(p => p.Add(x => x.Settings, settings));
 
         cut.FindAll(".tog.on").Should().HaveCount(1);

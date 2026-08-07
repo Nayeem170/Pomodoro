@@ -65,7 +65,7 @@ public class TimerSettings
 
     public bool ExpandTimerMobile { get; set; }
 
-    public bool RecordPartialSessions { get; set; }
+    public bool RecordPartialSessions { get; set; } = true;
 
     private int _autoStartDelaySeconds = Constants.Timer.DefaultAutoStartDelaySeconds;
 

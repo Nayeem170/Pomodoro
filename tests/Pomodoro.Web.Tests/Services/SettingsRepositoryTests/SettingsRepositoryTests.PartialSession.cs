@@ -31,9 +31,8 @@ public partial class SettingsRepositoryTests
     }
 
     [Fact]
-    public async Task GetAsync_MissingRecordPartialSessions_DefaultsToFalse()
+    public async Task GetAsync_MissingRecordPartialSessions_DefaultsToTrue()
     {
-        // Arrange
         var record = new TimerSettingsRecord
         {
             PomodoroMinutes = 25,
@@ -57,12 +56,10 @@ public partial class SettingsRepositoryTests
 
         var repository = CreateRepository();
 
-        // Act
         var result = await repository.GetAsync();
 
-        // Assert
         result.Should().NotBeNull();
-        result!.RecordPartialSessions.Should().BeFalse();
+        result!.RecordPartialSessions.Should().BeTrue();
     }
 
     [Fact]

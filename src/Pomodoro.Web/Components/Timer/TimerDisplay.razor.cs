@@ -42,7 +42,7 @@ public class TimerDisplayBase : ComponentBase, IDisposable
     protected SessionType CurrentSessionType => TimerService.CurrentSessionType;
     protected bool CurrentIsRunning => TimerService.IsRunning;
 
-    private const double Circumference = 2 * Math.PI * 72;
+    private const double Circumference = 2 * Math.PI * 90;
 
     #endregion
 

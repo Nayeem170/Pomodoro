@@ -3,7 +3,10 @@
 <div class="session-log">
     <div class="session-log-header">
         <span class="session-log-title">@Constants.SessionTypes.PomodoroEmoji Today's Sessions</span>
-        <span class="session-log-count">@Sessions.Count</span>
+        <span class="session-log-counts">
+            <span class="slc-complete"><span class="slc-dot"></span>@Sessions.Count(s => s.WasCompleted)</span>
+            <span class="slc-partial"><span class="slc-ring"></span>@Sessions.Count(s => !s.WasCompleted)</span>
+        </span>
     </div>
     <div class="session-log-items">
         @if (Sessions.Count == 0)
@@ -15,7 +18,8 @@
             @foreach (var session in Sessions)
             {
                 <div class="session-log-row @(session.WasCompleted ? "completed" : "partial")">
-                    <span class="session-time">@session.CompletedAt.ToLocalTime().ToString("h:mm")</span>
+                    <span class="session-bullet"></span>
+                    <span class="session-time">@session.CompletedAt.ToLocalTime().ToString("h:mm tt")</span>
                     <span class="session-task">@(session.TaskName ?? "Focus")</span>
                     <span class="session-dur">@($"{session.DurationMinutes}m")</span>
                 </div>

@@ -50,19 +50,20 @@ public class SessionLogTests : TestContext
     }
 
     [Fact]
-    public void ShowsSessionCount()
+    public void ShowsSessionCount_SplitByCompleteAndPartial()
     {
         var sessions = new List<ActivityRecord>
         {
-            new() { Type = SessionType.Pomodoro, TaskName = "Task 1", DurationMinutes = 25 },
-            new() { Type = SessionType.Pomodoro, TaskName = "Task 2", DurationMinutes = 25 },
-            new() { Type = SessionType.Pomodoro, TaskName = "Task 3", DurationMinutes = 25 }
+            new() { Type = SessionType.Pomodoro, TaskName = "Task 1", DurationMinutes = 25, WasCompleted = true },
+            new() { Type = SessionType.Pomodoro, TaskName = "Task 2", DurationMinutes = 25, WasCompleted = true },
+            new() { Type = SessionType.Pomodoro, TaskName = "Task 3", DurationMinutes = 12, WasCompleted = false }
         };
 
         var cut = RenderComponent<SessionLog>(p => p
             .Add(x => x.Sessions, sessions));
 
-        cut.Find(".session-log-count").TextContent.Should().Contain("3");
+        cut.Find(".slc-complete").TextContent.Should().Contain("2");
+        cut.Find(".slc-partial").TextContent.Should().Contain("1");
     }
 
     [Fact]
