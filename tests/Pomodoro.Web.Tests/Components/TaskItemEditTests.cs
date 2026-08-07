@@ -69,8 +69,7 @@ public class TaskItemEditTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        cut.Markup.Should().Contain("task-repeat");
-        cut.Markup.Should().Contain(Constants.Repeat.RepeatIcon);
+        cut.Markup.Should().Contain("repeat-badge");
     }
 
     [Fact]
@@ -85,8 +84,8 @@ public class TaskItemEditTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        cut.Markup.Should().Contain("task-repeat");
-        cut.Markup.Should().Contain("repeat-paused");
+        cut.Markup.Should().Contain("repeat-badge");
+        cut.Markup.Should().Contain("paused-badge");
     }
 
     [Fact]
@@ -101,7 +100,7 @@ public class TaskItemEditTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        cut.Find(".task-repeat").GetAttribute("title").Should().Be("Daily");
+        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Daily");
     }
 
     [Fact]
@@ -116,7 +115,7 @@ public class TaskItemEditTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        cut.Find(".task-repeat").GetAttribute("title").Should().Be("Weekly");
+        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Weekly");
     }
 
     [Fact]
@@ -131,7 +130,7 @@ public class TaskItemEditTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        cut.Find(".task-repeat").GetAttribute("title").Should().Be("Every 5 days");
+        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Every 5 days");
     }
 
     [Fact]
@@ -146,7 +145,7 @@ public class TaskItemEditTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        cut.Find(".task-repeat").GetAttribute("title").Should().Be("Monthly (day 15)");
+        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Monthly (day 15)");
     }
 
     [Fact]
@@ -161,7 +160,7 @@ public class TaskItemEditTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        cut.Find(".task-repeat").GetAttribute("title").Should().Be("Daily (paused)");
+        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Daily (paused)");
     }
 
     [Fact]
@@ -176,8 +175,7 @@ public class TaskItemEditTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        cut.Markup.Should().Contain("task-scheduled");
-        cut.Markup.Should().Contain(Constants.Repeat.ScheduleIcon);
+        cut.Markup.Should().Contain("schedule-badge");
     }
 
     [Fact]
@@ -193,8 +191,8 @@ public class TaskItemEditTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        cut.Markup.Should().Contain("task-repeat");
-        cut.Markup.Should().Contain("task-scheduled");
+        cut.Markup.Should().Contain("repeat-badge");
+        cut.Markup.Should().Contain("schedule-badge");
     }
 
     [Fact]
@@ -204,7 +202,8 @@ public class TaskItemEditTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        cut.Markup.Should().NotContain("task-repeat");
-        cut.Markup.Should().NotContain("task-scheduled");
+        cut.Markup.Should().NotContain("repeat-badge");
+        cut.Markup.Should().NotContain("schedule-badge");
     }
+
 }

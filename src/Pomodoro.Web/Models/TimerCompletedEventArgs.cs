@@ -1,8 +1,5 @@
 namespace Pomodoro.Web.Models;
 
-/// <summary>
-/// Event arguments for timer completion events
-/// </summary>
 public record TimerCompletedEventArgs(
     SessionType SessionType,
     Guid? TaskId,

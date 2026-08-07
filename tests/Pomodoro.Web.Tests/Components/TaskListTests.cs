@@ -1,4 +1,5 @@
 using Bunit;
+using FluentAssertions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Moq;
@@ -23,16 +24,14 @@ public class TaskListTests : TestContext
     #region Initial Rendering Tests
 
     [Fact]
-    public void TaskList_Initially_ShowsAddTaskButton()
+    public void TaskList_Always_ShowsAddTaskInput()
     {
-        // Arrange & Act
         var cut = RenderComponent<TaskList>(parameters => parameters
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null));
 
-        // Assert
-        Assert.Contains("task-add-btn", cut.Markup);
-        Assert.Contains("+ Add", cut.Markup);
+        Assert.Contains("task-input", cut.Markup);
+        Assert.DoesNotContain("task-add-btn", cut.Markup);
     }
 
     [Fact]
@@ -110,35 +109,25 @@ public class TaskListTests : TestContext
     #region Add Task Form Tests
 
     [Fact]
-    public void TaskList_ClickAddTask_ShowsAddTaskForm()
+    public void TaskList_AlwaysShowsAddTaskForm()
     {
-        // Arrange
         var cut = RenderComponent<TaskList>(parameters => parameters
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null));
 
-        // Act
-        cut.Find("button.task-add-btn").Click();
-
-        // Assert
         Assert.Contains("add-task-form", cut.Markup);
         Assert.Contains("task-input", cut.Markup);
         Assert.Contains("btn-add", cut.Markup);
-        Assert.Contains("btn-cancel", cut.Markup);
+        Assert.DoesNotContain("btn-cancel", cut.Markup);
     }
 
     [Fact]
     public void TaskList_AddForm_InitiallyHasEmptyInput()
     {
-        // Arrange
         var cut = RenderComponent<TaskList>(parameters => parameters
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null));
 
-        // Act
-        cut.Find("button.task-add-btn").Click();
-
-        // Assert
         var input = cut.Find("input.task-input");
         Assert.Equal("", input.GetAttribute("value") ?? "");
     }
@@ -146,34 +135,95 @@ public class TaskListTests : TestContext
     [Fact]
     public void TaskList_AddForm_AddButtonDisabledWhenEmpty()
     {
-        // Arrange
         var cut = RenderComponent<TaskList>(parameters => parameters
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null));
-        cut.Find("button.task-add-btn").Click();
 
-        // Act
-        var addButton = cut.Find("button.btn-add");
+        var addButton = cut.Find("button.btn-add-text");
 
-        // Assert
         Assert.True(addButton.HasAttribute("disabled"));
     }
 
     [Fact]
-    public void TaskList_ClickCancel_HidesAddTaskForm()
+    public void TaskList_EscapeKey_ClearsInputButKeepsFormVisible()
     {
-        // Arrange
         var cut = RenderComponent<TaskList>(parameters => parameters
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null));
-        cut.Find("button.task-add-btn").Click();
 
-        // Act
-        cut.Find("button.btn-cancel").Click();
+        var input = cut.Find("input.task-input");
+        input.Input("Some text");
+        input.KeyDown("Escape");
 
-        // Assert
+        Assert.Contains("add-task-form", cut.Markup);
+        input = cut.Find("input.task-input");
+        Assert.Equal("", input.GetAttribute("value") ?? "");
+    }
+
+    #endregion
+
+    #region More Panel Tests
+
+    [Fact]
+    public void MoreClick_ShowsPanel_HidesCollapsedForm()
+    {
+        var cut = RenderComponent<TaskList>(parameters => parameters
+            .Add(p => p.Tasks, new List<TaskItem>())
+            .Add(p => p.CurrentTaskId, null));
+
+        cut.Find("button.btn-more").Click();
+
+        Assert.Contains("DETAILS", cut.Markup);
         Assert.DoesNotContain("add-task-form", cut.Markup);
-        Assert.Contains("task-add-btn", cut.Markup);
+    }
+
+    [Fact]
+    public void CreateTask_KeepsPanelOpen_AfterAdd()
+    {
+        var addedTaskName = string.Empty;
+        var cut = RenderComponent<TaskList>(parameters => parameters
+            .Add(p => p.Tasks, new List<TaskItem>())
+            .Add(p => p.CurrentTaskId, null)
+            .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, req => addedTaskName = req.Name)));
+
+        cut.Find("button.btn-more").Click();
+        cut.Find(".add-task-section input.tep-input-name").Input("New Task");
+        cut.Find(".add-task-section button.tep-save-btn").Click();
+
+        Assert.Equal("New Task", addedTaskName);
+        Assert.Contains("DETAILS", cut.Markup);
+    }
+
+    [Fact]
+    public void CancelPanel_ClosesPanel_AndClearsName()
+    {
+        var cut = RenderComponent<TaskList>(parameters => parameters
+            .Add(p => p.Tasks, new List<TaskItem>())
+            .Add(p => p.CurrentTaskId, null));
+
+        cut.Find("button.btn-more").Click();
+        cut.Find(".add-task-section input.tep-input-name").Input("Some task");
+        cut.Find(".add-task-section button.tep-cancel-btn").Click();
+
+        Assert.DoesNotContain("DETAILS", cut.Markup);
+        Assert.Contains("add-task-form", cut.Markup);
+        var input = cut.Find("input.task-input");
+        Assert.Equal("", input.GetAttribute("value") ?? "");
+    }
+
+    [Fact]
+    public void ShiftEnter_InBarInput_ExpandsPanel()
+    {
+        var cut = RenderComponent<TaskList>(parameters => parameters
+            .Add(p => p.Tasks, new List<TaskItem>())
+            .Add(p => p.CurrentTaskId, null));
+
+        var input = cut.Find("input.task-input");
+        input.Input("Some task");
+        input.TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Enter", ShiftKey = true });
+
+        Assert.Contains("DETAILS", cut.Markup);
+        Assert.DoesNotContain("add-task-form", cut.Markup);
     }
 
     #endregion
@@ -183,100 +233,80 @@ public class TaskListTests : TestContext
     [Fact]
     public void TaskList_AddTask_InvokesOnTaskAddCallback()
     {
-        // Arrange
         var addedTaskName = string.Empty;
         var cut = RenderComponent<TaskList>(parameters => parameters
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null)
-            .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<string>(this, name => addedTaskName = name)));
+            .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, req => addedTaskName = req.Name)));
 
-        // Act - Show form and enter task name
-        cut.Find("button.task-add-btn").Click();
         var input = cut.Find("input.task-input");
         input.Input("New Task");
-        cut.Find("button.btn-add").Click();
+        cut.Find("button.btn-add-text").Click();
 
-        // Assert
         Assert.Equal("New Task", addedTaskName);
     }
 
     [Fact]
     public void TaskList_AddTask_TrimsWhitespace()
     {
-        // Arrange
         var addedTaskName = string.Empty;
         var cut = RenderComponent<TaskList>(parameters => parameters
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null)
-            .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<string>(this, name => addedTaskName = name)));
+            .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, req => addedTaskName = req.Name)));
 
-        // Act
-        cut.Find("button.task-add-btn").Click();
         var input = cut.Find("input.task-input");
         input.Input("  New Task  ");
-        cut.Find("button.btn-add").Click();
+        cut.Find("button.btn-add-text").Click();
 
-        // Assert
         Assert.Equal("New Task", addedTaskName);
     }
 
     [Fact]
     public void TaskList_AddTask_DoesNotInvokeWhenEmpty()
     {
-        // Arrange
         var callbackInvoked = false;
         var cut = RenderComponent<TaskList>(parameters => parameters
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null)
-            .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<string>(this, _ => callbackInvoked = true)));
+            .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, _ => callbackInvoked = true)));
 
-        // Act
-        cut.Find("button.task-add-btn").Click();
-        // Input is empty, add button is disabled
-        var addButton = cut.Find("button.btn-add");
-        // Can't click disabled button, but let's verify it's disabled
+        var addButton = cut.Find("button.btn-add-text");
         Assert.True(addButton.HasAttribute("disabled"));
 
-        // Assert
         Assert.False(callbackInvoked);
     }
 
     [Fact]
     public void TaskList_EnterKey_InvokesOnTaskAddCallback()
     {
-        // Arrange
         var addedTaskName = string.Empty;
         var cut = RenderComponent<TaskList>(parameters => parameters
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null)
-            .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<string>(this, name => addedTaskName = name)));
+            .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, req => addedTaskName = req.Name)));
 
-        // Act
-        cut.Find("button.task-add-btn").Click();
         var input = cut.Find("input.task-input");
         input.Input("New Task");
         input.KeyDown("Enter");
 
-        // Assert
         Assert.Equal("New Task", addedTaskName);
     }
 
     [Fact]
-    public void TaskList_EscapeKey_CancelsAddTask()
+    public void TaskList_EscapeKey_ClearsInput()
     {
-        // Arrange
         var cut = RenderComponent<TaskList>(parameters => parameters
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null));
-        cut.Find("button.task-add-btn").Click();
 
-        // Act
         var input = cut.Find("input.task-input");
+        input.Input("Some text");
         input.KeyDown("Escape");
 
-        // Assert
-        Assert.DoesNotContain("add-task-form", cut.Markup);
-        Assert.Contains("task-add-btn", cut.Markup);
+        Assert.Contains("add-task-form", cut.Markup);
+        input = cut.Find("input.task-input");
+        Assert.Equal("", input.GetAttribute("value") ?? "");
     }
 
     #endregion
@@ -378,6 +408,8 @@ public class TaskListTests : TestContext
             .Add(p => p.CurrentTaskId, null));
 
         Assert.Contains("completed-section", cut.Markup);
+        cut.Find(".completed-toggle").Click();
+        cut.Render();
         Assert.Contains("Completed No Work", cut.Markup);
         Assert.Contains("Completed With Work", cut.Markup);
     }
@@ -441,6 +473,8 @@ public class TaskListTests : TestContext
             .Add(p => p.CurrentTaskId, null)
             .Add(p => p.OnTaskUncomplete, EventCallback.Factory.Create<Guid>(this, id => uncompletedTaskId = id)));
 
+        cut.Find(".completed-toggle").Click();
+        cut.Render();
         cut.Find("button[aria-label=\"Undo\"]").Click();
 
         Assert.Equal(taskId, uncompletedTaskId);
@@ -473,15 +507,335 @@ public class TaskListTests : TestContext
     #region Task Item Header Tests
 
     [Fact]
-    public void TaskList_ShowsTasksHeader()
+    public void TaskList_ShowsTaskCard()
     {
-        // Arrange & Act
         var cut = RenderComponent<TaskList>(parameters => parameters
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null));
 
+        cut.Find(".task-card").Should().NotBeNull();
+    }
+
+    #endregion
+
+    #region BuildTree parentage / collapse / callbacks (coverage)
+
+    [Fact]
+    public void Render_LocalParentWithChild_ShowsNestedRowsAndCollapseToggle()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = parentId, Name = "Parent", CreatedAt = DateTime.UtcNow },
+            new() { Id = Guid.NewGuid(), Name = "Child", CreatedAt = DateTime.UtcNow.AddSeconds(1), ParentTaskId = parentId }
+        };
+
+        // Act
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, tasks)
+            .Add(x => x.CurrentTaskId, null));
+
         // Assert
-        Assert.Contains("Tasks", cut.Markup);
+        cut.Markup.Should().Contain("Parent");
+        cut.Markup.Should().Contain("Child");
+        cut.FindAll(".row-toggle").Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void Render_GoogleParentWithChild_ResolvesGoogleParentageAndNests()
+    {
+        // Arrange - child linked only by GoogleParentTaskId; plus an orphan with an unmatched google parent.
+        var parent = new TaskItem { Id = Guid.NewGuid(), Name = "GParent", CreatedAt = DateTime.UtcNow, GoogleTaskId = "g1" };
+        var child = new TaskItem { Id = Guid.NewGuid(), Name = "GChild", CreatedAt = DateTime.UtcNow.AddSeconds(1), GoogleParentTaskId = "g1" };
+        var orphan = new TaskItem { Id = Guid.NewGuid(), Name = "Orphan", CreatedAt = DateTime.UtcNow.AddSeconds(2), GoogleParentTaskId = "missing" };
+        var tasks = new List<TaskItem> { parent, child, orphan };
+
+        // Act
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, tasks)
+            .Add(x => x.CurrentTaskId, null)
+            .Add(x => x.GoogleLists, [new TaskListRef("g1", "Personal", "var(--pomodoro-color)", 0, true, false)]));
+
+        // Assert
+        cut.Markup.Should().Contain("GChild");
+        cut.FindAll(".row-toggle").Should().HaveCount(1, "only the google parent has a resolvable child");
+    }
+
+    [Fact]
+    public void Render_GoogleParentWithMultipleChildren_OrdersByGooglePosition()
+    {
+        // Arrange - multiple google children with distinct positions exercise the
+        // childrenByGoogleParent OrderBy (TaskList.razor.cs:118).
+        var parent = new TaskItem { Id = Guid.NewGuid(), Name = "GParent", CreatedAt = DateTime.UtcNow, GoogleTaskId = "g1" };
+        var tasks = new List<TaskItem>
+        {
+            parent,
+            new() { Id = Guid.NewGuid(), Name = "GZeta", CreatedAt = DateTime.UtcNow, GoogleParentTaskId = "g1", GooglePosition = "z" },
+            new() { Id = Guid.NewGuid(), Name = "GAlpha", CreatedAt = DateTime.UtcNow, GoogleParentTaskId = "g1", GooglePosition = "a" }
+        };
+
+        // Act
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, tasks)
+            .Add(x => x.CurrentTaskId, null)
+            .Add(x => x.GoogleLists, [new TaskListRef("g1", "Personal", "var(--pomodoro-color)", 0, true, false)]));
+
+        // Assert - both children render under the google parent.
+        cut.Markup.Should().Contain("GZeta");
+        cut.Markup.Should().Contain("GAlpha");
+    }
+
+    [Fact]
+    public void ToggleCollapse_ClickedTwice_HidesThenShowsChildren()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = parentId, Name = "Parent", CreatedAt = DateTime.UtcNow },
+            new() { Id = Guid.NewGuid(), Name = "Child", CreatedAt = DateTime.UtcNow.AddSeconds(1), ParentTaskId = parentId }
+        };
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, tasks)
+            .Add(x => x.CurrentTaskId, null));
+
+        // Act - collapse
+        cut.Find(".row-toggle").Click();
+        cut.Render();
+        cut.Markup.Should().NotContain("Child");
+
+        // Act - expand again
+        cut.Find(".row-toggle").Click();
+        cut.Render();
+        cut.Markup.Should().Contain("Child");
+    }
+
+    [Fact]
+    public async Task HandleAddSubtask_ThroughChild_InvokesOnAddSubtask()
+    {
+        // Arrange
+        AddSubtaskRequest? captured = null;
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Root", CreatedAt = DateTime.UtcNow };
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem> { task })
+            .Add(x => x.CurrentTaskId, null)
+            .Add(x => x.OnAddSubtask, EventCallback.Factory.Create<AddSubtaskRequest>(this, r => captured = r)));
+
+        // Act - open subtask form, type, submit
+        cut.Find("button[aria-label=\"Add subtask\"]").Click();
+        cut.Render();
+        cut.Find("input[aria-label=\"New subtask name\"]").Input("New sub");
+        cut.Find("button[aria-label=\"Add\"]").Click();
+        cut.Render();
+
+        // Assert
+        captured.Should().NotBeNull();
+        captured!.Name.Should().Be("New sub");
+        captured.ParentTaskId.Should().Be(task.Id);
+    }
+
+    [Fact]
+    public async Task HandleReparentToRoot_ThroughChild_InvokesOnReparentToRoot()
+    {
+        // Arrange - a child node (Depth > 0) shows the "Move to top level" button.
+        var parentId = Guid.NewGuid();
+        var childId = Guid.NewGuid();
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = parentId, Name = "Parent", CreatedAt = DateTime.UtcNow },
+            new() { Id = childId, Name = "Child", CreatedAt = DateTime.UtcNow.AddSeconds(1), ParentTaskId = parentId }
+        };
+        Guid? reparented = null;
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, tasks)
+            .Add(x => x.CurrentTaskId, null)
+            .Add(x => x.OnReparentToRoot, EventCallback.Factory.Create<Guid>(this, id => reparented = id)));
+
+        // Act
+        cut.Find("button[aria-label=\"Move to top level\"]").Click();
+
+        // Assert
+        reparented.Should().Be(childId);
+    }
+
+    #endregion
+
+    #region Completed Child Stays Under Parent Tests
+
+    [Fact]
+    public void Render_CompletedChildUnderActiveParent_ChildStaysInActiveSection()
+    {
+        var parentId = Guid.NewGuid();
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = parentId, Name = "Parent", CreatedAt = DateTime.UtcNow, IsCompleted = false },
+            new() { Id = Guid.NewGuid(), Name = "Child", CreatedAt = DateTime.UtcNow.AddSeconds(1), ParentTaskId = parentId, IsCompleted = true }
+        };
+
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, tasks)
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Markup.Should().Contain("Parent");
+        cut.Markup.Should().Contain("Child");
+        cut.Markup.Should().NotContain("completed-section");
+    }
+
+    [Fact]
+    public void Render_CompletedRoot_ChildMovesToCompletedSection()
+    {
+        var parentId = Guid.NewGuid();
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = parentId, Name = "Parent", CreatedAt = DateTime.UtcNow, IsCompleted = true },
+            new() { Id = Guid.NewGuid(), Name = "Child", CreatedAt = DateTime.UtcNow.AddSeconds(1), ParentTaskId = parentId, IsCompleted = true }
+        };
+
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, tasks)
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Markup.Should().Contain("completed-section");
+        cut.Find(".completed-toggle").Click();
+        cut.Render();
+        cut.Markup.Should().Contain("Parent");
+        cut.Markup.Should().Contain("Child");
+    }
+
+    [Fact]
+    public void Render_CompletedChildShowsCheckmarkInActiveSection()
+    {
+        var parentId = Guid.NewGuid();
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = parentId, Name = "Parent", CreatedAt = DateTime.UtcNow, IsCompleted = false },
+            new() { Id = Guid.NewGuid(), Name = "Child", CreatedAt = DateTime.UtcNow.AddSeconds(1), ParentTaskId = parentId, IsCompleted = true }
+        };
+
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, tasks)
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.FindAll("button.task-checkbox.completed").Should().HaveCount(1);
+    }
+
+    #endregion
+
+    #region More Options Panel
+
+    [Fact]
+    public void MorePanel_ShowsWhenMoreButtonClicked()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+
+        cut.Markup.Should().Contain("task-edit-panel");
+    }
+
+    [Fact]
+    public void MorePanel_ShowsGoogleLists_WhenGoogleListsProvided()
+    {
+        var googleLists = new List<TaskListRef>
+        {
+            new("google-1", "Work", "var(--pomodoro-color)", 2, true, true)
+        };
+
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null)
+            .Add(x => x.GoogleLists, googleLists));
+
+        cut.Find(".btn-more").Click();
+
+        cut.Markup.Should().Contain("Work");
+        cut.Markup.Should().Contain("google-1");
+    }
+
+    [Fact]
+    public void MorePanel_ShowsWeekdayButtons_WhenWeeklySelected()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        var repeatSelect = cut.FindAll("select.tep-select")[1];
+        repeatSelect.Change(RepeatType.Weekly);
+
+        cut.Markup.Should().Contain("tep-weekday-btn");
+        cut.FindAll(".tep-weekday-btn").Should().HaveCount(7);
+    }
+
+    [Fact]
+    public void MorePanel_TogglesWeekday_WhenWeekdayClicked()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Weekly);
+
+        var mondayBtn = cut.FindAll(".tep-weekday-btn")[0];
+        mondayBtn.Click();
+        cut.Render();
+
+        cut.FindAll(".tep-weekday-btn.active").Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void MorePanel_ShowsPauseToggle_WhenRepeatTypeSelected()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Daily);
+
+        cut.Markup.Should().Contain("tep-toggle");
+        cut.Markup.Should().Contain("Not paused");
+    }
+
+    [Fact]
+    public void MorePanel_TogglesPauseState_WhenPauseClicked()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Daily);
+
+        cut.Find(".tep-toggle").Click();
+        cut.Render();
+
+        cut.Markup.Should().Contain("Paused");
+    }
+
+    [Fact]
+    public void MorePanel_TogglesWeekdayOff_WhenAlreadyActive()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Weekly);
+
+        var mondayBtn = cut.FindAll(".tep-weekday-btn")[0];
+        mondayBtn.Click();
+        cut.Render();
+        cut.FindAll(".tep-weekday-btn.active").Should().HaveCount(1);
+
+        mondayBtn = cut.FindAll(".tep-weekday-btn")[0];
+        mondayBtn.Click();
+        cut.Render();
+        cut.FindAll(".tep-weekday-btn.active").Should().HaveCount(0);
     }
 
     #endregion

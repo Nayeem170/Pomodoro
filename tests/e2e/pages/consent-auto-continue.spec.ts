@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 async function completePomodoroFast(page: any, pomodoroPage: PomodoroPage, taskName: string) {
@@ -47,6 +47,6 @@ test.describe('Consent Auto-Continue', () => {
 
     await expect(page.locator('.consent-modal-overlay')).not.toBeVisible({ timeout: 20000 });
     const timerType = await pomodoroPage.getTimerType();
-    expect(timerType.toUpperCase()).toContain('FOCUSING');
+    expect(timerType.toUpperCase()).toContain('FOCUS');
   });
 });

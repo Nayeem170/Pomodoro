@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('Navigation', () => {
@@ -13,7 +13,7 @@ test.describe('Navigation', () => {
 
   test('should display header with app title', async ({ page }) => {
     await expect(page.locator('.header-title')).toBeVisible();
-    await expect(page.locator('.header-text')).toContainText('Pomodoro');
+    await expect(page.locator('.header-text')).toContainText('Tarkeez');
   });
 
   test('should not display footer', async ({ page }) => {
@@ -44,19 +44,19 @@ test.describe('Navigation', () => {
     await page.waitForLoadState('domcontentloaded');
     await expect(page.locator('.hist-body')).toBeVisible({ timeout: 30000 });
 
-    await page.locator('.header-nav a[title="Timer"]').click();
+    await page.locator('.header-nav a[title="Focus"]').click();
     await page.waitForLoadState('domcontentloaded');
     await expect(page.locator('.ring-area')).toBeVisible({ timeout: 30000 });
   });
 
   test('should highlight active nav link', async ({ page }) => {
-    const timerLink = page.locator('.header-nav a[title="Timer"]');
+    const timerLink = page.locator('.header-nav a[title="Focus"]');
     await expect(timerLink).toHaveClass(/active/);
   });
 
   test('should display all four navigation links', async ({ page }) => {
     await expect(page.locator('.header-nav a')).toHaveCount(4);
-    await expect(page.locator('.header-nav a[title="Timer"]')).toBeVisible();
+    await expect(page.locator('.header-nav a[title="Focus"]')).toBeVisible();
     await expect(page.locator('.header-nav a[title="History"]')).toBeVisible();
     await expect(page.locator('.header-nav a[title="Settings"]')).toBeVisible();
     await expect(page.locator('.header-nav a[title="About"]')).toBeVisible();

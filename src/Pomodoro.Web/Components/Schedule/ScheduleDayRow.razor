@@ -1,0 +1,182 @@
+@using Pomodoro.Web.Models
+@using Pomodoro.Web.Components.Tasks
+
+<div class="sched-day">
+    <div class="day-header @(Day.Items.Count == 0 ? "empty" : "")" aria-label="@Day.DayLabel">
+        <span class="day-badge @(Day.Items.Count == 0 ? "empty" : "")" aria-hidden="true">@Day.Date.Day</span>
+        <span class="day-weekday-full">@Day.Date.ToString("dddd")</span>
+        <span class="day-weekday-short">@Day.Date.ToString("ddd")</span>
+        @if (Day.Items.Count > 0)
+        {
+            <span class="day-count-full">@(Day.Items.Count == 1 ? "1 task" : $"{Day.Items.Count} tasks")</span>
+            <span class="day-count-short">@Day.Items.Count</span>
+        }
+    </div>
+    @if (Day.Items.Count == 0)
+    {
+        <div class="day-empty">No tasks scheduled</div>
+    }
+    else
+    {
+        <ul class="day-items" role="list">
+            @foreach (var item in Day.Items)
+            {
+                var taskId = item.Task?.Id;
+                var googleTaskId = item.Task?.GoogleTaskId;
+                var descendantTree = taskId.HasValue ? GetDescendantTree(taskId.Value) : [];
+                var hasChildren = descendantTree.Count > 0 || HasAnyChildren(taskId, googleTaskId);
+                <li class="day-item-wrap">
+                    @if (item.Task is not null)
+                    {
+                        <TaskItemComponent Item="item.Task"
+                                           Depth="0"
+                                           HasChildren="hasChildren"
+                                           IsCollapsed="_collapsedIds.Contains(item.Task.Id)"
+                                           IsSelected="false"
+                                           ContextDate="Day.Date"
+                                           GoogleListTitle="@GoogleListTitleFor(item.Task)"
+                                           OnSelect="HandleSelect"
+                                           OnComplete="OnComplete"
+                                           OnDelete="OnDelete"
+                                           OnUncomplete="OnUncomplete"
+                                           OnEdit="OnEditTask"
+                                           OnAddSubtask="OnAddSubtask"
+                                           OnReparentToRoot="OnReparentToRoot"
+                                           OnToggleCollapse="ToggleCollapse" />
+                    }
+                    else
+                    {
+                        <div class="day-item @(item.IsCompleted ? "done" : "")">
+                            <span class="item-title">@item.Title</span>
+                        </div>
+                    }
+                    @foreach (var (descItem, depth) in descendantTree)
+                    {
+                        <TaskItemComponent Item="descItem"
+                                           Depth="depth"
+                                           HasChildren="HasAnyChildren(descItem.Id, descItem.GoogleTaskId)"
+                                           IsCollapsed="_collapsedIds.Contains(descItem.Id)"
+                                           IsSelected="false"
+                                           ContextDate="Day.Date"
+                                           GoogleListTitle="@GoogleListTitleFor(descItem)"
+                                           OnSelect="HandleSelect"
+                                           OnComplete="OnComplete"
+                                           OnDelete="OnDelete"
+                                           OnUncomplete="OnUncomplete"
+                                           OnEdit="OnEditTask"
+                                           OnAddSubtask="OnAddSubtask"
+                                           OnReparentToRoot="OnReparentToRoot"
+                                           OnToggleCollapse="ToggleCollapse" />
+                    }
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    [Microsoft.AspNetCore.Components.Parameter]
+    public ScheduleDay Day { get; set; } = default!;
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<TaskItem> OnEditTask { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<AddSubtaskRequest> OnAddSubtask { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<Guid> OnComplete { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<Guid> OnDelete { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<Guid> OnUncomplete { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<Guid> OnReparentToRoot { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public IReadOnlyList<TaskItem>? AllTasks { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<Guid> OnSelect { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
+
+    private readonly HashSet<Guid> _collapsedIds = new();
+    private IReadOnlyList<TaskItem> _allSubtasks = [];
+    private Dictionary<Guid, List<TaskItem>> _childrenByParent = new();
+    private Dictionary<string, Guid> _googleIdToLocalId = new();
+
+    protected override void OnParametersSet()
+    {
+        var all = AllTasks ?? [];
+        _googleIdToLocalId = all
+            .Where(t => !string.IsNullOrEmpty(t.GoogleTaskId))
+            .ToDictionary(t => t.GoogleTaskId!, t => t.Id);
+        _allSubtasks = all.Where(t => t.IsSubtask && !t.IsDeleted).ToList();
+
+        var groups = new Dictionary<Guid, List<TaskItem>>();
+        foreach (var s in _allSubtasks)
+        {
+            Guid parentLocalId = Guid.Empty;
+            if (s.ParentTaskId.HasValue)
+                parentLocalId = s.ParentTaskId.Value;
+            else if (!string.IsNullOrEmpty(s.GoogleParentTaskId) &&
+                     _googleIdToLocalId.TryGetValue(s.GoogleParentTaskId, out var resolved))
+                parentLocalId = resolved;
+
+            if (parentLocalId == Guid.Empty) continue;
+            if (!groups.TryGetValue(parentLocalId, out var list))
+            {
+                list = new List<TaskItem>();
+                groups[parentLocalId] = list;
+            }
+            list.Add(s);
+        }
+        foreach (var kv in groups) kv.Value.Sort((a, b) => a.CreatedAt.CompareTo(b.CreatedAt));
+        _childrenByParent = groups;
+    }
+
+    private bool HasAnyChildren(Guid? taskId, string? googleTaskId) =>
+        (taskId.HasValue && _childrenByParent.ContainsKey(taskId.Value)) ||
+        (!string.IsNullOrEmpty(googleTaskId) &&
+         _allSubtasks.Any(s => s.GoogleParentTaskId == googleTaskId));
+
+    private List<(TaskItem Item, int Depth)> GetDescendantTree(Guid rootId)
+    {
+        if (_collapsedIds.Contains(rootId)) return [];
+        var result = new List<(TaskItem, int)>();
+        WalkDescendants(rootId, 1, result);
+        return result;
+    }
+
+    private void WalkDescendants(Guid parentId, int depth, List<(TaskItem, int)> result)
+    {
+        if (_collapsedIds.Contains(parentId)) return;
+        if (!_childrenByParent.TryGetValue(parentId, out var children)) return;
+        foreach (var child in children)
+        {
+            result.Add((child, depth));
+            WalkDescendants(child.Id, depth + 1, result);
+        }
+    }
+
+    private string? GoogleListTitleFor(TaskItem task) =>
+        string.IsNullOrEmpty(task.GoogleListId)
+            ? null
+            : GoogleLists.FirstOrDefault(l => l.Id == task.GoogleListId)?.Title;
+
+    private async Task HandleSelect(Guid taskId)
+    {
+        await OnSelect.InvokeAsync(taskId);
+    }
+
+    private void ToggleCollapse(Guid taskId)
+    {
+        if (!_collapsedIds.Add(taskId))
+            _collapsedIds.Remove(taskId);
+    }
+}

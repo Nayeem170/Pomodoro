@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('Task Pomo Count Display', () => {
@@ -27,6 +27,9 @@ test.describe('Task Pomo Count Display', () => {
     await pomodoroPage.addTask('Completed Pomo Task');
     await pomodoroPage.completeTask('Completed Pomo Task');
     await page.waitForTimeout(500);
+
+    await page.locator('.completed-toggle').click();
+    await page.waitForTimeout(200);
 
     const pomoCount = page.locator('.completed-section .task-row').filter({ hasText: 'Completed Pomo Task' }).locator('.task-pomo-count');
     await expect(pomoCount).toBeVisible();

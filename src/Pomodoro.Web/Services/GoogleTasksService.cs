@@ -101,16 +101,28 @@ public class GoogleTasksService : IGoogleTasksService
         };
     }
 
-    public async Task<GoogleTask> InsertTaskAsync(string listId, GoogleTask task)
+    public async Task<GoogleTask> InsertTaskAsync(string listId, GoogleTask task, string? parentTaskId = null)
     {
         return await ExecuteWithRetryAsync(async token =>
         {
             var body = new { title = task.Title, notes = task.Notes, due = task.Due };
-            var json = await _jsRuntime.InvokeAsync<string>(Constants.GoogleTasksJsFunctions.InsertTask, token, listId, body);
+            var json = await _jsRuntime.InvokeAsync<string>(Constants.GoogleTasksJsFunctions.InsertTask, token, listId, body, parentTaskId);
             var data = JsonSerializer.Deserialize<JsonElement>(json);
             var inserted = MapGoogleTask(data);
             _logger.LogInformation("Inserted Google task {TaskId} in list {ListId}", inserted.Id, listId);
             return inserted;
+        });
+    }
+
+    public async Task<GoogleTask?> MoveTaskAsync(string listId, string taskId, string? parentTaskId = null)
+    {
+        return await ExecuteWithRetryAsync(async token =>
+        {
+            var json = await _jsRuntime.InvokeAsync<string>(Constants.GoogleTasksJsFunctions.MoveTask, token, listId, taskId, parentTaskId);
+            var data = JsonSerializer.Deserialize<JsonElement>(json);
+            var moved = MapGoogleTask(data);
+            _logger.LogInformation("Moved Google task {TaskId} under parent {Parent}", taskId, parentTaskId ?? "(root)");
+            return moved;
         });
     }
 
@@ -165,6 +177,13 @@ public class GoogleTasksService : IGoogleTasksService
             catch (JSException ex) when (ex.Message.Contains("401"))
             {
                 _logger.LogWarning(Constants.SyncMessages.LogSyncUnauthorized);
+                if (attempt < maxRetries - 1 && await _googleDriveService.TrySilentAuthAsync())
+                {
+                    token = await _googleDriveService.GetAccessTokenAsync();
+                    if (string.IsNullOrEmpty(token))
+                        throw new UnauthorizedAccessException(Constants.SyncMessages.TasksReconnectRequired, ex);
+                    continue;
+                }
                 throw new UnauthorizedAccessException(Constants.SyncMessages.TasksReconnectRequired, ex);
             }
             catch (JSException ex) when (ex.Message.Contains("412"))
@@ -175,7 +194,7 @@ public class GoogleTasksService : IGoogleTasksService
             catch (JSException ex) when (ex.Message.Contains("403"))
             {
                 _logger.LogWarning(ex, Constants.SyncMessages.LogTasksForbidden);
-                throw new UnauthorizedAccessException(Constants.SyncMessages.TasksAccessForbidden, ex);
+                throw new TasksAccessForbiddenException(Constants.SyncMessages.TasksAccessForbidden, ex);
             }
             catch (JSException ex) when (ex.Message.Contains("429"))
             {

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('Offline Timer', () => {
@@ -53,7 +53,7 @@ test.describe('Offline Timer', () => {
 
     await pomodoroPage.switchToPomodoro();
     const timerTypePom = await pomodoroPage.getTimerType();
-    expect(timerTypePom.toUpperCase()).toContain('FOCUSING');
+    expect(timerTypePom.toUpperCase()).toContain('FOCUS');
 
     await page.unroute('**/*');
   });

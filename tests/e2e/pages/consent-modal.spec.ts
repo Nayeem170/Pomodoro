@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 async function setupPomodoroTest(page: any, pomodoroPage: PomodoroPage, taskName: string, autoStart: boolean = true) {

@@ -3,10 +3,6 @@ using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Components.History;
 
-/// <summary>
-/// Code-behind for DateNavigator component
-/// Provides date navigation controls
-/// </summary>
 public class DateNavigatorBase : ComponentBase
 {
     #region Lifecycle Methods

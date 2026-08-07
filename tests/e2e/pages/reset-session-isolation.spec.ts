@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('Reset Session Isolation', () => {
@@ -24,7 +24,7 @@ test.describe('Reset Session Isolation', () => {
     await pomodoroPage.switchToPomodoro();
 
     const timerTypeAfter = await pomodoroPage.getTimerType();
-    expect(timerTypeAfter).toContain('FOCUSING');
+    expect(timerTypeAfter).toContain('FOCUS');
 
     const isPaused = await pomodoroPage.isTimerPaused();
     expect(isPaused).toBe(true);

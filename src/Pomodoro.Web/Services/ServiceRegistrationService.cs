@@ -6,10 +6,6 @@ using Pomodoro.Web.Services.Repositories;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Service for registering all application services with DI container.
-/// Extracted from Program.cs for testability.
-/// </summary>
 public interface IServiceRegistrationService
 {
     void RegisterServices(IServiceCollection services);

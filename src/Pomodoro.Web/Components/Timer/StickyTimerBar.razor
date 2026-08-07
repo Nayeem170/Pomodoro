@@ -1,0 +1,169 @@
+@using Pomodoro.Web.Models
+@implements IDisposable
+
+<div class="sticky-timer-bar @GetSessionClass() @(IsRunning ? "running" : "")">
+    <div class="stb-tabs">
+        <button class="stb-tab @(SessionType == SessionType.Pomodoro ? "act" : "")"
+                @onclick="() => OnSessionChange.InvokeAsync(SessionType.Pomodoro)">
+            Pomodoro
+        </button>
+        <button class="stb-tab @(SessionType == SessionType.ShortBreak ? "act sb" : "")"
+                @onclick="() => OnSessionChange.InvokeAsync(SessionType.ShortBreak)">
+            Short break
+        </button>
+        <button class="stb-tab @(SessionType == SessionType.LongBreak ? "act lb" : "")"
+                @onclick="() => OnSessionChange.InvokeAsync(SessionType.LongBreak)">
+            Long break
+        </button>
+    </div>
+    <div class="stb-body">
+        <div class="stb-ring">
+            <svg width="32" height="32" viewBox="0 0 32 32">
+                <circle class="stb-ring-bg" cx="16" cy="16" r="14"/>
+                <circle class="stb-ring-fill @GetRingSessionClass()" cx="16" cy="16" r="14"
+                        style="stroke-dashoffset: @GetDashOffset(14)"/>
+            </svg>
+        </div>
+        <div class="stb-text">
+            <span class="stb-time">@FormatTime(RemainingTime)</span>
+            @if (SessionType == SessionType.Pomodoro && !string.IsNullOrEmpty(CurrentTaskName))
+            {
+                <span class="stb-task">Focus | @CurrentTaskName</span>
+            }
+            else if (SessionType == SessionType.Pomodoro && !IsStarted && !IsRunning)
+            {
+                <span class="stb-task">Select a task</span>
+            }
+            else if (SessionType != SessionType.Pomodoro)
+            {
+                <span class="stb-task">@GetModePrefix()</span>
+            }
+        </div>
+        <button class="stb-pause" @onclick="HandlePrimary" aria-label="@GetPrimaryLabel()" disabled="@IsStartDisabled">
+            @GetPrimaryIcon()
+        </button>
+    </div>
+</div>
+
+@code {
+    [Microsoft.AspNetCore.Components.Inject]
+    Pomodoro.Web.Services.ITimerService TimerService { get; set; } = default!;
+
+    [Microsoft.AspNetCore.Components.Inject]
+    Pomodoro.Web.Services.ITimerEventPublisher TimerEventPublisher { get; set; } = default!;
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public SessionType SessionType { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public bool IsRunning { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public bool IsStarted { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public string? CurrentTaskName { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public bool CanStart { get; set; } = true;
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback OnStart { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback OnPause { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback OnResume { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<SessionType> OnSessionChange { get; set; }
+
+    private const double TwoPi = 2 * System.Math.PI;
+
+    private System.TimeSpan RemainingTime => TimerService.RemainingTime;
+
+    private bool IsStartDisabled => !IsStarted && !IsRunning && !CanStart;
+
+    protected override void OnInitialized()
+    {
+        TimerEventPublisher.OnTick += OnTimerTick;
+        TimerEventPublisher.OnTimerStateChanged += OnTimerStateChanged;
+    }
+
+    private async void OnTimerTick()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnTimerStateChanged()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private string FormatTime(System.TimeSpan time) =>
+        string.Format(Constants.TimeFormats.TimerFormat, (int)time.TotalMinutes, time.Seconds);
+
+    private string GetSessionClass() => SessionType switch
+    {
+        SessionType.Pomodoro => Constants.SessionTypes.PomodoroClass + "-theme",
+        SessionType.ShortBreak => Constants.SessionTypes.ShortBreakClass + "-theme",
+        SessionType.LongBreak => Constants.SessionTypes.LongBreakClass + "-theme",
+        _ => Constants.SessionTypes.PomodoroClass + "-theme"
+    };
+
+    private string GetRingSessionClass() => SessionType switch
+    {
+        SessionType.ShortBreak => "short-break",
+        SessionType.LongBreak => "long-break",
+        _ => ""
+    };
+
+    private string GetDashOffset(double radius)
+    {
+        var settings = TimerService.Settings;
+        if (settings == null) return "0";
+        var totalSeconds = settings.GetDurationSeconds(SessionType);
+        if (totalSeconds <= 0) return "0";
+        var circumference = TwoPi * radius;
+        var remainingSeconds = RemainingTime.TotalSeconds;
+        var progress = remainingSeconds / totalSeconds;
+        var offset = circumference * (1 - progress);
+        return offset.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private string GetPrimaryLabel()
+    {
+        if (!IsStarted && !IsRunning) return "Start";
+        return IsRunning ? "Pause" : "Resume";
+    }
+
+    private string GetModePrefix() => SessionType switch
+    {
+        SessionType.Pomodoro => "Focus",
+        SessionType.ShortBreak => "Short break",
+        _ => "Long break"
+    };
+
+    private Microsoft.AspNetCore.Components.MarkupString GetPrimaryIcon()
+    {
+        if (IsRunning)
+        {
+            return (Microsoft.AspNetCore.Components.MarkupString)"<svg width='14' height='14' viewBox='0 0 14 14' fill='none'><rect x='3' y='2' width='3' height='10' rx='1' fill='currentColor'/><rect x='8' y='2' width='3' height='10' rx='1' fill='currentColor'/></svg>";
+        }
+        return (Microsoft.AspNetCore.Components.MarkupString)"<svg width='14' height='14' viewBox='0 0 14 14' fill='none'><path d='M3 1l9 6-9 6V1z' fill='currentColor'/></svg>";
+    }
+
+    private async Task HandlePrimary()
+    {
+        if (IsRunning) await OnPause.InvokeAsync();
+        else if (IsStarted) await OnResume.InvokeAsync();
+        else await OnStart.InvokeAsync();
+    }
+
+    public void Dispose()
+    {
+        TimerEventPublisher.OnTick -= OnTimerTick;
+        TimerEventPublisher.OnTimerStateChanged -= OnTimerStateChanged;
+    }
+}

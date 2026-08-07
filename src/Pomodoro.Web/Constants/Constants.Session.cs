@@ -1,13 +1,7 @@
 namespace Pomodoro.Web;
 
-/// <summary>
-/// Session type, task, and session option constants
-/// </summary>
 public static partial class Constants
 {
-    /// <summary>
-    /// Session type display names and styling
-    /// </summary>
     public static class SessionTypes
     {
         // Display Names
@@ -52,9 +46,6 @@ public static partial class Constants
         public const string ActionSkip = "skip";
     }
 
-    /// <summary>
-    /// Session option labels
-    /// </summary>
     public static class SessionOptionLabels
     {
         public const string ShortBreak = "Short Break";
@@ -64,9 +55,6 @@ public static partial class Constants
         public const string ResumePomodoro = "Resume Pomodoro";
     }
 
-    /// <summary>
-    /// Task-related constants
-    /// </summary>
     public static class Tasks
     {
         public const string CompletedEmoji = "✅";
@@ -83,20 +71,17 @@ public static partial class Constants
         public const int InitialCount = 0;
         public const int InsertAtBeginning = 0;
         public const int InsertAtEnd = -1;
+        public const int MaxSubtaskDepth = 4;
+        public const int ScheduleWindowDays = 7;
+        public const string ScheduleDayFormat = "ddd, MMM d";
     }
 
-    /// <summary>
-    /// Task list constants for multi-list support
-    /// </summary>
     public static class TaskLists
     {
         public const string LocalPomodoroListId = "__local_pomodoro__";
         public const string ScheduleListId = "__schedule__";
     }
 
-    /// <summary>
-    /// Repeat/schedule task constants
-    /// </summary>
     public static class Repeat
     {
         public const string RepeatIcon = "🔁";
@@ -108,5 +93,9 @@ public static partial class Constants
         public const int DefaultCustomDays = 1;
         public const int DefaultMonthlyDay = 1;
         public const int MaxCustomDays = 365;
+        public const string LabelDaily = "Daily";
+        public const string LabelWeekly = "Weekly";
+        public const string LabelMonthly = "Monthly";
+        public const string LabelRepeat = "Repeat";
     }
 }

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('Task Behavior', () => {
@@ -39,13 +39,16 @@ test.describe('Task Behavior', () => {
     await page.waitForTimeout(500);
 
     await expect(page.locator('.completed-section')).toBeVisible();
-    await expect(page.locator('.completed-section h4')).toContainText('Completed');
+    await expect(page.locator('.completed-toggle')).toContainText('Completed');
+
+    await page.locator('.completed-toggle').click();
+    await page.waitForTimeout(200);
 
     const completedTask = page.locator('.completed-section .task-row');
     await expect(completedTask).toContainText('Complete Test Task');
     await expect(completedTask.locator('.task-text.completed')).toBeVisible();
 
-    const undoButton = completedTask.locator('.task-action-btn[aria-label="Undo"]');
+    const undoButton = completedTask.locator('.task-checkbox[aria-label="Undo"]');
     await expect(undoButton).toBeVisible();
 
     await undoButton.click();

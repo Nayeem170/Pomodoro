@@ -1,13 +1,7 @@
 namespace Pomodoro.Web;
 
-/// <summary>
-/// Storage and caching constants
-/// </summary>
 public static partial class Constants
 {
-    /// <summary>
-    /// IndexedDB storage-related constants
-    /// </summary>
     public static class Storage
     {
         /// <summary>Store name for timer settings</summary>
@@ -50,9 +44,6 @@ public static partial class Constants
         public const string GoogleListIdIndex = "googleListId";
     }
 
-    /// <summary>
-    /// Cache-related constants
-    /// </summary>
     public static class Cache
     {
         /// <summary>Maximum number of activities to cache</summary>

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('Resume Interrupted Pomodoro', () => {
@@ -50,7 +50,7 @@ test.describe('Resume Interrupted Pomodoro', () => {
     await page.page.locator('.btn-option').filter({ hasText: 'Resume Pomodoro' }).click();
     await expect(page.page.locator('.consent-modal-overlay')).not.toBeVisible({ timeout: 5000 });
 
-    await expect(page.page.locator('.timer-mode-label')).toContainText('FOCUSING');
+    await expect(page.page.locator('.timer-mode-label')).toContainText('FOCUS');
     const timeAfterResume = await page.getTimerDisplay();
     expect(timeAfterResume).not.toBe('25:00');
     expect(timeAfterResume).toBe(timeBeforeSwitch);

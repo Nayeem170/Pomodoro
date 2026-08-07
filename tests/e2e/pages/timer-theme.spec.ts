@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('Timer Theme', () => {
@@ -37,7 +37,7 @@ test.describe('Timer Theme', () => {
 
   test('should display correct timer type label for Pomodoro', async ({ page }) => {
     const timerType = await pomodoroPage.getTimerType();
-    expect(timerType.toUpperCase()).toContain('FOCUSING');
+    expect(timerType.toUpperCase()).toContain('FOCUS');
   });
 
   test('should display correct timer type label for Short Break', async ({ page }) => {

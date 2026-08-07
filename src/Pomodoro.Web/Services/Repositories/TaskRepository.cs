@@ -3,9 +3,6 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Services.Repositories;
 
-/// <summary>
-/// Repository implementation for task persistence using IndexedDB
-/// </summary>
 public class TaskRepository : ITaskRepository
 {
     private readonly IIndexedDbService _indexedDb;

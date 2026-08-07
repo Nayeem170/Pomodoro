@@ -11,7 +11,7 @@
             <button class="ibtn lg @GetSessionClass()" @onclick="OnPause" title="Pause" aria-label="Pause timer">
                 @Constants.UI.PauseIcon
             </button>
-            <div style="width:36px"></div>
+            <div class="ctrl-trailing">@TrailingAction</div>
         </div>
     }
     else if (IsStarted)
@@ -23,15 +23,17 @@
             <button class="ibtn lg @GetSessionClass()" @onclick="OnResume" title="Resume" aria-label="Resume timer">
                 @Constants.UI.PlayIcon
             </button>
-            <div style="width:36px"></div>
+            <div class="ctrl-trailing">@TrailingAction</div>
         </div>
     }
     else
     {
         <div class="ctrl-row">
+            <div class="ctrl-trailing"></div>
             <button class="ibtn lg @GetSessionClass()" @onclick="OnStart" disabled="@IsStartDisabled" title="@(IsStartDisabled ? "Select a task first" : "Start")" aria-label="@(IsStartDisabled ? "Select a task first" : "Start timer")">
                 @Constants.UI.PlayIcon
             </button>
+            <div class="ctrl-trailing">@TrailingAction</div>
         </div>
         @if (IsStartDisabled)
         {

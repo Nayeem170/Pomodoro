@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('Timer Controls', () => {
@@ -19,7 +19,7 @@ test.describe('Timer Controls', () => {
   });
 
   test('should show task hint when no task is selected', async ({ page }) => {
-    await expect(page.locator('.active-task')).toBeVisible();
+    await expect(page.locator('.timer-task-pill')).toBeVisible();
     await expect(page.locator('.task-hint')).toBeVisible();
     await expect(page.locator('.task-hint')).toContainText('Select a task to start');
   });
@@ -30,9 +30,8 @@ test.describe('Timer Controls', () => {
   });
 
   test('should start timer when task is selected', async ({ page }) => {
-    await page.locator('.task-add-btn').click();
     await page.locator('.task-input').pressSequentially('Test Task');
-    await page.locator('.btn-icon-small.btn-add').click();
+    await page.locator('.btn-add-text').click();
     await page.waitForTimeout(500);
     
     const taskItems = page.locator('.task-row');
@@ -46,9 +45,8 @@ test.describe('Timer Controls', () => {
   });
 
   test('should show pause button when timer is running', async ({ page }) => {
-    await page.locator('.task-add-btn').click();
     await page.locator('.task-input').pressSequentially('Test Task');
-    await page.locator('.btn-icon-small.btn-add').click();
+    await page.locator('.btn-add-text').click();
     await page.waitForTimeout(500);
     
     const taskItems = page.locator('.task-row');
@@ -63,9 +61,8 @@ test.describe('Timer Controls', () => {
   });
 
   test('should pause timer', async ({ page }) => {
-    await page.locator('.task-add-btn').click();
     await page.locator('.task-input').pressSequentially('Test Task');
-    await page.locator('.btn-icon-small.btn-add').click();
+    await page.locator('.btn-add-text').click();
     await page.waitForTimeout(500);
     
     const taskItems = page.locator('.task-row');
@@ -83,9 +80,8 @@ test.describe('Timer Controls', () => {
   });
 
   test('should show resume button when timer is paused', async ({ page }) => {
-    await page.locator('.task-add-btn').click();
     await page.locator('.task-input').pressSequentially('Test Task');
-    await page.locator('.btn-icon-small.btn-add').click();
+    await page.locator('.btn-add-text').click();
     await page.waitForTimeout(500);
     
     const taskItems = page.locator('.task-row');
@@ -104,9 +100,8 @@ test.describe('Timer Controls', () => {
   });
 
   test('should show reset button when timer is started', async ({ page }) => {
-    await page.locator('.task-add-btn').click();
     await page.locator('.task-input').pressSequentially('Test Task');
-    await page.locator('.btn-icon-small.btn-add').click();
+    await page.locator('.btn-add-text').click();
     await page.waitForTimeout(500);
     
     const taskItems = page.locator('.task-row');
@@ -121,9 +116,8 @@ test.describe('Timer Controls', () => {
   });
 
   test('should resume timer', async ({ page }) => {
-    await page.locator('.task-add-btn').click();
     await page.locator('.task-input').pressSequentially('Test Task');
-    await page.locator('.btn-icon-small.btn-add').click();
+    await page.locator('.btn-add-text').click();
     await page.waitForTimeout(500);
     
     const taskItems = page.locator('.task-row');
@@ -145,9 +139,8 @@ test.describe('Timer Controls', () => {
   });
 
   test('should reset timer', async ({ page }) => {
-    await page.locator('.task-add-btn').click();
     await page.locator('.task-input').pressSequentially('Test Task');
-    await page.locator('.btn-icon-small.btn-add').click();
+    await page.locator('.btn-add-text').click();
     await page.waitForTimeout(500);
     
     const taskItems = page.locator('.task-row');
@@ -165,17 +158,16 @@ test.describe('Timer Controls', () => {
   });
 
   test('should display current task indicator', async ({ page }) => {
-    await page.locator('.task-add-btn').click();
     await page.locator('.task-input').pressSequentially('Test Task');
-    await page.locator('.btn-icon-small.btn-add').click();
+    await page.locator('.btn-add-text').click();
     await page.waitForTimeout(500);
     
     const taskItems = page.locator('.task-row');
     await taskItems.first().click();
     await page.waitForTimeout(200);
     
-    await expect(page.locator('.active-task')).toBeVisible();
-    await expect(page.locator('.active-task')).toContainText('Test Task');
+    await expect(page.locator('.timer-task-text')).toBeVisible();
+    await expect(page.locator('.timer-task-text')).toContainText('Test Task');
   });
 
   test('should show select task prompt when no task selected', async ({ page }) => {

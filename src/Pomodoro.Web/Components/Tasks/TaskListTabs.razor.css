@@ -1,32 +1,39 @@
 .ltabs {
     display: flex;
-    gap: 2px;
-    padding: 2px;
-    background: var(--color-background-secondary);
-    border-radius: var(--border-radius-md);
-    margin-bottom: 8px;
+    gap: 18px;
+    padding: 4px 0 9px;
+    margin: 0;
+}
+
+@media (min-width: 900px) {
+    .ltabs {
+        gap: 20px;
+        padding: 0 0 9px;
+        flex-shrink: 0;
+    }
 }
 
 .lt {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 10px;
-    font-size: 12px;
+    padding: 0;
+    font-size: 13px;
     border: none;
     background: transparent;
-    color: var(--color-text-secondary);
+    color: var(--color-text-tertiary);
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 0;
     font-family: var(--font-sans);
-    transition: background 0.15s;
+    font-weight: normal;
+    transition: color 0.15s;
     white-space: nowrap;
 }
 
 .lt-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
     flex-shrink: 0;
 }
 
@@ -38,22 +45,21 @@
 
 .lt-cnt {
     font-size: 10px;
-    background: var(--color-background-tertiary);
-    border-radius: 8px;
-    padding: 0 5px;
-    line-height: 16px;
-    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    color: var(--color-text-tertiary);
 }
 
 .lt.act {
-    background: var(--color-background-primary);
     color: var(--color-text-primary);
-    font-weight: 500;
-    border: 0.5px solid var(--color-border-tertiary);
+    font-weight: 600;
 }
 
 .lt:hover {
-    background: var(--color-background-tertiary);
+    color: var(--color-text-secondary);
+}
+
+.lt.act:hover {
+    color: var(--color-text-primary);
 }
 
 .lt:focus {

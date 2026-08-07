@@ -67,7 +67,7 @@ public class GoogleTasksServiceTests
     {
         _jsRuntime.QueueException(new JSException("Error 403: Forbidden"));
 
-        var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.GetTaskListsAsync());
+        var ex = await Assert.ThrowsAsync<TasksAccessForbiddenException>(() => _service.GetTaskListsAsync());
         Assert.Contains("access forbidden", ex.Message);
     }
 
@@ -121,6 +121,53 @@ public class GoogleTasksServiceTests
         _jsRuntime.QueueException(new JSException("Error 401: Unauthorized"));
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.GetTasksAsync("list-1"));
+    }
+
+    [Fact]
+    public async Task GetTasksAsync_On401_RetriesAfterSilentReauthSucceeds()
+    {
+        _jsRuntime.QueueException(new JSException("Error 401: Unauthorized"));
+        var responseJson = JsonSerializer.Serialize(new[]
+        {
+            new { id = "t1", title = "After reauth", status = "needsAction", updated = "2026-01-01T00:00:00.000Z" }
+        });
+        _jsRuntime.QueueResult(responseJson);
+
+        _googleDriveServiceMock.Setup(x => x.TrySilentAuthAsync()).ReturnsAsync(true);
+        _googleDriveServiceMock.SetupSequence(x => x.GetAccessTokenAsync())
+            .ReturnsAsync("stale-token")
+            .ReturnsAsync("fresh-token");
+
+        var tasks = await _service.GetTasksAsync("list-1");
+
+        Assert.Single(tasks);
+        Assert.Equal("After reauth", tasks[0].Title);
+        _googleDriveServiceMock.Verify(x => x.TrySilentAuthAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetTasksAsync_On401_ThrowsWhenSilentReauthFails()
+    {
+        _jsRuntime.QueueException(new JSException("Error 401: Unauthorized"));
+        _googleDriveServiceMock.Setup(x => x.TrySilentAuthAsync()).ReturnsAsync(false);
+
+        var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.GetTasksAsync("list-1"));
+        Assert.Contains("reconnect", ex.Message.ToLower());
+        _googleDriveServiceMock.Verify(x => x.TrySilentAuthAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetTasksAsync_On401_ThrowsWhenSilentReauthSucceedsButTokenEmpty()
+    {
+        _jsRuntime.QueueException(new JSException("Error 401: Unauthorized"));
+        _googleDriveServiceMock.Setup(x => x.TrySilentAuthAsync()).ReturnsAsync(true);
+        _googleDriveServiceMock.SetupSequence(x => x.GetAccessTokenAsync())
+            .ReturnsAsync("stale-token")
+            .ReturnsAsync((string?)null);
+
+        var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.GetTasksAsync("list-1"));
+        Assert.Contains("reconnect", ex.Message.ToLower());
+        _googleDriveServiceMock.Verify(x => x.TrySilentAuthAsync(), Times.Once);
     }
 
     [Fact]
@@ -335,6 +382,70 @@ public class GoogleTasksServiceTests
 
         Assert.Single(tasks);
         Assert.True(tasks[0].Hidden);
+    }
+
+    [Fact]
+    public async Task GetTaskListsAsync_ThrowsUnavailable_WhenAllRetriesExhausted()
+    {
+        _jsRuntime.QueueException(new JSException("Error 429: Too Many Requests"));
+        _jsRuntime.QueueException(new JSException("Error 429: Too Many Requests"));
+        _jsRuntime.QueueException(new JSException("Error 429: Too Many Requests"));
+
+        var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.GetTaskListsAsync());
+        Assert.Contains("rate-limited", ex.Message);
+    }
+
+    [Fact]
+    public async Task InsertTaskAsync_PassesParentTaskId_ToJs()
+    {
+        var responseJson = JsonSerializer.Serialize(new { id = "child-1", title = "Sub", status = "needsAction", updated = "2026-01-01T00:00:00Z", etag = "e1", parent = "parent-1" });
+        _jsRuntime.QueueResult(responseJson);
+
+        var inserted = await _service.InsertTaskAsync("list-1", new GoogleTask { Title = "Sub" }, "parent-1");
+
+        Assert.Equal("googleTasks.insertTask", _jsRuntime.LastMethod);
+        Assert.Equal("parent-1", _jsRuntime.LastArgs![3]);
+        Assert.Equal("parent-1", inserted.Parent);
+    }
+
+    [Fact]
+    public async Task InsertTaskAsync_OmitsParent_WhenNull()
+    {
+        var responseJson = JsonSerializer.Serialize(new { id = "top-1", title = "Top", status = "needsAction", updated = "2026-01-01T00:00:00Z", etag = "e1" });
+        _jsRuntime.QueueResult(responseJson);
+
+        await _service.InsertTaskAsync("list-1", new GoogleTask { Title = "Top" });
+
+        Assert.Equal("googleTasks.insertTask", _jsRuntime.LastMethod);
+        Assert.Null(_jsRuntime.LastArgs![3]);
+    }
+
+    [Fact]
+    public async Task MoveTaskAsync_InvokesMoveEndpoint_WithParent()
+    {
+        var responseJson = JsonSerializer.Serialize(new { id = "task-1", title = "Moved", status = "needsAction", updated = "2026-01-01T00:00:00Z", etag = "e2", parent = "parent-9" });
+        _jsRuntime.QueueResult(responseJson);
+
+        var moved = await _service.MoveTaskAsync("list-1", "task-1", "parent-9");
+
+        Assert.Equal("googleTasks.moveTask", _jsRuntime.LastMethod);
+        Assert.Equal("task-1", _jsRuntime.LastArgs![2]);
+        Assert.Equal("parent-9", _jsRuntime.LastArgs![3]);
+        Assert.NotNull(moved);
+        Assert.Equal("parent-9", moved!.Parent);
+    }
+
+    [Fact]
+    public async Task MoveTaskAsync_MovesToRoot_WhenParentNull()
+    {
+        var responseJson = JsonSerializer.Serialize(new { id = "task-1", title = "Root", status = "needsAction", updated = "2026-01-01T00:00:00Z", etag = "e3" });
+        _jsRuntime.QueueResult(responseJson);
+
+        var moved = await _service.MoveTaskAsync("list-1", "task-1", null);
+
+        Assert.Equal("googleTasks.moveTask", _jsRuntime.LastMethod);
+        Assert.Null(_jsRuntime.LastArgs![3]);
+        Assert.Null(moved!.Parent);
     }
 
     private class TestJsRuntime : IJSRuntime

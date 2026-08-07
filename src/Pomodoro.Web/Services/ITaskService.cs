@@ -2,27 +2,21 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Interface for task management operations
-/// </summary>
 public interface ITaskService
 {
     event Action? OnChange;
 
-    /// <summary>
-    /// Active tasks (excludes soft-deleted)
-    /// </summary>
     List<TaskItem> Tasks { get; }
 
-    /// <summary>
-    /// All tasks including soft-deleted (for history)
-    /// </summary>
     IReadOnlyList<TaskItem> AllTasks { get; }
 
     Guid? CurrentTaskId { get; }
     TaskItem? CurrentTask { get; }
 
     IReadOnlyList<TaskListRef> TaskLists { get; }
+
+    /// <summary>Connected Google lists; these are sources feeding the two tabs, not tabs themselves.</summary>
+    IReadOnlyList<TaskListRef> GoogleLists { get; }
     TaskListRef? CurrentList { get; }
     string? CurrentListId { get; }
 
@@ -30,6 +24,7 @@ public interface ITaskService
     Task AddTaskAsync(string name);
     Task UpdateTaskAsync(TaskItem task);
     Task DeleteTaskAsync(Guid taskId);
+    Task RestoreTaskAsync(Guid taskId);
     Task CompleteTaskAsync(Guid taskId);
     Task UncompleteTaskAsync(Guid taskId);
     Task SelectTaskAsync(Guid taskId);
@@ -41,6 +36,12 @@ public interface ITaskService
     Task RefreshGoogleListsAsync();
     Task UpdateListVisibilityAsync(string listId, bool isVisible);
 
-    /// <summary>Reloads all task data from storage, refreshing the in-memory cache. Call this after import operations to reflect changes.</summary>
+    Task AddSubtaskAsync(string name, Guid parentTaskId);
+
+    Task ReparentTaskAsync(Guid taskId, Guid? newParentId);
+
+    /// <summary>Persists a virtual repeat occurrence as a real task so it can be edited independently of its series.</summary>
+    Task MaterializeSingleAsync(TaskItem occurrence);
+
     Task ReloadAsync();
 }

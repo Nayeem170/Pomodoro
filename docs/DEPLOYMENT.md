@@ -6,8 +6,8 @@ This project uses **GitHub Actions** for CI/CD and **Cloudflare Pages** for host
 
 ## Live Demo
 
-- **Production:** https://pomodoro.bitops.bd (auto-deploys from `main`)
-- **Preview:** https://pomodoro-6un.pages.dev (auto-deploys from `develop`)
+- **Production:** https://tarkeez.bitops.bd (auto-deploys from `main`)
+- **Preview:** https://tarkeez.pages.dev (auto-deploys from `develop`)
 
 ## Pipelines
 
@@ -32,7 +32,7 @@ This project uses **GitHub Actions** for CI/CD and **Cloudflare Pages** for host
 | Hosting | Cloudflare Pages (free) |
 | DNS | Cloudflare (`bitops.bd`) |
 | CI/CD | GitHub Actions |
-| Domain | `promodoro.bitops.bd` |
+| Domain | `tarkeez.bitops.bd` |
 
 ## Required Secrets (GitHub)
 
@@ -44,7 +44,7 @@ This project uses **GitHub Actions** for CI/CD and **Cloudflare Pages** for host
 
 ## Cloudflare Pages Config
 
-- **Project name:** `pomodoro`
+- **Project name:** `tarkeez`
 - **Build output:** `publish/wwwroot` (from `dotnet publish`)
 - **SPA routing:** `wwwroot/_redirects` — `/* /index.html 200`
 - **Cache headers:** `wwwroot/_headers` — immutable caching for `_framework/*`, no-cache for `index.html`

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('Today Summary Updates', () => {
@@ -11,7 +11,7 @@ test.describe('Today Summary Updates', () => {
     await pomodoroPage.seedHistoryViaDB('Summary Focus Task');
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const focusTime = page.locator('.pomo-focus-time');
+    const focusTime = page.locator('.summary-cell').nth(0).locator('.summary-val');
     await expect(focusTime).toBeVisible();
     const text = await focusTime.textContent();
     expect(text).toBeTruthy();
@@ -25,7 +25,7 @@ test.describe('Today Summary Updates', () => {
     await pomodoroPage.seedHistoryViaDB('Summary Pomodoro Task');
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const pomodoroNum = page.locator('.pomo-num');
+    const pomodoroNum = page.locator('.summary-cell').nth(1).locator('.summary-val');
     await expect(pomodoroNum).toBeVisible();
     const text = await pomodoroNum.textContent();
     expect(text).toBeTruthy();
@@ -39,7 +39,7 @@ test.describe('Today Summary Updates', () => {
     await pomodoroPage.goto('/');
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const pomodoroNumBefore = page.locator('.pomo-num');
+    const pomodoroNumBefore = page.locator('.summary-cell').nth(1).locator('.summary-val');
     const textBefore = await pomodoroNumBefore.textContent();
     const matchBefore = textBefore?.match(/\d+/);
     const countBefore = matchBefore ? parseInt(matchBefore[0]) : 0;
@@ -47,7 +47,7 @@ test.describe('Today Summary Updates', () => {
     await pomodoroPage.seedHistoryViaDB('Immediate Update Task');
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
 
-    const pomodoroNumAfter = page.locator('.pomo-num');
+    const pomodoroNumAfter = page.locator('.summary-cell').nth(1).locator('.summary-val');
     const textAfter = await pomodoroNumAfter.textContent();
     const matchAfter = textAfter?.match(/\d+/);
     const countAfter = matchAfter ? parseInt(matchAfter[0]) : 0;

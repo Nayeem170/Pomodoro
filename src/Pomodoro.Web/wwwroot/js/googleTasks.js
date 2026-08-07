@@ -30,8 +30,9 @@ window.googleTasks = {
         });
     },
 
-    insertTask: function(accessToken, listId, task) {
+    insertTask: function(accessToken, listId, task, parentTaskId) {
         var url = this._getBaseUrl() + '/lists/' + encodeURIComponent(listId) + '/tasks';
+        if (parentTaskId) url += '?parent=' + encodeURIComponent(parentTaskId);
         return fetch(url, {
             method: 'POST',
             headers: this._getAuthHeaders(accessToken),
@@ -72,6 +73,20 @@ window.googleTasks = {
                 if (response.ok || response.status === 404) return;
                 throw new Error('Failed to delete task: ' + response.status);
             });
+    },
+
+    moveTask: function(accessToken, listId, taskId, parentTaskId) {
+        var url = this._getBaseUrl() + '/lists/' + encodeURIComponent(listId) + '/tasks/' + encodeURIComponent(taskId) + '/move';
+        if (parentTaskId) url += '?parent=' + encodeURIComponent(parentTaskId);
+        return fetch(url, {
+            method: 'POST',
+            headers: this._getAuthHeaders(accessToken)
+        })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Failed to move task: ' + response.status);
+                return response.json();
+            })
+            .then(function(data) { return JSON.stringify(data); });
     },
 
     _fetchAllPages: function(url, accessToken) {

@@ -6,9 +6,6 @@ using Pomodoro.Web;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Interface for WebAssemblyHostBuilder to enable testing
-/// </summary>
 public interface IHostBuilderWrapper
 {
     IServiceCollection Services { get; }
@@ -16,17 +13,11 @@ public interface IHostBuilderWrapper
     void AddRootComponent<TComponent>(string selector) where TComponent : IComponent;
 }
 
-/// <summary>
-/// Interface for WebAssemblyHostEnvironment to enable testing
-/// </summary>
 public interface IHostEnvironmentWrapper
 {
     string BaseAddress { get; }
 }
 
-/// <summary>
-/// Wrapper implementation for WebAssemblyHostBuilder
-/// </summary>
 public class WebAssemblyHostBuilderWrapper : IHostBuilderWrapper
 {
     private readonly WebAssemblyHostBuilder? _builder;
@@ -60,9 +51,6 @@ public class WebAssemblyHostBuilderWrapper : IHostBuilderWrapper
     internal IReadOnlyList<(Type ComponentType, string Selector)> AddedRootComponents => _addedRootComponents;
 }
 
-/// <summary>
-/// Wrapper implementation for WebAssemblyHostEnvironment
-/// </summary>
 public class WebAssemblyHostEnvironmentWrapper : IHostEnvironmentWrapper
 {
     private readonly IWebAssemblyHostEnvironment _environment;
@@ -75,9 +63,6 @@ public class WebAssemblyHostEnvironmentWrapper : IHostEnvironmentWrapper
     public string BaseAddress => _environment.BaseAddress;
 }
 
-/// <summary>
-/// Service responsible for handling application startup and host configuration
-/// </summary>
 public class ApplicationStartupService : IApplicationStartupService
 {
     private readonly ILogger<ApplicationStartupService>? _logger;
@@ -89,9 +74,6 @@ public class ApplicationStartupService : IApplicationStartupService
         _serviceRegistrationLogger = serviceRegistrationLogger;
     }
 
-    /// <summary>
-    /// Configures the WebAssemblyHostBuilder with root components and services
-    /// </summary>
     /// <param name="builder">The WebAssemblyHostBuilder to configure</param>
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public virtual void ConfigureHostBuilder(WebAssemblyHostBuilder builder)
@@ -99,18 +81,12 @@ public class ApplicationStartupService : IApplicationStartupService
         ConfigureHostBuilder(new WebAssemblyHostBuilderWrapper(builder));
     }
 
-    /// <summary>
-    /// Configures the WebAssemblyHostBuilder with root components and services (testable overload)
-    /// </summary>
     /// <param name="builder">The wrapped builder to configure</param>
     public virtual void ConfigureHostBuilder(IHostBuilderWrapper builder)
     {
         ConfigureHostBuilderInternal(builder);
     }
 
-    /// <summary>
-    /// Internal implementation that uses the wrapper interface for testability
-    /// </summary>
     /// <param name="builder">The wrapped builder to configure</param>
     protected virtual void ConfigureHostBuilderInternal(IHostBuilderWrapper builder)
     {
@@ -131,10 +107,6 @@ public class ApplicationStartupService : IApplicationStartupService
         RegisterApplicationServices(builder.Services);
     }
 
-    /// <summary>
-    /// Configures services for application (extracted for testability)
-    /// This method contains the core service configuration logic from ConfigureHostBuilder
-    /// </summary>
     /// <param name="services">The service collection to configure</param>
     /// <param name="baseAddress">The base address for HttpClient</param>
     public virtual void ConfigureServices(IServiceCollection services, string baseAddress)
@@ -152,17 +124,11 @@ public class ApplicationStartupService : IApplicationStartupService
         RegisterApplicationServices(services);
     }
 
-    /// <summary>
-    /// Configures the HTTP client with the base address
-    /// </summary>
     protected virtual void ConfigureHttpClient(IServiceCollection services, string baseAddress)
     {
         services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
     }
 
-    /// <summary>
-    /// Initializes and runs the application host
-    /// </summary>
     /// <param name="builder">The configured WebAssemblyHostBuilder</param>
     /// <returns>A task representing the asynchronous operation</returns>
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -176,9 +142,6 @@ public class ApplicationStartupService : IApplicationStartupService
         await host.RunAsync();
     }
 
-    /// <summary>
-    /// Configures logging services
-    /// </summary>
     /// <param name="services">The service collection to configure</param>
     protected virtual void ConfigureLogging(IServiceCollection services)
     {
@@ -194,9 +157,6 @@ public class ApplicationStartupService : IApplicationStartupService
         });
     }
 
-    /// <summary>
-    /// Registers infrastructure services for testability
-    /// </summary>
     /// <param name="services">The service collection to configure</param>
     protected virtual void RegisterInfrastructureServices(IServiceCollection services)
     {
@@ -216,9 +176,6 @@ public class ApplicationStartupService : IApplicationStartupService
         services.AddScoped<IApplicationStartupService, ApplicationStartupService>();
     }
 
-    /// <summary>
-    /// Registers all application services
-    /// </summary>
     /// <param name="services">The service collection to configure</param>
     protected virtual void RegisterApplicationServices(IServiceCollection services)
     {
@@ -227,9 +184,6 @@ public class ApplicationStartupService : IApplicationStartupService
         serviceRegistration.RegisterServices(services);
     }
 
-    /// <summary>
-    /// Initializes services with error handling
-    /// </summary>
     /// <param name="services">The service provider to retrieve services from</param>
     /// <returns>A task representing the asynchronous operation</returns>
     protected virtual async Task InitializeServicesWithErrorHandlingAsync(IServiceProvider services)

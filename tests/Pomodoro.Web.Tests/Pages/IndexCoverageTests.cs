@@ -317,10 +317,10 @@ public class IndexCoverageTests : TestHelper
     [Fact]
     public async Task HandleTaskAdd_Exception_SetsErrorMessage()
     {
-        TaskServiceMock.Setup(x => x.AddTaskAsync(It.IsAny<string>())).ThrowsAsync(new Exception("add error"));
+        TaskServiceMock.Setup(x => x.AddTaskAsync(It.IsAny<string>(), It.IsAny<string?>())).ThrowsAsync(new Exception("add error"));
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-        await cut.Instance.HandleTaskAdd("Test");
+        await cut.Instance.HandleTaskAdd(new NewTaskRequest("Test"));
 
         cut.Instance.ErrorMessage.Should().Contain("add error");
     }
@@ -443,25 +443,11 @@ public class IndexPageRenderingTests : TestHelper
     }
 
     [Fact]
-    public void IndexPage_ClickKeyboardHelp_ShowsModal()
+    public void IndexPage_RendersPictureInPictureButton()
     {
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-        cut.Find("button[aria-label='Keyboard shortcuts']").Click();
-
-        cut.Instance.ShowKeyboardHelp.Should().BeTrue();
-    }
-
-    [Fact]
-    public void IndexPage_CloseKeyboardHelp_HidesModal()
-    {
-        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        cut.Instance.ShowKeyboardHelp = true;
-        cut.Render();
-
-        cut.Find("button.modal-close").Click();
-
-        cut.Instance.ShowKeyboardHelp.Should().BeFalse();
+        cut.FindAll("button[aria-label='Picture in Picture']").Should().NotBeEmpty();
     }
 }
 

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Microsoft.Extensions.Logging;
@@ -6,10 +7,6 @@ using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Pages;
 
-/// <summary>
-/// Main partial for Index page
-/// Contains dependency injection, state management, and lifecycle methods
-/// </summary>
 public partial class IndexBase : ComponentBase, IDisposable
 {
     #region Services (Dependency Injection)
@@ -70,14 +67,47 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected bool IsTimerStarted { get; set; }
     protected bool IsConsentModalVisible { get; set; }
     protected int ConsentCountdown { get; set; }
+
+    protected Guid? _undoTaskId;
+    protected string? _undoTaskName;
+    protected bool _undoToastVisible;
+    private CancellationTokenSource? _undoCts;
+    protected bool _errorToastVisible;
+    protected string? _errorToastMessage;
+    private CancellationTokenSource? _errorToastCts;
     protected List<ConsentOption> ConsentOptions { get; set; } = new();
-    internal bool ShowKeyboardHelp { get; set; }
-    public string? ErrorMessage { get; set; }
+    public string? ErrorMessage
+    {
+        get => _errorToastVisible ? _errorToastMessage : null;
+        set
+        {
+            if (!string.IsNullOrEmpty(value))
+                ShowErrorToast(value);
+        }
+    }
     public bool IsPipOpen { get; set; }
     protected IReadOnlyList<TaskListRef> TaskLists { get; set; } = [];
+    protected IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
     protected string? ActiveListId { get; set; }
     protected TaskListRef? ActiveList { get; set; }
 
+    protected IReadOnlyList<TaskListRef> TabLists => TaskLists.Where(l => l.IsVisible).ToList();
+
+    protected IReadOnlyList<TaskItem> TodayTasks => Tasks;
+
+    protected bool IsScheduleView => ActiveListId == Constants.TaskLists.ScheduleListId;
+
+    protected int _scheduleWeekOffset;
+
+    protected IReadOnlyList<ScheduleDay> ScheduleWindow => BuildScheduleWindow(ScheduleWindowStart);
+
+    protected string ScheduleWindowLabel =>
+        $"{ScheduleWindowStart:MMM d} – {ScheduleWindowStart.AddDays(Constants.Tasks.ScheduleWindowDays - 1):MMM d}";
+
+    private DateTime ScheduleWindowStart =>
+        DateTime.Now.Date.AddDays(_scheduleWeekOffset * Constants.Tasks.ScheduleWindowDays);
+
+    private int _updateSeq;
     private (int TotalFocusMinutes, int PomodoroCount, int TasksWorkedOn)? _cachedTodayStats;
 
     private void InvalidateTodayStatsCache() => _cachedTodayStats = null;
@@ -86,6 +116,12 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected int TodayPomodoroCount => GetTodayStats().PomodoroCount;
     protected int TodayTasksWorkedOn => GetTodayStats().TasksWorkedOn;
     protected int DailyGoal => TimerService.Settings.DailyGoal;
+
+    protected IReadOnlyList<ActivityRecord> TodayPomodoroSessions => (ActivityService
+        .GetTodayActivities() ?? [])
+        .Where(a => a.Type == SessionType.Pomodoro)
+        .OrderByDescending(a => a.CompletedAt)
+        .ToList();
 
     private (int TotalFocusMinutes, int PomodoroCount, int TasksWorkedOn) GetTodayStats()
     {
@@ -122,6 +158,7 @@ public partial class IndexBase : ComponentBase, IDisposable
 
             // Subscribe to PiP events
             PipTimerService.OnPipOpened += OnPipOpened;
+            CloudSyncService.OnSyncStatusChanged += OnCloudSyncStatusChanged;
             PipTimerService.OnPipClosed += OnPipClosed;
 
             // Register keyboard shortcuts with proper error handling
@@ -140,7 +177,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                         }
                         else
                         {
-                            await TimerService.StartPomodoroAsync();
+                            await HandleTimerStart();
                         }
                     },
                     Logger,
@@ -185,23 +222,6 @@ public partial class IndexBase : ComponentBase, IDisposable
                 );
             }, Constants.KeyboardShortcuts.LongBreakDescription);
 
-            // Help shortcut
-            KeyboardShortcutService.RegisterShortcut("?", () =>
-            {
-                ShowKeyboardHelp = true;
-                StateHasChanged();
-            }, Constants.KeyboardShortcuts.HelpDescription);
-
-            // Escape shortcut - close keyboard help modal
-            KeyboardShortcutService.RegisterShortcut("escape", () =>
-            {
-                if (ShowKeyboardHelp)
-                {
-                    ShowKeyboardHelp = false;
-                    StateHasChanged();
-                }
-            }, "Close keyboard shortcuts");
-
             // Load initial state
             await UpdateStateAsync();
 
@@ -229,8 +249,8 @@ public partial class IndexBase : ComponentBase, IDisposable
     }
 
     /// <summary>
-    /// Check for pending notification action from URL parameter
-    /// This handles the case when the app is opened from a notification click
+    /// Checks for a pending notification action from the URL parameter; handles the case
+    /// where the app is opened from a notification click.
     /// </summary>
     internal async Task CheckPendingNotificationActionAsync()
     {
@@ -259,26 +279,133 @@ public partial class IndexBase : ComponentBase, IDisposable
 
     private async Task UpdateStateAsync()
     {
-        var state = await IndexPagePresenterService.UpdateStateAsync(TaskService, TimerService, ActiveListId);
+        var seq = ++_updateSeq;
+        try
+        {
+            var state = await IndexPagePresenterService.UpdateStateAsync(TaskService, TimerService, ActiveListId);
 
-        Tasks = state.Tasks;
-        CurrentTaskId = state.CurrentTaskId;
-        RemainingTime = state.RemainingTime;
-        CurrentSessionType = state.CurrentSessionType;
-        IsTimerRunning = state.IsTimerRunning;
-        IsTimerPaused = state.IsTimerPaused;
-        IsTimerStarted = state.IsTimerStarted;
-        TaskLists = state.TaskLists;
-        ActiveListId = state.CurrentListId;
-        ActiveList = TaskLists.FirstOrDefault(l => l.Id == ActiveListId);
+            if (seq != _updateSeq) return;
+
+            Tasks = state.Tasks;
+            CurrentTaskId = state.CurrentTaskId;
+            RemainingTime = state.RemainingTime;
+            CurrentSessionType = state.CurrentSessionType;
+            IsTimerRunning = state.IsTimerRunning;
+            IsTimerPaused = state.IsTimerPaused;
+            IsTimerStarted = state.IsTimerStarted;
+            TaskLists = state.TaskLists;
+            GoogleLists = state.GoogleLists;
+            ActiveListId = state.CurrentListId;
+            ActiveList = TaskLists.FirstOrDefault(l => l.Id == ActiveListId);
+            ErrorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            if (seq != _updateSeq) return;
+
+            Logger.LogError(ex, Constants.Messages.ErrorInUpdateState);
+            ErrorMessage = $"{Constants.Messages.ErrorLoadingTasks}: {ex.Message}";
+        }
+    }
+
+    protected void ShowErrorToast(string message)
+    {
+        _errorToastMessage = message;
+        _errorToastVisible = true;
+        _errorToastCts?.Cancel();
+        _errorToastCts = new CancellationTokenSource();
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(Constants.UI.ErrorToastDurationMs, _errorToastCts.Token);
+                _errorToastVisible = false;
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (OperationCanceledException) { }
+        });
     }
 
     protected async Task HandleTabChange(string listId)
     {
-        await TaskService.SelectListAsync(listId);
+        Console.WriteLine($"[TABDBG] HandleTabChange: clicked={listId} activeBefore={ActiveListId} serviceBefore={TaskService.CurrentListId}");
         ActiveListId = listId;
+        await TaskService.SelectListAsync(listId);
+        Console.WriteLine($"[TABDBG] HandleTabChange post-select: active={ActiveListId} service={TaskService.CurrentListId}");
         await UpdateStateAsync();
     }
+
+    protected async Task HandleSchedulePrev()
+    {
+        if (_scheduleWeekOffset == 0) return;
+        _scheduleWeekOffset--;
+        await UpdateStateAsync();
+    }
+
+    protected async Task HandleScheduleNext()
+    {
+        _scheduleWeekOffset++;
+        await UpdateStateAsync();
+    }
+
+    protected string? GetCurrentTaskName()
+    {
+        if (!CurrentTaskId.HasValue) return null;
+        return AppState.Tasks.FirstOrDefault(t => t.Id == CurrentTaskId.Value)?.Name;
+    }
+
+    protected static string FormatFocusMinutes(int minutes)
+    {
+        if (minutes < Constants.TimeConversion.MinutesPerHour)
+            return string.Format(Constants.TimeFormats.MinutesFormat, minutes);
+        var hours = minutes / Constants.TimeConversion.MinutesPerHour;
+        var mins = minutes % Constants.TimeConversion.MinutesPerHour;
+        return string.Format(Constants.TimeFormats.HoursMinutesFormat, hours, mins);
+    }
+
+    private IReadOnlyList<ScheduleDay> BuildScheduleWindow(DateTime start)
+    {
+        var candidates = AppState.Tasks.Where(t => !t.IsDeleted && !t.IsSubtask).ToList();
+        var days = new List<ScheduleDay>(Constants.Tasks.ScheduleWindowDays);
+
+        for (var offset = 0; offset < Constants.Tasks.ScheduleWindowDays; offset++)
+        {
+            var date = start.AddDays(offset);
+            var items = candidates
+                .Where(t => OccursOn(t, date))
+                .Select(t => new ScheduleItem
+                {
+                    TaskId = t.Id,
+                    Title = t.Name,
+                    IsRepeat = t.IsRecurring,
+                    RepeatLabel = BuildRepeatLabel(t.Repeat),
+                    IsGoogle = t.IsGoogleTask,
+                    IsCompleted = t.IsCompleted,
+                    Task = t
+                })
+                .ToList();
+
+            days.Add(new ScheduleDay
+            {
+                Date = date,
+                DayLabel = date.ToString(Constants.Tasks.ScheduleDayFormat, CultureInfo.InvariantCulture),
+                Items = items
+            });
+        }
+
+        return days;
+    }
+
+    private static bool OccursOn(TaskItem task, DateTime date) => task.OccursOn(date);
+
+    private static string? BuildRepeatLabel(RepeatRule? rule) => rule?.Type switch
+    {
+        RepeatType.Daily => Constants.Repeat.LabelDaily,
+        RepeatType.Weekly => Constants.Repeat.LabelWeekly,
+        RepeatType.Monthly => Constants.Repeat.LabelMonthly,
+        RepeatType.Custom => rule.CustomDays > 0 ? $"×{rule.CustomDays}d" : Constants.Repeat.LabelRepeat,
+        _ => null
+    };
 
     #endregion
 
@@ -295,6 +422,8 @@ public partial class IndexBase : ComponentBase, IDisposable
         {
             UnsubscribeFromAllServices();
             UnregisterKeyboardShortcuts();
+            _undoCts?.Cancel();
+            _undoCts?.Dispose();
         }
         catch (Exception ex)
         {
@@ -326,6 +455,8 @@ public partial class IndexBase : ComponentBase, IDisposable
             PipTimerService.OnPipOpened -= OnPipOpened;
             PipTimerService.OnPipClosed -= OnPipClosed;
         }
+        if (CloudSyncService != null)
+            CloudSyncService.OnSyncStatusChanged -= OnCloudSyncStatusChanged;
     }
 
     private void UnregisterKeyboardShortcuts()
@@ -337,8 +468,6 @@ public partial class IndexBase : ComponentBase, IDisposable
             KeyboardShortcutService.UnregisterShortcut("p");
             KeyboardShortcutService.UnregisterShortcut("s");
             KeyboardShortcutService.UnregisterShortcut("l");
-            KeyboardShortcutService.UnregisterShortcut("?");
-            KeyboardShortcutService.UnregisterShortcut("escape");
         }
     }
 

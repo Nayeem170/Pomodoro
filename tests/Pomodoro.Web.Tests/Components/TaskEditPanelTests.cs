@@ -281,4 +281,87 @@ public class TaskEditPanelTests : TestContext
 
         cut.FindAll(".tep-weekday-btn.active").Count.Should().Be(0);
     }
+
+    #region Subtask mode (coverage)
+
+    [Fact]
+    public void SubtaskMode_RendersSingleInput()
+    {
+        // Arrange - IsSubtask true (has ParentTaskId).
+        var task = CreateTask(t =>
+        {
+            t.ParentTaskId = Guid.NewGuid();
+            t.Repeat = new RepeatRule { Type = RepeatType.Daily };
+            t.ScheduledDate = new DateTime(2025, 1, 10);
+        });
+
+        // Act
+        var cut = RenderComponent<TaskEditPanel>(p => p.Add(x => x.Task, task));
+
+        // Assert - subtask branch renders the single Subtask-name input, no full form.
+        cut.FindAll("input[aria-label=\"Subtask name\"]").Should().HaveCount(1);
+        cut.FindAll(".tep-select").Should().HaveCount(0);
+    }
+
+    [Fact]
+    public async Task HandleSubtaskKey_Enter_InvokesSave_AndClearsRepeatAndSchedule()
+    {
+        // Arrange
+        var task = CreateTask(t =>
+        {
+            t.ParentTaskId = Guid.NewGuid();
+            t.Repeat = new RepeatRule { Type = RepeatType.Daily };
+            t.ScheduledDate = new DateTime(2025, 1, 10);
+        });
+        TaskItem? saved = null;
+        var cut = RenderComponent<TaskEditPanel>(p => p
+            .Add(x => x.Task, task)
+            .Add(x => x.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => saved = t)));
+
+        // Act
+        cut.Find("input[aria-label=\"Subtask name\"]").KeyDown(Key.Enter);
+
+        // Assert - IsSubtask save path clears Repeat + ScheduledDate and invokes OnSave.
+        saved.Should().NotBeNull();
+        saved!.Repeat.Should().BeNull();
+        saved.ScheduledDate.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task HandleSubtaskKey_Escape_InvokesCancel()
+    {
+        // Arrange
+        var task = CreateTask(t => t.ParentTaskId = Guid.NewGuid());
+        var cancelled = false;
+        var cut = RenderComponent<TaskEditPanel>(p => p
+            .Add(x => x.Task, task)
+            .Add(x => x.OnCancel, EventCallback.Factory.Create(this, () => cancelled = true)));
+
+        // Act
+        cut.Find("input[aria-label=\"Subtask name\"]").KeyDown(Key.Escape);
+
+        // Assert
+        cancelled.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SubtaskInput_OnInput_UpdatesEditNameAndPersistsOnSave()
+    {
+        // Arrange - IsSubtask true; typing fires the @oninput handler (TaskEditPanel.razor:10).
+        var task = CreateTask(t => t.ParentTaskId = Guid.NewGuid());
+        TaskItem? saved = null;
+        var cut = RenderComponent<TaskEditPanel>(p => p
+            .Add(x => x.Task, task)
+            .Add(x => x.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => saved = t)));
+
+        // Act - type into the subtask input (exercises @oninput), then save via Enter.
+        cut.Find("input[aria-label=\"Subtask name\"]").Input("Renamed sub");
+        cut.Find("input[aria-label=\"Subtask name\"]").KeyDown(Key.Enter);
+
+        // Assert - the typed name is captured on save.
+        saved.Should().NotBeNull();
+        saved!.Name.Should().Be("Renamed sub");
+    }
+
+    #endregion
 }

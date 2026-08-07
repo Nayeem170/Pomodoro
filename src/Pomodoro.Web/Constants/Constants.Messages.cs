@@ -1,13 +1,7 @@
 namespace Pomodoro.Web;
 
-/// <summary>
-/// UI message strings and log messages
-/// </summary>
 public static partial class Constants
 {
-    /// <summary>
-    /// UI message strings for localization support
-    /// </summary>
     public static class Messages
     {
         // Consent Modal Titles
@@ -93,9 +87,11 @@ public static partial class Constants
         public const string ErrorAddingTask = "Error adding task";
         public const string ErrorSelectingTask = "Error selecting task";
         public const string ErrorCompletingTask = "Error completing task";
+        public const string CompleteSubtasksFirst = "Complete all subtasks before completing this task";
         public const string ErrorDeletingTask = "Error deleting task";
         public const string ErrorUncompletingTask = "Error uncompleting task";
         public const string ErrorUpdatingTask = "Error updating task";
+        public const string GoogleReconnectNeeded = "Reconnect your Google account in Settings to sync this change";
         public const string ErrorStartingTimer = "Error starting timer";
         public const string ErrorPausingTimer = "Error pausing timer";
         public const string ErrorResumingTimer = "Error resuming timer";
@@ -107,6 +103,7 @@ public static partial class Constants
         public const string ErrorSelectingConsentOption = "Error selecting consent option";
         public const string ErrorCheckingPendingNotificationAction = "Error checking pending notification action";
         public const string ErrorInUpdateState = "Error in UpdateState";
+        public const string ErrorLoadingTasks = "Error loading tasks";
         public const string ErrorInDispose = "Error in Dispose";
         public const string SelectTaskBeforePomodoro = "Please select a task before starting a pomodoro.";
 

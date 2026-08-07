@@ -5,13 +5,15 @@ public interface IGoogleDriveService
     Task InitializeAsync(string clientId);
     Task<bool> TrySilentAuthAsync();
     void SetConnected(bool connected);
-    Task SetAccessTokenAsync(string token);
     Task<string?> ConnectAsync();
     Task DisconnectAsync();
     bool IsConnected { get; }
     string? AccountEmail { get; }
     void SetAccountEmail(string? email);
     Task<string?> GetAccessTokenAsync();
+    Task RestoreAccessTokenAsync(string? token, DateTime? expiresAt);
+    string? AccessToken { get; }
+    DateTime? TokenExpiresAt { get; }
     Task<string?> FindSyncFileAsync();
     Task<string> ReadFileAsync(string fileId);
     Task<string> CreateFileAsync(string fileName, string content);

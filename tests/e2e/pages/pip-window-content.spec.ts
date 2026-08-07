@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/consoleCheck';
 import { PomodoroPage } from '../fixtures/pomodoro.page';
 
 test.describe('PiP Window Content and Communication', () => {
@@ -78,7 +78,7 @@ test.describe('PiP Window Content and Communication', () => {
 
     expect(checks.ringWrap).toBe(true);
     expect(checks.ringTime).toBe('25:00');
-    expect(checks.ringLabel).toBe('FOCUSING');
+    expect(checks.ringLabel).toBe('FOCUS');
     expect(checks.pipTabs).toBe(3);
     expect(checks.pipCtrl).toBe(true);
     expect(checks.toggleBtn).toBe(true);

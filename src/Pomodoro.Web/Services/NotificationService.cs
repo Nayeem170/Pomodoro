@@ -4,9 +4,6 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Implementation of notification service using browser APIs
-/// </summary>
 public class NotificationService : INotificationService, IAsyncDisposable
 {
     private readonly IJSRuntime _jsRuntime;
@@ -87,9 +84,9 @@ public class NotificationService : INotificationService, IAsyncDisposable
     }
 
     /// <summary>
-    /// Refreshes the notification permission state from the browser.
-    /// Call this when settings page opens to ensure UI shows current permission status.
-    /// Note: This does not affect ShowNotificationAsync which checks permission directly in JS.
+    /// Refreshes the notification permission state from the browser. Call this when the
+    /// settings page opens to ensure the UI shows the current permission status. This does
+    /// not affect ShowNotificationAsync, which checks permission directly in JS.
     /// </summary>
     public async Task RefreshPermissionStateAsync()
     {

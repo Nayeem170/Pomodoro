@@ -29,23 +29,29 @@
     public string? CurrentListId { get; set; }
 
     [Parameter]
+    public string? ServiceCurrentListId { get; set; }
+
+    [Parameter]
     public EventCallback<string> OnTabChanged { get; set; }
 
     private IReadOnlyList<TaskListRef> VisibleLists => Lists.Where(l => l.IsVisible).ToList();
+
+    private string? ResolvedCurrentListId => ServiceCurrentListId ?? CurrentListId;
 
     private string? EffectiveCurrentListId
     {
         get
         {
-            if (CurrentListId != null && VisibleLists.Any(l => l.Id == CurrentListId))
-                return CurrentListId;
+            var current = ResolvedCurrentListId;
+            if (current != null && VisibleLists.Any(l => l.Id == current))
+                return current;
             return VisibleLists.FirstOrDefault()?.Id;
         }
     }
 
     protected async Task HandleTabClick(string listId)
     {
-        if (listId != EffectiveCurrentListId)
+        if (listId != ResolvedCurrentListId)
         {
             await OnTabChanged.InvokeAsync(listId);
         }

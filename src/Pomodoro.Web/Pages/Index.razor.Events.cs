@@ -5,10 +5,6 @@ using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Pages;
 
-/// <summary>
-/// Event handlers partial for Index page
-/// Contains all service event subscription handlers
-/// </summary>
 public partial class IndexBase
 {
     #region Safe Async Helper
@@ -45,6 +41,19 @@ public partial class IndexBase
             await UpdateStateAsync();
             await InvokeAsync(StateHasChanged);
         }, nameof(OnTaskServiceChanged));
+    }
+
+    #endregion
+
+    #region Cloud Sync Events
+
+    public void OnCloudSyncStatusChanged()
+    {
+        SafeAsync(async () =>
+        {
+            await UpdateStateAsync();
+            await InvokeAsync(StateHasChanged);
+        }, nameof(OnCloudSyncStatusChanged));
     }
 
     #endregion

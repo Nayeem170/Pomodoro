@@ -27,11 +27,9 @@ export class PomodoroPage {
   }
 
   async addTask(taskName: string) {
-    await this.page.locator('.task-add-btn').waitFor({ state: 'visible', timeout: 30000 });
-    await this.page.locator('.task-add-btn').click();
-    await this.page.locator('.task-input').waitFor({ state: 'visible', timeout: 5000 });
+    await this.page.locator('.task-input').waitFor({ state: 'visible', timeout: 30000 });
     await this.page.locator('.task-input').pressSequentially(taskName);
-    await this.page.locator('.btn-icon-small.btn-add').click();
+    await this.page.locator('.btn-add-text').click();
   }
 
   async completeTask(taskName: string) {
@@ -456,13 +454,27 @@ export class PomodoroPage {
     await this.page.waitForTimeout(500);
   }
 
+  async selectListTab(listName: string) {
+    await this.page.locator('.ltabs button.lt').filter({ hasText: listName }).click();
+    await this.page.waitForTimeout(500);
+  }
+
+  async getActiveListTab(): Promise<string> {
+    const activeTab = this.page.locator('.ltabs button.lt.act');
+    return await activeTab.textContent() || '';
+  }
+
+  async hasListTab(listName: string): Promise<boolean> {
+    return await this.page.locator('.ltabs button.lt').filter({ hasText: listName }).isVisible().catch(() => false);
+  }
+
   async toggleTaskPause() {
     await this.page.locator('.tep-toggle').click();
   }
 
   async hasRepeatBadge(taskName: string): Promise<boolean> {
     const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
-    return await taskItem.locator('.task-badge.task-repeat').isVisible().catch(() => false);
+    return await taskItem.locator('.task-badge.repeat-badge').isVisible().catch(() => false);
   }
 
   async hasScheduleBadge(taskName: string): Promise<boolean> {
@@ -472,6 +484,6 @@ export class PomodoroPage {
 
   async hasPausedBadge(taskName: string): Promise<boolean> {
     const taskItem = this.page.locator('.task-row').filter({ hasText: taskName }).first();
-    return await taskItem.locator('.task-badge.repeat-paused').isVisible().catch(() => false);
+    return await taskItem.locator('.task-badge.paused-badge').isVisible().catch(() => false);
   }
 }

@@ -11,9 +11,6 @@ public class AppState
     private readonly object _tasksLock = new();
     private List<TaskItem> _tasks = new();
 
-    /// <summary>
-    /// Event raised when state properties change
-    /// </summary>
     public event Action? OnStateChanged;
 
     /// <summary>
@@ -39,9 +36,6 @@ public class AppState
         }
     }
 
-    /// <summary>
-    /// Inserts a task at the specified position (thread-safe)
-    /// </summary>
     public void InsertTask(TaskItem task, int position = 0)
     {
         lock (_tasksLock)
@@ -72,9 +66,6 @@ public class AppState
         }
     }
 
-    /// <summary>
-    /// Finds a task by ID (thread-safe, returns a copy)
-    /// </summary>
     public TaskItem? FindTaskById(Guid taskId)
     {
         lock (_tasksLock)
@@ -171,9 +162,6 @@ public class AppState
     private readonly object _todayTaskIdsLock = new();
     private List<Guid> _todayTaskIdsWorkedOn = new();
 
-    /// <summary>
-    /// Thread-safe access to today's task IDs
-    /// </summary>
     public List<Guid> TodayTaskIdsWorkedOn
     {
         get
@@ -207,9 +195,6 @@ public class AppState
         }
     }
 
-    /// <summary>
-    /// Gets the currently selected task (thread-safe)
-    /// </summary>
     public TaskItem? CurrentTask
     {
         get
@@ -223,9 +208,6 @@ public class AppState
         }
     }
 
-    /// <summary>
-    /// Gets the count of unique tasks worked on today (thread-safe)
-    /// </summary>
     public int TodayTasksWorkedOn
     {
         get
@@ -237,9 +219,6 @@ public class AppState
         }
     }
 
-    /// <summary>
-    /// Adds a task ID to today's worked-on list (thread-safe)
-    /// </summary>
     public void AddTodayTaskId(Guid taskId)
     {
         lock (_todayTaskIdsLock)
@@ -276,9 +255,6 @@ public class AppState
         return LastResetDate.Value < GetCurrentDayKey();
     }
 
-    /// <summary>
-    /// Resets daily statistics (thread-safe)
-    /// </summary>
     public void ResetDailyStats()
     {
         _todayTotalFocusMinutes = 0;
@@ -291,9 +267,6 @@ public class AppState
         NotifyStateChanged();
     }
 
-    /// <summary>
-    /// Raises the OnStateChanged event
-    /// </summary>
     public void NotifyStateChanged()
     {
         OnStateChanged?.Invoke();

@@ -5,10 +5,6 @@ using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Components.Shared;
 
-/// <summary>
-/// Code-behind for ConsentModal component
-/// Separates business logic from view
-/// </summary>
 public class ConsentModalBase : ComponentBase
 {
     #region Parameters (Model)
@@ -32,7 +28,6 @@ public class ConsentModalBase : ComponentBase
 
     #region Constants
 
-    /// <summary>Maximum countdown seconds for the consent modal (used for progress bar calculation)</summary>
     private int _initialCountdownSeconds;
 
     #endregion
@@ -59,9 +54,6 @@ public class ConsentModalBase : ComponentBase
 
     #region Business Logic Methods
 
-    /// <summary>
-    /// Gets the icon for the completed session type
-    /// </summary>
     protected string GetIcon()
     {
         return CompletedSessionType switch
@@ -73,9 +65,6 @@ public class ConsentModalBase : ComponentBase
         };
     }
 
-    /// <summary>
-    /// Gets the title for the completed session type
-    /// </summary>
     protected string GetTitle()
     {
         return CompletedSessionType switch
@@ -87,9 +76,6 @@ public class ConsentModalBase : ComponentBase
         };
     }
 
-    /// <summary>
-    /// Gets the message for the completed session type
-    /// </summary>
     protected string GetMessage()
     {
         return CompletedSessionType switch
@@ -101,9 +87,6 @@ public class ConsentModalBase : ComponentBase
         };
     }
 
-    /// <summary>
-    /// Calculates the progress bar percentage
-    /// </summary>
     protected double GetProgressPercentage()
     {
         if (_initialCountdownSeconds <= 0)
@@ -112,9 +95,6 @@ public class ConsentModalBase : ComponentBase
         return ((double)CountdownSeconds / _initialCountdownSeconds) * Constants.UI.PercentageMultiplier;
     }
 
-    /// <summary>
-    /// Handles option selection
-    /// </summary>
     protected async Task HandleOptionSelect(ConsentOption option)
     {
         await OnOptionSelected.InvokeAsync(option);

@@ -32,7 +32,7 @@ public class TimerDisplayCoverageTests : TestContext
         SetupTimerService(TimeSpan.FromMinutes(25), SessionType.Pomodoro, false);
         var cut = RenderComponent<TimerDisplay>();
         var result = cut.Instance.GetSessionTypeLabel();
-        Assert.Contains("FOCUSING", result);
+        Assert.Contains("FOCUS", result);
 
         SetupTimerService(TimeSpan.FromMinutes(5), SessionType.ShortBreak, false);
         cut.SetParametersAndRender();

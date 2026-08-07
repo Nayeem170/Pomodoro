@@ -589,7 +589,7 @@ public class TaskItemComponentTests : TestContext
 
         var badge = cut.Find(".task-badge");
         badge.GetAttribute("title").Should().Be("Daily");
-        badge.ClassList.Should().NotContain("repeat-paused");
+        badge.ClassList.Should().Contain("repeat-badge");
     }
 
     [Fact]
@@ -627,8 +627,222 @@ public class TaskItemComponentTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        var badge = cut.Find(".task-badge");
-        badge.ClassList.Should().Contain("repeat-paused");
+        var badge = cut.Find(".paused-badge");
+        badge.ClassList.Should().Contain("paused-badge");
     }
+
+    #region Subtask / reparent / collapse handlers (coverage)
+
+    [Fact]
+    public void GoogleBadgeTooltip_WithGoogleListTitle_IncludesTitle()
+    {
+        // Arrange
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "G Task",
+            GoogleTaskId = "g-1",
+            GoogleListId = "glist-1"
+        };
+
+        // Act
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.GoogleListTitle, "Personal"));
+
+        // Assert
+        var gtag = cut.Find(".google-badge");
+        gtag.GetAttribute("title").Should().Contain("Personal");
+    }
+
+    [Fact]
+    public void StartAddSubtask_OpensForm_ThenCancelClearsIt()
+    {
+        // Arrange
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Task", CreatedAt = DateTime.UtcNow };
+        var cut = RenderComponent<TaskItemComponent>(p => p.Add(x => x.Item, task));
+
+        // Act - open
+        cut.Find("button[aria-label=\"Add subtask\"]").Click();
+        cut.Render();
+        cut.FindAll(".add-subtask-form").Should().HaveCount(1);
+
+        // Act - cancel
+        cut.Find("button[aria-label=\"Cancel\"]").Click();
+        cut.Render();
+
+        // Assert
+        cut.FindAll(".add-subtask-form").Should().HaveCount(0);
+    }
+
+    [Fact]
+    public void HandleAddSubtask_WithName_InvokesCallbackAndClosesForm()
+    {
+        // Arrange
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Task", CreatedAt = DateTime.UtcNow };
+        AddSubtaskRequest? captured = null;
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.OnAddSubtask, EventCallback.Factory.Create<AddSubtaskRequest>(this, r => captured = r)));
+
+        // Act
+        cut.Find("button[aria-label=\"Add subtask\"]").Click();
+        cut.Render();
+        cut.Find("input[aria-label=\"New subtask name\"]").Input("Kid");
+        cut.Find("button[aria-label=\"Add\"]").Click();
+        cut.Render();
+
+        // Assert
+        captured.Should().NotBeNull();
+        captured!.Name.Should().Be("Kid");
+        captured.ParentTaskId.Should().Be(task.Id);
+        cut.FindAll(".add-subtask-form").Should().HaveCount(0);
+    }
+
+    [Fact]
+    public void HandleSubtaskKeyPress_Enter_SubmitsSubtask()
+    {
+        // Arrange
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Task", CreatedAt = DateTime.UtcNow };
+        AddSubtaskRequest? captured = null;
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.OnAddSubtask, EventCallback.Factory.Create<AddSubtaskRequest>(this, r => captured = r)));
+        cut.Find("button[aria-label=\"Add subtask\"]").Click();
+        cut.Render();
+
+        // Act
+        var input = cut.Find("input[aria-label=\"New subtask name\"]");
+        input.Input("Via enter");
+        input.KeyDown(Key.Enter);
+        cut.Render();
+
+        // Assert
+        captured.Should().NotBeNull();
+        captured!.Name.Should().Be("Via enter");
+    }
+
+    [Fact]
+    public void HandleSubtaskKeyPress_Escape_ClosesForm()
+    {
+        // Arrange
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Task", CreatedAt = DateTime.UtcNow };
+        var cut = RenderComponent<TaskItemComponent>(p => p.Add(x => x.Item, task));
+        cut.Find("button[aria-label=\"Add subtask\"]").Click();
+        cut.Render();
+
+        // Act
+        cut.Find("input[aria-label=\"New subtask name\"]").KeyDown(Key.Escape);
+        cut.Render();
+
+        // Assert
+        cut.FindAll(".add-subtask-form").Should().HaveCount(0);
+    }
+
+    [Fact]
+    public void HandleReparentToRoot_InvokesCallback()
+    {
+        // Arrange - Depth > 0 renders the "Move to top level" button.
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Child task", CreatedAt = DateTime.UtcNow };
+        Guid? moved = null;
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.Depth, 1)
+            .Add(x => x.OnReparentToRoot, EventCallback.Factory.Create<Guid>(this, id => moved = id)));
+
+        // Act
+        cut.Find("button[aria-label=\"Move to top level\"]").Click();
+
+        // Assert
+        moved.Should().Be(task.Id);
+    }
+
+    [Fact]
+    public void HandleToggleCollapse_InvokesCallback()
+    {
+        // Arrange - HasChildren renders the row-toggle button.
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Parent", CreatedAt = DateTime.UtcNow };
+        Guid? toggled = null;
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.HasChildren, true)
+            .Add(x => x.OnToggleCollapse, EventCallback.Factory.Create<Guid>(this, id => toggled = id)));
+
+        // Act
+        cut.Find(".row-toggle").Click();
+
+        // Assert
+        toggled.Should().Be(task.Id);
+    }
+
+    #endregion
+
+    #region Delete Confirmation
+
+    [Fact]
+    public void HandleDelete_ShowsConfirmation_WhenHasChildren()
+    {
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Parent", IsCompleted = false };
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.HasChildren, true));
+
+        cut.Find("button[aria-label='Delete']").Click();
+
+        cut.Markup.Should().Contain("delete-confirm");
+    }
+
+    [Fact]
+    public void CancelDelete_HidesConfirmation()
+    {
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Parent", IsCompleted = false };
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.HasChildren, true));
+
+        cut.Find("button[aria-label='Delete']").Click();
+        cut.Find(".delete-confirm-cancel").Click();
+
+        cut.Markup.Should().NotContain("delete-confirm");
+    }
+
+    [Fact]
+    public void ConfirmDelete_InvokesOnDelete()
+    {
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Parent", IsCompleted = false };
+        Guid? deletedId = null;
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.HasChildren, true)
+            .Add(x => x.OnDelete, EventCallback.Factory.Create<Guid>(this, id => deletedId = id)));
+
+        cut.Find("button[aria-label='Delete']").Click();
+        cut.Find(".delete-confirm-go").Click();
+
+        deletedId.Should().Be(task.Id);
+    }
+
+    #endregion
+
+    #region Repeat Label Edge Cases
+
+    [Fact]
+    public void RendersWithoutError_WhenRepeatTypeIsUnexpected()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Edge",
+            Repeat = new RepeatRule { Type = (RepeatType)999 }
+        };
+
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.HasChildren, false));
+
+        cut.Markup.Should().Contain("Edge");
+    }
+
+    #endregion
 }
 

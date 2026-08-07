@@ -44,11 +44,11 @@ public class IndexTasksTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         // Act
-        await cut.Instance.HandleTaskAdd(taskName);
+        await cut.Instance.HandleTaskAdd(new NewTaskRequest(taskName));
 
         // Assert
         TaskServiceMock.Verify(
-            x => x.AddTaskAsync(taskName),
+            x => x.AddTaskAsync(taskName, It.IsAny<string?>()),
             Times.Once);
     }
 
@@ -58,13 +58,13 @@ public class IndexTasksTests : TestHelper
         // Arrange
         var taskName = "Test Task";
         TaskServiceMock
-            .Setup(x => x.AddTaskAsync(taskName))
+            .Setup(x => x.AddTaskAsync(taskName, It.IsAny<string?>()))
             .ThrowsAsync(new Exception("Test exception"));
 
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         // Act
-        await cut.Instance.HandleTaskAdd(taskName);
+        await cut.Instance.HandleTaskAdd(new NewTaskRequest(taskName));
 
         // Assert
         cut.Instance.ErrorMessage.Should().Be($"Error adding task: Test exception");
@@ -144,6 +144,24 @@ public class IndexTasksTests : TestHelper
 
         // Assert
         cut.Instance.ErrorMessage.Should().Be($"Error completing task: Test exception");
+    }
+
+    [Fact]
+    public async Task HandleTaskComplete_ShowsErrorToast_WhenSubtasksIncomplete()
+    {
+        var taskId = Guid.NewGuid();
+        TaskServiceMock
+            .Setup(x => x.CompleteTaskAsync(taskId))
+            .ThrowsAsync(new InvalidOperationException(Constants.Messages.CompleteSubtasksFirst));
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        await cut.InvokeAsync(() => cut.Instance.HandleTaskComplete(taskId));
+        cut.Render();
+
+        cut.Instance.ErrorMessage.Should().Be(Constants.Messages.CompleteSubtasksFirst);
+        cut.Markup.Should().Contain("error-toast");
+        cut.Markup.Should().Contain(Constants.Messages.CompleteSubtasksFirst);
     }
 
     #endregion
@@ -232,13 +250,13 @@ public class IndexTasksTests : TestHelper
         // Arrange
         string taskName = string.Empty;
         TaskServiceMock
-            .Setup(x => x.AddTaskAsync(taskName))
+            .Setup(x => x.AddTaskAsync(taskName, It.IsAny<string?>()))
             .ThrowsAsync(new ArgumentException("Task name cannot be empty", nameof(taskName)));
 
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         // Act
-        await cut.Instance.HandleTaskAdd(taskName);
+        await cut.Instance.HandleTaskAdd(new NewTaskRequest(taskName));
 
         // Assert
         cut.Instance.ErrorMessage.Should().Be($"Error adding task: Task name cannot be empty (Parameter 'taskName')");
@@ -314,6 +332,164 @@ public class IndexTasksTests : TestHelper
 
         // Assert
         cut.Instance.ErrorMessage.Should().Be($"Error uncompleting task: Task ID cannot be empty (Parameter 'taskId')");
+    }
+
+    #endregion
+
+    #region HandleTaskAdd With Repeat/Schedule
+
+    [Fact]
+    public async Task HandleTaskAdd_SetsRepeatRule_WhenRepeatTypeSpecified()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem { Id = taskId, Name = "New Task" };
+        AppState.Tasks = new List<TaskItem> { task };
+        TaskServiceMock.SetupGet(x => x.CurrentTaskId).Returns(taskId);
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var request = new NewTaskRequest("New Task", RepeatType.Daily, DateTime.Now);
+        await cut.Instance.HandleTaskAdd(request);
+
+        task.Repeat.Should().NotBeNull();
+        task.Repeat!.Type.Should().Be(RepeatType.Daily);
+        TaskServiceMock.Verify(x => x.UpdateTaskAsync(task), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleTaskAdd_SetsScheduledDate_WhenScheduledDateSpecified()
+    {
+        var taskId = Guid.NewGuid();
+        var scheduledDate = new DateTime(2026, 1, 15);
+        var task = new TaskItem { Id = taskId, Name = "Scheduled Task" };
+        AppState.Tasks = new List<TaskItem> { task };
+        TaskServiceMock.SetupGet(x => x.CurrentTaskId).Returns(taskId);
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var request = new NewTaskRequest("Scheduled Task", ScheduledDate: scheduledDate);
+        await cut.Instance.HandleTaskAdd(request);
+
+        task.ScheduledDate.Should().Be(scheduledDate);
+        TaskServiceMock.Verify(x => x.UpdateTaskAsync(task), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleTaskAdd_SetsErrorMessage_WhenUnauthorizedAccessException()
+    {
+        TaskServiceMock
+            .Setup(x => x.AddTaskAsync(It.IsAny<string>(), It.IsAny<string?>()))
+            .ThrowsAsync(new UnauthorizedAccessException("Auth failed"));
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        await cut.Instance.HandleTaskAdd(new NewTaskRequest("Test"));
+
+        cut.Instance.ErrorMessage.Should().Be(Constants.Messages.GoogleReconnectNeeded);
+    }
+
+    #endregion
+
+    #region HandleTabChange
+
+    [Fact]
+    public async Task HandleTabChange_CallsTaskServiceSelectListAsync_WhenInvoked()
+    {
+        const string listId = Constants.TaskLists.LocalPomodoroListId;
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        var method = typeof(IndexBase).GetMethod(
+            "HandleTabChange",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        var task = (Task)method!.Invoke(cut.Instance, new object[] { listId })!;
+        await task;
+
+        TaskServiceMock.Verify(x => x.SelectListAsync(listId), Times.Once);
+    }
+
+    #endregion
+
+    #region HandleUndoDelete
+
+    [Fact]
+    public async Task HandleUndoDelete_RestoresTask_WhenCalledAfterDelete()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem { Id = taskId, Name = "Deleted Task" };
+        AppState.Tasks = new List<TaskItem> { task };
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        await cut.Instance.HandleTaskDelete(taskId);
+        await cut.Instance.HandleUndoDelete();
+
+        TaskServiceMock.Verify(x => x.RestoreTaskAsync(taskId), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleTaskDelete_RendersUndoToast_WhenSuccessful()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem { Id = taskId, Name = "My Task" };
+        AppState.Tasks = new List<TaskItem> { task };
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var loadingProp = typeof(IndexBase).GetProperty("IsLoading",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        loadingProp!.SetValue(cut.Instance, false);
+        cut.Render();
+
+        await cut.Instance.HandleTaskDelete(taskId);
+        cut.Render();
+
+        cut.Markup.Should().Contain("undo-toast");
+        cut.Markup.Should().Contain("My Task");
+    }
+
+    [Fact]
+    public async Task HandleUndoDelete_DoesNothing_WhenNoDeletePending()
+    {
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        await cut.Instance.HandleUndoDelete();
+
+        TaskServiceMock.Verify(x => x.RestoreTaskAsync(It.IsAny<Guid>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task HandleUndoDelete_SetsErrorMessage_WhenRestoreThrows()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem { Id = taskId, Name = "Deleted Task" };
+        AppState.Tasks = new List<TaskItem> { task };
+        TaskServiceMock
+            .Setup(x => x.RestoreTaskAsync(taskId))
+            .ThrowsAsync(new InvalidOperationException("Restore failed"));
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        await cut.Instance.HandleTaskDelete(taskId);
+        await cut.Instance.HandleUndoDelete();
+
+        cut.Instance.ErrorMessage.Should().Contain("Restore failed");
+    }
+
+    #endregion
+
+    #region Session Log Rendering
+
+    [Fact]
+    public void RendersSessionLog_WhenActivitiesExist()
+    {
+        var activities = new List<ActivityRecord>
+        {
+            new() { Type = SessionType.Pomodoro, CompletedAt = DateTime.Today.AddHours(10) },
+            new() { Type = SessionType.Pomodoro, CompletedAt = DateTime.Today.AddHours(9) },
+            new() { Type = SessionType.ShortBreak, CompletedAt = DateTime.Today.AddHours(11) }
+        };
+        ActivityServiceMock.Setup(x => x.GetTodayActivities()).Returns(activities);
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var loadingProp = typeof(IndexBase).GetProperty("IsLoading",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        loadingProp!.SetValue(cut.Instance, false);
+        cut.Render();
+
+        cut.Markup.Should().Contain("session-log");
     }
 
     #endregion
