@@ -2119,7 +2119,6 @@ input, textarea, [contenteditable="true"] {
    ============================================================================= */
 
 .session-log {
-    flex: 1;
     display: flex;
     flex-direction: column;
     background: var(--color-surface-dark, #0f1f1c);
@@ -2128,6 +2127,7 @@ input, textarea, [contenteditable="true"] {
     padding: 10px 14px;
     overflow: hidden;
     min-height: 0;
+    max-height: 200px;
 }
 
 .session-log-header {
@@ -2184,6 +2184,15 @@ input, textarea, [contenteditable="true"] {
     border-radius: 50%;
     background: var(--pomodoro-color);
     flex-shrink: 0;
+}
+
+.session-log-row.partial .session-dot {
+    background: transparent;
+    border: 1px solid var(--pomodoro-color);
+}
+
+.session-log-row.partial .session-dur {
+    opacity: 0.5;
 }
 
 .session-time {
@@ -2310,7 +2319,6 @@ input, textarea, [contenteditable="true"] {
     }
 
     .session-log-wrap {
-        flex: 1;
         min-height: 0;
         display: flex;
         flex-direction: column;
@@ -2318,6 +2326,17 @@ input, textarea, [contenteditable="true"] {
 
     .session-log {
         display: flex;
+    }
+
+    .timer-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-top {
+        flex: 1;
+        justify-content: center;
     }
 
     .task-row {
