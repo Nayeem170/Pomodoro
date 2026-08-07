@@ -114,9 +114,4 @@ public interface ITimerService
 
     /// <returns>A task that completes when settings are saved.</returns>
     Task SaveSettingsAsync();
-
-    TimerSession? InterruptedPomodoro { get; }
-
-    /// <returns>A task that completes when the session has been resumed.</returns>
-    Task ResumeInterruptedPomodoroAsync();
 }
