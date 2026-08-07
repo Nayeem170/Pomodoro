@@ -49,12 +49,10 @@ public partial class TimerSettingsTests
     }
 
     [Fact]
-    public void RecordPartialSessions_DefaultsToFalse()
+    public void RecordPartialSessions_DefaultsToTrue()
     {
-        // Arrange
         var settings = new TimerSettings();
 
-        // Act & Assert
-        settings.RecordPartialSessions.Should().BeFalse();
+        settings.RecordPartialSessions.Should().BeTrue();
     }
 }
