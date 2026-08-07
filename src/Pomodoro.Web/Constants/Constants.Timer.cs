@@ -1,13 +1,7 @@
 namespace Pomodoro.Web;
 
-/// <summary>
-/// Timer-related constants for duration settings, time calculations, and threading
-/// </summary>
 public static partial class Constants
 {
-    /// <summary>
-    /// Timer duration and interval constants
-    /// </summary>
     public static class Timer
     {
         /// <summary>Default pomodoro duration in minutes</summary>
@@ -62,9 +56,6 @@ public static partial class Constants
         public const int MaxLongBreakInterval = 10;
     }
 
-    /// <summary>
-    /// Timer-related display text constants
-    /// </summary>
     public static class TimerDisplay
     {
         /// <summary>Default pomodoro duration text for display</summary>
@@ -83,9 +74,6 @@ public static partial class Constants
         public const string ShortPomodoroMinutesText = "15-minute";
     }
 
-    /// <summary>
-    /// Time conversion constants for duration calculations
-    /// </summary>
     public static class TimeConversion
     {
         /// <summary>Seconds per minute</summary>
@@ -110,9 +98,6 @@ public static partial class Constants
         public const int SaturdayBasedWeekOffset = 1;
     }
 
-    /// <summary>
-    /// Threading and concurrency constants
-    /// </summary>
     public static class Threading
     {
         /// <summary>Initial count for semaphore</summary>

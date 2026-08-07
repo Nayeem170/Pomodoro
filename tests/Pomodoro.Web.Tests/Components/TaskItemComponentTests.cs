@@ -589,7 +589,7 @@ public class TaskItemComponentTests : TestContext
 
         var badge = cut.Find(".task-badge");
         badge.GetAttribute("title").Should().Be("Daily");
-        badge.ClassList.Should().NotContain("repeat-paused");
+        badge.ClassList.Should().Contain("repeat-badge");
     }
 
     [Fact]
@@ -627,8 +627,8 @@ public class TaskItemComponentTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        var badge = cut.Find(".task-badge");
-        badge.ClassList.Should().Contain("repeat-paused");
+        var badge = cut.Find(".paused-badge");
+        badge.ClassList.Should().Contain("paused-badge");
     }
 
     #region Subtask / reparent / collapse handlers (coverage)
@@ -651,7 +651,7 @@ public class TaskItemComponentTests : TestContext
             .Add(x => x.GoogleListTitle, "Personal"));
 
         // Assert
-        var gtag = cut.Find(".gtag");
+        var gtag = cut.Find(".google-badge");
         gtag.GetAttribute("title").Should().Contain("Personal");
     }
 
@@ -773,6 +773,74 @@ public class TaskItemComponentTests : TestContext
 
         // Assert
         toggled.Should().Be(task.Id);
+    }
+
+    #endregion
+
+    #region Delete Confirmation
+
+    [Fact]
+    public void HandleDelete_ShowsConfirmation_WhenHasChildren()
+    {
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Parent", IsCompleted = false };
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.HasChildren, true));
+
+        cut.Find("button[aria-label='Delete']").Click();
+
+        cut.Markup.Should().Contain("delete-confirm");
+    }
+
+    [Fact]
+    public void CancelDelete_HidesConfirmation()
+    {
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Parent", IsCompleted = false };
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.HasChildren, true));
+
+        cut.Find("button[aria-label='Delete']").Click();
+        cut.Find(".delete-confirm-cancel").Click();
+
+        cut.Markup.Should().NotContain("delete-confirm");
+    }
+
+    [Fact]
+    public void ConfirmDelete_InvokesOnDelete()
+    {
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Parent", IsCompleted = false };
+        Guid? deletedId = null;
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.HasChildren, true)
+            .Add(x => x.OnDelete, EventCallback.Factory.Create<Guid>(this, id => deletedId = id)));
+
+        cut.Find("button[aria-label='Delete']").Click();
+        cut.Find(".delete-confirm-go").Click();
+
+        deletedId.Should().Be(task.Id);
+    }
+
+    #endregion
+
+    #region Repeat Label Edge Cases
+
+    [Fact]
+    public void RendersWithoutError_WhenRepeatTypeIsUnexpected()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Edge",
+            Repeat = new RepeatRule { Type = (RepeatType)999 }
+        };
+
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.HasChildren, false));
+
+        cut.Markup.Should().Contain("Edge");
     }
 
     #endregion

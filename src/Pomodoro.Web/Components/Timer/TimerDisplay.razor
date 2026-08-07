@@ -1,10 +1,10 @@
 @inherits TimerDisplayBase
 
 <div class="ring-area">
-    <svg width="220" height="220" viewBox="0 0 220 220">
-        <circle class="ring-bg" cx="110" cy="110" r="88"/>
-        <circle class="ring-fill @GetRingSessionClass()" cx="110" cy="110" r="88"
-                style="stroke-dashoffset: @GetDashOffset()"/>
+    <svg width="160" height="160" viewBox="0 0 160 160">
+        <circle class="ring-bg" cx="80" cy="80" r="72"/>
+        <circle class="ring-fill @GetRingSessionClass()" cx="80" cy="80" r="72"
+                style="stroke-dasharray: @((int)(2 * Math.PI * 72)); stroke-dashoffset: @GetDashOffset()"/>
     </svg>
     <div class="timer-center">
         <div class="timer-time">

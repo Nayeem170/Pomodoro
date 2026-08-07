@@ -37,21 +37,20 @@ public class ScheduleAgendaTests : TestContext
     {
         var cut = RenderComponent<ScheduleAgenda>(p => p
             .Add(c => c.Days, SampleDays())
-            .Add(c => c.WindowLabel, "29 Jul – 4 Aug"));
+            .Add(c => c.WindowLabel, "29 Jul - 4 Aug"));
 
         cut.FindAll(".day-header").Should().HaveCount(2);
-        cut.FindAll(".day-header")[0].TextContent.Should().Contain("Tue 29 Jul");
+        cut.FindAll(".day-badge")[0].TextContent.Trim().Should().Be(DateTime.Today.AddDays(1).Day.ToString());
+        cut.FindAll(".day-weekday-full")[0].TextContent.Trim().Should().Be(DateTime.Today.AddDays(1).ToString("dddd"));
     }
 
     [Fact]
-    public void Renders_RepeatCapsule_GoogleTag_AndDone()
+    public void Renders_DoneAndEmptyStates()
     {
         var cut = RenderComponent<ScheduleAgenda>(p => p
             .Add(c => c.Days, SampleDays())
             .Add(c => c.WindowLabel, "x"));
 
-        cut.FindAll(".capsule").Should().HaveCount(1);
-        cut.FindAll(".gtag").Should().HaveCount(1);
         cut.FindAll(".day-item.done").Should().HaveCount(1);
         cut.FindAll(".day-empty").Should().HaveCount(1);
     }
@@ -105,7 +104,7 @@ public class ScheduleAgendaTests : TestContext
     }
 
     [Fact]
-    public void ItemWithTask_RendersEditButton()
+    public void ItemWithTask_RendersTaskRow()
     {
         var task = new TaskItem { Id = Guid.NewGuid(), Name = "Pay bills" };
         var days = new List<ScheduleDay>
@@ -122,14 +121,19 @@ public class ScheduleAgendaTests : TestContext
             .Add(c => c.Days, days)
             .Add(c => c.WindowLabel, "x"));
 
-        cut.FindAll(".item-edit-btn").Should().HaveCount(1);
-        cut.FindAll(".item-title").Should().HaveCount(1);
+        cut.FindAll("button[aria-label=\"Edit task\"]").Should().HaveCount(1);
+        cut.Markup.Should().Contain("Pay bills");
     }
 
     [Fact]
-    public void RepeatItem_RendersCapsuleAndEditButton()
+    public void RepeatItem_RendersBadgeAndEditButton()
     {
-        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Standup" };
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Standup",
+            Repeat = new RepeatRule { Type = RepeatType.Daily }
+        };
         var days = new List<ScheduleDay>
         {
             new()
@@ -144,8 +148,8 @@ public class ScheduleAgendaTests : TestContext
             .Add(c => c.Days, days)
             .Add(c => c.WindowLabel, "x"));
 
-        cut.FindAll(".item-edit-btn").Should().HaveCount(1);
-        cut.FindAll(".capsule").Should().HaveCount(1);
+        cut.FindAll("button[aria-label=\"Edit task\"]").Should().HaveCount(1);
+        cut.Markup.Should().Contain("repeat-badge");
     }
 
     [Fact]
@@ -166,9 +170,8 @@ public class ScheduleAgendaTests : TestContext
             .Add(c => c.Days, days)
             .Add(c => c.WindowLabel, "x"));
 
-        cut.Find(".item-edit-btn").Click();
+        cut.Find("button[aria-label=\"Edit task\"]").Click();
 
-        cut.Find(".day-edit").Should().NotBeNull();
         cut.Find(".task-edit-panel").Should().NotBeNull();
     }
 
@@ -191,7 +194,7 @@ public class ScheduleAgendaTests : TestContext
             .Add(c => c.Days, days)
             .Add(c => c.OnEditTask, EventCallback.Factory.Create<TaskItem>(this, t => edited = t)));
 
-        cut.Find(".item-edit-btn").Click();
+        cut.Find("button[aria-label=\"Edit task\"]").Click();
         cut.Find(".tep-save-btn").Click();
 
         edited.Should().Be(task);

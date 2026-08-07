@@ -66,9 +66,9 @@ test.describe('Picture-in-Picture Timer', () => {
       await pipButton.click();
       await page.waitForTimeout(1000);
 
-      const errorBanner = page.locator('.error-banner');
-      await expect(errorBanner).toBeVisible({ timeout: 5000 });
-      await expect(errorBanner).toContainText(/pop-up blocked/i);
+      const errorToast = page.locator('.error-toast');
+      await expect(errorToast).toBeVisible({ timeout: 5000 });
+      await expect(errorToast).toContainText(/pop-up blocked/i);
     });
   });
 

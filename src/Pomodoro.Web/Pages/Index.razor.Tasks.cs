@@ -1,9 +1,7 @@
+using Pomodoro.Web.Models;
+
 namespace Pomodoro.Web.Pages;
 
-/// <summary>
-/// Task actions partial for Index page
-/// Contains all task-related event handlers
-/// </summary>
 public partial class IndexBase
 {
     #region Task Actions
@@ -14,28 +12,59 @@ public partial class IndexBase
         {
             await action();
         }
+        catch (UnauthorizedAccessException)
+        {
+            ErrorMessage = Constants.Messages.GoogleReconnectNeeded;
+        }
+        catch (InvalidOperationException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
         catch (Exception ex)
         {
             ErrorMessage = $"{errorMessage}: {ex.Message}";
         }
     }
 
-    /// <summary>
-    /// Handles adding a new task
-    /// </summary>
-    public async Task HandleTaskAdd(string taskName)
+    public async Task HandleTaskAdd(NewTaskRequest request)
     {
         await TryExecuteAsync(async () =>
         {
-            await TaskService.AddTaskAsync(taskName);
+            var listId = string.IsNullOrEmpty(request.ListId) ? ActiveListId : request.ListId;
+            await TaskService.AddTaskAsync(request.Name, listId);
+
+            if ((request.RepeatType != RepeatType.None || request.ScheduledDate.HasValue)
+                && TaskService.CurrentTaskId.HasValue)
+            {
+                var newTask = AppState.Tasks.FirstOrDefault(t => t.Id == TaskService.CurrentTaskId.Value);
+                if (newTask is not null)
+                {
+                    if (request.RepeatType != RepeatType.None)
+                    {
+                        newTask.Repeat = new RepeatRule
+                        {
+                            Type = request.RepeatType,
+                            Weekdays = request.Weekdays ?? [],
+                            CustomDays = request.CustomDays > 0 ? request.CustomDays : Constants.Repeat.DefaultCustomDays,
+                            MonthlyDay = request.MonthlyDay > 0 ? request.MonthlyDay : Constants.Repeat.DefaultMonthlyDay,
+                            IsPaused = request.IsPaused,
+                            PausedDate = request.IsPaused ? request.PausedDate : null,
+                            StartDate = request.ScheduledDate ?? DateTime.Now
+                        };
+                    }
+                    if (request.ScheduledDate.HasValue)
+                    {
+                        newTask.ScheduledDate = request.ScheduledDate;
+                    }
+                    await TaskService.UpdateTaskAsync(newTask);
+                }
+            }
+
             await UpdateStateAsync();
             StateHasChanged();
         }, Constants.Messages.ErrorAddingTask);
     }
 
-    /// <summary>
-    /// Handles selecting a task as the current task
-    /// </summary>
     public async Task HandleTaskSelect(Guid taskId)
     {
         await TryExecuteAsync(async () =>
@@ -46,9 +75,6 @@ public partial class IndexBase
         }, Constants.Messages.ErrorSelectingTask);
     }
 
-    /// <summary>
-    /// Handles marking a task as completed
-    /// </summary>
     public async Task HandleTaskComplete(Guid taskId)
     {
         await TryExecuteAsync(async () =>
@@ -59,22 +85,48 @@ public partial class IndexBase
         }, Constants.Messages.ErrorCompletingTask);
     }
 
-    /// <summary>
-    /// Handles deleting a task (soft delete)
-    /// </summary>
     public async Task HandleTaskDelete(Guid taskId)
     {
         await TryExecuteAsync(async () =>
         {
+            var task = AppState.FindTaskById(taskId);
+            var taskName = task?.Name ?? "task";
             await TaskService.DeleteTaskAsync(taskId);
             await UpdateStateAsync();
+            _undoTaskId = taskId;
+            _undoTaskName = taskName;
+            _undoToastVisible = true;
+            _undoCts?.Cancel();
+            _undoCts = new CancellationTokenSource();
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(Constants.UI.UndoToastDurationMs, _undoCts.Token);
+                    _undoToastVisible = false;
+                    await InvokeAsync(StateHasChanged);
+                }
+                catch (OperationCanceledException) { }
+            });
             StateHasChanged();
         }, Constants.Messages.ErrorDeletingTask);
     }
 
-    /// <summary>
-    /// Handles uncompleting a task
-    /// </summary>
+    public async Task HandleUndoDelete()
+    {
+        if (_undoTaskId is not { } taskId) return;
+        _undoCts?.Cancel();
+        _undoToastVisible = false;
+        await TryExecuteAsync(async () =>
+        {
+            await TaskService.RestoreTaskAsync(taskId);
+            await UpdateStateAsync();
+            _undoTaskId = null;
+            _undoTaskName = null;
+            StateHasChanged();
+        }, Constants.Messages.ErrorDeletingTask);
+    }
+
     public async Task HandleTaskUncomplete(Guid taskId)
     {
         await TryExecuteAsync(async () =>

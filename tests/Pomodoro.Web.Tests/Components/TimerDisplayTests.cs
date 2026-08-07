@@ -96,7 +96,7 @@ public partial class TimerDisplayTests : TestContext
         var cut = RenderComponent<TimerDisplay>();
 
         // Assert
-        Assert.Contains("FOCUSING", cut.Markup);
+        Assert.Contains("FOCUS", cut.Markup);
     }
 
     [Fact]

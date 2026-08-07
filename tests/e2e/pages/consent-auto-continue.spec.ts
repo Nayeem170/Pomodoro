@@ -47,6 +47,6 @@ test.describe('Consent Auto-Continue', () => {
 
     await expect(page.locator('.consent-modal-overlay')).not.toBeVisible({ timeout: 20000 });
     const timerType = await pomodoroPage.getTimerType();
-    expect(timerType.toUpperCase()).toContain('FOCUSING');
+    expect(timerType.toUpperCase()).toContain('FOCUS');
   });
 });

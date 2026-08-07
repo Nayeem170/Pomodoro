@@ -9,7 +9,6 @@ namespace Pomodoro.Web.Services;
 /// <summary>
 /// Service for managing the consent modal after timer completion.
 /// Uses PeriodicTimer for thread-safe async countdown handling.
-/// Dependencies are injected via constructor for explicit dependency declaration.
 /// </summary>
 public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisposable
 {
@@ -55,8 +54,7 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
     }
 
     /// <summary>
-    /// Initializes the service - called after all services are created
-    /// Uses lock to prevent duplicate event subscriptions from multiple Initialize calls
+    /// Uses a lock to prevent duplicate initialization from multiple Initialize calls.
     /// </summary>
     public void Initialize()
     {
@@ -88,9 +86,6 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
         }
     }
 
-    /// <summary>
-    /// Plays completion sound and shows notification based on settings
-    /// </summary>
     private async Task PlayCompletionSoundAndNotifyAsync(SessionType sessionType)
     {
         if (!TryGetNotificationSettings(out var settings)) return;
@@ -221,7 +216,7 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
     #region Countdown Timer Management
 
     /// <summary>
-    /// Starts the countdown timer using PeriodicTimer for thread-safe async handling
+    /// Starts the countdown timer using PeriodicTimer for thread-safe async handling.
     /// </summary>
     private void StartCountdown()
     {
@@ -240,9 +235,6 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
         }
     }
 
-    /// <summary>
-    /// Stops the countdown timer and cleans up resources
-    /// </summary>
     private void StopCountdown()
     {
         lock (_timerLock)
@@ -257,8 +249,8 @@ public class ConsentService : IConsentService, ITimerEventSubscriber, IAsyncDisp
     }
 
     /// <summary>
-    /// Async countdown loop using PeriodicTimer
-    /// This runs on the synchronization context when awaited, ensuring thread-safe UI updates
+    /// Async countdown loop using PeriodicTimer.
+    /// Runs on the synchronization context when awaited, ensuring thread-safe UI updates.
     /// </summary>
     private async Task RunCountdownAsync(CancellationToken cancellationToken)
     {

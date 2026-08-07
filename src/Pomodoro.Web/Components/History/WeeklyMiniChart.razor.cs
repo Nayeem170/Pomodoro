@@ -5,10 +5,6 @@ using Pomodoro.Web.Services.Formatters;
 
 namespace Pomodoro.Web.Components.History;
 
-/// <summary>
-/// Code-behind for WeeklyMiniChart component
-/// Displays a weekly bar chart using Chart.js
-/// </summary>
 public class WeeklyMiniChartBase : ComponentBase, IAsyncDisposable
 {
     #region Services (Dependency Injection)

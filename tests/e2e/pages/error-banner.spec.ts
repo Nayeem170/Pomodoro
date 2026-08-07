@@ -46,6 +46,6 @@ test.describe('Error Banner', () => {
     await expect(page.locator('.main-container')).toBeVisible({ timeout: 30000 });
     await expect(page.locator('.tasks-section')).toBeVisible();
     await expect(page.locator('.mode-tabs')).toBeVisible();
-    await expect(page.locator('.pomo-row')).toBeVisible();
+    await expect(page.locator('.timer-pane-summary')).toBeVisible();
   });
 });

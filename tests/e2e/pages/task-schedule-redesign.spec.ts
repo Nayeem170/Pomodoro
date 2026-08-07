@@ -35,7 +35,7 @@ test.describe('@T-003 Task/Schedule redesign', () => {
     await page.saveTaskEdit();
 
     await page.selectListTab('Schedule');
-    await expect(page.page.locator('.day-item').filter({ hasText: 'Agenda Task' })).toBeVisible();
+    await expect(page.page.locator('.day-item-wrap').filter({ hasText: 'Agenda Task' })).toBeVisible();
   });
 
   test('@T-003-AC8 next week navigates the window and enables prev', async () => {
@@ -60,6 +60,6 @@ test.describe('@T-003 Task/Schedule redesign', () => {
     await page.setTaskRepeat('Daily');
     await page.saveTaskEdit();
 
-    await expect(page.page.locator('.task-row').filter({ hasText: 'Capsule Task' }).locator('.capsule')).toBeVisible();
+    await expect(page.page.locator('.task-row').filter({ hasText: 'Capsule Task' }).locator('.repeat-badge')).toBeVisible();
   });
 });

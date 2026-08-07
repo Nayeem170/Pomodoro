@@ -402,20 +402,16 @@ public class IndexPageExpandedTests : TestHelper
     #region Button Click Tests
 
     [Fact]
-    public void IndexPage_ClicksErrorBannerCloseButton()
+    public void IndexPage_SetErrorMessage_ShowsErrorToast()
     {
-        // Arrange
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-        // Set an error message to show the banner
         cut.Instance.ErrorMessage = "Test error";
         cut.Render();
 
-        // Act - Click the close button inside the error banner
-        cut.Find(".error-banner button").Click();
-
-        // Assert - Error message should be cleared
-        cut.Instance.ErrorMessage.Should().BeNull();
+        cut.Markup.Should().Contain("error-toast");
+        cut.Markup.Should().Contain("Test error");
+        cut.Markup.Should().NotContain("error-banner");
     }
 
     [Fact]

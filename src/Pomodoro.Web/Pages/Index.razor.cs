@@ -7,10 +7,6 @@ using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Pages;
 
-/// <summary>
-/// Main partial for Index page
-/// Contains dependency injection, state management, and lifecycle methods
-/// </summary>
 public partial class IndexBase : ComponentBase, IDisposable
 {
     #region Services (Dependency Injection)
@@ -71,9 +67,24 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected bool IsTimerStarted { get; set; }
     protected bool IsConsentModalVisible { get; set; }
     protected int ConsentCountdown { get; set; }
+
+    protected Guid? _undoTaskId;
+    protected string? _undoTaskName;
+    protected bool _undoToastVisible;
+    private CancellationTokenSource? _undoCts;
+    protected bool _errorToastVisible;
+    protected string? _errorToastMessage;
+    private CancellationTokenSource? _errorToastCts;
     protected List<ConsentOption> ConsentOptions { get; set; } = new();
-    internal bool ShowKeyboardHelp { get; set; }
-    public string? ErrorMessage { get; set; }
+    public string? ErrorMessage
+    {
+        get => _errorToastVisible ? _errorToastMessage : null;
+        set
+        {
+            if (!string.IsNullOrEmpty(value))
+                ShowErrorToast(value);
+        }
+    }
     public bool IsPipOpen { get; set; }
     protected IReadOnlyList<TaskListRef> TaskLists { get; set; } = [];
     protected IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
@@ -94,7 +105,7 @@ public partial class IndexBase : ComponentBase, IDisposable
         $"{ScheduleWindowStart:MMM d} – {ScheduleWindowStart.AddDays(Constants.Tasks.ScheduleWindowDays - 1):MMM d}";
 
     private DateTime ScheduleWindowStart =>
-        DateTime.UtcNow.Date.AddDays(_scheduleWeekOffset * Constants.Tasks.ScheduleWindowDays);
+        DateTime.Now.Date.AddDays(_scheduleWeekOffset * Constants.Tasks.ScheduleWindowDays);
 
     private int _updateSeq;
     private (int TotalFocusMinutes, int PomodoroCount, int TasksWorkedOn)? _cachedTodayStats;
@@ -105,6 +116,12 @@ public partial class IndexBase : ComponentBase, IDisposable
     protected int TodayPomodoroCount => GetTodayStats().PomodoroCount;
     protected int TodayTasksWorkedOn => GetTodayStats().TasksWorkedOn;
     protected int DailyGoal => TimerService.Settings.DailyGoal;
+
+    protected IReadOnlyList<ActivityRecord> TodayPomodoroSessions => (ActivityService
+        .GetTodayActivities() ?? [])
+        .Where(a => a.Type == SessionType.Pomodoro)
+        .OrderByDescending(a => a.CompletedAt)
+        .ToList();
 
     private (int TotalFocusMinutes, int PomodoroCount, int TasksWorkedOn) GetTodayStats()
     {
@@ -160,7 +177,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                         }
                         else
                         {
-                            await TimerService.StartPomodoroAsync();
+                            await HandleTimerStart();
                         }
                     },
                     Logger,
@@ -205,23 +222,6 @@ public partial class IndexBase : ComponentBase, IDisposable
                 );
             }, Constants.KeyboardShortcuts.LongBreakDescription);
 
-            // Help shortcut
-            KeyboardShortcutService.RegisterShortcut("?", () =>
-            {
-                ShowKeyboardHelp = true;
-                StateHasChanged();
-            }, Constants.KeyboardShortcuts.HelpDescription);
-
-            // Escape shortcut - close keyboard help modal
-            KeyboardShortcutService.RegisterShortcut("escape", () =>
-            {
-                if (ShowKeyboardHelp)
-                {
-                    ShowKeyboardHelp = false;
-                    StateHasChanged();
-                }
-            }, "Close keyboard shortcuts");
-
             // Load initial state
             await UpdateStateAsync();
 
@@ -249,8 +249,8 @@ public partial class IndexBase : ComponentBase, IDisposable
     }
 
     /// <summary>
-    /// Check for pending notification action from URL parameter
-    /// This handles the case when the app is opened from a notification click
+    /// Checks for a pending notification action from the URL parameter; handles the case
+    /// where the app is opened from a notification click.
     /// </summary>
     internal async Task CheckPendingNotificationActionAsync()
     {
@@ -308,6 +308,24 @@ public partial class IndexBase : ComponentBase, IDisposable
         }
     }
 
+    protected void ShowErrorToast(string message)
+    {
+        _errorToastMessage = message;
+        _errorToastVisible = true;
+        _errorToastCts?.Cancel();
+        _errorToastCts = new CancellationTokenSource();
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(Constants.UI.ErrorToastDurationMs, _errorToastCts.Token);
+                _errorToastVisible = false;
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (OperationCanceledException) { }
+        });
+    }
+
     protected async Task HandleTabChange(string listId)
     {
         Console.WriteLine($"[TABDBG] HandleTabChange: clicked={listId} activeBefore={ActiveListId} serviceBefore={TaskService.CurrentListId}");
@@ -328,6 +346,21 @@ public partial class IndexBase : ComponentBase, IDisposable
     {
         _scheduleWeekOffset++;
         await UpdateStateAsync();
+    }
+
+    protected string? GetCurrentTaskName()
+    {
+        if (!CurrentTaskId.HasValue) return null;
+        return AppState.Tasks.FirstOrDefault(t => t.Id == CurrentTaskId.Value)?.Name;
+    }
+
+    protected static string FormatFocusMinutes(int minutes)
+    {
+        if (minutes < Constants.TimeConversion.MinutesPerHour)
+            return string.Format(Constants.TimeFormats.MinutesFormat, minutes);
+        var hours = minutes / Constants.TimeConversion.MinutesPerHour;
+        var mins = minutes % Constants.TimeConversion.MinutesPerHour;
+        return string.Format(Constants.TimeFormats.HoursMinutesFormat, hours, mins);
     }
 
     private IReadOnlyList<ScheduleDay> BuildScheduleWindow(DateTime start)
@@ -363,30 +396,7 @@ public partial class IndexBase : ComponentBase, IDisposable
         return days;
     }
 
-    private static bool OccursOn(TaskItem task, DateTime date)
-    {
-        if (task.OccurrenceDate?.Date == date) return true;
-        if (task.Repeat is { IsActive: true } rule) return RepeatOccursOn(rule, task, date);
-        return task.ScheduledDate?.Date == date || task.DueDate?.Date == date;
-    }
-
-    private static bool RepeatOccursOn(RepeatRule rule, TaskItem task, DateTime date)
-    {
-        var anchor = (rule.StartDate ?? task.ScheduledDate ?? task.CreatedAt).Date;
-        if (date < anchor) return false;
-        if (rule.EndDate.HasValue && date > rule.EndDate.Value.Date) return false;
-
-        return rule.Type switch
-        {
-            RepeatType.Daily => true,
-            RepeatType.Weekly => rule.Weekdays.Length == 0
-                ? date.DayOfWeek == anchor.DayOfWeek
-                : rule.Weekdays.Contains(date.DayOfWeek),
-            RepeatType.Custom => rule.CustomDays > 0 && (date - anchor).Days % rule.CustomDays == 0,
-            RepeatType.Monthly => date.Day == (rule.MonthlyDay ?? anchor.Day),
-            _ => false
-        };
-    }
+    private static bool OccursOn(TaskItem task, DateTime date) => task.OccursOn(date);
 
     private static string? BuildRepeatLabel(RepeatRule? rule) => rule?.Type switch
     {
@@ -412,6 +422,8 @@ public partial class IndexBase : ComponentBase, IDisposable
         {
             UnsubscribeFromAllServices();
             UnregisterKeyboardShortcuts();
+            _undoCts?.Cancel();
+            _undoCts?.Dispose();
         }
         catch (Exception ex)
         {
@@ -456,8 +468,6 @@ public partial class IndexBase : ComponentBase, IDisposable
             KeyboardShortcutService.UnregisterShortcut("p");
             KeyboardShortcutService.UnregisterShortcut("s");
             KeyboardShortcutService.UnregisterShortcut("l");
-            KeyboardShortcutService.UnregisterShortcut("?");
-            KeyboardShortcutService.UnregisterShortcut("escape");
         }
     }
 

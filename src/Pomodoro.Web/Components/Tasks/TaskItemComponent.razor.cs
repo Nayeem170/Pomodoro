@@ -4,10 +4,6 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Components.Tasks;
 
-/// <summary>
-/// Code-behind for TaskItem component
-/// Separates business logic from view
-/// </summary>
 public class TaskItemBase : ComponentBase
 {
     #region Parameters (Model)
@@ -34,9 +30,6 @@ public class TaskItemBase : ComponentBase
     public EventCallback<TaskItem> OnEdit { get; set; }
 
     [Parameter]
-    public string CheckboxColor { get; set; } = "var(--pomodoro-color)";
-
-    [Parameter]
     public int Depth { get; set; }
 
     [Parameter]
@@ -49,10 +42,16 @@ public class TaskItemBase : ComponentBase
     public bool HasChildren { get; set; }
 
     [Parameter]
+    public int ChildCount { get; set; }
+
+    [Parameter]
     public bool IsCollapsed { get; set; }
 
     [Parameter]
     public EventCallback<Guid> OnToggleCollapse { get; set; }
+
+    [Parameter]
+    public DateTime? ContextDate { get; set; }
 
     #endregion
 
@@ -61,6 +60,8 @@ public class TaskItemBase : ComponentBase
     protected bool IsEditing { get; set; }
 
     protected bool IsAddingSubtask { get; set; }
+
+    protected bool IsConfirmingDelete { get; set; }
 
     protected string NewSubtaskName { get; set; } = string.Empty;
 
@@ -72,7 +73,7 @@ public class TaskItemBase : ComponentBase
     public string? GoogleListTitle { get; set; }
 
     protected string GoogleBadgeTooltip =>
-        string.IsNullOrEmpty(GoogleListTitle) ? "Google task" : $"Google task — {GoogleListTitle}";
+        string.IsNullOrEmpty(GoogleListTitle) ? "Google task" : $"Google task - {GoogleListTitle}";
 
     protected bool IsAddSubtaskDisabled => string.IsNullOrWhiteSpace(NewSubtaskName);
 
@@ -89,9 +90,6 @@ public class TaskItemBase : ComponentBase
 
     #region Business Logic Methods
 
-    /// <summary>
-    /// Formats minutes into human-readable time format
-    /// </summary>
     protected string FormatTime(int minutes)
     {
         if (minutes < Constants.TimeConversion.MinutesPerHour)
@@ -101,9 +99,6 @@ public class TaskItemBase : ComponentBase
         return string.Format(Constants.TimeFormats.HoursMinutesFormat, hours, mins);
     }
 
-    /// <summary>
-    /// Gets the CSS class for the task item
-    /// </summary>
     protected string GetTaskClass()
     {
         var classes = new List<string>();
@@ -112,20 +107,11 @@ public class TaskItemBase : ComponentBase
         return string.Join(" ", classes);
     }
 
-    /// <summary>
-    /// Gets the status icon for the task
-    /// </summary>
     protected string GetStatusIcon()
     {
         if (Item.IsCompleted) return Constants.Tasks.CompletedEmoji;
         if (Item.PomodoroCount > 0) return Constants.Tasks.HasPomodorosEmoji;
         return Constants.Tasks.DefaultEmoji;
-    }
-
-    protected string GetRepeatBadgeClass()
-    {
-        if (Item.Repeat?.IsPaused == true) return $"{Constants.Repeat.RepeatCssClass} {Constants.Repeat.PausedCssClass}";
-        return Constants.Repeat.RepeatCssClass;
     }
 
     protected string GetRepeatTooltip()
@@ -143,15 +129,6 @@ public class TaskItemBase : ComponentBase
         return typeLabel;
     }
 
-    /// <summary>
-    /// Handles task selection click
-    /// </summary>
-    protected string GetCheckboxStyle()
-    {
-        if (string.Equals(CheckboxColor, "var(--pomodoro-color)")) return "";
-        return $"border-color:{CheckboxColor};background:{CheckboxColor};";
-    }
-
     protected async Task HandleSelect()
     {
         if (!Item.IsCompleted)
@@ -160,25 +137,32 @@ public class TaskItemBase : ComponentBase
         }
     }
 
-    /// <summary>
-    /// Handles task completion click
-    /// </summary>
     protected async Task HandleComplete()
     {
         await OnComplete.InvokeAsync(Item.Id);
     }
 
-    /// <summary>
-    /// Handles task deletion click
-    /// </summary>
     protected async Task HandleDelete()
     {
+        if (HasChildren)
+        {
+            IsConfirmingDelete = true;
+            return;
+        }
         await OnDelete.InvokeAsync(Item.Id);
     }
 
-    /// <summary>
-    /// Handles task uncomplete click (undo completion)
-    /// </summary>
+    protected void CancelDelete()
+    {
+        IsConfirmingDelete = false;
+    }
+
+    protected async Task ConfirmDelete()
+    {
+        IsConfirmingDelete = false;
+        await OnDelete.InvokeAsync(Item.Id);
+    }
+
     protected async Task HandleUncomplete()
     {
         await OnUncomplete.InvokeAsync(Item.Id);

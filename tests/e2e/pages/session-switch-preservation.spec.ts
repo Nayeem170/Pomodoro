@@ -25,7 +25,7 @@ test.describe('Session Switch Preservation', () => {
     await pomodoroPage.switchToPomodoro();
 
     const timerTypeAfter = await pomodoroPage.getTimerType();
-    expect(timerTypeAfter).toContain('FOCUSING');
+    expect(timerTypeAfter).toContain('FOCUS');
 
     const isPaused = await pomodoroPage.isTimerPaused();
     expect(isPaused).toBe(true);

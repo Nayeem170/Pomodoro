@@ -52,7 +52,7 @@ public partial class TimerDisplayTests
         // Arrange
         SetupTimerService(TimeSpan.FromMinutes(25), SessionType.Pomodoro, false);
         var cut = RenderComponent<TimerDisplay>();
-        Assert.Contains("FOCUSING", cut.Markup);
+        Assert.Contains("FOCUS", cut.Markup);
 
         // Act - Change session type
         SetupTimerService(TimeSpan.FromMinutes(5), SessionType.ShortBreak, false);

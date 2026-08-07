@@ -9,39 +9,25 @@ test.describe('Today Summary', () => {
     await pomodoroPage.goto('/');
   });
 
-  test('should display today summary section', async ({ page }) => {
-    await expect(page.locator('.pomo-row')).toBeVisible({ timeout: 30000 });
+  test('should display today summary strip', async ({ page }) => {
+    await expect(page.locator('.timer-pane-summary')).toBeVisible({ timeout: 30000 });
   });
 
-  test('should display pomodoro emoji', async ({ page }) => {
-    await expect(page.locator('.pomo-emoji')).toBeVisible({ timeout: 30000 });
+  test('should display focused stat', async ({ page }) => {
+    await expect(page.locator('.summary-lbl', { hasText: 'Focused' })).toBeVisible({ timeout: 30000 });
   });
 
-  test('should display pomodoro count', async ({ page }) => {
-    await expect(page.locator('.pomo-num')).toBeVisible({ timeout: 30000 });
+  test('should display pomodoros stat', async ({ page }) => {
+    await expect(page.locator('.summary-lbl', { hasText: 'Pomodoros' })).toBeVisible({ timeout: 30000 });
   });
 
-  test('should display daily goal text', async ({ page }) => {
-    await expect(page.locator('.pomo-sub')).toBeVisible({ timeout: 30000 });
-    await expect(page.locator('.pomo-sub')).toContainText('completed today');
-  });
-
-  test('should display focus time', async ({ page }) => {
-    await expect(page.locator('.pomo-focus-time')).toBeVisible({ timeout: 30000 });
-  });
-
-  test('should display focus time label', async ({ page }) => {
-    await expect(page.locator('.pomo-focus-label')).toBeVisible({ timeout: 30000 });
-    await expect(page.locator('.pomo-focus-label')).toContainText('focus time');
-  });
-
-  test('should display progress bar', async ({ page }) => {
-    await expect(page.locator('.progress-bar')).toBeVisible({ timeout: 30000 });
-    await expect(page.locator('.progress-bar-fill')).toBeAttached();
+  test('should display tasks stat', async ({ page }) => {
+    await expect(page.locator('.summary-lbl', { hasText: 'Tasks' })).toBeVisible({ timeout: 30000 });
   });
 
   test('should show initial zero values', async ({ page }) => {
-    await expect(page.locator('.pomo-num')).toContainText('0');
-    await expect(page.locator('.pomo-focus-time')).toContainText('0m');
+    const cells = page.locator('.summary-cell');
+    await expect(cells.nth(0).locator('.summary-val')).toContainText('0m', { timeout: 30000 });
+    await expect(cells.nth(1).locator('.summary-val')).toContainText('0');
   });
 });

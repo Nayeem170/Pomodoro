@@ -3,9 +3,6 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Service for settings page presentation logic
-/// </summary>
 public class SettingsPresenterService
 {
     private readonly ILogger<SettingsPresenterService> _logger;
@@ -15,9 +12,6 @@ public class SettingsPresenterService
         _logger = logger;
     }
 
-    /// <summary>
-    /// Checks if given settings match default values
-    /// </summary>
     /// <param name="settings">Settings to check</param>
     /// <returns>True if settings match defaults, false otherwise</returns>
     public virtual bool IsAtDefaults(TimerSettings settings)
@@ -31,12 +25,10 @@ public class SettingsPresenterService
             && settings.AutoStartSession == defaults.AutoStartSession
             && settings.AutoStartDelaySeconds == defaults.AutoStartDelaySeconds
             && settings.LongBreakInterval == defaults.LongBreakInterval
-            && settings.DailyGoal == defaults.DailyGoal;
+            && settings.DailyGoal == defaults.DailyGoal
+            && settings.ExpandTimerMobile == defaults.ExpandTimerMobile;
     }
 
-    /// <summary>
-    /// Builds a success message for import operation
-    /// </summary>
     /// <param name="totalImported">Total number of records imported</param>
     /// <param name="totalSkipped">Total number of records skipped</param>
     /// <returns>Formatted success message</returns>
@@ -59,9 +51,6 @@ public class SettingsPresenterService
             : "Import complete: no new records to import.";
     }
 
-    /// <summary>
-    /// Downloads file using JavaScript interop
-    /// </summary>
     /// <param name="jsInteropService">JS interop service instance</param>
     /// <param name="filename">Filename to download</param>
     /// <param name="content">File content</param>

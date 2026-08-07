@@ -3,9 +3,6 @@ using Microsoft.JSInterop;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Service for managing keyboard shortcuts in the application
-/// </summary>
 public class KeyboardShortcutService : IKeyboardShortcutService, IAsyncDisposable
 {
     private readonly IJSRuntime _jsRuntime;
@@ -51,9 +48,6 @@ public class KeyboardShortcutService : IKeyboardShortcutService, IAsyncDisposabl
         _logger.LogInformation("Keyboard shortcut service initialized");
     }
 
-    /// <summary>
-    /// Called from JavaScript when a keyboard shortcut is triggered
-    /// </summary>
     [JSInvokable]
     public void HandleShortcut(string key)
     {

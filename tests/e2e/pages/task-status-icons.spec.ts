@@ -28,6 +28,9 @@ test.describe('Task Pomo Count Display', () => {
     await pomodoroPage.completeTask('Completed Pomo Task');
     await page.waitForTimeout(500);
 
+    await page.locator('.completed-toggle').click();
+    await page.waitForTimeout(200);
+
     const pomoCount = page.locator('.completed-section .task-row').filter({ hasText: 'Completed Pomo Task' }).locator('.task-pomo-count');
     await expect(pomoCount).toBeVisible();
   });

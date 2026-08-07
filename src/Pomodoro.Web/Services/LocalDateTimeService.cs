@@ -2,27 +2,18 @@ using Microsoft.JSInterop;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Service for getting the client's local date and time
-/// </summary>
 public class LocalDateTimeService : ILocalDateTimeService
 {
     private readonly IJSRuntime _jsRuntime;
     private DateTime? _cachedLocalDate;
     private DateTimeOffset? _cachedLocalDateTimeOffset;
 
-    /// <summary>
-    /// Initializes a new instance of the LocalDateTimeService
-    /// </summary>
     /// <param name="jsRuntime">The JS runtime instance</param>
     public LocalDateTimeService(IJSRuntime jsRuntime)
     {
         _jsRuntime = jsRuntime;
     }
 
-    /// <summary>
-    /// Gets the client's local date asynchronously
-    /// </summary>
     /// <returns>The client's local date</returns>
     public virtual async Task<DateTime> GetLocalDateAsync()
     {
@@ -46,9 +37,6 @@ public class LocalDateTimeService : ILocalDateTimeService
         }
     }
 
-    /// <summary>
-    /// Gets the client's local date and time with timezone offset asynchronously
-    /// </summary>
     /// <returns>The client's local date and time with timezone offset</returns>
     public virtual async Task<DateTimeOffset> GetLocalDateTimeOffsetAsync()
     {
@@ -84,18 +72,12 @@ public class LocalDateTimeService : ILocalDateTimeService
         }
     }
 
-    /// <summary>
-    /// Clears the cached local date and time
-    /// </summary>
     public void ClearCache()
     {
         _cachedLocalDate = null;
         _cachedLocalDateTimeOffset = null;
     }
 
-    /// <summary>
-    /// Gets the client's local date and time asynchronously
-    /// </summary>
     /// <returns>The client's local date and time</returns>
     public virtual async Task<DateTime> GetLocalDateTimeAsync()
     {
@@ -112,9 +94,6 @@ public class LocalDateTimeService : ILocalDateTimeService
         }
     }
 
-    /// <summary>
-    /// Gets the client's timezone offset in minutes
-    /// </summary>
     /// <returns>The timezone offset in minutes</returns>
     public virtual async Task<int> GetTimezoneOffsetAsync()
     {

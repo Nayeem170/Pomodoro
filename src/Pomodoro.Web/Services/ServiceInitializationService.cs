@@ -3,10 +3,6 @@ using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Service for initializing application services.
-/// Extracted from Program.cs for testability.
-/// </summary>
 public interface IServiceInitializationService
 {
     Task InitializeServicesAsync(IServiceProvider serviceProvider);

@@ -3,10 +3,6 @@ using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Service for wiring up event subscribers to timer events.
-/// Extracted from Program.cs for testability.
-/// </summary>
 public interface IEventWiringService
 {
     void WireEventSubscribers(IServiceProvider serviceProvider);

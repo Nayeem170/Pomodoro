@@ -1,0 +1,31 @@
+@using Pomodoro.Web.Models
+
+<div class="session-log">
+    <div class="session-log-header">
+        <span class="session-log-title">Today's Sessions</span>
+        <span class="session-log-count">@Sessions.Count done</span>
+    </div>
+    <div class="session-log-items">
+        @if (Sessions.Count == 0)
+        {
+            <div class="session-log-empty">No sessions yet</div>
+        }
+        else
+        {
+            @foreach (var session in Sessions)
+            {
+                <div class="session-log-row">
+                    <span class="session-dot"></span>
+                    <span class="session-time">@session.CompletedAt.ToString("h:mm")</span>
+                    <span class="session-task">@(session.TaskName ?? "Focus")</span>
+                    <span class="session-dur">@($"{session.DurationMinutes}m")</span>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Microsoft.AspNetCore.Components.Parameter]
+    public IReadOnlyList<ActivityRecord> Sessions { get; set; } = [];
+}

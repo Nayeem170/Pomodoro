@@ -2,9 +2,6 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Services;
 
-/// <summary>
-/// Composite key for activity duplicate detection
-/// </summary>
 public readonly record struct ActivityKey
 {
     public SessionType Type { get; }
@@ -21,9 +18,6 @@ public readonly record struct ActivityKey
     }
 }
 
-/// <summary>
-/// Composite key for task duplicate detection
-/// </summary>
 public readonly record struct TaskKey
 {
     public string Name { get; }

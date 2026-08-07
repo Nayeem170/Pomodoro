@@ -324,5 +324,42 @@ public class TaskItemTests
             Assert.Equal(deletedAt, task.DeletedAt);
         }
     }
+
+    [Trait("Category", "Model")]
+    public class OccursToday : TaskItemTests
+    {
+        [Fact]
+        public void ReturnsTrue_WhenNoRepeat()
+        {
+            var task = new TaskItem { Name = "No repeat" };
+            Assert.True(task.OccursToday);
+        }
+
+        [Fact]
+        public void EvaluatesOccurrence_WhenDailyRepeat()
+        {
+            var task = new TaskItem
+            {
+                Name = "Daily",
+                Repeat = new RepeatRule { Type = RepeatType.Daily }
+            };
+            Assert.True(task.OccursToday);
+        }
+
+        [Fact]
+        public void EvaluatesOccurrence_WhenWeeklyRepeat()
+        {
+            var task = new TaskItem
+            {
+                Name = "Weekly",
+                Repeat = new RepeatRule
+                {
+                    Type = RepeatType.Weekly,
+                    Weekdays = [DateTime.Now.DayOfWeek]
+                }
+            };
+            Assert.True(task.OccursToday);
+        }
+    }
 }
 

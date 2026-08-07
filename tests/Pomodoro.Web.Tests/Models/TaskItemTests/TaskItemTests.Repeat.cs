@@ -87,21 +87,21 @@ public class TaskItemRepeatTests
     [Fact]
     public void TaskItem_IsVisible_False_WhenScheduledForFuture()
     {
-        var task = new TaskItem { ScheduledDate = DateTime.UtcNow.Date.AddDays(1) };
+        var task = new TaskItem { ScheduledDate = DateTime.Now.Date.AddDays(1) };
         task.IsVisible.Should().BeFalse();
     }
 
     [Fact]
     public void TaskItem_IsVisible_True_WhenScheduledForPast()
     {
-        var task = new TaskItem { ScheduledDate = DateTime.UtcNow.Date.AddDays(-1) };
+        var task = new TaskItem { ScheduledDate = DateTime.Now.Date.AddDays(-1) };
         task.IsVisible.Should().BeTrue();
     }
 
     [Fact]
     public void TaskItem_IsVisible_True_WhenScheduledForToday()
     {
-        var task = new TaskItem { ScheduledDate = DateTime.UtcNow.Date };
+        var task = new TaskItem { ScheduledDate = DateTime.Now.Date };
         task.IsVisible.Should().BeTrue();
     }
 }

@@ -2,9 +2,6 @@ using System.Text.Json.Serialization;
 
 namespace Pomodoro.Web.Models;
 
-/// <summary>
-/// Represents a completed pomodoro or break session for activity history
-/// </summary>
 public class ActivityRecord
 {
     public Guid Id { get; set; } = Guid.NewGuid();

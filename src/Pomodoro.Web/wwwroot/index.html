@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#374151" />
+    <meta name="theme-color" content="#1c3d35" />
     <meta name="description" content="Free online Pomodoro timer to boost your productivity. Track focus sessions, manage tasks, and visualize your progress with charts. No sign-up required." />
     <meta name="keywords" content="pomodoro timer, focus timer, productivity, task management, time tracking, pomodoro technique, work timer, study timer" />
     <meta name="author" content="Nayeem" />
@@ -13,21 +13,21 @@
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Pomodoro - Free Online Focus Timer" />
+    <meta property="og:title" content="Tarkeez - Free Online Focus Timer" />
     <meta property="og:description" content="Boost your productivity with a free Pomodoro timer. Track focus sessions, manage tasks, and visualize progress." />
     <meta property="og:url" content="https://pomodoro.bitops.bd/" />
-    <meta property="og:site_name" content="Pomodoro" />
+    <meta property="og:site_name" content="Tarkeez" />
     <meta property="og:locale" content="en_US" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Pomodoro - Free Online Focus Timer" />
+    <meta name="twitter:title" content="Tarkeez - Free Online Focus Timer" />
     <meta name="twitter:description" content="Boost your productivity with a free Pomodoro timer. Track focus sessions, manage tasks, and visualize progress." />
     <meta name="msvalidate.01" content="81D78E7A7E951493A0C03CAD66C20F67" />
     <!-- CSP: localhost wildcards are for Blazor WebAssembly hot reload during development. 
          Consider removing 'http://localhost:* ws://localhost:*' for production deployment. -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob: https://static.cloudflareinsights.com https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: wss: http://localhost:* ws://localhost:*; worker-src 'self' blob:;" />
-    <title>Pomodoro - Free Online Focus Timer | Boost Productivity</title>
+    <title>Tarkeez - Free Online Focus Timer | Boost Productivity</title>
     <base href="/" />
     
     <!-- Performance: Preload critical assets -->
@@ -42,8 +42,7 @@
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/history.css" />
     <link rel="stylesheet" href="css/settings.css" />
-    <!-- Favicon - Tomato emoji with transparent background -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='80' x='50%' text-anchor='middle'>🍅</text></svg>" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><circle cx='96' cy='96' r='74' fill='none' stroke='%23C0C0C0' stroke-width='14'/><path d='M60,100 L82,122' fill='none' stroke='%23FCA5A5' stroke-width='14' stroke-linecap='butt' stroke-linejoin='round'/><path d='M82,122 L136,68' fill='none' stroke='%23F42A41' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
     <link href="Pomodoro.Web.styles.css" rel="stylesheet" />
     <link href="manifest.webmanifest" rel="manifest" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.svg" />
@@ -53,7 +52,7 @@
     {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "Pomodoro",
+        "name": "Tarkeez",
         "url": "https://pomodoro.bitops.bd/",
         "description": "Free online Pomodoro timer to boost your productivity. Track focus sessions, manage tasks, and visualize your progress with charts.",
         "applicationCategory": "ProductivityApplication",
@@ -74,8 +73,11 @@
 <body>
     <div id="app">
         <div class="loading-container">
-            <div class="loading-spinner">🍅</div>
-            <div class="loading-text">Loading Pomodoro...</div>
+            <div class="loading-spinner"><svg width="100%" height="100%" viewBox="0 0 192 192">
+                <circle class="ls-ring" cx="96" cy="96" r="74" fill="none" stroke="#C0C0C0" stroke-width="14"/>
+                <path class="ls-short" d="M60,100 L82,122" fill="none" stroke="#FCA5A5" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+                <path class="ls-long" d="M82,122 L136,68" fill="none" stroke="#F42A41" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg></div>
         </div>
     </div>
 
