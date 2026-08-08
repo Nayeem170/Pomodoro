@@ -542,7 +542,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
 
         if (isRecurring)
         {
-            existingTask.Repeat!.LastCompletedDate = DateTime.UtcNow;
+            existingTask.Repeat!.LastCompletedDate = DateTime.Now.Date;
         }
 
         var taskToSave2 = existingTask.WithUpdates(c => c.IsCompleted = true);
@@ -1019,7 +1019,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         if (rule.Type == RepeatType.None) return null;
         if (rule.EndDate.HasValue && rule.EndDate.Value < DateTime.Now.Date) return null;
 
-        var baseDate = rule.LastCompletedDate ?? DateTime.Now.Date;
+        var baseDate = (rule.LastCompletedDate ?? DateTime.Now.Date).Date;
 
         var next = rule.Type switch
         {
