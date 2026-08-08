@@ -104,6 +104,21 @@
     <script src="js/compressionInterop.js"></script>
     <!-- App initialization - service worker registration and URL helpers -->
     <script src="js/app-init.js"></script>
+
+    <!-- Block Cloudflare Insights beacon to prevent ad-blocker console errors -->
+    <script>
+        new MutationObserver(function(mutations) {
+            for (var i = 0; i < mutations.length; i++) {
+                var nodes = mutations[i].addedNodes;
+                for (var j = 0; j < nodes.length; j++) {
+                    var n = nodes[j];
+                    if (n.tagName === 'SCRIPT' && n.src && n.src.indexOf('cloudflareinsights') !== -1) {
+                        n.remove();
+                    }
+                }
+            }
+        }).observe(document.documentElement, { childList: true, subtree: true });
+    </script>
     
     <!-- Start Blazor after all scripts are loaded -->
     <script>
