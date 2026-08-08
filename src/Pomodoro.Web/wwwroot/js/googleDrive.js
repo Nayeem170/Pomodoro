@@ -13,24 +13,43 @@ window.googleDrive = {
         }
     },
 
-    _waitForGis: function() {
-        return new Promise((resolve, reject) => {
+    _gisLoaded: false,
+    _gisFailed: false,
+
+    _loadGis: function() {
+        return new Promise((resolve) => {
             if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+                this._gisLoaded = true;
                 resolve();
                 return;
             }
-            var attempts = 0;
-            var maxAttempts = 50;
-            var interval = setInterval(function() {
-                attempts++;
-                if (window.google && window.google.accounts && window.google.accounts.oauth2) {
-                    clearInterval(interval);
-                    resolve();
-                } else if (attempts >= maxAttempts) {
-                    clearInterval(interval);
-                    reject(new Error('Google Identity Services script failed to load'));
-                }
-            }, 200);
+            if (this._gisFailed) {
+                resolve();
+                return;
+            }
+            var existing = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+            if (existing) {
+                if (this._gisLoaded) { resolve(); return; }
+                existing.addEventListener('load', () => { this._gisLoaded = true; resolve(); });
+                existing.addEventListener('error', () => { this._gisFailed = true; resolve(); });
+                return;
+            }
+            var s = document.createElement('script');
+            s.src = 'https://accounts.google.com/gsi/client';
+            s.async = true;
+            var self = this;
+            s.onload = function() { self._gisLoaded = true; resolve(); };
+            s.onerror = function() { self._gisFailed = true; resolve(); };
+            document.head.appendChild(s);
+        });
+    },
+
+    _waitForGis: function() {
+        return this._loadGis().then(() => {
+            if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+                return Promise.resolve();
+            }
+            return Promise.reject(new Error('Google Identity Services script failed to load'));
         });
     },
 
@@ -102,10 +121,15 @@ window.googleDrive = {
     revokeAuth: function() {
         return new Promise((resolve) => {
             if (this._accessToken) {
-                google.accounts.oauth2.revoke(this._accessToken, () => {
+                if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+                    google.accounts.oauth2.revoke(this._accessToken, () => {
+                        this._accessToken = null;
+                        resolve();
+                    });
+                } else {
                     this._accessToken = null;
                     resolve();
-                });
+                }
             } else {
                 resolve();
             }
