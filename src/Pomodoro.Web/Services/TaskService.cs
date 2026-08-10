@@ -1041,7 +1041,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         if (weekdays.Length == 0) return baseDate.AddDays(7);
 
         var sorted = weekdays.OrderBy(d => d).ToArray();
-        var current = baseDate.DayOfWeek;
 
         for (var i = 0; i < 14; i++)
         {
