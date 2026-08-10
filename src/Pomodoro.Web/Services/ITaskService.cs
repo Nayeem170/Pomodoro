@@ -40,6 +40,8 @@ public interface ITaskService
 
     Task ReparentTaskAsync(Guid taskId, Guid? newParentId);
 
+    Task PromoteTaskAsync(Guid taskId);
+
     /// <summary>Persists a virtual repeat occurrence as a real task so it can be edited independently of its series.</summary>
     Task MaterializeSingleAsync(TaskItem occurrence);
 

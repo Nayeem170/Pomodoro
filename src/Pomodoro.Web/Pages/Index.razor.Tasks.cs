@@ -184,7 +184,7 @@ public partial class IndexBase
     {
         await TryExecuteAsync(async () =>
         {
-            await TaskService.ReparentTaskAsync(taskId, null);
+            await TaskService.PromoteTaskAsync(taskId);
             await UpdateStateAsync();
             StateHasChanged();
         }, Constants.Messages.ErrorUpdatingTask);

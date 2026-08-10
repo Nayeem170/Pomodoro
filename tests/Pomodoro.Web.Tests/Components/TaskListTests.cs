@@ -638,7 +638,7 @@ public class TaskListTests : TestContext
     [Fact]
     public async Task HandleReparentToRoot_ThroughChild_InvokesOnReparentToRoot()
     {
-        // Arrange - a child node (Depth > 0) shows the "Move to top level" button.
+        // Arrange - a child node (Depth > 0) shows the "Promote" button.
         var parentId = Guid.NewGuid();
         var childId = Guid.NewGuid();
         var tasks = new List<TaskItem>
@@ -653,7 +653,7 @@ public class TaskListTests : TestContext
             .Add(x => x.OnReparentToRoot, EventCallback.Factory.Create<Guid>(this, id => reparented = id)));
 
         // Act
-        cut.Find("button[aria-label=\"Move to top level\"]").Click();
+        cut.Find("button[aria-label=\"Promote\"]").Click();
 
         // Assert
         reparented.Should().Be(childId);

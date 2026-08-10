@@ -742,7 +742,7 @@ public class TaskItemComponentTests : TestContext
     [Fact]
     public void HandleReparentToRoot_InvokesCallback()
     {
-        // Arrange - Depth > 0 renders the "Move to top level" button.
+        // Arrange - Depth > 0 renders the "Promote" button.
         var task = new TaskItem { Id = Guid.NewGuid(), Name = "Child task", CreatedAt = DateTime.UtcNow };
         Guid? moved = null;
         var cut = RenderComponent<TaskItemComponent>(p => p
@@ -751,7 +751,7 @@ public class TaskItemComponentTests : TestContext
             .Add(x => x.OnReparentToRoot, EventCallback.Factory.Create<Guid>(this, id => moved = id)));
 
         // Act
-        cut.Find("button[aria-label=\"Move to top level\"]").Click();
+        cut.Find("button[aria-label=\"Promote\"]").Click();
 
         // Assert
         moved.Should().Be(task.Id);

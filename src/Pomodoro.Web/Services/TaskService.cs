@@ -295,6 +295,17 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         MarkDirty();
     }
 
+    public async Task PromoteTaskAsync(Guid taskId)
+    {
+        var task = _appState.FindTaskById(taskId);
+        if (task == null || !task.ParentTaskId.HasValue) return;
+
+        var parent = _appState.FindTaskById(task.ParentTaskId.Value);
+        var grandparentId = parent?.ParentTaskId;
+
+        await ReparentTaskAsync(taskId, grandparentId);
+    }
+
     public async Task MaterializeSingleAsync(TaskItem occurrence)
     {
         if (!occurrence.RepeatSeriesId.HasValue || !occurrence.OccurrenceDate.HasValue) return;
