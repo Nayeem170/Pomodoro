@@ -5,7 +5,7 @@ using Pomodoro.Web.Services.Repositories;
 
 namespace Pomodoro.Web.Services;
 
-public class TaskService : ITaskService, ITimerEventSubscriber
+public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
 {
     private const string ColorPalette = "#4285F4,#0B8043,#E67C73,#9C27B0,#F59E0B,#EC407A,#AB47BC,#FF5722,#795548";
 
@@ -17,6 +17,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
     private readonly ILogger<TaskService> _logger;
     private readonly IPomodoroMetaRepository _sidecarRepo;
 
+    private Timer? _midnightTimer;
     private List<GoogleListCacheEntry> _cachedGoogleLists = [];
     private GoogleTasksSettings _googleTasksSettings = new(new Dictionary<string, ListSetting>());
     private Dictionary<string, PomodoroMeta>? _sidecarCache;
@@ -110,6 +111,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         await RestoreCachedGoogleListsFromSettingsAsync();
 
         await ActivateDueRecurringAndScheduledTasks();
+        ScheduleMidnightReactivation();
 
         if (await _googleTasksService.IsConnectedAsync())
         {
@@ -1061,6 +1063,38 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         return new DateTime(nextMonth.Year, nextMonth.Month, actualDay);
     }
 
+    private void ScheduleMidnightReactivation()
+    {
+        _midnightTimer?.Dispose();
+
+        var now = DateTime.Now;
+        var nextMidnight = now.Date.AddDays(1);
+        var delay = nextMidnight - now;
+        if (delay < TimeSpan.FromSeconds(1))
+            delay = TimeSpan.FromSeconds(1);
+
+        _midnightTimer = new Timer(
+            async _ =>
+            {
+                try
+                {
+                    await ActivateDueRecurringAndScheduledTasks();
+                    NotifyStateChanged();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Midnight recurring task reactivation failed");
+                }
+                finally
+                {
+                    ScheduleMidnightReactivation();
+                }
+            },
+            null,
+            delay,
+            Timeout.InfiniteTimeSpan);
+    }
+
     private async Task ActivateDueRecurringAndScheduledTasks()
     {
         var today = DateTime.Now.Date;
@@ -1264,5 +1298,12 @@ public class TaskService : ITaskService, ITimerEventSubscriber
         public string Id { get; set; } = Constants.Storage.DefaultSettingsId;
         public Guid? CurrentTaskId { get; set; }
         public string? CurrentListId { get; set; }
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        _midnightTimer?.Dispose();
+        _midnightTimer = null;
+        return ValueTask.CompletedTask;
     }
 }
