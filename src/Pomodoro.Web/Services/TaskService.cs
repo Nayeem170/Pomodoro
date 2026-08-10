@@ -1063,36 +1063,48 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         return new DateTime(nextMonth.Year, nextMonth.Month, actualDay);
     }
 
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private void ScheduleMidnightReactivation()
     {
         _midnightTimer?.Dispose();
 
-        var now = DateTime.Now;
-        var nextMidnight = now.Date.AddDays(1);
-        var delay = nextMidnight - now;
-        if (delay < TimeSpan.FromSeconds(1))
-            delay = TimeSpan.FromSeconds(1);
+        var delay = GetDelayUntilMidnight();
 
         _midnightTimer = new Timer(
-            async _ =>
-            {
-                try
-                {
-                    await ActivateDueRecurringAndScheduledTasks();
-                    NotifyStateChanged();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Midnight recurring task reactivation failed");
-                }
-                finally
-                {
-                    ScheduleMidnightReactivation();
-                }
-            },
+            _ => { _ = HandleMidnightTimerCallbackAsync(); },
             null,
             delay,
             Timeout.InfiniteTimeSpan);
+    }
+
+    internal static TimeSpan GetDelayUntilMidnight()
+    {
+        var now = DateTime.Now;
+        var nextMidnight = now.Date.AddDays(1);
+        var delay = nextMidnight - now;
+        return delay < TimeSpan.FromSeconds(1) ? TimeSpan.FromSeconds(1) : delay;
+    }
+
+    internal async Task HandleMidnightTimerCallbackAsync()
+    {
+        try
+        {
+            await OnMidnightElapsedAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Midnight recurring task reactivation failed");
+        }
+        finally
+        {
+            ScheduleMidnightReactivation();
+        }
+    }
+
+    internal async Task OnMidnightElapsedAsync()
+    {
+        await ActivateDueRecurringAndScheduledTasks();
+        NotifyStateChanged();
     }
 
     private async Task ActivateDueRecurringAndScheduledTasks()
