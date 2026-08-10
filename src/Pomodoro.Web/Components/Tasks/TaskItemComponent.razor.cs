@@ -39,6 +39,12 @@ public class TaskItemBase : ComponentBase
     public EventCallback<Guid> OnReparentToRoot { get; set; }
 
     [Parameter]
+    public EventCallback<Guid> OnDemote { get; set; }
+
+    [Parameter]
+    public bool CanDemote { get; set; }
+
+    [Parameter]
     public bool HasChildren { get; set; }
 
     [Parameter]
@@ -229,6 +235,11 @@ public class TaskItemBase : ComponentBase
     protected async Task HandleReparentToRoot()
     {
         await OnReparentToRoot.InvokeAsync(Item.Id);
+    }
+
+    protected async Task HandleDemote()
+    {
+        await OnDemote.InvokeAsync(Item.Id);
     }
 
     protected async Task HandleToggleCollapse()

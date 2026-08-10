@@ -758,6 +758,25 @@ public class TaskItemComponentTests : TestContext
     }
 
     [Fact]
+    public void HandleDemote_InvokesCallback()
+    {
+        // Arrange - CanDemote renders the "Demote" button.
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Second task", CreatedAt = DateTime.UtcNow };
+        Guid? demoted = null;
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.Depth, 0)
+            .Add(x => x.CanDemote, true)
+            .Add(x => x.OnDemote, EventCallback.Factory.Create<Guid>(this, id => demoted = id)));
+
+        // Act
+        cut.Find("button[aria-label=\"Demote\"]").Click();
+
+        // Assert
+        demoted.Should().Be(task.Id);
+    }
+
+    [Fact]
     public void HandleToggleCollapse_InvokesCallback()
     {
         // Arrange - HasChildren renders the row-toggle button.

@@ -659,6 +659,30 @@ public class TaskListTests : TestContext
         reparented.Should().Be(childId);
     }
 
+    [Fact]
+    public async Task HandleDemote_ThroughSecondRoot_InvokesOnDemote()
+    {
+        // Arrange - a second root (CanDemote=true) shows the "Demote" button.
+        var firstId = Guid.NewGuid();
+        var secondId = Guid.NewGuid();
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = firstId, Name = "First", CreatedAt = DateTime.UtcNow },
+            new() { Id = secondId, Name = "Second", CreatedAt = DateTime.UtcNow.AddSeconds(1) }
+        };
+        Guid? demoted = null;
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, tasks)
+            .Add(x => x.CurrentTaskId, null)
+            .Add(x => x.OnDemote, EventCallback.Factory.Create<Guid>(this, id => demoted = id)));
+
+        // Act
+        cut.Find("button[aria-label=\"Demote\"]").Click();
+
+        // Assert
+        demoted.Should().Be(secondId);
+    }
+
     #endregion
 
     #region Completed Child Stays Under Parent Tests

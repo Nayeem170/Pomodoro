@@ -39,6 +39,9 @@ public class TaskListBase : ComponentBase
     public EventCallback<Guid> OnReparentToRoot { get; set; }
 
     [Parameter]
+    public EventCallback<Guid> OnDemote { get; set; }
+
+    [Parameter]
     public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
 
     [Parameter]
@@ -83,7 +86,7 @@ public class TaskListBase : ComponentBase
     protected HashSet<Guid> _collapsed = new();
     protected HashSet<Guid> _parentIds = new();
 
-    protected sealed record TaskNode(TaskItem Task, int Depth, bool HasChildren, int ChildCount, bool IsUnderCompletedRoot);
+    protected sealed record TaskNode(TaskItem Task, int Depth, bool HasChildren, int ChildCount, bool IsUnderCompletedRoot, bool CanDemote);
 
     protected IReadOnlyList<TaskNode> AllNodes => BuildTree(Tasks);
 
@@ -194,24 +197,28 @@ public class TaskListBase : ComponentBase
         }
 
         var roots = tasks.Where(t => !HasKnownParent(t));
+        var orderedRootIds = roots.OrderBy(t => t.CreatedAt).Select(t => t.Id).ToList();
+        var rootCanDemote = new HashSet<Guid>();
+        for (int i = 1; i < orderedRootIds.Count; i++)
+            rootCanDemote.Add(orderedRootIds[i]);
 
-        void Walk(TaskItem task, int depth, bool rootIsCompleted)
+        void Walk(TaskItem task, int depth, bool rootIsCompleted, bool canDemote)
         {
             if (!visited.Add(task.Id)) return;
             var nodeRootCompleted = depth == 0 ? task.IsCompleted : rootIsCompleted;
-            result.Add(new TaskNode(task, depth, _parentIds.Contains(task.Id), ChildCountFor(task), nodeRootCompleted));
+            result.Add(new TaskNode(task, depth, _parentIds.Contains(task.Id), ChildCountFor(task), nodeRootCompleted, canDemote));
             if (_collapsed.Contains(task.Id)) return;
             if (childrenByLocalParent.TryGetValue(task.Id, out var localKids))
-                foreach (var kid in localKids)
-                    Walk(kid, depth + 1, nodeRootCompleted);
+                for (int i = 0; i < localKids.Count; i++)
+                    Walk(localKids[i], depth + 1, nodeRootCompleted, i > 0);
             if (!string.IsNullOrEmpty(task.GoogleTaskId) &&
                 childrenByGoogleParent.TryGetValue(task.GoogleTaskId, out var googleKids))
-                foreach (var kid in googleKids)
-                    Walk(kid, depth + 1, nodeRootCompleted);
+                for (int i = 0; i < googleKids.Count; i++)
+                    Walk(googleKids[i], depth + 1, nodeRootCompleted, i > 0);
         }
 
         foreach (var root in roots)
-            Walk(root, 0, false);
+            Walk(root, 0, false, rootCanDemote.Contains(root.Id));
 
         return result;
     }
@@ -295,6 +302,11 @@ public class TaskListBase : ComponentBase
     protected async Task HandleReparentToRoot(Guid taskId)
     {
         await OnReparentToRoot.InvokeAsync(taskId);
+    }
+
+    protected async Task HandleDemote(Guid taskId)
+    {
+        await OnDemote.InvokeAsync(taskId);
     }
 
     #endregion

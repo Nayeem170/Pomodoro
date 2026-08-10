@@ -190,5 +190,15 @@ public partial class IndexBase
         }, Constants.Messages.ErrorUpdatingTask);
     }
 
+    public async Task HandleDemote(Guid taskId)
+    {
+        await TryExecuteAsync(async () =>
+        {
+            await TaskService.DemoteTaskAsync(taskId);
+            await UpdateStateAsync();
+            StateHasChanged();
+        }, Constants.Messages.ErrorUpdatingTask);
+    }
+
     #endregion
 }

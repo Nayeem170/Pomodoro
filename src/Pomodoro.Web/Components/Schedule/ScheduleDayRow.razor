@@ -31,6 +31,7 @@
                         <TaskItemComponent Item="item.Task"
                                            Depth="0"
                                            HasChildren="hasChildren"
+                                           CanDemote="CanDemoteFor(item.Task)"
                                            IsCollapsed="_collapsedIds.Contains(item.Task.Id)"
                                            IsSelected="false"
                                            ContextDate="Day.Date"
@@ -42,6 +43,7 @@
                                            OnEdit="OnEditTask"
                                            OnAddSubtask="OnAddSubtask"
                                            OnReparentToRoot="OnReparentToRoot"
+                                           OnDemote="OnDemote"
                                            OnToggleCollapse="ToggleCollapse" />
                     }
                     else
@@ -55,6 +57,7 @@
                         <TaskItemComponent Item="descItem"
                                            Depth="depth"
                                            HasChildren="HasAnyChildren(descItem.Id, descItem.GoogleTaskId)"
+                                           CanDemote="CanDemoteFor(descItem)"
                                            IsCollapsed="_collapsedIds.Contains(descItem.Id)"
                                            IsSelected="false"
                                            ContextDate="Day.Date"
@@ -66,6 +69,7 @@
                                            OnEdit="OnEditTask"
                                            OnAddSubtask="OnAddSubtask"
                                            OnReparentToRoot="OnReparentToRoot"
+                                           OnDemote="OnDemote"
                                            OnToggleCollapse="ToggleCollapse" />
                     }
                 </li>
@@ -95,6 +99,9 @@
 
     [Microsoft.AspNetCore.Components.Parameter]
     public Microsoft.AspNetCore.Components.EventCallback<Guid> OnReparentToRoot { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<Guid> OnDemote { get; set; }
 
     [Microsoft.AspNetCore.Components.Parameter]
     public IReadOnlyList<TaskItem>? AllTasks { get; set; }
@@ -144,6 +151,12 @@
         (taskId.HasValue && _childrenByParent.ContainsKey(taskId.Value)) ||
         (!string.IsNullOrEmpty(googleTaskId) &&
          _allSubtasks.Any(s => s.GoogleParentTaskId == googleTaskId));
+
+    private bool CanDemoteFor(TaskItem task)
+    {
+        var all = AllTasks ?? [];
+        return all.Any(t => t.ParentTaskId == task.ParentTaskId && t.Id != task.Id && t.CreatedAt < task.CreatedAt);
+    }
 
     private List<(TaskItem Item, int Depth)> GetDescendantTree(Guid rootId)
     {

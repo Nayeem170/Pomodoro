@@ -235,6 +235,22 @@ public class IndexScheduleCoverageTests : TestHelper
     }
 
     [Fact]
+    public async Task HandleDemote_InvokesTaskServiceDemote()
+    {
+        // Arrange
+        var taskId = Guid.NewGuid();
+        TaskServiceMock.Setup(x => x.DemoteTaskAsync(It.IsAny<Guid>())).Returns(Task.CompletedTask);
+        TaskServiceMock.Setup(x => x.GetTasksForListAsync(It.IsAny<string>())).ReturnsAsync(new List<TaskItem>());
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        // Act
+        await cut.Instance.HandleDemote(taskId);
+
+        // Assert
+        TaskServiceMock.Verify(x => x.DemoteTaskAsync(taskId), Times.Once);
+    }
+
+    [Fact]
     public async Task HandleAddSubtask_WhenServiceThrows_SetsErrorMessage()
     {
         // Arrange - covers TryExecuteAsync catch path.

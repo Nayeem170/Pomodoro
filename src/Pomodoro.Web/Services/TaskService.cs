@@ -306,6 +306,47 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         await ReparentTaskAsync(taskId, grandparentId);
     }
 
+    public async Task DemoteTaskAsync(Guid taskId)
+    {
+        var task = _appState.FindTaskById(taskId);
+        if (task == null) return;
+
+        var previousSibling = _appState.Tasks
+            .Where(t => t.ParentTaskId == task.ParentTaskId && t.Id != taskId && t.CreatedAt < task.CreatedAt)
+            .MaxBy(t => t.CreatedAt);
+
+        if (previousSibling == null) return;
+
+        var siblingDepth = GetTaskDepth(previousSibling.Id);
+        var movedSubtreeHeight = GetMaxSubtreeDepth(taskId);
+
+        if (siblingDepth + 1 + movedSubtreeHeight > Constants.Tasks.MaxSubtaskDepth) return;
+
+        await ReparentTaskAsync(taskId, previousSibling.Id);
+    }
+
+    private int GetTaskDepth(Guid taskId)
+    {
+        var depth = 0;
+        var currentId = taskId;
+        var seen = new HashSet<Guid>();
+        while (seen.Add(currentId))
+        {
+            var current = _appState.FindTaskById(currentId);
+            if (current == null || !current.ParentTaskId.HasValue) break;
+            currentId = current.ParentTaskId.Value;
+            depth++;
+        }
+        return depth;
+    }
+
+    private int GetMaxSubtreeDepth(Guid taskId)
+    {
+        var children = _appState.Tasks.Where(t => t.ParentTaskId == taskId).ToList();
+        if (children.Count == 0) return 0;
+        return 1 + children.Max(c => GetMaxSubtreeDepth(c.Id));
+    }
+
     public async Task MaterializeSingleAsync(TaskItem occurrence)
     {
         if (!occurrence.RepeatSeriesId.HasValue || !occurrence.OccurrenceDate.HasValue) return;
