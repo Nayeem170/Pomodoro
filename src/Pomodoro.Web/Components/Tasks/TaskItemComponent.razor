@@ -26,7 +26,22 @@
     {
         <button class="task-checkbox" @onclick="HandleComplete" @onclick:stopPropagation="true" aria-label="Complete"></button>
     }
-    <span class="task-text @(Item.IsCompleted ? "completed" : "")">@Item.Name</span>
+    @if (IsInlineEditing)
+    {
+        <input class="task-text-input"
+               value="@InlineEditName"
+               @oninput="@((ChangeEventArgs e) => InlineEditName = e.Value?.ToString() ?? string.Empty)"
+               @onblur="SaveInlineEdit"
+               @onkeydown="HandleInlineEditKey"
+               @onclick:stopPropagation="true"
+               @ondblclick:stopPropagation="true"
+               aria-label="Edit task name"
+               @ref="_inlineEditInput" />
+    }
+    else
+    {
+        <span class="task-text @(Item.IsCompleted ? "completed" : "")" @ondblclick="StartInlineEdit">@Item.Name</span>
+    }
     <div class="task-secondary">
         @if (Item.IsRecurring)
         {

@@ -65,11 +65,19 @@ public class TaskItemBase : ComponentBase
 
     protected bool IsEditing { get; set; }
 
+    protected bool IsInlineEditing { get; set; }
+
     protected bool IsAddingSubtask { get; set; }
 
     protected bool IsConfirmingDelete { get; set; }
 
     protected string NewSubtaskName { get; set; } = string.Empty;
+
+    protected string InlineEditName { get; set; } = string.Empty;
+
+    protected ElementReference _inlineEditInput;
+
+    private bool _shouldFocusInlineEdit;
 
     protected bool CanAddSubtask => Depth < Constants.Tasks.MaxSubtaskDepth;
 
@@ -184,7 +192,48 @@ public class TaskItemBase : ComponentBase
 
     protected void HandleEdit()
     {
-        IsEditing = !IsEditing;
+        if (Depth == 0)
+        {
+            IsEditing = !IsEditing;
+        }
+        else
+        {
+            StartInlineEdit();
+        }
+    }
+
+    protected void StartInlineEdit()
+    {
+        InlineEditName = Item.Name;
+        IsInlineEditing = true;
+        _shouldFocusInlineEdit = true;
+    }
+
+    protected async Task SaveInlineEdit()
+    {
+        if (!IsInlineEditing) return;
+        var trimmed = (InlineEditName ?? string.Empty).Trim();
+        if (string.IsNullOrEmpty(trimmed))
+        {
+            CancelInlineEdit();
+            return;
+        }
+        IsInlineEditing = false;
+        Item.Name = trimmed;
+        await OnEdit.InvokeAsync(Item);
+    }
+
+    protected void CancelInlineEdit()
+    {
+        IsInlineEditing = false;
+    }
+
+    protected async Task HandleInlineEditKey(KeyboardEventArgs e)
+    {
+        if (e.Key == Constants.Keys.Enter)
+            await SaveInlineEdit();
+        else if (e.Key == Constants.Keys.Escape)
+            CancelInlineEdit();
     }
 
     protected async Task HandleEditSave(TaskItem updatedTask)
@@ -245,6 +294,15 @@ public class TaskItemBase : ComponentBase
     protected async Task HandleToggleCollapse()
     {
         await OnToggleCollapse.InvokeAsync(Item.Id);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_shouldFocusInlineEdit)
+        {
+            _shouldFocusInlineEdit = false;
+            try { await _inlineEditInput.FocusAsync(); } catch { }
+        }
     }
 
     #endregion
