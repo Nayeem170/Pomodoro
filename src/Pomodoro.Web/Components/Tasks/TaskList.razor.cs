@@ -56,12 +56,6 @@ public class TaskListBase : ComponentBase
 
     protected string NewTaskName { get; set; } = string.Empty;
 
-    protected ElementReference _nameInputRef;
-
-    protected ElementReference _detailsNameInputRef;
-
-    private bool _shouldFocusName;
-
     protected bool _isMoreExpanded;
 
     protected RepeatType _newTaskRepeatType = RepeatType.None;
@@ -117,16 +111,6 @@ public class TaskListBase : ComponentBase
                 .Where(t => googleIdToLocalId.ContainsKey(t.GoogleParentTaskId!))
                 .Select(t => googleIdToLocalId[t.GoogleParentTaskId!]))
             .ToHashSet();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (_shouldFocusName)
-        {
-            _shouldFocusName = false;
-            var target = _isMoreExpanded ? _detailsNameInputRef : _nameInputRef;
-            try { await target.FocusAsync(); } catch { }
-        }
     }
 
     protected string? GoogleListTitleFor(TaskItem task) =>
@@ -272,7 +256,6 @@ public class TaskListBase : ComponentBase
             _newTaskPausedDate = null;
             _newTaskScheduledDate = null;
             _newTaskListId = null;
-            _shouldFocusName = true;
         }
     }
 

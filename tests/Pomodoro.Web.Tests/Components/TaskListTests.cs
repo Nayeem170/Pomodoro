@@ -278,47 +278,6 @@ public class TaskListTests : TestContext
     }
 
     [Fact]
-    public void AddTask_ViaAddButton_ReturnsFocusToNameInput()
-    {
-        var cut = RenderComponent<TaskList>(parameters => parameters
-            .Add(p => p.Tasks, new List<TaskItem>())
-            .Add(p => p.CurrentTaskId, null)
-            .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, _ => { })));
-
-        var input = cut.Find("input.task-input");
-        input.Input("New Task");
-        cut.Find("button.btn-add-text").Click();
-
-        cut.Find("input.task-input").GetAttribute("value").Should().BeNullOrEmpty();
-        GetShouldFocusName(cut.Instance).Should().BeFalse(
-            "OnAfterRenderAsync must have focused the name input after Add so keystrokes do not trigger shortcuts");
-    }
-
-    [Fact]
-    public void AddTask_ViaCreateButton_ReturnsFocusToDetailsInput()
-    {
-        var cut = RenderComponent<TaskList>(parameters => parameters
-            .Add(p => p.Tasks, new List<TaskItem>())
-            .Add(p => p.CurrentTaskId, null)
-            .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, _ => { })));
-
-        cut.Find("button.btn-more").Click();
-        cut.Find(".add-task-section input.tep-input-name").Input("New Task");
-        cut.Find(".add-task-section button.tep-save-btn").Click();
-
-        GetShouldFocusName(cut.Instance).Should().BeFalse(
-            "OnAfterRenderAsync must have focused the details name input after Create so keystrokes do not trigger shortcuts");
-    }
-
-    private static bool GetShouldFocusName(TaskListBase instance)
-    {
-        var field = typeof(TaskListBase).GetField(
-            "_shouldFocusName",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        return (bool)(field?.GetValue(instance) ?? false);
-    }
-
-    [Fact]
     public void TaskList_EnterKey_InvokesOnTaskAddCallback()
     {
         var addedTaskName = string.Empty;
