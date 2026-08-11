@@ -172,6 +172,16 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
     private async Task StartSessionAsync(SessionType sessionType, Guid? taskId = null)
     {
+        // If a session is in progress (e.g. a Pomodoro is running and the user
+        // starts a break via the keyboard shortcut which bypasses
+        // SwitchSessionTypeAsync), record the elapsed time as a partial session
+        // and stop its timer before replacing it. No-op on a fresh start.
+        if (_appState.CurrentSession is { WasStarted: true })
+        {
+            await TryRecordPartialSessionAsync();
+            await _jsTimerInterop.StopAsync();
+        }
+
         var durationSeconds = _appState.Settings.GetDurationSeconds(sessionType);
 
         _appState.CurrentSession = new TimerSession

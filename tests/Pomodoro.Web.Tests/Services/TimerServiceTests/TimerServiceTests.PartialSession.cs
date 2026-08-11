@@ -380,5 +380,63 @@ public partial class TimerServiceTests
             capturedArgs.DurationMinutes.Should().Be(15);
             capturedArgs.SessionType.Should().Be(SessionType.Pomodoro);
         }
+
+        [Fact]
+        public async Task StartShortBreakAsync_WhilePomodoroRunning_RecordsPomodoroPartial()
+        {
+            // Arrange - a Pomodoro is running (keyboard shortcut path bypasses
+            // SwitchSessionTypeAsync, going straight to StartShortBreakAsync)
+            AppState.Settings.RecordPartialSessions = true;
+            SetupCurrentSession(isRunning: true, wasStarted: true, remainingSeconds: 900);
+            var service = CreateService();
+            TimerCompletedEventArgs? capturedArgs = null;
+            service.OnSessionInterrupted += args => { capturedArgs = args; return Task.CompletedTask; };
+
+            // Act
+            await service.StartShortBreakAsync();
+
+            // Assert
+            capturedArgs.Should().NotBeNull(
+                "starting a break while a Pomodoro is running must record the Pomodoro as a partial session");
+            capturedArgs!.WasCompleted.Should().BeFalse();
+            capturedArgs.DurationMinutes.Should().Be(10);
+            capturedArgs.SessionType.Should().Be(SessionType.Pomodoro);
+        }
+
+        [Fact]
+        public async Task StartLongBreakAsync_WhilePomodoroRunning_RecordsPomodoroPartial()
+        {
+            // Arrange
+            AppState.Settings.RecordPartialSessions = true;
+            SetupCurrentSession(isRunning: true, wasStarted: true, remainingSeconds: 600);
+            var service = CreateService();
+            TimerCompletedEventArgs? capturedArgs = null;
+            service.OnSessionInterrupted += args => { capturedArgs = args; return Task.CompletedTask; };
+
+            // Act
+            await service.StartLongBreakAsync();
+
+            // Assert
+            capturedArgs.Should().NotBeNull();
+            capturedArgs!.DurationMinutes.Should().Be(15);
+            capturedArgs.SessionType.Should().Be(SessionType.Pomodoro);
+        }
+
+        [Fact]
+        public async Task StartSessionAsync_WhenNoSessionInProgress_DoesNotRecord()
+        {
+            // Arrange - no prior session (fresh start) must not fire a phantom partial
+            AppState.Settings.RecordPartialSessions = true;
+            ClearCurrentSession();
+            var service = CreateService();
+            TimerCompletedEventArgs? capturedArgs = null;
+            service.OnSessionInterrupted += args => { capturedArgs = args; return Task.CompletedTask; };
+
+            // Act
+            await service.StartShortBreakAsync();
+
+            // Assert
+            capturedArgs.Should().BeNull();
+        }
     }
 }
