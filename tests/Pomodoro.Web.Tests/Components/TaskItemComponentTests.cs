@@ -867,5 +867,53 @@ public class TaskItemComponentTests : TestContext
     }
 
     #endregion
+
+    #region Follow-parent toggle and demote cancel wiring
+
+    [Fact]
+    public async Task FollowParentButton_InvokesToggleCallback()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Subtask",
+            IsCompleted = false
+        };
+        Guid? capturedId = null;
+
+        var cut = RenderComponent<TaskItemComponent>(parameters => parameters
+            .Add(p => p.Item, task)
+            .Add(p => p.Depth, 1)
+            .Add(p => p.OnToggleFollowParent, EventCallback.Factory.Create<Guid>(this, id => capturedId = id)));
+
+        await cut.InvokeAsync(() => cut.Find(".follow-parent").Click());
+
+        capturedId.Should().Be(task.Id);
+    }
+
+    [Fact]
+    public async Task CancelDemote_ClosesDemoteMenu()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Task",
+            IsCompleted = false
+        };
+        var sibling = new TaskItem { Id = Guid.NewGuid(), Name = "Sibling" };
+
+        var cut = RenderComponent<TaskItemComponent>(parameters => parameters
+            .Add(p => p.Item, task)
+            .Add(p => p.Siblings, new List<TaskItem> { sibling }));
+
+        await cut.InvokeAsync(() => cut.Find("button[title='Demote']").Click());
+        cut.FindAll(".demote-pick-cancel").Should().HaveCount(1);
+
+        await cut.InvokeAsync(() => cut.Find(".demote-pick-cancel").Click());
+
+        cut.FindAll(".demote-pick-cancel").Should().BeEmpty();
+    }
+
+    #endregion
 }
 

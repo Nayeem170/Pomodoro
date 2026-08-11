@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Pomodoro.Web.Models;
 using Xunit;
@@ -433,6 +434,22 @@ public partial class TimerServiceTests
 
             // Assert
             capturedArgs.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task TryRecordPartialSessionAsync_WhenSubscriberThrows_LogsAndDoesNotPropagate()
+        {
+            AppState.Settings.RecordPartialSessions = true;
+            SetupCurrentSession(isRunning: false, wasStarted: true, remainingSeconds: 900);
+            var service = CreateService();
+            service.OnSessionInterrupted += _ => throw new InvalidOperationException("subscriber failed");
+
+            var result = await service.TryRecordPartialSessionAsync();
+
+            result.Should().BeTrue("the partial is still recorded when a subscriber throws");
+            MockLogger.Verify(
+                x => x.Log(LogLevel.Error, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, _) => v != null), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.AtLeastOnce);
         }
     }
 }
