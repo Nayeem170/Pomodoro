@@ -318,7 +318,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     public async Task<bool> TryRecordPartialSessionAsync()
     {
         var session = _appState.CurrentSession;
-        if (session == null || !session.IsRunning || !session.WasStarted)
+        if (session == null || !session.WasStarted)
             return false;
 
         if (!_appState.Settings.RecordPartialSessions)

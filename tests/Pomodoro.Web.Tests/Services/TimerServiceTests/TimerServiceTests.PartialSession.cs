@@ -26,18 +26,24 @@ public partial class TimerServiceTests
         }
 
         [Fact]
-        public async Task TryRecordPartialSessionAsync_WhenSessionNotRunning_ReturnsFalse()
+        public async Task TryRecordPartialSessionAsync_WhenPausedWithElapsed_RecordsPartial()
         {
-            // Arrange
+            // Arrange - session was started then paused (IsRunning=false, WasStarted=true)
             AppState.Settings.RecordPartialSessions = true;
             SetupCurrentSession(isRunning: false, wasStarted: true, remainingSeconds: 900);
             var service = CreateService();
+            TimerCompletedEventArgs? capturedArgs = null;
+            service.OnSessionInterrupted += args => { capturedArgs = args; return Task.CompletedTask; };
 
             // Act
             var result = await service.TryRecordPartialSessionAsync();
 
             // Assert
-            result.Should().BeFalse();
+            result.Should().BeTrue(
+                "a paused session with elapsed time must be recorded as a partial session");
+            capturedArgs.Should().NotBeNull();
+            capturedArgs!.WasCompleted.Should().BeFalse();
+            capturedArgs.DurationMinutes.Should().Be(10);
         }
 
         [Fact]
@@ -330,6 +336,49 @@ public partial class TimerServiceTests
 
             // Assert
             capturedArgs.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task ResetAsync_WhenPaused_RecordsPartialBeforeReset()
+        {
+            // Arrange - user started timer, paused, then reset
+            AppState.Settings.RecordPartialSessions = true;
+            SetupCurrentSession(isRunning: false, wasStarted: true, remainingSeconds: 600);
+            var service = CreateService();
+            TimerCompletedEventArgs? capturedArgs = null;
+            service.OnSessionInterrupted += args => { capturedArgs = args; return Task.CompletedTask; };
+
+            // Act
+            await service.ResetAsync();
+
+            // Assert
+            capturedArgs.Should().NotBeNull(
+                "a paused-then-reset session must still log the partial elapsed time");
+            capturedArgs!.WasCompleted.Should().BeFalse();
+            capturedArgs.DurationMinutes.Should().Be(15);
+            AppState.CurrentSession!.IsRunning.Should().BeFalse();
+            AppState.CurrentSession.WasStarted.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task SwitchSessionTypeAsync_WhenPaused_RecordsPartialBeforeSwitch()
+        {
+            // Arrange - user started timer, paused, then switched session type
+            AppState.Settings.RecordPartialSessions = true;
+            SetupCurrentSession(isRunning: false, wasStarted: true, remainingSeconds: 600);
+            var service = CreateService();
+            TimerCompletedEventArgs? capturedArgs = null;
+            service.OnSessionInterrupted += args => { capturedArgs = args; return Task.CompletedTask; };
+
+            // Act
+            await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
+
+            // Assert
+            capturedArgs.Should().NotBeNull(
+                "a paused-then-switch session must still log the partial elapsed time");
+            capturedArgs!.WasCompleted.Should().BeFalse();
+            capturedArgs.DurationMinutes.Should().Be(15);
+            capturedArgs.SessionType.Should().Be(SessionType.Pomodoro);
         }
     }
 }
