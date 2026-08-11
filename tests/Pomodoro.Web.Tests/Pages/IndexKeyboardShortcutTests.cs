@@ -124,7 +124,7 @@ public class IndexKeyboardShortcutTests : TestHelper
 
         // Assert - Verify reset shortcut is registered
         KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut(
-            "r",
+            "ctrl+r",
             It.IsAny<Action>(),
             It.IsAny<string>()), Times.Once,
             "Reset shortcut should be registered");
@@ -220,7 +220,7 @@ public class IndexKeyboardShortcutTests : TestHelper
 
         // Assert
         registeredKeys.Should().Contain("space", "Play/Pause shortcut should be registered");
-        registeredKeys.Should().Contain("r", "Reset shortcut should be registered");
+        registeredKeys.Should().Contain("ctrl+r", "Reset shortcut should be registered");
         registeredKeys.Should().Contain("ctrl+p", "Pomodoro shortcut should be registered");
         registeredKeys.Should().Contain("ctrl+s", "Short break shortcut should be registered");
         registeredKeys.Should().Contain("ctrl+l", "Long break shortcut should be registered");

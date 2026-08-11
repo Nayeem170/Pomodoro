@@ -22,7 +22,7 @@ test.describe('Keyboard Shortcuts', () => {
   test('should display timer controls shortcuts in help modal', async () => {
     await pomodoroPage.openKeyboardHelp();
     await expect(pomodoroPage.page.locator('.shortcut-item kbd').filter({ hasText: 'Space' })).toBeVisible();
-    await expect(pomodoroPage.page.locator('.shortcut-item kbd').filter({ hasText: 'R' })).toBeVisible();
+    await expect(pomodoroPage.page.locator('.shortcut-item kbd').filter({ hasText: 'Ctrl+R' })).toBeVisible();
     await pomodoroPage.closeKeyboardHelp();
   });
 
@@ -71,8 +71,8 @@ test.describe('Keyboard Shortcuts', () => {
     await expect(pomodoroPage.page.locator('button[aria-label="Pause timer"]')).toBeVisible({ timeout: 5000 });
   });
 
-  test('should reset timer with R key', async () => {
-    await pomodoroPage.page.keyboard.press('r');
+  test('should reset timer with Ctrl+R', async () => {
+    await pomodoroPage.page.keyboard.press('Control+r');
     await expect(pomodoroPage.page.locator('button[aria-label="Start timer"]')).toBeVisible({ timeout: 5000 });
   });
 

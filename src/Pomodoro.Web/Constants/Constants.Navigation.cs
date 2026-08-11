@@ -43,7 +43,7 @@ public static partial class Constants
         public const string PlayPauseKey = "Space";
 
         /// <summary>Key for resetting timer</summary>
-        public const string ResetKey = "R";
+        public const string ResetKey = "Ctrl+R";
 
         /// <summary>Key for switching to Pomodoro session</summary>
         public const string PomodoroKey = "Ctrl+P";

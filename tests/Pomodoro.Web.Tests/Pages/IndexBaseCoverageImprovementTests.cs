@@ -844,7 +844,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             var actions = CaptureAllShortcuts(out var cut);
 
-            await cut.InvokeAsync(() => actions["r"].Invoke());
+            await cut.InvokeAsync(() => actions["ctrl+r"].Invoke());
             await Task.Delay(100);
             TimerServiceMock.Verify(x => x.ResetAsync(), Times.Once);
         }

@@ -185,7 +185,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                 );
             }, Constants.KeyboardShortcuts.PlayPauseDescription);
 
-            KeyboardShortcutService.RegisterShortcut("r", () =>
+            KeyboardShortcutService.RegisterShortcut("ctrl+r", () =>
             {
                 SafeTaskRunner.RunAndForget(
                     () => TimerService.ResetAsync(),
@@ -464,7 +464,7 @@ public partial class IndexBase : ComponentBase, IDisposable
         if (KeyboardShortcutService != null)
         {
             KeyboardShortcutService.UnregisterShortcut("space");
-            KeyboardShortcutService.UnregisterShortcut("r");
+            KeyboardShortcutService.UnregisterShortcut("ctrl+r");
             KeyboardShortcutService.UnregisterShortcut("ctrl+p");
             KeyboardShortcutService.UnregisterShortcut("ctrl+s");
             KeyboardShortcutService.UnregisterShortcut("ctrl+l");
