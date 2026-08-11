@@ -772,7 +772,7 @@ public class TaskItemComponentTests : TestContext
 
         // Act - open dropdown then select sibling.
         cut.Find("button[aria-label=\"Demote\"]").Click();
-        cut.Find(".demote-option").Click();
+        cut.Find(".demote-pick").Click();
 
         // Assert
         captured.Should().NotBeNull();

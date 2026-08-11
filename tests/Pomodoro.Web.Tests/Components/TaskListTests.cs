@@ -682,7 +682,7 @@ public class TaskListTests : TestContext
         var demoteButtons = cut.FindAll("button[aria-label=\"Demote\"]");
         demoteButtons.Should().HaveCountGreaterThan(0);
         demoteButtons[2].Click();
-        cut.Find(".demote-option").Click();
+        cut.Find(".demote-pick").Click();
 
         // Assert
         captured.Should().NotBeNull();
