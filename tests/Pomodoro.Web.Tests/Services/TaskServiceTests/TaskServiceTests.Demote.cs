@@ -202,4 +202,34 @@ public partial class TaskServiceTests
         bChildResult.ParentTaskId.Should().Be(b.Id,
             "B's own children must stay under B");
     }
+
+    [Fact]
+    public async Task DemoteTaskAsync_ClearsRepeatAndScheduledDate()
+    {
+        var a = CreateSampleTask(name: "A");
+        a.CreatedAt = new DateTime(2026, 1, 1);
+        var b = CreateSampleTask(name: "B");
+        b.CreatedAt = new DateTime(2026, 1, 2);
+        b.Repeat = new RepeatRule { Type = RepeatType.Daily };
+        b.ScheduledDate = new DateTime(2026, 1, 15);
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync())
+            .ReturnsAsync(new List<TaskItem> { a, b });
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+        MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
+            .ReturnsAsync(true);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        await service.DemoteTaskAsync(b.Id, a.Id);
+
+        var bResult = service.AllTasks.First(t => t.Name == "B");
+        bResult.ParentTaskId.Should().Be(a.Id);
+        bResult.Repeat.Should().BeNull(
+            "demoted subtasks must not own repeat rules (subtask invariant)");
+        bResult.ScheduledDate.Should().BeNull(
+            "demoted subtasks must not own schedule dates (subtask invariant)");
+    }
 }

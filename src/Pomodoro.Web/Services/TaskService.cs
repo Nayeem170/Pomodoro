@@ -322,6 +322,12 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
 
         if (targetDepth + 1 + movedSubtreeHeight > Constants.Tasks.MaxSubtaskDepth) return;
 
+        _appState.UpdateTask(taskId, t =>
+        {
+            t.Repeat = null;
+            t.ScheduledDate = null;
+        });
+
         await ReparentTaskAsync(taskId, targetSiblingId);
     }
 
