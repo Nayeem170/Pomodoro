@@ -39,7 +39,10 @@ public class TaskItemBase : ComponentBase
     public EventCallback<Guid> OnReparentToRoot { get; set; }
 
     [Parameter]
-    public EventCallback<Guid> OnDemote { get; set; }
+    public EventCallback<DemoteRequest> OnDemote { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<TaskItem> Siblings { get; set; } = [];
 
     [Parameter]
     public bool HasChildren { get; set; }
@@ -68,6 +71,8 @@ public class TaskItemBase : ComponentBase
 
     protected bool IsConfirmingDelete { get; set; }
 
+    protected bool IsDemoteMenuOpen { get; set; }
+
     protected string NewSubtaskName { get; set; } = string.Empty;
 
     protected string InlineEditName { get; set; } = string.Empty;
@@ -80,7 +85,7 @@ public class TaskItemBase : ComponentBase
 
     protected bool CanMoveToRoot => Depth > 0;
 
-    protected bool CanDemote => HasChildren;
+    protected bool CanDemote => Siblings is { Count: > 0 };
 
     [Parameter]
     public string? GoogleListTitle { get; set; }
@@ -285,9 +290,20 @@ public class TaskItemBase : ComponentBase
         await OnReparentToRoot.InvokeAsync(Item.Id);
     }
 
-    protected async Task HandleDemote()
+    protected void HandleDemote()
     {
-        await OnDemote.InvokeAsync(Item.Id);
+        IsDemoteMenuOpen = !IsDemoteMenuOpen;
+    }
+
+    protected async Task ConfirmDemote(Guid siblingId)
+    {
+        IsDemoteMenuOpen = false;
+        await OnDemote.InvokeAsync(new DemoteRequest(Item.Id, siblingId));
+    }
+
+    protected void CancelDemote()
+    {
+        IsDemoteMenuOpen = false;
     }
 
     protected async Task HandleToggleCollapse()

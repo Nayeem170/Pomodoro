@@ -306,23 +306,23 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         await ReparentTaskAsync(taskId, grandparentId);
     }
 
-    public async Task DemoteTaskAsync(Guid taskId)
+    public async Task DemoteTaskAsync(Guid taskId, Guid targetSiblingId)
     {
+        if (taskId == targetSiblingId) return;
+
         var task = _appState.FindTaskById(taskId);
         if (task == null) return;
 
-        var previousSibling = _appState.Tasks
-            .Where(t => t.ParentTaskId == task.ParentTaskId && t.Id != taskId && t.CreatedAt < task.CreatedAt)
-            .MaxBy(t => t.CreatedAt);
+        var target = _appState.FindTaskById(targetSiblingId);
+        if (target == null) return;
+        if (target.ParentTaskId != task.ParentTaskId) return;
 
-        if (previousSibling == null) return;
-
-        var siblingDepth = GetTaskDepth(previousSibling.Id);
+        var targetDepth = GetTaskDepth(targetSiblingId);
         var movedSubtreeHeight = GetMaxSubtreeDepth(taskId);
 
-        if (siblingDepth + 1 + movedSubtreeHeight > Constants.Tasks.MaxSubtaskDepth) return;
+        if (targetDepth + 1 + movedSubtreeHeight > Constants.Tasks.MaxSubtaskDepth) return;
 
-        await ReparentTaskAsync(taskId, previousSibling.Id);
+        await ReparentTaskAsync(taskId, targetSiblingId);
     }
 
     private int GetTaskDepth(Guid taskId)

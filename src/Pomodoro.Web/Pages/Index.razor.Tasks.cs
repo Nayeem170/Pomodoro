@@ -190,11 +190,11 @@ public partial class IndexBase
         }, Constants.Messages.ErrorUpdatingTask);
     }
 
-    public async Task HandleDemote(Guid taskId)
+    public async Task HandleDemote(DemoteRequest request)
     {
         await TryExecuteAsync(async () =>
         {
-            await TaskService.DemoteTaskAsync(taskId);
+            await TaskService.DemoteTaskAsync(request.TaskId, request.TargetSiblingId);
             await UpdateStateAsync();
             StateHasChanged();
         }, Constants.Messages.ErrorUpdatingTask);

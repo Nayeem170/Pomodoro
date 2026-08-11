@@ -760,20 +760,24 @@ public class TaskItemComponentTests : TestContext
     [Fact]
     public void HandleDemote_InvokesCallback()
     {
-        // Arrange - HasChildren renders the "Demote" button.
-        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Parent task", CreatedAt = DateTime.UtcNow };
-        Guid? demoted = null;
+        // Arrange - task with siblings renders the "Demote" button.
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Task A", CreatedAt = DateTime.UtcNow };
+        var sibling = new TaskItem { Id = Guid.NewGuid(), Name = "Task B", CreatedAt = DateTime.UtcNow.AddSeconds(1) };
+        DemoteRequest? captured = null;
         var cut = RenderComponent<TaskItemComponent>(p => p
             .Add(x => x.Item, task)
             .Add(x => x.Depth, 0)
-            .Add(x => x.HasChildren, true)
-            .Add(x => x.OnDemote, EventCallback.Factory.Create<Guid>(this, id => demoted = id)));
+            .Add(x => x.Siblings, new List<TaskItem> { sibling })
+            .Add(x => x.OnDemote, EventCallback.Factory.Create<DemoteRequest>(this, r => captured = r)));
 
-        // Act
+        // Act - open dropdown then select sibling.
         cut.Find("button[aria-label=\"Demote\"]").Click();
+        cut.Find(".demote-option").Click();
 
         // Assert
-        demoted.Should().Be(task.Id);
+        captured.Should().NotBeNull();
+        captured!.TaskId.Should().Be(task.Id);
+        captured.TargetSiblingId.Should().Be(sibling.Id);
     }
 
     [Fact]

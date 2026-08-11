@@ -42,7 +42,7 @@ public interface ITaskService
 
     Task PromoteTaskAsync(Guid taskId);
 
-    Task DemoteTaskAsync(Guid taskId);
+    Task DemoteTaskAsync(Guid taskId, Guid targetSiblingId);
 
     /// <summary>Persists a virtual repeat occurrence as a real task so it can be edited independently of its series.</summary>
     Task MaterializeSingleAsync(TaskItem occurrence);

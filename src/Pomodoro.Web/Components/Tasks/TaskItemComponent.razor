@@ -80,14 +80,27 @@
                 }
                 @if (CanDemote)
                 {
-                    <button class="task-action-btn" @onclick="HandleDemote" @onclick:stopPropagation="true" title="Demote" aria-label="Demote">
-                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 1v10M4 6h6M7 3L10 6L7 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </button>
+                    <div class="demote-wrap">
+                        <button class="task-action-btn" @onclick="HandleDemote" @onclick:stopPropagation="true" title="Demote" aria-label="Demote">
+                            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        @if (IsDemoteMenuOpen)
+                        {
+                            <div class="demote-menu">
+                                @foreach (var sibling in Siblings)
+                                {
+                                    var sibId = sibling.Id;
+                                    <button class="demote-option" @onclick="() => ConfirmDemote(sibId)" @onclick:stopPropagation="true" title="Demote under @sibling.Name">@sibling.Name</button>
+                                }
+                                <button class="demote-cancel" @onclick="CancelDemote" @onclick:stopPropagation="true">Cancel</button>
+                            </div>
+                        }
+                    </div>
                 }
                 @if (CanMoveToRoot)
                 {
                     <button class="task-action-btn" @onclick="HandleReparentToRoot" @onclick:stopPropagation="true" title="Promote" aria-label="Promote">
-                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 1v10M10 6H4M7 3L4 6l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
                 }
                 <button class="task-action-btn" @onclick="HandleEdit" @onclick:stopPropagation="true" title="Edit" aria-label="Edit task">

@@ -660,27 +660,33 @@ public class TaskListTests : TestContext
     }
 
     [Fact]
-    public async Task HandleDemote_ThroughParentTask_InvokesOnDemote()
+    public async Task HandleDemote_ThroughSiblingSelection_InvokesOnDemote()
     {
-        // Arrange - a task with children (HasChildren=true) shows the "Demote" button.
-        var parentId = Guid.NewGuid();
-        var childId = Guid.NewGuid();
+        // Arrange - a task with siblings shows the "Demote" button and dropdown.
+        var firstId = Guid.NewGuid();
+        var secondId = Guid.NewGuid();
+        var thirdId = Guid.NewGuid();
         var tasks = new List<TaskItem>
         {
-            new() { Id = parentId, Name = "Parent", CreatedAt = DateTime.UtcNow },
-            new() { Id = childId, Name = "Child", CreatedAt = DateTime.UtcNow.AddSeconds(1), ParentTaskId = parentId }
+            new() { Id = firstId, Name = "First", CreatedAt = DateTime.UtcNow },
+            new() { Id = secondId, Name = "Second", CreatedAt = DateTime.UtcNow.AddSeconds(1) },
+            new() { Id = thirdId, Name = "Third", CreatedAt = DateTime.UtcNow.AddSeconds(2) }
         };
-        Guid? demoted = null;
+        DemoteRequest? captured = null;
         var cut = RenderComponent<TaskList>(p => p
             .Add(x => x.Tasks, tasks)
             .Add(x => x.CurrentTaskId, null)
-            .Add(x => x.OnDemote, EventCallback.Factory.Create<Guid>(this, id => demoted = id)));
+            .Add(x => x.OnDemote, EventCallback.Factory.Create<DemoteRequest>(this, r => captured = r)));
 
-        // Act - the parent task shows the demote button because it has children.
-        cut.Find("button[aria-label=\"Demote\"]").Click();
+        // Act - third task has siblings; open dropdown, select first sibling.
+        var demoteButtons = cut.FindAll("button[aria-label=\"Demote\"]");
+        demoteButtons.Should().HaveCountGreaterThan(0);
+        demoteButtons[2].Click();
+        cut.Find(".demote-option").Click();
 
         // Assert
-        demoted.Should().Be(parentId);
+        captured.Should().NotBeNull();
+        captured!.TaskId.Should().Be(thirdId);
     }
 
     #endregion

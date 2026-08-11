@@ -17,7 +17,7 @@ public class ScheduleAgendaBase : ComponentBase
     [Parameter] public EventCallback<Guid> OnDelete { get; set; }
     [Parameter] public EventCallback<Guid> OnUncomplete { get; set; }
     [Parameter] public EventCallback<Guid> OnReparentToRoot { get; set; }
-    [Parameter] public EventCallback<Guid> OnDemote { get; set; }
+    [Parameter] public EventCallback<DemoteRequest> OnDemote { get; set; }
     [Parameter] public EventCallback<Guid> OnSelect { get; set; }
 
     [Parameter] public IReadOnlyList<TaskItem> AllTasks { get; set; } = [];

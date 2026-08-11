@@ -11,15 +11,17 @@ namespace Pomodoro.Web.Tests.Services;
 public partial class TaskServiceTests
 {
     [Fact]
-    public async Task DemoteTaskAsync_SecondRootBecomesChildOfFirst()
+    public async Task DemoteTaskAsync_DemotesUnderTargetSibling()
     {
         var a = CreateSampleTask(name: "A");
         a.CreatedAt = new DateTime(2026, 1, 1);
         var b = CreateSampleTask(name: "B");
         b.CreatedAt = new DateTime(2026, 1, 2);
+        var c = CreateSampleTask(name: "C");
+        c.CreatedAt = new DateTime(2026, 1, 3);
 
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync())
-            .ReturnsAsync(new List<TaskItem> { a, b });
+            .ReturnsAsync(new List<TaskItem> { a, b, c });
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
         MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
@@ -28,63 +30,55 @@ public partial class TaskServiceTests
         var service = CreateService();
         await service.InitializeAsync();
 
-        await service.DemoteTaskAsync(b.Id);
+        await service.DemoteTaskAsync(c.Id, a.Id);
 
-        var bResult = service.AllTasks.First(t => t.Name == "B");
-        bResult.ParentTaskId.Should().Be(a.Id,
-            "demoting B (second root) must make it a child of A (first root)");
+        var cResult = service.AllTasks.First(t => t.Name == "C");
+        cResult.ParentTaskId.Should().Be(a.Id,
+            "demoting C under A must make C a child of A");
     }
 
     [Fact]
-    public async Task DemoteTaskAsync_FirstRootDoesNothing()
+    public async Task DemoteTaskAsync_SameIdDoesNothing()
     {
         var a = CreateSampleTask(name: "A");
-        a.CreatedAt = new DateTime(2026, 1, 1);
-        var b = CreateSampleTask(name: "B");
-        b.CreatedAt = new DateTime(2026, 1, 2);
-
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync())
-            .ReturnsAsync(new List<TaskItem> { a, b });
+            .ReturnsAsync(new List<TaskItem> { a });
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
 
         var service = CreateService();
         await service.InitializeAsync();
 
-        await service.DemoteTaskAsync(a.Id);
+        await service.DemoteTaskAsync(a.Id, a.Id);
 
         var aResult = service.AllTasks.First(t => t.Name == "A");
-        aResult.ParentTaskId.Should().BeNull(
-            "demoting the first root (no previous sibling) must be a no-op");
+        aResult.ParentTaskId.Should().BeNull("demoting a task onto itself must be a no-op");
     }
 
     [Fact]
-    public async Task DemoteTaskAsync_SecondChildBecomesChildOfFirstSibling()
+    public async Task DemoteTaskAsync_NonSiblingDoesNothing()
     {
         var root = CreateSampleTask(name: "Root");
         root.CreatedAt = new DateTime(2026, 1, 1);
-        var child1 = CreateSampleTask(name: "Child1");
-        child1.ParentTaskId = root.Id;
-        child1.CreatedAt = new DateTime(2026, 1, 2);
-        var child2 = CreateSampleTask(name: "Child2");
-        child2.ParentTaskId = root.Id;
-        child2.CreatedAt = new DateTime(2026, 1, 3);
+        var child = CreateSampleTask(name: "Child");
+        child.ParentTaskId = root.Id;
+        child.CreatedAt = new DateTime(2026, 1, 2);
+        var other = CreateSampleTask(name: "Other");
+        other.CreatedAt = new DateTime(2026, 1, 3);
 
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync())
-            .ReturnsAsync(new List<TaskItem> { root, child1, child2 });
+            .ReturnsAsync(new List<TaskItem> { root, child, other });
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
-        MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
-            .ReturnsAsync(true);
 
         var service = CreateService();
         await service.InitializeAsync();
 
-        await service.DemoteTaskAsync(child2.Id);
+        await service.DemoteTaskAsync(other.Id, child.Id);
 
-        var child2Result = service.AllTasks.First(t => t.Name == "Child2");
-        child2Result.ParentTaskId.Should().Be(child1.Id,
-            "demoting Child2 must make it a child of Child1 (its previous sibling)");
+        var otherResult = service.AllTasks.First(t => t.Name == "Other");
+        otherResult.ParentTaskId.Should().BeNull(
+            "demoting onto a non-sibling (different parent) must be a no-op");
     }
 
     [Fact]
@@ -121,11 +115,11 @@ public partial class TaskServiceTests
         var service = CreateService();
         await service.InitializeAsync();
 
-        await service.DemoteTaskAsync(target.Id);
+        await service.DemoteTaskAsync(target.Id, sibling.Id);
 
         var targetResult = service.AllTasks.First(t => t.Name == "Target");
         targetResult.ParentTaskId.Should().Be(root.Id,
-            "demote must be a no-op when the moved subtree (3 levels deep) plus sibling depth (1) + 1 would exceed MaxSubtaskDepth (4)");
+            "demote must be a no-op when the moved subtree would exceed MaxSubtaskDepth");
     }
 
     [Fact]
@@ -148,7 +142,7 @@ public partial class TaskServiceTests
         var service = CreateService();
         await service.InitializeAsync();
 
-        await service.DemoteTaskAsync(b.Id);
+        await service.DemoteTaskAsync(b.Id, a.Id);
 
         var bResult = service.AllTasks.First(t => t.Name == "B");
         bResult.ParentTaskId.Should().Be(a.Id);
@@ -159,36 +153,37 @@ public partial class TaskServiceTests
     [Fact]
     public async Task DemoteTaskAsync_UnknownTaskIdDoesNothing()
     {
+        var a = CreateSampleTask(name: "A");
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync())
-            .ReturnsAsync(new List<TaskItem>());
+            .ReturnsAsync(new List<TaskItem> { a });
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
 
         var service = CreateService();
         await service.InitializeAsync();
 
-        var act = async () => await service.DemoteTaskAsync(Guid.NewGuid());
+        var act = async () => await service.DemoteTaskAsync(Guid.NewGuid(), a.Id);
 
         await act.Should().NotThrowAsync();
     }
 
     [Fact]
-    public async Task DemoteTaskAsync_DemotesToImmediatePreviousSiblingNotOldest()
+    public async Task DemoteTaskAsync_DemotesSubtreeUnderTargetSibling()
     {
-        var root = CreateSampleTask(name: "Root");
-        root.CreatedAt = new DateTime(2026, 1, 1);
-        var childA = CreateSampleTask(name: "A");
-        childA.ParentTaskId = root.Id;
-        childA.CreatedAt = new DateTime(2026, 1, 2);
-        var childB = CreateSampleTask(name: "B");
-        childB.ParentTaskId = root.Id;
-        childB.CreatedAt = new DateTime(2026, 1, 3);
-        var childC = CreateSampleTask(name: "C");
-        childC.ParentTaskId = root.Id;
-        childC.CreatedAt = new DateTime(2026, 1, 4);
+        var a = CreateSampleTask(name: "A");
+        a.CreatedAt = new DateTime(2026, 1, 1);
+        var b = CreateSampleTask(name: "B");
+        b.ParentTaskId = a.Id;
+        b.CreatedAt = new DateTime(2026, 1, 2);
+        var bChild = CreateSampleTask(name: "BChild");
+        bChild.ParentTaskId = b.Id;
+        bChild.CreatedAt = new DateTime(2026, 1, 3);
+        var c = CreateSampleTask(name: "C");
+        c.ParentTaskId = a.Id;
+        c.CreatedAt = new DateTime(2026, 1, 4);
 
         MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync())
-            .ReturnsAsync(new List<TaskItem> { root, childA, childB, childC });
+            .ReturnsAsync(new List<TaskItem> { a, b, bChild, c });
         MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync((AppStateRecord?)null);
         MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
@@ -197,10 +192,14 @@ public partial class TaskServiceTests
         var service = CreateService();
         await service.InitializeAsync();
 
-        await service.DemoteTaskAsync(childC.Id);
+        await service.DemoteTaskAsync(b.Id, c.Id);
 
-        var cResult = service.AllTasks.First(t => t.Name == "C");
-        cResult.ParentTaskId.Should().Be(childB.Id,
-            "demoting C must make it a child of B (immediate previous sibling), not A (oldest sibling)");
+        var bResult = service.AllTasks.First(t => t.Name == "B");
+        bResult.ParentTaskId.Should().Be(c.Id,
+            "demoting B under C must make B a child of C");
+
+        var bChildResult = service.AllTasks.First(t => t.Name == "BChild");
+        bChildResult.ParentTaskId.Should().Be(b.Id,
+            "B's own children must stay under B");
     }
 }
