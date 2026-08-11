@@ -231,5 +231,7 @@ public partial class TaskServiceTests
             "demoted subtasks must not own repeat rules (subtask invariant)");
         bResult.ScheduledDate.Should().BeNull(
             "demoted subtasks must not own schedule dates (subtask invariant)");
+        bResult.FollowsParentRepeat.Should().BeTrue(
+            "demoted tasks default to following parent repeat");
     }
 }

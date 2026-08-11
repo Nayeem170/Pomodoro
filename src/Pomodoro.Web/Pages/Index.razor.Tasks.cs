@@ -200,5 +200,17 @@ public partial class IndexBase
         }, Constants.Messages.ErrorUpdatingTask);
     }
 
+    public async Task HandleToggleFollowParent(Guid taskId)
+    {
+        await TryExecuteAsync(async () =>
+        {
+            var task = AppState.Tasks.FirstOrDefault(t => t.Id == taskId);
+            if (task == null) return;
+            await TaskService.SetFollowsParentRepeatAsync(taskId, !task.FollowsParentRepeat);
+            await UpdateStateAsync();
+            StateHasChanged();
+        }, Constants.Messages.ErrorUpdatingTask);
+    }
+
     #endregion
 }

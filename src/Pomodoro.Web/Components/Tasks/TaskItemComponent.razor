@@ -72,6 +72,12 @@
         <div class="task-actions">
             @if (!Item.IsCompleted)
             {
+                @if (Depth > 0)
+                {
+                    <button class="task-action-btn follow-parent @(Item.FollowsParentRepeat ? "active" : "inactive")" @onclick="HandleToggleFollowParent" @onclick:stopPropagation="true" title="@(Item.FollowsParentRepeat ? "Following parent repeat - click to make one-time" : "One-time task - click to follow parent repeat")" aria-label="Toggle follow parent repeat">
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5V4a1.5 1.5 0 0 1 1.5-1.5H10"/><polyline points="8.5,1 10,2.5 8.5,4"/><path d="M10 7v1a1.5 1.5 0 0 1-1.5 1.5H2"/><polyline points="3.5,11 2,9.5 3.5,8"/></svg>
+                    </button>
+                }
                 @if (CanAddSubtask)
                 {
                     <button class="task-action-btn" @onclick="StartAddSubtask" @onclick:stopPropagation="true" title="Add subtask" aria-label="Add subtask">

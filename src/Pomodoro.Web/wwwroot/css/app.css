@@ -1447,6 +1447,18 @@ input, textarea, [contenteditable="true"] {
     background: rgba(163, 45, 45, 0.12);
 }
 
+.follow-parent.active {
+    color: #5eead4;
+}
+
+.follow-parent.inactive {
+    opacity: 0.35;
+}
+
+.follow-parent.active:hover {
+    background: rgba(94, 234, 212, 0.15);
+}
+
 .task-input {
     flex: 1;
     padding: 10px 12px;

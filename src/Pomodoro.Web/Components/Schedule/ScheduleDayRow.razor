@@ -42,8 +42,9 @@
                                            OnUncomplete="OnUncomplete"
                                            OnEdit="OnEditTask"
                                            OnAddSubtask="OnAddSubtask"
-                                           OnReparentToRoot="OnReparentToRoot"
+                                            OnReparentToRoot="OnReparentToRoot"
                                            OnDemote="OnDemote"
+                                           OnToggleFollowParent="OnToggleFollowParent"
                                            OnToggleCollapse="ToggleCollapse" />
                     }
                     else
@@ -70,6 +71,7 @@
                                            OnAddSubtask="OnAddSubtask"
                                            OnReparentToRoot="OnReparentToRoot"
                                            OnDemote="OnDemote"
+                                           OnToggleFollowParent="OnToggleFollowParent"
                                            OnToggleCollapse="ToggleCollapse" />
                     }
                 </li>
@@ -102,6 +104,9 @@
 
     [Microsoft.AspNetCore.Components.Parameter]
     public Microsoft.AspNetCore.Components.EventCallback<DemoteRequest> OnDemote { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<Guid> OnToggleFollowParent { get; set; }
 
     [Microsoft.AspNetCore.Components.Parameter]
     public IReadOnlyList<TaskItem>? AllTasks { get; set; }

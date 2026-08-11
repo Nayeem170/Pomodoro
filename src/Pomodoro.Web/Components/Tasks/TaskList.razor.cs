@@ -42,6 +42,9 @@ public class TaskListBase : ComponentBase
     public EventCallback<DemoteRequest> OnDemote { get; set; }
 
     [Parameter]
+    public EventCallback<Guid> OnToggleFollowParent { get; set; }
+
+    [Parameter]
     public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
 
     [Parameter]
@@ -310,6 +313,11 @@ public class TaskListBase : ComponentBase
     protected async Task HandleDemote(DemoteRequest request)
     {
         await OnDemote.InvokeAsync(request);
+    }
+
+    protected async Task HandleToggleFollowParent(Guid taskId)
+    {
+        await OnToggleFollowParent.InvokeAsync(taskId);
     }
 
     #endregion

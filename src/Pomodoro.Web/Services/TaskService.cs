@@ -347,9 +347,20 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         {
             t.Repeat = null;
             t.ScheduledDate = null;
+            t.FollowsParentRepeat = true;
         });
 
         await ReparentTaskAsync(taskId, targetSiblingId);
+    }
+
+    public async Task SetFollowsParentRepeatAsync(Guid taskId, bool value)
+    {
+        var task = _appState.FindTaskById(taskId);
+        if (task == null || !task.IsSubtask) return;
+
+        _appState.UpdateTask(taskId, t => t.FollowsParentRepeat = value);
+        await SaveTaskAsync(task.WithUpdates(c => c.FollowsParentRepeat = value));
+        NotifyStateChanged();
     }
 
     private int GetTaskDepth(Guid taskId)
@@ -1207,6 +1218,8 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
                     task.PomodoroCount = Constants.Tasks.InitialPomodoroCount;
                     task.LastWorkedOn = null;
                     changed = true;
+
+                    ResetFollowsParentSubtasks(task.Id, ref changed);
                 }
             }
 
@@ -1220,6 +1233,27 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         if (changed)
         {
             await SaveAsync();
+        }
+    }
+
+    private void ResetFollowsParentSubtasks(Guid parentId, ref bool changed)
+    {
+        var childrenToReset = _appState.Tasks
+            .Where(t => !t.IsDeleted
+                && t.ParentTaskId == parentId
+                && t.FollowsParentRepeat
+                && t.IsCompleted)
+            .ToList();
+
+        foreach (var child in childrenToReset)
+        {
+            child.IsCompleted = false;
+            child.TotalFocusMinutes = Constants.Tasks.InitialFocusMinutes;
+            child.PomodoroCount = Constants.Tasks.InitialPomodoroCount;
+            child.LastWorkedOn = null;
+            changed = true;
+
+            ResetFollowsParentSubtasks(child.Id, ref changed);
         }
     }
 

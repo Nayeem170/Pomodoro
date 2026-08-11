@@ -140,6 +140,7 @@ else
                                                 OnUncomplete="HandleTaskUncomplete"
                                                 OnReparentToRoot="HandleReparentToRoot"
                                                 OnDemote="HandleDemote"
+                                                OnToggleFollowParent="HandleToggleFollowParent"
                                                 AllTasks="AppState.Tasks"
                                                 GoogleLists="GoogleLists" />
                             }
@@ -157,7 +158,8 @@ else
                                           OnTaskEdit="HandleTaskEdit"
                                           OnAddSubtask="HandleAddSubtask"
                                           OnReparentToRoot="HandleReparentToRoot"
-                                          OnDemote="HandleDemote" />
+                                          OnDemote="HandleDemote"
+                                          OnToggleFollowParent="HandleToggleFollowParent" />
                             }
                         </div>
                     </ChildContent>

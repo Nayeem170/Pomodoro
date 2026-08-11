@@ -42,6 +42,9 @@ public class TaskItemBase : ComponentBase
     public EventCallback<DemoteRequest> OnDemote { get; set; }
 
     [Parameter]
+    public EventCallback<Guid> OnToggleFollowParent { get; set; }
+
+    [Parameter]
     public IReadOnlyList<TaskItem> Siblings { get; set; } = [];
 
     [Parameter]
@@ -289,6 +292,11 @@ public class TaskItemBase : ComponentBase
     protected async Task HandleReparentToRoot()
     {
         await OnReparentToRoot.InvokeAsync(Item.Id);
+    }
+
+    protected async Task HandleToggleFollowParent()
+    {
+        await OnToggleFollowParent.InvokeAsync(Item.Id);
     }
 
     protected void HandleDemote()

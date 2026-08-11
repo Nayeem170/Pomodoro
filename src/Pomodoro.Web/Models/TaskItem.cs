@@ -108,6 +108,14 @@ public class TaskItem
     public string? GooglePosition { get; set; }
     public Guid? RepeatSeriesId { get; set; }
     public Guid? ParentTaskId { get; set; }
+
+    private bool? _followsParentRepeat;
+
+    public bool FollowsParentRepeat
+    {
+        get => _followsParentRepeat ?? true;
+        set => _followsParentRepeat = value;
+    }
     public DateTime? UpdatedAt { get; set; }
     public string? Notes { get; set; }
     public DateTime? DueDate { get; set; }
@@ -137,6 +145,7 @@ public class TaskItem
             GooglePosition = GooglePosition,
             RepeatSeriesId = RepeatSeriesId,
             ParentTaskId = ParentTaskId,
+            FollowsParentRepeat = FollowsParentRepeat,
             UpdatedAt = UpdatedAt,
             Notes = Notes,
             DueDate = DueDate,
