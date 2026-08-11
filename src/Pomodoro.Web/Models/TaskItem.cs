@@ -60,6 +60,7 @@ public class TaskItem
     public string Name { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public bool IsCompleted { get; set; }
+    public DateTime? CompletedAt { get; set; }
     public int TotalFocusMinutes { get; set; }
     public int PomodoroCount { get; set; }
     public DateTime? LastWorkedOn { get; set; }
@@ -130,6 +131,7 @@ public class TaskItem
             Name = Name,
             CreatedAt = CreatedAt,
             IsCompleted = IsCompleted,
+            CompletedAt = CompletedAt,
             TotalFocusMinutes = TotalFocusMinutes,
             PomodoroCount = PomodoroCount,
             LastWorkedOn = LastWorkedOn,

@@ -637,10 +637,18 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             existingTask.Repeat!.LastCompletedDate = DateTime.Now.Date;
         }
 
-        var taskToSave2 = existingTask.WithUpdates(c => c.IsCompleted = true);
+        var taskToSave2 = existingTask.WithUpdates(c =>
+        {
+            c.IsCompleted = true;
+            c.CompletedAt = DateTime.UtcNow;
+        });
         await SaveTaskAsync(taskToSave2);
 
-        _appState.UpdateTask(taskId, t => t.IsCompleted = true);
+        _appState.UpdateTask(taskId, t =>
+        {
+            t.IsCompleted = true;
+            t.CompletedAt = DateTime.UtcNow;
+        });
         NotifyStateChanged();
 
         if (existingTask.IsGoogleTask && !string.IsNullOrEmpty(existingTask.GoogleTaskId))
@@ -659,10 +667,18 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         var existingTask = _appState.FindTaskById(taskId);
         if (existingTask == null) return;
 
-        var taskToSave = existingTask.WithUpdates(c => c.IsCompleted = false);
+        var taskToSave = existingTask.WithUpdates(c =>
+        {
+            c.IsCompleted = false;
+            c.CompletedAt = null;
+        });
         await SaveTaskAsync(taskToSave);
 
-        _appState.UpdateTask(taskId, t => t.IsCompleted = false);
+        _appState.UpdateTask(taskId, t =>
+        {
+            t.IsCompleted = false;
+            t.CompletedAt = null;
+        });
         NotifyStateChanged();
 
         if (existingTask.IsGoogleTask && !string.IsNullOrEmpty(existingTask.GoogleTaskId))
@@ -1214,21 +1230,23 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
                 if (nextOccurrence.HasValue && nextOccurrence.Value <= today)
                 {
                     task.IsCompleted = false;
+                    task.CompletedAt = null;
                     task.TotalFocusMinutes = Constants.Tasks.InitialFocusMinutes;
                     task.PomodoroCount = Constants.Tasks.InitialPomodoroCount;
                     task.LastWorkedOn = null;
                     changed = true;
-
-                    ResetFollowsParentSubtasks(task.Id, ref changed);
                 }
             }
 
             if (task.IsScheduled && task.IsCompleted && task.ScheduledDate.HasValue && task.ScheduledDate.Value <= today)
             {
                 task.IsCompleted = false;
+                task.CompletedAt = null;
                 changed = true;
             }
         }
+
+        ReconcileFollowsParentSubtasks(ref changed);
 
         if (changed)
         {
@@ -1236,24 +1254,46 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         }
     }
 
-    private void ResetFollowsParentSubtasks(Guid parentId, ref bool changed)
+    /// <summary>
+    /// Resets FollowsParentRepeat subtasks whose completion is stale (from a previous
+    /// repeat cycle). Handles both fresh cascade (parent just reactivated) and stuck
+    /// state (parent reactivated before this feature existed).
+    /// </summary>
+    private void ReconcileFollowsParentSubtasks(ref bool changed)
+    {
+        foreach (var task in _appState.Tasks)
+        {
+            if (task.IsDeleted || task.IsCompleted) continue;
+            if (!task.IsRecurring || task.Repeat is not { IsActive: true }) continue;
+            if (!task.Repeat.LastCompletedDate.HasValue) continue;
+
+            var reactivationDate = ComputeNextOccurrence(task.Repeat);
+            if (!reactivationDate.HasValue) continue;
+
+            ReconcileSubtree(task.Id, reactivationDate.Value, ref changed);
+        }
+    }
+
+    private void ReconcileSubtree(Guid parentId, DateTime reactivationDate, ref bool changed)
     {
         var childrenToReset = _appState.Tasks
             .Where(t => !t.IsDeleted
                 && t.ParentTaskId == parentId
                 && t.FollowsParentRepeat
-                && t.IsCompleted)
+                && t.IsCompleted
+                && (t.CompletedAt == null || t.CompletedAt.Value.Date < reactivationDate))
             .ToList();
 
         foreach (var child in childrenToReset)
         {
             child.IsCompleted = false;
+            child.CompletedAt = null;
             child.TotalFocusMinutes = Constants.Tasks.InitialFocusMinutes;
             child.PomodoroCount = Constants.Tasks.InitialPomodoroCount;
             child.LastWorkedOn = null;
             changed = true;
 
-            ResetFollowsParentSubtasks(child.Id, ref changed);
+            ReconcileSubtree(child.Id, reactivationDate, ref changed);
         }
     }
 

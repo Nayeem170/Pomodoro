@@ -203,4 +203,88 @@ public partial class TaskServiceTests
         permChildResult.IsCompleted.Should().BeTrue(
             "children under a non-following subtask must not be touched");
     }
+
+    [Fact]
+    public async Task InitializeAsync_AlreadyActiveRoot_ResetsStaleFollowsParentSubtask()
+    {
+        var yesterday = DateTime.Now.Date.AddDays(-1);
+        var root = CreateSampleTask(name: "Root", isCompleted: false);
+        root.Repeat = new RepeatRule { Type = RepeatType.Daily, LastCompletedDate = yesterday };
+
+        var staleSub = CreateSampleTask(name: "StaleSub", isCompleted: true);
+        staleSub.ParentTaskId = root.Id;
+        staleSub.FollowsParentRepeat = true;
+        staleSub.CompletedAt = yesterday.AddHours(2);
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync())
+            .ReturnsAsync(new List<TaskItem> { root, staleSub });
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+        MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
+            .ReturnsAsync(true);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        var subResult = service.AllTasks.First(t => t.Name == "StaleSub");
+        subResult.IsCompleted.Should().BeFalse(
+            "a FollowsParentRepeat subtask completed before the current cycle must reset " +
+            "even when the root already reactivated (stuck state from pre-feature deployment)");
+    }
+
+    [Fact]
+    public async Task InitializeAsync_AlreadyActiveRoot_PreservesCurrentCycleSubtask()
+    {
+        var today = DateTime.Now.Date;
+        var yesterday = today.AddDays(-1);
+        var root = CreateSampleTask(name: "Root", isCompleted: false);
+        root.Repeat = new RepeatRule { Type = RepeatType.Daily, LastCompletedDate = yesterday };
+
+        var todaySub = CreateSampleTask(name: "TodaySub", isCompleted: true);
+        todaySub.ParentTaskId = root.Id;
+        todaySub.FollowsParentRepeat = true;
+        todaySub.CompletedAt = today.AddHours(3);
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync())
+            .ReturnsAsync(new List<TaskItem> { root, todaySub });
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+        MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
+            .ReturnsAsync(true);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        var subResult = service.AllTasks.First(t => t.Name == "TodaySub");
+        subResult.IsCompleted.Should().BeTrue(
+            "a FollowsParentRepeat subtask completed in the current cycle must stay completed");
+    }
+
+    [Fact]
+    public async Task InitializeAsync_AlreadyActiveRoot_NullCompletedAtResets()
+    {
+        var yesterday = DateTime.Now.Date.AddDays(-1);
+        var root = CreateSampleTask(name: "Root", isCompleted: false);
+        root.Repeat = new RepeatRule { Type = RepeatType.Daily, LastCompletedDate = yesterday };
+
+        var oldSub = CreateSampleTask(name: "OldSub", isCompleted: true);
+        oldSub.ParentTaskId = root.Id;
+        oldSub.FollowsParentRepeat = true;
+        oldSub.CompletedAt = null;
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync())
+            .ReturnsAsync(new List<TaskItem> { root, oldSub });
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+        MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
+            .ReturnsAsync(true);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        var subResult = service.AllTasks.First(t => t.Name == "OldSub");
+        subResult.IsCompleted.Should().BeFalse(
+            "a subtask with null CompletedAt (pre-existing data) must reset " +
+            "when its root is in an active recurring cycle");
+    }
 }
