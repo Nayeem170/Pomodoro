@@ -1326,52 +1326,66 @@ input, textarea, [contenteditable="true"] {
     border-color: var(--color-border-primary);
 }
 
+.task-row.active-form {
+    background: rgba(244, 42, 65, 0.12);
+}
+
 .demote-picker {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 6px 8px;
+    gap: 4px;
+    padding: 8px 10px;
     margin: 2px 0;
-    border-radius: var(--border-radius-sm);
-    background: var(--color-background-tertiary);
-    max-height: 180px;
+    background: #ffffff0a;
+    border: 1px solid #285a4b;
+    border-radius: var(--border-radius-md);
+    max-height: 200px;
     overflow-y: auto;
 }
 
 .demote-picker-label {
-    font-size: 11px;
+    font-size: 9px;
+    letter-spacing: 1.4px;
     color: var(--color-text-tertiary);
-    margin-bottom: 2px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
 }
 
 .demote-pick {
-    font-size: 13px;
-    padding: 4px 10px;
-    background: var(--color-surface-light);
-    border: 1px solid #285a4b;
+    background: transparent;
+    border: none;
     border-radius: var(--border-radius-sm);
+    padding: 6px 10px;
     color: var(--color-text-primary);
-    cursor: pointer;
     text-align: left;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: var(--font-sans);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-family: var(--font-sans);
+    transition: background 0.15s;
 }
 
 .demote-pick:hover {
-    border-color: var(--color-border-primary);
+    background: var(--color-background-secondary);
 }
 
 .demote-pick-cancel {
-    font-size: 13px;
-    padding: 4px 10px;
-    border: none;
     background: transparent;
-    color: var(--color-text-tertiary);
+    border: 1px solid #285a4b;
+    border-radius: var(--border-radius-sm);
+    padding: 6px 10px;
+    color: var(--color-text-secondary);
+    text-align: center;
+    font-size: 13px;
     cursor: pointer;
-    text-align: left;
     font-family: var(--font-sans);
+    transition: background 0.15s;
+}
+
+.demote-pick-cancel:hover {
+    background: var(--color-background-tertiary);
 }
 
 .task-pomo-count {

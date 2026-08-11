@@ -122,6 +122,7 @@ public class TaskItemBase : ComponentBase
         var classes = new List<string>();
         if (IsSelected) classes.Add(Constants.Tasks.SelectedClass);
         if (Item.IsCompleted) classes.Add(Constants.Tasks.CompletedClass);
+        if (IsInlineEditing || IsDemoteMenuOpen) classes.Add("active-form");
         return string.Join(" ", classes);
     }
 
