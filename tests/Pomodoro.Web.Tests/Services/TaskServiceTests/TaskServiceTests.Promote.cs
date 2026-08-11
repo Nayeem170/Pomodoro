@@ -164,4 +164,34 @@ public partial class TaskServiceTests
         cResult.ParentTaskId.Should().Be(a.Id,
             "C must remain child of A");
     }
+
+    [Fact]
+    public async Task PromoteTaskAsync_CopiesParentRepeatAndSchedule()
+    {
+        var root = CreateSampleTask(name: "Root");
+        root.Repeat = new RepeatRule { Type = RepeatType.Daily };
+        root.ScheduledDate = new DateTime(2026, 1, 15);
+        var subtask = CreateSampleTask(name: "Sub");
+        subtask.ParentTaskId = root.Id;
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync())
+            .ReturnsAsync(new List<TaskItem> { root, subtask });
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+        MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
+            .ReturnsAsync(true);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        await service.PromoteTaskAsync(subtask.Id);
+
+        var promoted = service.AllTasks.First(t => t.Name == "Sub");
+        promoted.ParentTaskId.Should().BeNull("promoted to root");
+        promoted.ScheduledDate.Should().Be(new DateTime(2026, 1, 15),
+            "promoted task must copy parent's ScheduledDate");
+        promoted.Repeat.Should().NotBeNull();
+        promoted.Repeat!.Type.Should().Be(RepeatType.Daily,
+            "promoted task must copy parent's Repeat type");
+    }
 }

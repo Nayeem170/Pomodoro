@@ -303,6 +303,27 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         var parent = _appState.FindTaskById(task.ParentTaskId.Value);
         var grandparentId = parent?.ParentTaskId;
 
+        if (parent != null)
+        {
+            _appState.UpdateTask(taskId, t =>
+            {
+                t.ScheduledDate = parent.ScheduledDate;
+                t.Repeat = parent.Repeat != null
+                    ? new RepeatRule
+                    {
+                        Type = parent.Repeat.Type,
+                        CustomDays = parent.Repeat.CustomDays,
+                        Weekdays = parent.Repeat.Weekdays,
+                        MonthlyDay = parent.Repeat.MonthlyDay,
+                        StartDate = parent.Repeat.StartDate,
+                        EndDate = parent.Repeat.EndDate,
+                        IsPaused = parent.Repeat.IsPaused,
+                        PausedDate = parent.Repeat.PausedDate
+                    }
+                    : null;
+            });
+        }
+
         await ReparentTaskAsync(taskId, grandparentId);
     }
 
