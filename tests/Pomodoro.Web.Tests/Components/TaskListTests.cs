@@ -660,15 +660,15 @@ public class TaskListTests : TestContext
     }
 
     [Fact]
-    public async Task HandleDemote_ThroughSecondRoot_InvokesOnDemote()
+    public async Task HandleDemote_ThroughParentTask_InvokesOnDemote()
     {
-        // Arrange - a second root (CanDemote=true) shows the "Demote" button.
-        var firstId = Guid.NewGuid();
-        var secondId = Guid.NewGuid();
+        // Arrange - a task with children (HasChildren=true) shows the "Demote" button.
+        var parentId = Guid.NewGuid();
+        var childId = Guid.NewGuid();
         var tasks = new List<TaskItem>
         {
-            new() { Id = firstId, Name = "First", CreatedAt = DateTime.UtcNow },
-            new() { Id = secondId, Name = "Second", CreatedAt = DateTime.UtcNow.AddSeconds(1) }
+            new() { Id = parentId, Name = "Parent", CreatedAt = DateTime.UtcNow },
+            new() { Id = childId, Name = "Child", CreatedAt = DateTime.UtcNow.AddSeconds(1), ParentTaskId = parentId }
         };
         Guid? demoted = null;
         var cut = RenderComponent<TaskList>(p => p
@@ -676,11 +676,11 @@ public class TaskListTests : TestContext
             .Add(x => x.CurrentTaskId, null)
             .Add(x => x.OnDemote, EventCallback.Factory.Create<Guid>(this, id => demoted = id)));
 
-        // Act
+        // Act - the parent task shows the demote button because it has children.
         cut.Find("button[aria-label=\"Demote\"]").Click();
 
         // Assert
-        demoted.Should().Be(secondId);
+        demoted.Should().Be(parentId);
     }
 
     #endregion

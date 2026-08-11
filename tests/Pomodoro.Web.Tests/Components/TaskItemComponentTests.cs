@@ -760,13 +760,13 @@ public class TaskItemComponentTests : TestContext
     [Fact]
     public void HandleDemote_InvokesCallback()
     {
-        // Arrange - CanDemote renders the "Demote" button.
-        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Second task", CreatedAt = DateTime.UtcNow };
+        // Arrange - HasChildren renders the "Demote" button.
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Parent task", CreatedAt = DateTime.UtcNow };
         Guid? demoted = null;
         var cut = RenderComponent<TaskItemComponent>(p => p
             .Add(x => x.Item, task)
             .Add(x => x.Depth, 0)
-            .Add(x => x.CanDemote, true)
+            .Add(x => x.HasChildren, true)
             .Add(x => x.OnDemote, EventCallback.Factory.Create<Guid>(this, id => demoted = id)));
 
         // Act

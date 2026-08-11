@@ -42,9 +42,6 @@ public class TaskItemBase : ComponentBase
     public EventCallback<Guid> OnDemote { get; set; }
 
     [Parameter]
-    public bool CanDemote { get; set; }
-
-    [Parameter]
     public bool HasChildren { get; set; }
 
     [Parameter]
@@ -82,6 +79,8 @@ public class TaskItemBase : ComponentBase
     protected bool CanAddSubtask => Depth < Constants.Tasks.MaxSubtaskDepth;
 
     protected bool CanMoveToRoot => Depth > 0;
+
+    protected bool CanDemote => HasChildren;
 
     [Parameter]
     public string? GoogleListTitle { get; set; }
