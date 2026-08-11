@@ -960,6 +960,8 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
                             t.DeletedAt = DateTime.UtcNow;
                         });
                     }
+
+                    await ResolveGoogleParentIdsAsync(gList.Id);
                 }
                 catch (Exception ex) when (ex is not UnauthorizedAccessException)
                 {
@@ -1120,6 +1122,34 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             TotalFocusMinutes = 0,
             PomodoroCount = 0
         };
+    }
+
+    private async Task ResolveGoogleParentIdsAsync(string googleListId)
+    {
+        var tasksInList = _appState.Tasks
+            .Where(t => t.GoogleListId == googleListId && !t.IsDeleted)
+            .ToList();
+
+        var googleIdToLocalId = tasksInList
+            .Where(t => !string.IsNullOrEmpty(t.GoogleTaskId))
+            .ToDictionary(t => t.GoogleTaskId!, t => t.Id);
+
+        foreach (var task in tasksInList)
+        {
+            Guid? resolvedParentId = null;
+            if (!string.IsNullOrEmpty(task.GoogleParentTaskId)
+                && googleIdToLocalId.TryGetValue(task.GoogleParentTaskId, out var localParentId))
+            {
+                resolvedParentId = localParentId;
+            }
+
+            if (task.ParentTaskId != resolvedParentId)
+            {
+                var taskToSave = task.WithUpdates(c => c.ParentTaskId = resolvedParentId);
+                await _taskRepository.SaveAsync(taskToSave);
+                _appState.UpdateTask(task.Id, t => t.ParentTaskId = resolvedParentId);
+            }
+        }
     }
 
     private static DateTime? ComputeNextOccurrence(RepeatRule rule)
