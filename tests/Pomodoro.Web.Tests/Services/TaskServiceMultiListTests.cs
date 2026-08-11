@@ -2265,4 +2265,131 @@ public class TaskServiceMultiListTests
     }
 
     #endregion
+
+    #region Google parent ID resolution
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_NewSubtask_ResolvesParentTaskId()
+    {
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync()).ReturnsAsync(
+            [new GoogleTaskList { Id = "glist-1", Title = "My List" }]);
+
+        var googleTasks = new List<GoogleTask>
+        {
+            new() { Id = "parent-1", Title = "Parent", Status = "needsAction", Updated = "2025-06-20T10:00:00Z", Parent = "" },
+            new() { Id = "child-1", Title = "Child", Status = "needsAction", Updated = "2025-06-20T10:00:00Z", Parent = "parent-1" }
+        };
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", It.IsAny<string?>())).ReturnsAsync(googleTasks);
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync([]);
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+
+        var sut = CreateSut();
+        await sut.RefreshGoogleListsAsync();
+
+        var parent = _appState.Tasks.First(t => t.GoogleTaskId == "parent-1");
+        var child = _appState.Tasks.First(t => t.GoogleTaskId == "child-1");
+
+        child.ParentTaskId.Should().Be(parent.Id,
+            "synced subtask must have its GoogleParentTaskId resolved to a local ParentTaskId GUID");
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_RootGoogleTask_HasNullParentTaskId()
+    {
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync()).ReturnsAsync(
+            [new GoogleTaskList { Id = "glist-1", Title = "My List" }]);
+
+        var googleTasks = new List<GoogleTask>
+        {
+            new() { Id = "root-1", Title = "Root", Status = "needsAction", Updated = "2025-06-20T10:00:00Z", Parent = "" }
+        };
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", It.IsAny<string?>())).ReturnsAsync(googleTasks);
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync([]);
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+
+        var sut = CreateSut();
+        await sut.RefreshGoogleListsAsync();
+
+        var root = _appState.Tasks.First(t => t.GoogleTaskId == "root-1");
+        root.ParentTaskId.Should().BeNull(
+            "root Google task must have null ParentTaskId");
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_DeepSubtask_ResolvesMultiLevelParent()
+    {
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync()).ReturnsAsync(
+            [new GoogleTaskList { Id = "glist-1", Title = "My List" }]);
+
+        var googleTasks = new List<GoogleTask>
+        {
+            new() { Id = "root-1", Title = "Root", Status = "needsAction", Updated = "2025-06-20T10:00:00Z", Parent = "" },
+            new() { Id = "child-1", Title = "Child", Status = "needsAction", Updated = "2025-06-20T10:00:00Z", Parent = "root-1" },
+            new() { Id = "grandchild-1", Title = "Grandchild", Status = "needsAction", Updated = "2025-06-20T10:00:00Z", Parent = "child-1" }
+        };
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", It.IsAny<string?>())).ReturnsAsync(googleTasks);
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync([]);
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+
+        var sut = CreateSut();
+        await sut.RefreshGoogleListsAsync();
+
+        var root = _appState.Tasks.First(t => t.GoogleTaskId == "root-1");
+        var child = _appState.Tasks.First(t => t.GoogleTaskId == "child-1");
+        var grandchild = _appState.Tasks.First(t => t.GoogleTaskId == "grandchild-1");
+
+        child.ParentTaskId.Should().Be(root.Id);
+        grandchild.ParentTaskId.Should().Be(child.Id,
+            "deeply nested Google subtask must resolve through the full parent chain");
+    }
+
+    [Fact]
+    public async Task RefreshGoogleListsAsync_ExistingTaskParentChanged_UpdatesParentTaskId()
+    {
+        var parentId = Guid.NewGuid();
+        var oldParentId = Guid.NewGuid();
+        var existing = new TaskItem
+        {
+            Id = parentId,
+            Name = "Child",
+            GoogleTaskId = "child-1",
+            GoogleListId = "glist-1",
+            ParentTaskId = oldParentId,
+            GoogleParentTaskId = "old-parent"
+        };
+        var newParent = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "New Parent",
+            GoogleTaskId = "new-parent-1",
+            GoogleListId = "glist-1",
+            ParentTaskId = null
+        };
+        _appState.Tasks = [existing, newParent];
+
+        _mockGoogleTasksService.Setup(x => x.IsConnectedAsync()).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.GetTaskListsAsync()).ReturnsAsync(
+            [new GoogleTaskList { Id = "glist-1", Title = "My List" }]);
+        _mockGoogleTasksService.Setup(x => x.GetTasksAsync("glist-1", It.IsAny<string?>())).ReturnsAsync(
+            new List<GoogleTask>
+            {
+                new() { Id = "new-parent-1", Title = "New Parent", Status = "needsAction", Updated = "2025-06-20T10:00:00Z", Parent = "" },
+                new() { Id = "child-1", Title = "Child", Status = "needsAction", Updated = "2025-06-20T10:00:00Z", Parent = "new-parent-1" }
+            });
+        _mockTaskRepo.Setup(x => x.GetByGoogleListIdAsync("glist-1")).ReturnsAsync(
+            new List<TaskItem> { existing, newParent });
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+
+        var sut = CreateSut();
+        await sut.RefreshGoogleListsAsync();
+
+        var childResult = _appState.FindTaskById(parentId);
+        childResult!.ParentTaskId.Should().Be(newParent.Id,
+            "when a task's Google parent changes, the local ParentTaskId must update to match");
+    }
+
+    #endregion
 }

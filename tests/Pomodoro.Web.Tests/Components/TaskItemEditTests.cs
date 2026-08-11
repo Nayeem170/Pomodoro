@@ -58,6 +58,86 @@ public class TaskItemEditTests : TestContext
     }
 
     [Fact]
+    public void DoubleClick_StartsInlineEdit()
+    {
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "My Task" };
+        var cut = RenderComponent<TaskItemComponent>(p => p.Add(x => x.Item, task));
+
+        cut.Find(".task-text").DoubleClick();
+
+        cut.Markup.Should().Contain("task-text-input");
+        cut.Markup.Should().NotContain("task-edit-panel");
+    }
+
+    [Fact]
+    public void Subtask_EditButton_StartsInlineEditNotPanel()
+    {
+        var parent = Guid.NewGuid();
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Sub", ParentTaskId = parent };
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.Depth, 1));
+
+        cut.Find("button[aria-label=\"Edit task\"]").Click();
+
+        cut.Markup.Should().Contain("task-text-input");
+        cut.Markup.Should().NotContain("task-edit-panel");
+    }
+
+    [Fact]
+    public void InlineEdit_Enter_SavesAndInvokesOnEdit()
+    {
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Old" };
+        TaskItem? edited = null;
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.OnEdit, EventCallback.Factory.Create<TaskItem>(this, t => edited = t)));
+
+        cut.Find(".task-text").DoubleClick();
+        cut.Find(".task-text-input").Input("New Name");
+        cut.Find(".task-text-input").KeyDown(Key.Enter);
+
+        edited.Should().NotBeNull();
+        edited!.Name.Should().Be("New Name");
+        cut.Markup.Should().NotContain("task-text-input");
+    }
+
+    [Fact]
+    public void InlineEdit_Escape_CancelsWithoutInvokingOnEdit()
+    {
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Original" };
+        var editFired = false;
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.OnEdit, EventCallback.Factory.Create<TaskItem>(this, _ => editFired = true)));
+
+        cut.Find(".task-text").DoubleClick();
+        cut.Find(".task-text-input").Input("Changed");
+        cut.Find(".task-text-input").KeyDown(Key.Escape);
+
+        editFired.Should().BeFalse();
+        cut.Markup.Should().NotContain("task-text-input");
+        task.Name.Should().Be("Original");
+    }
+
+    [Fact]
+    public void InlineEdit_EmptyName_CancelsWithoutInvokingOnEdit()
+    {
+        var task = new TaskItem { Id = Guid.NewGuid(), Name = "Keep" };
+        var editFired = false;
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.OnEdit, EventCallback.Factory.Create<TaskItem>(this, _ => editFired = true)));
+
+        cut.Find(".task-text").DoubleClick();
+        cut.Find(".task-text-input").Input("   ");
+        cut.Find(".task-text-input").KeyDown(Key.Enter);
+
+        editFired.Should().BeFalse();
+        cut.Markup.Should().NotContain("task-text-input");
+    }
+
+    [Fact]
     public void Render_WithRecurringTask_ShowsRepeatBadge()
     {
         var task = new TaskItem

@@ -10,6 +10,7 @@
                 Depth="node.Depth"
                 HasChildren="node.HasChildren"
                 ChildCount="node.ChildCount"
+                Siblings="SiblingsFor(node.Task)"
                 IsCollapsed="_collapsed.Contains(node.Task.Id)"
                 IsSelected="node.Task.Id == CurrentTaskId"
                 GoogleListTitle="@GoogleListTitleFor(node.Task)"
@@ -20,6 +21,8 @@
                 OnEdit="HandleTaskEdit"
                 OnAddSubtask="HandleAddSubtask"
                 OnReparentToRoot="HandleReparentToRoot"
+                OnDemote="HandleDemote"
+                OnToggleFollowParent="HandleToggleFollowParent"
                 OnToggleCollapse="ToggleCollapse" />
         }
         
@@ -40,6 +43,7 @@
                             Depth="node.Depth"
                             HasChildren="node.HasChildren"
                             ChildCount="node.ChildCount"
+                            Siblings="SiblingsFor(node.Task)"
                             IsCollapsed="_collapsed.Contains(node.Task.Id)"
                             IsSelected="false"
                             GoogleListTitle="@GoogleListTitleFor(node.Task)"
@@ -50,6 +54,8 @@
                             OnEdit="HandleTaskEdit"
                             OnAddSubtask="HandleAddSubtask"
                             OnReparentToRoot="HandleReparentToRoot"
+                            OnDemote="HandleDemote"
+                            OnToggleFollowParent="HandleToggleFollowParent"
                             OnToggleCollapse="ToggleCollapse" />
                     }
                 }

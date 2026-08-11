@@ -26,7 +26,22 @@
     {
         <button class="task-checkbox" @onclick="HandleComplete" @onclick:stopPropagation="true" aria-label="Complete"></button>
     }
-    <span class="task-text @(Item.IsCompleted ? "completed" : "")">@Item.Name</span>
+    @if (IsInlineEditing)
+    {
+        <input class="task-text-input"
+               value="@InlineEditName"
+               @oninput="@((ChangeEventArgs e) => InlineEditName = e.Value?.ToString() ?? string.Empty)"
+               @onblur="SaveInlineEdit"
+               @onkeydown="HandleInlineEditKey"
+               @onclick:stopPropagation="true"
+               @ondblclick:stopPropagation="true"
+               aria-label="Edit task name"
+               @ref="_inlineEditInput" />
+    }
+    else
+    {
+        <span class="task-text @(Item.IsCompleted ? "completed" : "")" @ondblclick="StartInlineEdit">@Item.Name</span>
+    }
     <div class="task-secondary">
         @if (Item.IsRecurring)
         {
@@ -57,16 +72,28 @@
         <div class="task-actions">
             @if (!Item.IsCompleted)
             {
+                @if (Depth > 0)
+                {
+                    <button class="task-action-btn follow-parent @(Item.FollowsParentRepeat ? "active" : "inactive")" @onclick="HandleToggleFollowParent" @onclick:stopPropagation="true" title="@(Item.FollowsParentRepeat ? "Following parent repeat - click to make one-time" : "One-time task - click to follow parent repeat")" aria-label="Toggle follow parent repeat">
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5V4a1.5 1.5 0 0 1 1.5-1.5H10"/><polyline points="8.5,1 10,2.5 8.5,4"/><path d="M10 7v1a1.5 1.5 0 0 1-1.5 1.5H2"/><polyline points="3.5,11 2,9.5 3.5,8"/></svg>
+                    </button>
+                }
                 @if (CanAddSubtask)
                 {
                     <button class="task-action-btn" @onclick="StartAddSubtask" @onclick:stopPropagation="true" title="Add subtask" aria-label="Add subtask">
                         <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                     </button>
                 }
+                @if (CanDemote)
+                {
+                    <button class="task-action-btn" @onclick="HandleDemote" @onclick:stopPropagation="true" title="Demote" aria-label="Demote">
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                }
                 @if (CanMoveToRoot)
                 {
-                    <button class="task-action-btn" @onclick="HandleReparentToRoot" @onclick:stopPropagation="true" title="Move to top level" aria-label="Move to top level">
-                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1 5l4-4 4 4M5 1v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <button class="task-action-btn" @onclick="HandleReparentToRoot" @onclick:stopPropagation="true" title="Promote" aria-label="Promote">
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
                 }
                 <button class="task-action-btn" @onclick="HandleEdit" @onclick:stopPropagation="true" title="Edit" aria-label="Edit task">
@@ -83,6 +110,18 @@
 @if (IsEditing)
 {
     <TaskEditPanel Task="Item" ContextDate="ContextDate" OnSave="HandleEditSave" OnCancel="HandleEditCancel" />
+}
+@if (IsDemoteMenuOpen)
+{
+    <div class="demote-picker" style="margin-left:@((Depth + 1) * 20)px">
+        <span class="demote-picker-label">Demote under:</span>
+        @foreach (var sibling in Siblings)
+        {
+            var sibId = sibling.Id;
+            <button class="demote-pick" @onclick="() => ConfirmDemote(sibId)" @onclick:stopPropagation="true" title="Demote under @sibling.Name">@sibling.Name</button>
+        }
+        <button class="demote-pick-cancel" @onclick="CancelDemote" @onclick:stopPropagation="true">Cancel</button>
+    </div>
 }
 @if (IsAddingSubtask)
 {

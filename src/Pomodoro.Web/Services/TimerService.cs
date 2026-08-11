@@ -172,6 +172,19 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
     private async Task StartSessionAsync(SessionType sessionType, Guid? taskId = null)
     {
+        // Same-type already running -> nothing to do (avoids restarting an
+        // active timer if the shortcut fires while it is already running).
+        if (_appState.CurrentSession is { Type: var activeType, IsRunning: true } && activeType == sessionType)
+        {
+            return;
+        }
+
+        // Starting a timer commits to it: a different-type session that is
+        // currently running is abandoned (recorded as a partial for
+        // Pomodoros only; breaks are rest, not focus, so discarded
+        // silently). Paused sessions on other tabs are preserved.
+        await AbandonOtherSessionsAsync(sessionType);
+
         var durationSeconds = _appState.Settings.GetDurationSeconds(sessionType);
 
         _appState.CurrentSession = new TimerSession
@@ -193,10 +206,45 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         await _jsTimerInterop.StartAsync(_dotNetRef);
     }
 
+    private async Task AbandonOtherSessionsAsync(SessionType keepType)
+    {
+        var current = _appState.CurrentSession;
+
+        // Current session of a different type that was started (running or
+        // paused) is being abandoned by starting keepType.
+        if (current is { WasStarted: true } && current.Type != keepType)
+        {
+            await TryRecordPartialSessionAsync(current);
+        }
+
+        // Paused sessions stashed by prior tab switches are preserved, not
+        // abandoned: a paused session survives until the user resets it on
+        // its own tab (reset-session-isolation, session-switch-preservation
+        // e2e specs).
+
+        // Only the running current session has the JS worker ticking; paused
+        // and fresh states already have it stopped, so there is nothing to
+        // stop on a fresh start.
+        if (current is { IsRunning: true })
+        {
+            await _jsTimerInterop.StopAsync();
+        }
+    }
+
     public async Task SwitchSessionTypeAsync(SessionType sessionType)
     {
-        await TryRecordPartialSessionAsync();
+        // Clicking the already-active tab is a no-op so a stray click does
+        // not pause or disturb the current timer.
+        if (_appState.CurrentSession is { } current && current.Type == sessionType)
+        {
+            return;
+        }
 
+        // Tab switching is non-destructive: pause the current timer (stop the
+        // ticking worker, mark not running) and preserve it so the user can
+        // switch back and resume with no data loss. No partial is recorded
+        // here - the session is only logged if a different timer is later
+        // started, which abandons this one.
         await _jsTimerInterop.StopAsync();
 
         if (_appState.CurrentSession is { WasStarted: true, IsCompleted: false } currentSession)
@@ -317,8 +365,17 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
     public async Task<bool> TryRecordPartialSessionAsync()
     {
-        var session = _appState.CurrentSession;
-        if (session == null || !session.IsRunning || !session.WasStarted)
+        return _appState.CurrentSession != null && await TryRecordPartialSessionAsync(_appState.CurrentSession);
+    }
+
+    private async Task<bool> TryRecordPartialSessionAsync(TimerSession session)
+    {
+        if (session == null || !session.WasStarted)
+            return false;
+
+        // Only Pomodoros are logged as partials. Breaks are rest, not focus
+        // time, so abandoning a break never produces an activity record.
+        if (session.Type != SessionType.Pomodoro)
             return false;
 
         if (!_appState.Settings.RecordPartialSessions)

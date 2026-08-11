@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Moq;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
@@ -116,7 +117,7 @@ public partial class TimerServiceTests
         }
 
         [Fact]
-        public async Task SwitchSessionTypeAsync_ToSameSessionType_PreservesState()
+        public async Task SwitchSessionTypeAsync_ToSameSessionType_IsNoOp()
         {
             var service = CreateService();
             await service.InitializeAsync();
@@ -126,8 +127,7 @@ public partial class TimerServiceTests
             await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
 
             Assert.Equal(SessionType.Pomodoro, service.CurrentSessionType);
-            Assert.False(service.IsRunning);
-            Assert.True(service.IsPaused);
+            Assert.True(service.IsRunning);
             Assert.Equal(durationBefore, service.RemainingTime.TotalSeconds);
         }
 
@@ -200,6 +200,9 @@ public partial class TimerServiceTests
             Assert.Equal(SessionType.ShortBreak, service.CurrentSessionType);
             Assert.True(service.IsRunning);
 
+            // Switching back restores the preserved Pomodoro as paused (it is
+            // not abandoned by starting the break). See reset-session-isolation
+            // and session-switch-preservation e2e specs.
             await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
             Assert.Equal(SessionType.Pomodoro, service.CurrentSessionType);
             Assert.False(service.IsRunning);
@@ -212,12 +215,27 @@ public partial class TimerServiceTests
 public class SwitchSessionPreservationTests : TimerServiceTests
 {
     [Fact]
+    public async Task TabSwitch_PausesCurrentTimer_DoesNotRecordPartial()
+    {
+        var service = CreateService();
+        await service.InitializeAsync();
+        await service.StartPomodoroAsync();
+        AppState.CurrentSession!.RemainingSeconds = 900; // 10 min elapsed
+        TimerCompletedEventArgs? captured = null;
+        service.OnSessionInterrupted += args => { captured = args; return Task.CompletedTask; };
+
+        await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
+
+        Assert.Null(captured); // tab switch must not log anything
+        Assert.False(service.IsRunning);
+    }
+
+    [Fact]
     public async Task SwitchAwayAndBack_PreservesRemainingTime()
     {
         var service = CreateService();
         await service.InitializeAsync();
         await service.StartPomodoroAsync();
-
         AppState.CurrentSession!.RemainingSeconds = 1200;
 
         await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
@@ -225,7 +243,7 @@ public class SwitchSessionPreservationTests : TimerServiceTests
 
         Assert.Equal(SessionType.Pomodoro, service.CurrentSessionType);
         Assert.Equal(1200, service.RemainingSeconds);
-        Assert.True(service.IsPaused);
+        Assert.True(service.IsPaused); // preserved as paused, ready to resume
     }
 
     [Fact]
@@ -243,7 +261,7 @@ public class SwitchSessionPreservationTests : TimerServiceTests
     }
 
     [Fact]
-    public async Task SwitchToNewType_CreatesFreshSession()
+    public async Task SwitchToNewType_TargetIsFresh()
     {
         var service = CreateService();
         await service.InitializeAsync();
@@ -257,22 +275,6 @@ public class SwitchSessionPreservationTests : TimerServiceTests
     }
 
     [Fact]
-    public async Task ResetAsync_OnlyClearsCurrentSessionPausedState()
-    {
-        var service = CreateService();
-        await service.InitializeAsync();
-        await service.StartPomodoroAsync();
-        AppState.CurrentSession!.RemainingSeconds = 1200;
-
-        await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
-        await service.ResetAsync();
-        await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
-
-        Assert.Equal(1200, service.RemainingSeconds);
-        Assert.True(service.IsPaused);
-    }
-
-    [Fact]
     public async Task SwitchWhileNotStarted_CreatesFreshSessionForTarget()
     {
         var service = CreateService();
@@ -282,6 +284,104 @@ public class SwitchSessionPreservationTests : TimerServiceTests
 
         Assert.Equal(SessionType.ShortBreak, service.CurrentSessionType);
         Assert.Equal(service.Settings.GetDurationSeconds(SessionType.ShortBreak), service.RemainingSeconds);
+        Assert.False(service.IsPaused);
+    }
+
+    [Fact]
+    public async Task StartDifferentTimer_PreservesPausedPomodoro_ForResume()
+    {
+        var service = CreateService();
+        await service.InitializeAsync();
+        await service.StartPomodoroAsync();
+        AppState.CurrentSession!.RemainingSeconds = 900; // 10 min elapsed
+        TimerCompletedEventArgs? captured = null;
+        service.OnSessionInterrupted += args => { captured = args; return Task.CompletedTask; };
+
+        await service.SwitchSessionTypeAsync(SessionType.ShortBreak); // Pomodoro paused+preserved
+        await service.StartShortBreakAsync(); // must NOT abandon the paused Pomodoro
+
+        Assert.Null(captured); // preserved, not recorded as a partial
+
+        // Switching back must restore the paused Pomodoro with its remaining time.
+        await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
+        Assert.Equal(900, service.RemainingSeconds);
+        Assert.True(service.IsPaused);
+    }
+
+    [Fact]
+    public async Task StartDifferentTimer_PreservesPausedBreak_ForResume()
+    {
+        var service = CreateService();
+        await service.InitializeAsync();
+        await service.StartShortBreakAsync();
+        AppState.CurrentSession!.RemainingSeconds = 60; // some elapsed break time
+        TimerCompletedEventArgs? captured = null;
+        service.OnSessionInterrupted += args => { captured = args; return Task.CompletedTask; };
+
+        await service.SwitchSessionTypeAsync(SessionType.Pomodoro); // ShortBreak paused+preserved
+        await service.StartPomodoroAsync(); // breaks never record partials, and are preserved
+
+        Assert.Null(captured);
+
+        // Switching back restores the paused break with its remaining time.
+        await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
+        Assert.Equal(60, service.RemainingSeconds);
+        Assert.True(service.IsPaused);
+    }
+
+    [Fact]
+    public async Task StartDifferentTimer_AbandonsRunningPomodoro_AsPartial()
+    {
+        // Ctrl+S while a Pomodoro is running (no tab switch first) abandons it.
+        var service = CreateService();
+        await service.InitializeAsync();
+        await service.StartPomodoroAsync();
+        AppState.CurrentSession!.RemainingSeconds = 900;
+        TimerCompletedEventArgs? captured = null;
+        service.OnSessionInterrupted += args => { captured = args; return Task.CompletedTask; };
+
+        await service.StartShortBreakAsync();
+
+        Assert.NotNull(captured);
+        captured!.SessionType.Should().Be(SessionType.Pomodoro);
+        captured.DurationMinutes.Should().Be(10);
+    }
+
+    [Fact]
+    public async Task StartSameType_AlreadyRunning_IsNoOp()
+    {
+        var service = CreateService();
+        await service.InitializeAsync();
+        await service.StartPomodoroAsync();
+        var remainingBefore = service.RemainingSeconds;
+
+        await service.StartPomodoroAsync(); // second start while running
+
+        Assert.True(service.IsRunning);
+        Assert.Equal(remainingBefore, service.RemainingSeconds); // not restarted
+    }
+
+    [Fact]
+    public async Task ResetClearsSameTypePausedEntry()
+    {
+        var service = CreateService();
+        await service.InitializeAsync();
+        await service.StartPomodoroAsync();
+        AppState.CurrentSession!.RemainingSeconds = 1200;
+
+        await service.SwitchSessionTypeAsync(SessionType.ShortBreak); // Pomodoro stored at 1200
+        await service.SwitchSessionTypeAsync(SessionType.Pomodoro); // restored, paused
+        Assert.True(service.IsPaused);
+
+        await service.ResetAsync(); // resets current Pomodoro, clears stored Pomodoro entry
+
+        Assert.Equal(service.Settings.GetDurationSeconds(SessionType.Pomodoro), service.RemainingSeconds);
+        Assert.False(service.IsPaused);
+
+        await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
+        await service.SwitchSessionTypeAsync(SessionType.Pomodoro); // no stored entry -> fresh
+
+        Assert.Equal(service.Settings.GetDurationSeconds(SessionType.Pomodoro), service.RemainingSeconds);
         Assert.False(service.IsPaused);
     }
 }

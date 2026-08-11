@@ -185,7 +185,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                 );
             }, Constants.KeyboardShortcuts.PlayPauseDescription);
 
-            KeyboardShortcutService.RegisterShortcut("r", () =>
+            KeyboardShortcutService.RegisterShortcut("ctrl+r", () =>
             {
                 SafeTaskRunner.RunAndForget(
                     () => TimerService.ResetAsync(),
@@ -195,7 +195,7 @@ public partial class IndexBase : ComponentBase, IDisposable
             }, Constants.KeyboardShortcuts.ResetDescription);
 
             // Session switching shortcuts
-            KeyboardShortcutService.RegisterShortcut("p", () =>
+            KeyboardShortcutService.RegisterShortcut("ctrl+p", () =>
             {
                 SafeTaskRunner.RunAndForget(
                     () => TimerService.StartPomodoroAsync(),
@@ -204,7 +204,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                 );
             }, Constants.KeyboardShortcuts.PomodoroDescription);
 
-            KeyboardShortcutService.RegisterShortcut("s", () =>
+            KeyboardShortcutService.RegisterShortcut("ctrl+s", () =>
             {
                 SafeTaskRunner.RunAndForget(
                     () => TimerService.StartShortBreakAsync(),
@@ -213,7 +213,7 @@ public partial class IndexBase : ComponentBase, IDisposable
                 );
             }, Constants.KeyboardShortcuts.ShortBreakDescription);
 
-            KeyboardShortcutService.RegisterShortcut("l", () =>
+            KeyboardShortcutService.RegisterShortcut("ctrl+l", () =>
             {
                 SafeTaskRunner.RunAndForget(
                     () => TimerService.StartLongBreakAsync(),
@@ -464,10 +464,10 @@ public partial class IndexBase : ComponentBase, IDisposable
         if (KeyboardShortcutService != null)
         {
             KeyboardShortcutService.UnregisterShortcut("space");
-            KeyboardShortcutService.UnregisterShortcut("r");
-            KeyboardShortcutService.UnregisterShortcut("p");
-            KeyboardShortcutService.UnregisterShortcut("s");
-            KeyboardShortcutService.UnregisterShortcut("l");
+            KeyboardShortcutService.UnregisterShortcut("ctrl+r");
+            KeyboardShortcutService.UnregisterShortcut("ctrl+p");
+            KeyboardShortcutService.UnregisterShortcut("ctrl+s");
+            KeyboardShortcutService.UnregisterShortcut("ctrl+l");
         }
     }
 

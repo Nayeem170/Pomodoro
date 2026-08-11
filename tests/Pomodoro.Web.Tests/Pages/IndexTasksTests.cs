@@ -581,5 +581,41 @@ public class IndexTasksTests : TestHelper
     }
 
     #endregion
+
+    #region HandleToggleFollowParent
+
+    [Fact]
+    public async Task HandleToggleFollowParent_TogglesFlagAndCallsService()
+    {
+        var taskId = Guid.NewGuid();
+        AppState.Tasks = new List<TaskItem>
+        {
+            new() { Id = taskId, Name = "Subtask", FollowsParentRepeat = true }
+        };
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        await cut.Instance.HandleToggleFollowParent(taskId);
+
+        TaskServiceMock.Verify(
+            x => x.SetFollowsParentRepeatAsync(taskId, false),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleToggleFollowParent_WhenTaskMissing_DoesNotCallService()
+    {
+        AppState.Tasks = new List<TaskItem>();
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        await cut.Instance.HandleToggleFollowParent(Guid.NewGuid());
+
+        TaskServiceMock.Verify(
+            x => x.SetFollowsParentRepeatAsync(It.IsAny<Guid>(), It.IsAny<bool>()),
+            Times.Never);
+    }
+
+    #endregion
 }
 

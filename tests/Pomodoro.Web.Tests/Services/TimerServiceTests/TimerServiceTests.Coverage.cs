@@ -14,6 +14,33 @@ public partial class TimerServiceTests
 {
     public class CoverageTests : TimerServiceTests
     {
+        #region ChangeCurrentTask
+
+        [Fact]
+        public void ChangeCurrentTask_WhenSessionActive_AssignsTaskId()
+        {
+            SetupCurrentSession(isRunning: true, wasStarted: true, remainingSeconds: 300);
+            var service = CreateService();
+            var taskId = Guid.NewGuid();
+
+            service.ChangeCurrentTask(taskId);
+
+            Assert.Equal(taskId, AppState.CurrentSession!.TaskId);
+        }
+
+        [Fact]
+        public void ChangeCurrentTask_WhenSessionNull_DoesNotThrow()
+        {
+            ClearCurrentSession();
+            var service = CreateService();
+
+            service.ChangeCurrentTask(Guid.NewGuid());
+
+            Assert.Null(AppState.CurrentSession);
+        }
+
+        #endregion
+
         #region Property getters with null session (lines 38, 41, 43, 47, 48)
 
         [Fact]
