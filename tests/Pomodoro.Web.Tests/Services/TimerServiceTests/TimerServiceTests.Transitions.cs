@@ -116,7 +116,7 @@ public partial class TimerServiceTests
         }
 
         [Fact]
-        public async Task SwitchSessionTypeAsync_ToSameSessionType_PreservesState()
+        public async Task SwitchSessionTypeAsync_ToSameSessionType_IsNoOp()
         {
             var service = CreateService();
             await service.InitializeAsync();
@@ -126,8 +126,7 @@ public partial class TimerServiceTests
             await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
 
             Assert.Equal(SessionType.Pomodoro, service.CurrentSessionType);
-            Assert.False(service.IsRunning);
-            Assert.True(service.IsPaused);
+            Assert.True(service.IsRunning);
             Assert.Equal(durationBefore, service.RemainingTime.TotalSeconds);
         }
 
@@ -203,16 +202,16 @@ public partial class TimerServiceTests
             await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
             Assert.Equal(SessionType.Pomodoro, service.CurrentSessionType);
             Assert.False(service.IsRunning);
-            Assert.True(service.IsPaused);
+            Assert.False(service.IsPaused);
         }
     }
 }
 
 [Trait("Category", "Service")]
-public class SwitchSessionPreservationTests : TimerServiceTests
+public class SwitchSessionResetTests : TimerServiceTests
 {
     [Fact]
-    public async Task SwitchAwayAndBack_PreservesRemainingTime()
+    public async Task SwitchAwayAndBack_ResetsToFreshDuration()
     {
         var service = CreateService();
         await service.InitializeAsync();
@@ -224,12 +223,12 @@ public class SwitchSessionPreservationTests : TimerServiceTests
         await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
 
         Assert.Equal(SessionType.Pomodoro, service.CurrentSessionType);
-        Assert.Equal(1200, service.RemainingSeconds);
-        Assert.True(service.IsPaused);
+        Assert.Equal(service.Settings.GetDurationSeconds(SessionType.Pomodoro), service.RemainingSeconds);
+        Assert.False(service.IsPaused);
     }
 
     [Fact]
-    public async Task SwitchAwayAndBack_PreservesTaskAssociation()
+    public async Task SwitchAwayAndBack_DoesNotPreserveTaskAssociation()
     {
         var service = CreateService();
         await service.InitializeAsync();
@@ -239,7 +238,7 @@ public class SwitchSessionPreservationTests : TimerServiceTests
         await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
         await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
 
-        Assert.Equal(taskId, service.CurrentSession!.TaskId);
+        Assert.Null(service.CurrentSession!.TaskId);
     }
 
     [Fact]
@@ -257,19 +256,18 @@ public class SwitchSessionPreservationTests : TimerServiceTests
     }
 
     [Fact]
-    public async Task ResetAsync_OnlyClearsCurrentSessionPausedState()
+    public async Task ResetThenSwitchBack_GivesFreshSession()
     {
         var service = CreateService();
         await service.InitializeAsync();
         await service.StartPomodoroAsync();
-        AppState.CurrentSession!.RemainingSeconds = 1200;
 
         await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
         await service.ResetAsync();
         await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
 
-        Assert.Equal(1200, service.RemainingSeconds);
-        Assert.True(service.IsPaused);
+        Assert.Equal(service.Settings.GetDurationSeconds(SessionType.Pomodoro), service.RemainingSeconds);
+        Assert.False(service.IsPaused);
     }
 
     [Fact]
@@ -282,6 +280,20 @@ public class SwitchSessionPreservationTests : TimerServiceTests
 
         Assert.Equal(SessionType.ShortBreak, service.CurrentSessionType);
         Assert.Equal(service.Settings.GetDurationSeconds(SessionType.ShortBreak), service.RemainingSeconds);
+        Assert.False(service.IsPaused);
+    }
+
+    [Fact]
+    public async Task PlayOneSession_ResetsOthersToFreshDuration()
+    {
+        var service = CreateService();
+        await service.InitializeAsync();
+        await service.StartPomodoroAsync();
+
+        await service.StartShortBreakAsync();
+        await service.SwitchSessionTypeAsync(SessionType.Pomodoro);
+
+        Assert.Equal(service.Settings.GetDurationSeconds(SessionType.Pomodoro), service.RemainingSeconds);
         Assert.False(service.IsPaused);
     }
 }

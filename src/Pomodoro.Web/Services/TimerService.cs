@@ -21,7 +21,6 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     private readonly SemaphoreSlim _timerCompleteLock = new(Constants.Threading.SemaphoreInitialCount, Constants.Threading.SemaphoreMaxCount);
     private readonly object _timerTickLock = new();
     private bool _isDisposed;
-    private readonly Dictionary<SessionType, TimerSession> _pausedSessions = new();
 
     // ITimerEventPublisher events
     public event Func<TimerCompletedEventArgs, Task>? OnTimerCompleted;
@@ -205,42 +204,33 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
     public async Task SwitchSessionTypeAsync(SessionType sessionType)
     {
-        await TryRecordPartialSessionAsync();
+        // Switching to the already-active tab is a no-op so a stray click on
+        // the active tab does not discard a running session.
+        if (_appState.CurrentSession is { } current && current.Type == sessionType)
+        {
+            return;
+        }
 
+        // Record the current session's elapsed time as a partial before
+        // replacing it. The session is discarded, not preserved: the partial
+        // already captured its progress, so keeping a paused copy to resume
+        // later would double-count (partial + full completion).
+        await TryRecordPartialSessionAsync();
         await _jsTimerInterop.StopAsync();
 
-        if (_appState.CurrentSession is { WasStarted: true, IsCompleted: false } currentSession)
+        var durationSeconds = _appState.Settings.GetDurationSeconds(sessionType);
+        _appState.CurrentSession = new TimerSession
         {
-            currentSession.IsRunning = false;
-            currentSession.EndAt = null;
-            _pausedSessions[currentSession.Type] = currentSession;
-        }
-        else if (_appState.CurrentSession != null)
-        {
-            _pausedSessions.Remove(_appState.CurrentSession.Type);
-        }
-
-        if (_pausedSessions.TryGetValue(sessionType, out var pausedSession))
-        {
-            _appState.CurrentSession = pausedSession;
-            _pausedSessions.Remove(sessionType);
-        }
-        else
-        {
-            var durationSeconds = _appState.Settings.GetDurationSeconds(sessionType);
-            _appState.CurrentSession = new TimerSession
-            {
-                Id = Guid.NewGuid(),
-                TaskId = null,
-                Type = sessionType,
-                StartedAt = DateTime.UtcNow,
-                DurationSeconds = durationSeconds,
-                RemainingSeconds = durationSeconds,
-                IsRunning = false,
-                IsCompleted = false,
-                EndAt = null
-            };
-        }
+            Id = Guid.NewGuid(),
+            TaskId = null,
+            Type = sessionType,
+            StartedAt = DateTime.UtcNow,
+            DurationSeconds = durationSeconds,
+            RemainingSeconds = durationSeconds,
+            IsRunning = false,
+            IsCompleted = false,
+            EndAt = null
+        };
 
         NotifyStateChanged();
     }
@@ -278,8 +268,6 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
         if (_appState.CurrentSession != null)
         {
-            _pausedSessions.Remove(_appState.CurrentSession.Type);
-
             var durationSeconds = _appState.Settings.GetDurationSeconds(_appState.CurrentSession.Type);
 
             _appState.CurrentSession.DurationSeconds = durationSeconds;
@@ -391,8 +379,6 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         session.IsRunning = false;
         session.IsCompleted = true;
         session.EndAt = null;
-
-        _pausedSessions.Remove(session.Type);
 
         // Reset remaining seconds back to full duration for display
         session.RemainingSeconds = session.DurationSeconds;
