@@ -75,7 +75,7 @@
                 </div>
                 <div class="tep-row">
                     <label class="tep-label">Name</label>
-                    <input class="tep-input tep-input-name" @bind="NewTaskName" @bind:event="oninput" @onkeydown="HandleKeyPress" placeholder="Add a task..." aria-label="New task name" />
+                    <input class="tep-input tep-input-name" @ref="_newTaskInputRef" @bind="NewTaskName" @bind:event="oninput" @onkeydown="HandleKeyPress" placeholder="Add a task..." aria-label="New task name" />
                 </div>
                 <div class="tep-row">
                     <label class="tep-label">List</label>
@@ -162,6 +162,7 @@
             <div class="add-task-form">
                 <div class="task-input-wrap">
                     <input type="text"
+                           @ref="_newTaskInputRef"
                            @bind="NewTaskName"
                            @bind:event="oninput"
                            @onkeydown="HandleKeyPress"

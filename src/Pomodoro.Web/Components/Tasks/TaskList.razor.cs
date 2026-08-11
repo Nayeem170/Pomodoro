@@ -80,6 +80,8 @@ public class TaskListBase : ComponentBase
         DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
     ];
 
+    protected ElementReference _newTaskInputRef;
+
     protected bool IsAddDisabled => string.IsNullOrWhiteSpace(NewTaskName);
 
     protected bool HasCompletedTasks => CompletedTaskNodes.Any();
@@ -256,6 +258,18 @@ public class TaskListBase : ComponentBase
             _newTaskPausedDate = null;
             _newTaskScheduledDate = null;
             _newTaskListId = null;
+        }
+        await FocusNewTaskInputAsync();
+    }
+
+    protected async Task FocusNewTaskInputAsync()
+    {
+        try
+        {
+            await _newTaskInputRef.FocusAsync();
+        }
+        catch
+        {
         }
     }
 
