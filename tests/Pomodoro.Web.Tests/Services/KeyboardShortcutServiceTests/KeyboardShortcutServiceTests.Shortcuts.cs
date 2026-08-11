@@ -1,4 +1,5 @@
 using Moq;
+using Pomodoro.Web;
 using Xunit;
 
 namespace Pomodoro.Web.Tests.Services.KeyboardShortcutServiceTests;
@@ -68,6 +69,44 @@ public partial class KeyboardShortcutServiceTests
             service.HandleShortcut("a");
             Assert.False(firstCalled);
             Assert.True(secondCalled);
+        }
+
+        [Fact]
+        public async Task RegisterShortcut_NotifiesJsRegistry()
+        {
+            // Arrange
+            var service = CreateService();
+
+            // Act
+            service.RegisterShortcut("ctrl+l", () => { }, "Long break");
+
+            // Allow the fire-and-forget JS notification to complete
+            await Task.Yield();
+
+            // Assert - the key is pushed to JS so preventDefault can target it
+            _mockJsRuntime.Verify(js => js.InvokeAsync<object>(
+                Constants.KeyboardShortcutJsFunctions.RegisterKey,
+                It.Is<object[]>(args => "ctrl+l".Equals(args[0]))),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task UnregisterShortcut_NotifiesJsRegistry()
+        {
+            // Arrange
+            var service = CreateService();
+            service.RegisterShortcut("ctrl+l", () => { });
+
+            // Act
+            service.UnregisterShortcut("ctrl+l");
+
+            await Task.Yield();
+
+            // Assert
+            _mockJsRuntime.Verify(js => js.InvokeAsync<object>(
+                Constants.KeyboardShortcutJsFunctions.UnregisterKey,
+                It.Is<object[]>(args => "ctrl+l".Equals(args[0]))),
+                Times.Once);
         }
     }
 

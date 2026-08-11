@@ -854,7 +854,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             var actions = CaptureAllShortcuts(out var cut);
 
-            await cut.InvokeAsync(() => actions["p"].Invoke());
+            await cut.InvokeAsync(() => actions["ctrl+p"].Invoke());
             await Task.Delay(100);
             TimerServiceMock.Verify(x => x.StartPomodoroAsync(It.IsAny<Guid?>()), Times.Once);
         }
@@ -864,7 +864,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             var actions = CaptureAllShortcuts(out var cut);
 
-            await cut.InvokeAsync(() => actions["s"].Invoke());
+            await cut.InvokeAsync(() => actions["ctrl+s"].Invoke());
             await Task.Delay(100);
             TimerServiceMock.Verify(x => x.StartShortBreakAsync(), Times.Once);
         }
@@ -874,7 +874,7 @@ namespace Pomodoro.Web.Tests.Pages
         {
             var actions = CaptureAllShortcuts(out var cut);
 
-            await cut.InvokeAsync(() => actions["l"].Invoke());
+            await cut.InvokeAsync(() => actions["ctrl+l"].Invoke());
             await Task.Delay(100);
             TimerServiceMock.Verify(x => x.StartLongBreakAsync(), Times.Once);
         }

@@ -143,7 +143,7 @@ public class IndexKeyboardShortcutTests : TestHelper
 
         // Assert - Verify pomodoro shortcut is registered
         KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut(
-            "p",
+            "ctrl+p",
             It.IsAny<Action>(),
             It.IsAny<string>()), Times.Once,
             "Pomodoro shortcut should be registered");
@@ -158,7 +158,7 @@ public class IndexKeyboardShortcutTests : TestHelper
 
         // Assert - Verify short break shortcut is registered
         KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut(
-            "s",
+            "ctrl+s",
             It.IsAny<Action>(),
             It.IsAny<string>()), Times.Once,
             "Short break shortcut should be registered");
@@ -173,7 +173,7 @@ public class IndexKeyboardShortcutTests : TestHelper
 
         // Assert - Verify long break shortcut is registered
         KeyboardShortcutServiceMock.Verify(x => x.RegisterShortcut(
-            "l",
+            "ctrl+l",
             It.IsAny<Action>(),
             It.IsAny<string>()), Times.Once,
             "Long break shortcut should be registered");
@@ -221,9 +221,9 @@ public class IndexKeyboardShortcutTests : TestHelper
         // Assert
         registeredKeys.Should().Contain("space", "Play/Pause shortcut should be registered");
         registeredKeys.Should().Contain("r", "Reset shortcut should be registered");
-        registeredKeys.Should().Contain("p", "Pomodoro shortcut should be registered");
-        registeredKeys.Should().Contain("s", "Short break shortcut should be registered");
-        registeredKeys.Should().Contain("l", "Long break shortcut should be registered");
+        registeredKeys.Should().Contain("ctrl+p", "Pomodoro shortcut should be registered");
+        registeredKeys.Should().Contain("ctrl+s", "Short break shortcut should be registered");
+        registeredKeys.Should().Contain("ctrl+l", "Long break shortcut should be registered");
         registeredKeys.Should().NotContain("?", "Help shortcut is owned by MainLayout");
     }
 

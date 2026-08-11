@@ -414,7 +414,7 @@ public class IndexPageRenderingTests : TestHelper
         TimerServiceMock.Setup(x => x.SwitchSessionTypeAsync(SessionType.ShortBreak)).Returns(Task.CompletedTask);
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-        cut.Find("button[title='S']").Click();
+        cut.Find("button[title='Ctrl+S']").Click();
 
         TimerServiceMock.Verify(x => x.SwitchSessionTypeAsync(SessionType.ShortBreak), Times.Once);
     }
@@ -425,7 +425,7 @@ public class IndexPageRenderingTests : TestHelper
         TimerServiceMock.Setup(x => x.SwitchSessionTypeAsync(SessionType.LongBreak)).Returns(Task.CompletedTask);
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
-        cut.Find("button[title='L']").Click();
+        cut.Find("button[title='Ctrl+L']").Click();
 
         TimerServiceMock.Verify(x => x.SwitchSessionTypeAsync(SessionType.LongBreak), Times.Once);
     }

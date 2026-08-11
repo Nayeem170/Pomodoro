@@ -46,13 +46,13 @@ public static partial class Constants
         public const string ResetKey = "R";
 
         /// <summary>Key for switching to Pomodoro session</summary>
-        public const string PomodoroKey = "P";
+        public const string PomodoroKey = "Ctrl+P";
 
         /// <summary>Key for switching to Short Break session</summary>
-        public const string ShortBreakKey = "S";
+        public const string ShortBreakKey = "Ctrl+S";
 
         /// <summary>Key for switching to Long Break session</summary>
-        public const string LongBreakKey = "L";
+        public const string LongBreakKey = "Ctrl+L";
 
         /// <summary>Key for showing keyboard shortcuts help</summary>
         public const string HelpKey = "?";

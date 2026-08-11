@@ -28,9 +28,9 @@ test.describe('Keyboard Shortcuts', () => {
 
   test('should display session switching shortcuts in help modal', async () => {
     await pomodoroPage.openKeyboardHelp();
-    await expect(pomodoroPage.page.locator('.shortcut-item kbd').filter({ hasText: /^P$/ })).toBeVisible();
-    await expect(pomodoroPage.page.locator('.shortcut-item kbd').filter({ hasText: /^S$/ })).toBeVisible();
-    await expect(pomodoroPage.page.locator('.shortcut-item kbd').filter({ hasText: /^L$/ })).toBeVisible();
+    await expect(pomodoroPage.page.locator('.shortcut-item kbd').filter({ hasText: 'Ctrl+P' })).toBeVisible();
+    await expect(pomodoroPage.page.locator('.shortcut-item kbd').filter({ hasText: 'Ctrl+S' })).toBeVisible();
+    await expect(pomodoroPage.page.locator('.shortcut-item kbd').filter({ hasText: 'Ctrl+L' })).toBeVisible();
     await pomodoroPage.closeKeyboardHelp();
   });
 
@@ -76,21 +76,35 @@ test.describe('Keyboard Shortcuts', () => {
     await expect(pomodoroPage.page.locator('button[aria-label="Start timer"]')).toBeVisible({ timeout: 5000 });
   });
 
-  test('should switch to short break with S key', async () => {
-    await pomodoroPage.page.keyboard.press('s');
+  test('should switch to short break with Ctrl+S', async () => {
+    await pomodoroPage.page.keyboard.press('Control+s');
     const shortBreakButton = pomodoroPage.page.locator('.mode-tabs button').filter({ hasText: 'Short break' });
     await expect(shortBreakButton).toHaveClass(/active/);
   });
 
-  test('should switch to long break with L key', async () => {
-    await pomodoroPage.page.keyboard.press('l');
+  test('should switch to long break with Ctrl+L', async () => {
+    await pomodoroPage.page.keyboard.press('Control+l');
     const longBreakButton = pomodoroPage.page.locator('.mode-tabs button').filter({ hasText: 'Long break' });
     await expect(longBreakButton).toHaveClass(/active/);
   });
 
-  test('should switch to pomodoro with P key', async () => {
-    await pomodoroPage.page.keyboard.press('p');
+  test('should switch to pomodoro with Ctrl+P', async () => {
+    await pomodoroPage.page.keyboard.press('Control+p');
     const pomodoroButton = pomodoroPage.page.locator('.mode-tabs button').filter({ hasText: 'Pomodoro' });
+    await expect(pomodoroButton).toHaveClass(/active/);
+  });
+
+  test('should not switch session with bare letter keys', async () => {
+    // Ensure pomodoro is active first
+    await pomodoroPage.page.keyboard.press('Control+p');
+    const pomodoroButton = pomodoroPage.page.locator('.mode-tabs button').filter({ hasText: 'Pomodoro' });
+    await expect(pomodoroButton).toHaveClass(/active/);
+
+    // Bare letters (no Ctrl) must NOT trigger session shortcuts,
+    // even when focus is on a button or body (not an input field).
+    await pomodoroPage.page.keyboard.press('l');
+    await pomodoroPage.page.keyboard.press('s');
+    await pomodoroPage.page.keyboard.press('p');
     await expect(pomodoroButton).toHaveClass(/active/);
   });
 
