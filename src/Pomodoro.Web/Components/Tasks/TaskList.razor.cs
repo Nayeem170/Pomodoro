@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Components.Tasks;
@@ -268,7 +269,10 @@ public class TaskListBase : ComponentBase
         {
             await _newTaskInputRef.FocusAsync();
         }
-        catch
+        catch (JSException)
+        {
+        }
+        catch (InvalidOperationException)
         {
         }
     }

@@ -2,6 +2,7 @@ using Bunit;
 using FluentAssertions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Moq;
 using Pomodoro.Web.Components.Tasks;
 using Pomodoro.Web.Models;
@@ -307,6 +308,80 @@ public class TaskListTests : TestContext
         Assert.Contains("add-task-form", cut.Markup);
         input = cut.Find("input.task-input");
         Assert.Equal("", input.GetAttribute("value") ?? "");
+    }
+
+    #endregion
+
+    #region Focus After Add
+
+    [Fact]
+    public async Task AddTask_ViaAddButton_FocusesCollapsedNameInput()
+    {
+        var added = false;
+        var cut = RenderComponent<TaskList>(parameters => parameters
+            .Add(p => p.Tasks, new List<TaskItem>())
+            .Add(p => p.CurrentTaskId, null)
+            .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, _ => added = true)));
+
+        cut.Find("input.task-input").Input("New Task");
+        await cut.InvokeAsync(() => cut.Find("button.btn-add-text").Click());
+
+        added.Should().BeTrue();
+        // Collapsed mode: only the inline input exists. The shared
+        // _newTaskInputRef can only bind to the rendered input, so
+        // asserting single-render guards the last-write-wins concern.
+        cut.FindAll("input.task-input").Should().HaveCount(1);
+        cut.FindAll("input.tep-input-name").Should().BeEmpty();
+        AssertFocusInvoked();
+    }
+
+    [Fact]
+    public async Task AddTask_ViaCreateButton_FocusesExpandedNameInput()
+    {
+        var added = false;
+        var cut = RenderComponent<TaskList>(parameters => parameters
+            .Add(p => p.Tasks, new List<TaskItem>())
+            .Add(p => p.CurrentTaskId, null)
+            .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, _ => added = true)));
+
+        cut.Find("button.btn-more").Click();
+        cut.Find(".add-task-section input.tep-input-name").Input("New Task");
+        await cut.InvokeAsync(() => cut.Find(".add-task-section button.tep-save-btn").Click());
+
+        added.Should().BeTrue();
+        // Expanded mode: only the panel name input exists.
+        cut.FindAll("input.tep-input-name").Should().HaveCount(1);
+        cut.FindAll("input.task-input").Should().BeEmpty();
+        AssertFocusInvoked();
+    }
+
+    [Fact]
+    public async Task AddTask_WhenFocusThrows_DoesNotPropagate()
+    {
+        // Covers the catch arm in FocusNewTaskInputAsync: a JS interop
+        // failure during focus must not escape HandleAddTask. FocusAsync
+        // is the only void JS interop TaskList issues during Add.
+        var added = false;
+        var cut = RenderComponent<TaskList>(parameters => parameters
+            .Add(p => p.Tasks, new List<TaskItem>())
+            .Add(p => p.CurrentTaskId, null)
+            .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, _ => added = true)));
+
+        JSInterop.SetupVoid().SetException(new JSException("focus failed"));
+
+        cut.Find("input.task-input").Input("New Task");
+        Func<Task> act = async () => await cut.InvokeAsync(() => cut.Find("button.btn-add-text").Click());
+
+        await act.Should().NotThrowAsync();
+        added.Should().BeTrue("the task is still added even if focus fails");
+    }
+
+    private void AssertFocusInvoked()
+    {
+        var focusInvoked = JSInterop.Invocations.Any(i =>
+            i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase));
+        focusInvoked.Should().BeTrue(
+            "FocusAsync should fire a JS interop invocation after Add");
     }
 
     #endregion
