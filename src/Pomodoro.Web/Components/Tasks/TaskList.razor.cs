@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Components.Tasks;
@@ -80,8 +79,6 @@ public class TaskListBase : ComponentBase
         DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
         DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
     ];
-
-    protected ElementReference _newTaskInputRef;
 
     protected bool IsAddDisabled => string.IsNullOrWhiteSpace(NewTaskName);
 
@@ -259,21 +256,6 @@ public class TaskListBase : ComponentBase
             _newTaskPausedDate = null;
             _newTaskScheduledDate = null;
             _newTaskListId = null;
-        }
-        await FocusNewTaskInputAsync();
-    }
-
-    protected async Task FocusNewTaskInputAsync()
-    {
-        try
-        {
-            await _newTaskInputRef.FocusAsync();
-        }
-        catch (JSException)
-        {
-        }
-        catch (InvalidOperationException)
-        {
         }
     }
 
