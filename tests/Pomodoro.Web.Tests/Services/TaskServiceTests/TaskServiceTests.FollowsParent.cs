@@ -11,6 +11,28 @@ namespace Pomodoro.Web.Tests.Services;
 public partial class TaskServiceTests
 {
     [Fact]
+    public async Task AddSubtaskAsync_NewSubtaskDefaultsToFollowsParentTrue()
+    {
+        var root = CreateSampleTask(name: "Root");
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync())
+            .ReturnsAsync(new List<TaskItem> { root });
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+        MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
+            .ReturnsAsync(true);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        await service.AddSubtaskAsync("New Sub", root.Id);
+
+        var sub = service.AllTasks.First(t => t.Name == "New Sub");
+        sub.FollowsParentRepeat.Should().BeTrue(
+            "newly created subtasks must default to FollowsParentRepeat = true");
+    }
+
+    [Fact]
     public async Task SetFollowsParentRepeatAsync_SetsValueForSubtask()
     {
         var root = CreateSampleTask(name: "Root");
