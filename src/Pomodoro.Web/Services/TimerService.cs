@@ -179,10 +179,10 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
             return;
         }
 
-        // Starting a timer commits to it: every other paused or running
-        // session is abandoned. Per the product rule, only abandoned
-        // Pomodoros record their elapsed time as a partial (breaks are rest,
-        // not focus, so they are discarded silently).
+        // Starting a timer commits to it: a different-type session that is
+        // currently running is abandoned (recorded as a partial for
+        // Pomodoros only; breaks are rest, not focus, so discarded
+        // silently). Paused sessions on other tabs are preserved.
         await AbandonOtherSessionsAsync(sessionType);
 
         var durationSeconds = _appState.Settings.GetDurationSeconds(sessionType);
@@ -217,13 +217,10 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
             await TryRecordPartialSessionAsync(current);
         }
 
-        // Any paused sessions stashed by prior tab switches are also
-        // abandoned when the user commits to running keepType.
-        foreach (var paused in _pausedSessions.Values)
-        {
-            await TryRecordPartialSessionAsync(paused);
-        }
-        _pausedSessions.Clear();
+        // Paused sessions stashed by prior tab switches are preserved, not
+        // abandoned: a paused session survives until the user resets it on
+        // its own tab (reset-session-isolation, session-switch-preservation
+        // e2e specs).
 
         // Only the running current session has the JS worker ticking; paused
         // and fresh states already have it stopped, so there is nothing to

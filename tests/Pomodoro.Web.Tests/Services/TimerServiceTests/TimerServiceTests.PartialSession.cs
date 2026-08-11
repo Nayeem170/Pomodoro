@@ -306,8 +306,8 @@ public partial class TimerServiceTests
         public async Task SwitchSessionTypeAsync_WhenPartialRecordingOn_DoesNotRecord()
         {
             // Tab switching only pauses and preserves the current timer; it must
-            // not log a partial. The partial is recorded only when a different
-            // timer is later started, which abandons the preserved one.
+            // not log a partial. The preserved session stays paused until reset
+            // on its own tab.
             AppState.Settings.RecordPartialSessions = true;
             SetupCurrentSession(isRunning: true, wasStarted: true, remainingSeconds: 600);
             var service = CreateService();
@@ -363,8 +363,8 @@ public partial class TimerServiceTests
         [Fact]
         public async Task SwitchSessionTypeAsync_WhenPaused_DoesNotRecord()
         {
-            // A paused-then-switched session is preserved, not logged. It will
-            // only log if a different timer is started afterwards (abandoning it).
+            // A paused-then-switched session is preserved, not logged. It stays
+            // paused until reset on its own tab.
             AppState.Settings.RecordPartialSessions = true;
             SetupCurrentSession(isRunning: false, wasStarted: true, remainingSeconds: 600);
             var service = CreateService();
