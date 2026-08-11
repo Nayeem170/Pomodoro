@@ -150,9 +150,10 @@ public partial class TimerServiceTests
         }
 
         [Fact]
-        public async Task TryRecordPartialSessionAsync_ForBreakSession_RecordsPartial()
+        public async Task TryRecordPartialSessionAsync_ForBreakSession_DoesNotRecord()
         {
-            // Arrange
+            // Arrange - only Pomodoros are logged as partials. Breaks are rest
+            // time, so abandoning a break never produces an activity record.
             AppState.Settings.RecordPartialSessions = true;
             SetupCurrentSession(isRunning: true, wasStarted: true, remainingSeconds: 1500 - 180, sessionType: SessionType.ShortBreak);
             var service = CreateService();
@@ -163,9 +164,8 @@ public partial class TimerServiceTests
             var result = await service.TryRecordPartialSessionAsync();
 
             // Assert
-            result.Should().BeTrue();
-            capturedArgs!.SessionType.Should().Be(SessionType.ShortBreak);
-            capturedArgs.WasCompleted.Should().BeFalse();
+            result.Should().BeFalse();
+            capturedArgs.Should().BeNull();
         }
 
         [Fact]
@@ -302,9 +302,11 @@ public partial class TimerServiceTests
         }
 
         [Fact]
-        public async Task SwitchSessionTypeAsync_WhenPartialRecordingOn_RecordsPartialBeforeSwitch()
+        public async Task SwitchSessionTypeAsync_WhenPartialRecordingOn_DoesNotRecord()
         {
-            // Arrange
+            // Tab switching only pauses and preserves the current timer; it must
+            // not log a partial. The partial is recorded only when a different
+            // timer is later started, which abandons the preserved one.
             AppState.Settings.RecordPartialSessions = true;
             SetupCurrentSession(isRunning: true, wasStarted: true, remainingSeconds: 600);
             var service = CreateService();
@@ -315,10 +317,7 @@ public partial class TimerServiceTests
             await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
 
             // Assert
-            capturedArgs.Should().NotBeNull();
-            capturedArgs!.WasCompleted.Should().BeFalse();
-            capturedArgs.DurationMinutes.Should().Be(15);
-            capturedArgs.SessionType.Should().Be(SessionType.Pomodoro);
+            capturedArgs.Should().BeNull();
         }
 
         [Fact]
@@ -361,9 +360,10 @@ public partial class TimerServiceTests
         }
 
         [Fact]
-        public async Task SwitchSessionTypeAsync_WhenPaused_RecordsPartialBeforeSwitch()
+        public async Task SwitchSessionTypeAsync_WhenPaused_DoesNotRecord()
         {
-            // Arrange - user started timer, paused, then switched session type
+            // A paused-then-switched session is preserved, not logged. It will
+            // only log if a different timer is started afterwards (abandoning it).
             AppState.Settings.RecordPartialSessions = true;
             SetupCurrentSession(isRunning: false, wasStarted: true, remainingSeconds: 600);
             var service = CreateService();
@@ -374,11 +374,7 @@ public partial class TimerServiceTests
             await service.SwitchSessionTypeAsync(SessionType.ShortBreak);
 
             // Assert
-            capturedArgs.Should().NotBeNull(
-                "a paused-then-switch session must still log the partial elapsed time");
-            capturedArgs!.WasCompleted.Should().BeFalse();
-            capturedArgs.DurationMinutes.Should().Be(15);
-            capturedArgs.SessionType.Should().Be(SessionType.Pomodoro);
+            capturedArgs.Should().BeNull();
         }
 
         [Fact]

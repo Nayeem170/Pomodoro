@@ -21,6 +21,7 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
     private readonly SemaphoreSlim _timerCompleteLock = new(Constants.Threading.SemaphoreInitialCount, Constants.Threading.SemaphoreMaxCount);
     private readonly object _timerTickLock = new();
     private bool _isDisposed;
+    private readonly Dictionary<SessionType, TimerSession> _pausedSessions = new();
 
     // ITimerEventPublisher events
     public event Func<TimerCompletedEventArgs, Task>? OnTimerCompleted;
@@ -171,15 +172,18 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
     private async Task StartSessionAsync(SessionType sessionType, Guid? taskId = null)
     {
-        // If a session is in progress (e.g. a Pomodoro is running and the user
-        // starts a break via the keyboard shortcut which bypasses
-        // SwitchSessionTypeAsync), record the elapsed time as a partial session
-        // and stop its timer before replacing it. No-op on a fresh start.
-        if (_appState.CurrentSession is { WasStarted: true })
+        // Same-type already running -> nothing to do (avoids restarting an
+        // active timer if the shortcut fires while it is already running).
+        if (_appState.CurrentSession is { Type: var activeType, IsRunning: true } && activeType == sessionType)
         {
-            await TryRecordPartialSessionAsync();
-            await _jsTimerInterop.StopAsync();
+            return;
         }
+
+        // Starting a timer commits to it: every other paused or running
+        // session is abandoned. Per the product rule, only abandoned
+        // Pomodoros record their elapsed time as a partial (breaks are rest,
+        // not focus, so they are discarded silently).
+        await AbandonOtherSessionsAsync(sessionType);
 
         var durationSeconds = _appState.Settings.GetDurationSeconds(sessionType);
 
@@ -202,35 +206,82 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         await _jsTimerInterop.StartAsync(_dotNetRef);
     }
 
+    private async Task AbandonOtherSessionsAsync(SessionType keepType)
+    {
+        var current = _appState.CurrentSession;
+
+        // Current session of a different type that was started (running or
+        // paused) is being abandoned by starting keepType.
+        if (current is { WasStarted: true } && current.Type != keepType)
+        {
+            await TryRecordPartialSessionAsync(current);
+        }
+
+        // Any paused sessions stashed by prior tab switches are also
+        // abandoned when the user commits to running keepType.
+        foreach (var paused in _pausedSessions.Values)
+        {
+            await TryRecordPartialSessionAsync(paused);
+        }
+        _pausedSessions.Clear();
+
+        // Only the running current session has the JS worker ticking; paused
+        // and fresh states already have it stopped, so there is nothing to
+        // stop on a fresh start.
+        if (current is { IsRunning: true })
+        {
+            await _jsTimerInterop.StopAsync();
+        }
+    }
+
     public async Task SwitchSessionTypeAsync(SessionType sessionType)
     {
-        // Switching to the already-active tab is a no-op so a stray click on
-        // the active tab does not discard a running session.
+        // Clicking the already-active tab is a no-op so a stray click does
+        // not pause or disturb the current timer.
         if (_appState.CurrentSession is { } current && current.Type == sessionType)
         {
             return;
         }
 
-        // Record the current session's elapsed time as a partial before
-        // replacing it. The session is discarded, not preserved: the partial
-        // already captured its progress, so keeping a paused copy to resume
-        // later would double-count (partial + full completion).
-        await TryRecordPartialSessionAsync();
+        // Tab switching is non-destructive: pause the current timer (stop the
+        // ticking worker, mark not running) and preserve it so the user can
+        // switch back and resume with no data loss. No partial is recorded
+        // here - the session is only logged if a different timer is later
+        // started, which abandons this one.
         await _jsTimerInterop.StopAsync();
 
-        var durationSeconds = _appState.Settings.GetDurationSeconds(sessionType);
-        _appState.CurrentSession = new TimerSession
+        if (_appState.CurrentSession is { WasStarted: true, IsCompleted: false } currentSession)
         {
-            Id = Guid.NewGuid(),
-            TaskId = null,
-            Type = sessionType,
-            StartedAt = DateTime.UtcNow,
-            DurationSeconds = durationSeconds,
-            RemainingSeconds = durationSeconds,
-            IsRunning = false,
-            IsCompleted = false,
-            EndAt = null
-        };
+            currentSession.IsRunning = false;
+            currentSession.EndAt = null;
+            _pausedSessions[currentSession.Type] = currentSession;
+        }
+        else if (_appState.CurrentSession != null)
+        {
+            _pausedSessions.Remove(_appState.CurrentSession.Type);
+        }
+
+        if (_pausedSessions.TryGetValue(sessionType, out var pausedSession))
+        {
+            _appState.CurrentSession = pausedSession;
+            _pausedSessions.Remove(sessionType);
+        }
+        else
+        {
+            var durationSeconds = _appState.Settings.GetDurationSeconds(sessionType);
+            _appState.CurrentSession = new TimerSession
+            {
+                Id = Guid.NewGuid(),
+                TaskId = null,
+                Type = sessionType,
+                StartedAt = DateTime.UtcNow,
+                DurationSeconds = durationSeconds,
+                RemainingSeconds = durationSeconds,
+                IsRunning = false,
+                IsCompleted = false,
+                EndAt = null
+            };
+        }
 
         NotifyStateChanged();
     }
@@ -268,6 +319,8 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
         if (_appState.CurrentSession != null)
         {
+            _pausedSessions.Remove(_appState.CurrentSession.Type);
+
             var durationSeconds = _appState.Settings.GetDurationSeconds(_appState.CurrentSession.Type);
 
             _appState.CurrentSession.DurationSeconds = durationSeconds;
@@ -315,8 +368,17 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
 
     public async Task<bool> TryRecordPartialSessionAsync()
     {
-        var session = _appState.CurrentSession;
+        return _appState.CurrentSession != null && await TryRecordPartialSessionAsync(_appState.CurrentSession);
+    }
+
+    private async Task<bool> TryRecordPartialSessionAsync(TimerSession session)
+    {
         if (session == null || !session.WasStarted)
+            return false;
+
+        // Only Pomodoros are logged as partials. Breaks are rest, not focus
+        // time, so abandoning a break never produces an activity record.
+        if (session.Type != SessionType.Pomodoro)
             return false;
 
         if (!_appState.Settings.RecordPartialSessions)
@@ -379,6 +441,8 @@ public class TimerService : ITimerService, ITimerEventPublisher, IAsyncDisposabl
         session.IsRunning = false;
         session.IsCompleted = true;
         session.EndAt = null;
+
+        _pausedSessions.Remove(session.Type);
 
         // Reset remaining seconds back to full duration for display
         session.RemainingSeconds = session.DurationSeconds;
