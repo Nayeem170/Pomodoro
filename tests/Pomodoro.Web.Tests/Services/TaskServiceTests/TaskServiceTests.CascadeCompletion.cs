@@ -238,7 +238,7 @@ public partial class TaskServiceTests
     }
 
     [Fact]
-    public async Task CompleteTaskAsync_RecurringAncestorAutoCompleted_StampesLastCompletedDate()
+    public async Task CompleteTaskAsync_RecurringAncestorAutoCompleted_StampsLastCompletedDate()
     {
         // Arrange - recurring parent with one subtask
         var parentId = Guid.NewGuid();
