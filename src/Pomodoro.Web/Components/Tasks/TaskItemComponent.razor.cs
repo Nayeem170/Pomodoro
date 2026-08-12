@@ -39,6 +39,15 @@ public class TaskItemBase : ComponentBase
     public EventCallback<Guid> OnReparentToRoot { get; set; }
 
     [Parameter]
+    public EventCallback<DemoteRequest> OnDemote { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid> OnToggleFollowParent { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<TaskItem> Siblings { get; set; } = [];
+
+    [Parameter]
     public bool HasChildren { get; set; }
 
     [Parameter]
@@ -59,15 +68,27 @@ public class TaskItemBase : ComponentBase
 
     protected bool IsEditing { get; set; }
 
+    protected bool IsInlineEditing { get; set; }
+
     protected bool IsAddingSubtask { get; set; }
 
     protected bool IsConfirmingDelete { get; set; }
 
+    protected bool IsDemoteMenuOpen { get; set; }
+
     protected string NewSubtaskName { get; set; } = string.Empty;
+
+    protected string InlineEditName { get; set; } = string.Empty;
+
+    protected ElementReference _inlineEditInput;
+
+    private bool _shouldFocusInlineEdit;
 
     protected bool CanAddSubtask => Depth < Constants.Tasks.MaxSubtaskDepth;
 
     protected bool CanMoveToRoot => Depth > 0;
+
+    protected bool CanDemote => Siblings is { Count: > 0 };
 
     [Parameter]
     public string? GoogleListTitle { get; set; }
@@ -104,6 +125,7 @@ public class TaskItemBase : ComponentBase
         var classes = new List<string>();
         if (IsSelected) classes.Add(Constants.Tasks.SelectedClass);
         if (Item.IsCompleted) classes.Add(Constants.Tasks.CompletedClass);
+        if (IsInlineEditing || IsDemoteMenuOpen) classes.Add("active-form");
         return string.Join(" ", classes);
     }
 
@@ -178,7 +200,48 @@ public class TaskItemBase : ComponentBase
 
     protected void HandleEdit()
     {
-        IsEditing = !IsEditing;
+        if (Depth == 0)
+        {
+            IsEditing = !IsEditing;
+        }
+        else
+        {
+            StartInlineEdit();
+        }
+    }
+
+    protected void StartInlineEdit()
+    {
+        InlineEditName = Item.Name;
+        IsInlineEditing = true;
+        _shouldFocusInlineEdit = true;
+    }
+
+    protected async Task SaveInlineEdit()
+    {
+        if (!IsInlineEditing) return;
+        var trimmed = (InlineEditName ?? string.Empty).Trim();
+        if (string.IsNullOrEmpty(trimmed))
+        {
+            CancelInlineEdit();
+            return;
+        }
+        IsInlineEditing = false;
+        Item.Name = trimmed;
+        await OnEdit.InvokeAsync(Item);
+    }
+
+    protected void CancelInlineEdit()
+    {
+        IsInlineEditing = false;
+    }
+
+    protected async Task HandleInlineEditKey(KeyboardEventArgs e)
+    {
+        if (e.Key == Constants.Keys.Enter)
+            await SaveInlineEdit();
+        else if (e.Key == Constants.Keys.Escape)
+            CancelInlineEdit();
     }
 
     protected async Task HandleEditSave(TaskItem updatedTask)
@@ -231,9 +294,39 @@ public class TaskItemBase : ComponentBase
         await OnReparentToRoot.InvokeAsync(Item.Id);
     }
 
+    protected async Task HandleToggleFollowParent()
+    {
+        await OnToggleFollowParent.InvokeAsync(Item.Id);
+    }
+
+    protected void HandleDemote()
+    {
+        IsDemoteMenuOpen = !IsDemoteMenuOpen;
+    }
+
+    protected async Task ConfirmDemote(Guid siblingId)
+    {
+        IsDemoteMenuOpen = false;
+        await OnDemote.InvokeAsync(new DemoteRequest(Item.Id, siblingId));
+    }
+
+    protected void CancelDemote()
+    {
+        IsDemoteMenuOpen = false;
+    }
+
     protected async Task HandleToggleCollapse()
     {
         await OnToggleCollapse.InvokeAsync(Item.Id);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_shouldFocusInlineEdit)
+        {
+            _shouldFocusInlineEdit = false;
+            try { await _inlineEditInput.FocusAsync(); } catch { }
+        }
     }
 
     #endregion

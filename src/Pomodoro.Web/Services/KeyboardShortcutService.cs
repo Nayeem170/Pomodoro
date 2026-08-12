@@ -25,6 +25,7 @@ public class KeyboardShortcutService : IKeyboardShortcutService, IAsyncDisposabl
         {
             _descriptions[normalizedKey] = description;
         }
+        NotifyKeyChanged(Constants.KeyboardShortcutJsFunctions.RegisterKey, normalizedKey);
         _logger.LogDebug("Registered keyboard shortcut: {Key}", normalizedKey);
     }
 
@@ -33,7 +34,20 @@ public class KeyboardShortcutService : IKeyboardShortcutService, IAsyncDisposabl
         var normalizedKey = key.ToLowerInvariant();
         _shortcuts.Remove(normalizedKey);
         _descriptions.Remove(normalizedKey);
+        NotifyKeyChanged(Constants.KeyboardShortcutJsFunctions.UnregisterKey, normalizedKey);
         _logger.LogDebug("Unregistered keyboard shortcut: {Key}", normalizedKey);
+    }
+
+    private async void NotifyKeyChanged(string jsFunction, string normalizedKey)
+    {
+        try
+        {
+            await _jsRuntime.InvokeVoidAsync(jsFunction, normalizedKey);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to sync shortcut key to JS: {Function} {Key}", jsFunction, normalizedKey);
+        }
     }
 
     public Dictionary<string, string> GetRegisteredShortcuts()

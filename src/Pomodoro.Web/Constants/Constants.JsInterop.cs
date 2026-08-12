@@ -67,6 +67,8 @@ public static partial class Constants
     {
         public const string Initialize = "keyboardShortcuts.initialize";
         public const string Dispose = "keyboardShortcuts.dispose";
+        public const string RegisterKey = "keyboardShortcuts.registerKey";
+        public const string UnregisterKey = "keyboardShortcuts.unregisterKey";
     }
 
     public static class InfiniteScrollJsFunctions

@@ -39,6 +39,12 @@ public class TaskListBase : ComponentBase
     public EventCallback<Guid> OnReparentToRoot { get; set; }
 
     [Parameter]
+    public EventCallback<DemoteRequest> OnDemote { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid> OnToggleFollowParent { get; set; }
+
+    [Parameter]
     public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
 
     [Parameter]
@@ -111,6 +117,13 @@ public class TaskListBase : ComponentBase
         string.IsNullOrEmpty(task.GoogleListId)
             ? null
             : GoogleLists.FirstOrDefault(l => l.Id == task.GoogleListId)?.Title;
+
+    protected IReadOnlyList<TaskItem> SiblingsFor(TaskItem task)
+    {
+        return Tasks
+            .Where(t => t.ParentTaskId == task.ParentTaskId && t.Id != task.Id)
+            .ToList();
+    }
 
     protected void ToggleCollapse(Guid taskId)
     {
@@ -295,6 +308,16 @@ public class TaskListBase : ComponentBase
     protected async Task HandleReparentToRoot(Guid taskId)
     {
         await OnReparentToRoot.InvokeAsync(taskId);
+    }
+
+    protected async Task HandleDemote(DemoteRequest request)
+    {
+        await OnDemote.InvokeAsync(request);
+    }
+
+    protected async Task HandleToggleFollowParent(Guid taskId)
+    {
+        await OnToggleFollowParent.InvokeAsync(taskId);
     }
 
     #endregion

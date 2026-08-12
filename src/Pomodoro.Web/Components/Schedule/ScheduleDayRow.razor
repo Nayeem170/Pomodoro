@@ -31,6 +31,7 @@
                         <TaskItemComponent Item="item.Task"
                                            Depth="0"
                                            HasChildren="hasChildren"
+                                           Siblings="SiblingsFor(item.Task)"
                                            IsCollapsed="_collapsedIds.Contains(item.Task.Id)"
                                            IsSelected="false"
                                            ContextDate="Day.Date"
@@ -41,7 +42,9 @@
                                            OnUncomplete="OnUncomplete"
                                            OnEdit="OnEditTask"
                                            OnAddSubtask="OnAddSubtask"
-                                           OnReparentToRoot="OnReparentToRoot"
+                                            OnReparentToRoot="OnReparentToRoot"
+                                           OnDemote="OnDemote"
+                                           OnToggleFollowParent="OnToggleFollowParent"
                                            OnToggleCollapse="ToggleCollapse" />
                     }
                     else
@@ -55,6 +58,7 @@
                         <TaskItemComponent Item="descItem"
                                            Depth="depth"
                                            HasChildren="HasAnyChildren(descItem.Id, descItem.GoogleTaskId)"
+                                           Siblings="SiblingsFor(descItem)"
                                            IsCollapsed="_collapsedIds.Contains(descItem.Id)"
                                            IsSelected="false"
                                            ContextDate="Day.Date"
@@ -66,6 +70,8 @@
                                            OnEdit="OnEditTask"
                                            OnAddSubtask="OnAddSubtask"
                                            OnReparentToRoot="OnReparentToRoot"
+                                           OnDemote="OnDemote"
+                                           OnToggleFollowParent="OnToggleFollowParent"
                                            OnToggleCollapse="ToggleCollapse" />
                     }
                 </li>
@@ -95,6 +101,12 @@
 
     [Microsoft.AspNetCore.Components.Parameter]
     public Microsoft.AspNetCore.Components.EventCallback<Guid> OnReparentToRoot { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<DemoteRequest> OnDemote { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<Guid> OnToggleFollowParent { get; set; }
 
     [Microsoft.AspNetCore.Components.Parameter]
     public IReadOnlyList<TaskItem>? AllTasks { get; set; }
@@ -144,6 +156,12 @@
         (taskId.HasValue && _childrenByParent.ContainsKey(taskId.Value)) ||
         (!string.IsNullOrEmpty(googleTaskId) &&
          _allSubtasks.Any(s => s.GoogleParentTaskId == googleTaskId));
+
+    private IReadOnlyList<TaskItem> SiblingsFor(TaskItem task)
+    {
+        var all = AllTasks ?? [];
+        return all.Where(t => t.ParentTaskId == task.ParentTaskId && t.Id != task.Id).ToList();
+    }
 
     private List<(TaskItem Item, int Depth)> GetDescendantTree(Guid rootId)
     {

@@ -184,7 +184,29 @@ public partial class IndexBase
     {
         await TryExecuteAsync(async () =>
         {
-            await TaskService.ReparentTaskAsync(taskId, null);
+            await TaskService.PromoteTaskAsync(taskId);
+            await UpdateStateAsync();
+            StateHasChanged();
+        }, Constants.Messages.ErrorUpdatingTask);
+    }
+
+    public async Task HandleDemote(DemoteRequest request)
+    {
+        await TryExecuteAsync(async () =>
+        {
+            await TaskService.DemoteTaskAsync(request.TaskId, request.TargetSiblingId);
+            await UpdateStateAsync();
+            StateHasChanged();
+        }, Constants.Messages.ErrorUpdatingTask);
+    }
+
+    public async Task HandleToggleFollowParent(Guid taskId)
+    {
+        await TryExecuteAsync(async () =>
+        {
+            var task = AppState.Tasks.FirstOrDefault(t => t.Id == taskId);
+            if (task == null) return;
+            await TaskService.SetFollowsParentRepeatAsync(taskId, !task.FollowsParentRepeat);
             await UpdateStateAsync();
             StateHasChanged();
         }, Constants.Messages.ErrorUpdatingTask);

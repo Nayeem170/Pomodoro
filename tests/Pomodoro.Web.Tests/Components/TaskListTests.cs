@@ -638,7 +638,7 @@ public class TaskListTests : TestContext
     [Fact]
     public async Task HandleReparentToRoot_ThroughChild_InvokesOnReparentToRoot()
     {
-        // Arrange - a child node (Depth > 0) shows the "Move to top level" button.
+        // Arrange - a child node (Depth > 0) shows the "Promote" button.
         var parentId = Guid.NewGuid();
         var childId = Guid.NewGuid();
         var tasks = new List<TaskItem>
@@ -653,10 +653,40 @@ public class TaskListTests : TestContext
             .Add(x => x.OnReparentToRoot, EventCallback.Factory.Create<Guid>(this, id => reparented = id)));
 
         // Act
-        cut.Find("button[aria-label=\"Move to top level\"]").Click();
+        cut.Find("button[aria-label=\"Promote\"]").Click();
 
         // Assert
         reparented.Should().Be(childId);
+    }
+
+    [Fact]
+    public async Task HandleDemote_ThroughSiblingSelection_InvokesOnDemote()
+    {
+        // Arrange - a task with siblings shows the "Demote" button and dropdown.
+        var firstId = Guid.NewGuid();
+        var secondId = Guid.NewGuid();
+        var thirdId = Guid.NewGuid();
+        var tasks = new List<TaskItem>
+        {
+            new() { Id = firstId, Name = "First", CreatedAt = DateTime.UtcNow },
+            new() { Id = secondId, Name = "Second", CreatedAt = DateTime.UtcNow.AddSeconds(1) },
+            new() { Id = thirdId, Name = "Third", CreatedAt = DateTime.UtcNow.AddSeconds(2) }
+        };
+        DemoteRequest? captured = null;
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, tasks)
+            .Add(x => x.CurrentTaskId, null)
+            .Add(x => x.OnDemote, EventCallback.Factory.Create<DemoteRequest>(this, r => captured = r)));
+
+        // Act - third task has siblings; open dropdown, select first sibling.
+        var demoteButtons = cut.FindAll("button[aria-label=\"Demote\"]");
+        demoteButtons.Should().HaveCountGreaterThan(0);
+        demoteButtons[2].Click();
+        cut.Find(".demote-pick").Click();
+
+        // Assert
+        captured.Should().NotBeNull();
+        captured!.TaskId.Should().Be(thirdId);
     }
 
     #endregion

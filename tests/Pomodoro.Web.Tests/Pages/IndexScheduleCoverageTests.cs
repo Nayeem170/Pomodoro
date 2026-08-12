@@ -219,11 +219,11 @@ public class IndexScheduleCoverageTests : TestHelper
     }
 
     [Fact]
-    public async Task HandleReparentToRoot_InvokesTaskServiceReparent()
+    public async Task HandleReparentToRoot_InvokesTaskServicePromote()
     {
         // Arrange
         var taskId = Guid.NewGuid();
-        TaskServiceMock.Setup(x => x.ReparentTaskAsync(It.IsAny<Guid>(), It.IsAny<Guid?>())).Returns(Task.CompletedTask);
+        TaskServiceMock.Setup(x => x.PromoteTaskAsync(It.IsAny<Guid>())).Returns(Task.CompletedTask);
         TaskServiceMock.Setup(x => x.GetTasksForListAsync(It.IsAny<string>())).ReturnsAsync(new List<TaskItem>());
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
@@ -231,7 +231,25 @@ public class IndexScheduleCoverageTests : TestHelper
         await cut.Instance.HandleReparentToRoot(taskId);
 
         // Assert
-        TaskServiceMock.Verify(x => x.ReparentTaskAsync(taskId, null), Times.Once);
+        TaskServiceMock.Verify(x => x.PromoteTaskAsync(taskId), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleDemote_InvokesTaskServiceDemote()
+    {
+        // Arrange
+        var taskId = Guid.NewGuid();
+        var siblingId = Guid.NewGuid();
+        var request = new DemoteRequest(taskId, siblingId);
+        TaskServiceMock.Setup(x => x.DemoteTaskAsync(It.IsAny<Guid>(), It.IsAny<Guid>())).Returns(Task.CompletedTask);
+        TaskServiceMock.Setup(x => x.GetTasksForListAsync(It.IsAny<string>())).ReturnsAsync(new List<TaskItem>());
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        // Act
+        await cut.Instance.HandleDemote(request);
+
+        // Assert
+        TaskServiceMock.Verify(x => x.DemoteTaskAsync(taskId, siblingId), Times.Once);
     }
 
     [Fact]
