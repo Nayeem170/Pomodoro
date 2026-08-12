@@ -830,6 +830,38 @@ public class TaskServiceMultiListTests
     }
 
     [Fact]
+    public async Task CompleteTaskAsync_Cascade_PushesCompletedPatchForGoogleParent()
+    {
+        var parentId = Guid.NewGuid();
+        var parent = new TaskItem
+        {
+            Id = parentId,
+            Name = "Google Parent",
+            GoogleTaskId = "gparent-1",
+            GoogleListId = "glist-1",
+            CreatedAt = DateTime.UtcNow
+        };
+        var child = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Local Child",
+            ParentTaskId = parentId,
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [parent, child];
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.PatchTaskAsync("glist-1", "gparent-1", It.IsAny<GoogleTaskPatch>(), It.IsAny<string?>()))
+            .ReturnsAsync((GoogleTask?)null);
+
+        var sut = CreateSut();
+        await sut.CompleteTaskAsync(child.Id);
+
+        _appState.FindTaskById(parentId)!.IsCompleted.Should().BeTrue();
+        _mockGoogleTasksService.Verify(x => x.PatchTaskAsync("glist-1", "gparent-1",
+            It.Is<GoogleTaskPatch>(p => p.Status == "completed"), It.IsAny<string?>()), Times.Once);
+    }
+
+    [Fact]
     public async Task DeleteTaskAsync_GoogleTask_DeletesViaGoogleAndSoftDeletesLocally()
     {
         var task = new TaskItem
