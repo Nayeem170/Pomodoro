@@ -434,6 +434,12 @@ input, textarea, [contenteditable="true"] {
     white-space: nowrap;
 }
 
+.task-path {
+    direction: rtl;
+    unicode-bidi: plaintext;
+    text-align: left;
+}
+
 /* Circular Progress Ring */
 .ring-area {
     position: relative;

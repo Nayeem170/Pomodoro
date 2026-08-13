@@ -70,6 +70,21 @@ public class StickyTimerBarTests : TestHelper
     }
 
     [Fact]
+    public void ShowsFullPathAndAriaLabel_WhenCurrentTaskNameIsPath()
+    {
+        // Arrange + Act
+        var cut = RenderComponent<Pomodoro.Web.Components.Timer.StickyTimerBar>(parameters => parameters
+            .Add(p => p.SessionType, SessionType.Pomodoro)
+            .Add(p => p.CurrentTaskName, "a > b > c")
+            .Add(p => p.CurrentTaskAriaLabel, "a under b under c"));
+
+        // Assert
+        var span = cut.Find(".stb-task");
+        span.TextContent.Should().Contain("Focus | a > b > c");
+        span.GetAttribute("aria-label").Should().Be("a under b under c");
+    }
+
+    [Fact]
     public void ShowsModePrefix_WhenNotPomodoro()
     {
         var cut = RenderComponent<Pomodoro.Web.Components.Timer.StickyTimerBar>(parameters => parameters

@@ -66,13 +66,13 @@ else
                         <TimerDisplay RemainingTime="RemainingTime"
                                       SessionType="CurrentSessionType"
                                       IsRunning="IsTimerRunning"
-                                      CurrentTaskName="@GetCurrentTaskName()" />
+                                      CurrentTaskName="@GetCurrentTaskPath()" />
 
                         @if (CurrentSessionType == SessionType.Pomodoro)
                         {
                             <div class="timer-task-pill">
                                 <span class="timer-task-dot"></span>
-                                <span class="timer-task-text">@(string.IsNullOrEmpty(GetCurrentTaskName()) ? Constants.TaskUI.SelectTaskPrompt : GetCurrentTaskName())</span>
+                                <span class="timer-task-text task-path" aria-label="@GetCurrentTaskAriaLabel()">@(string.IsNullOrEmpty(GetCurrentTaskPath()) ? Constants.TaskUI.SelectTaskPrompt : GetCurrentTaskPath())</span>
                             </div>
                         }
 
@@ -113,7 +113,8 @@ else
                 <StickyTimerBar SessionType="CurrentSessionType"
                                 IsRunning="IsTimerRunning"
                                 IsStarted="IsTimerStarted"
-                                CurrentTaskName="@GetCurrentTaskName()"
+                                CurrentTaskName="@GetCurrentTaskPath()"
+                                CurrentTaskAriaLabel="@GetCurrentTaskAriaLabel()"
                                 CanStart="CurrentTaskId.HasValue || CurrentSessionType != SessionType.Pomodoro"
                                 OnStart="HandleTimerStart"
                                 OnPause="HandleTimerPause"

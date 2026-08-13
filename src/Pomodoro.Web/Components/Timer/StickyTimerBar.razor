@@ -28,7 +28,7 @@
             <span class="stb-time">@FormatTime(RemainingTime)</span>
             @if (SessionType == SessionType.Pomodoro && !string.IsNullOrEmpty(CurrentTaskName))
             {
-                <span class="stb-task">Focus | @CurrentTaskName</span>
+                <span class="stb-task task-path" aria-label="@CurrentTaskAriaLabel">Focus | @CurrentTaskName</span>
             }
             else if (SessionType == SessionType.Pomodoro && !IsStarted && !IsRunning)
             {
@@ -63,6 +63,9 @@
 
     [Microsoft.AspNetCore.Components.Parameter]
     public string? CurrentTaskName { get; set; }
+
+    [Microsoft.AspNetCore.Components.Parameter]
+    public string? CurrentTaskAriaLabel { get; set; }
 
     [Microsoft.AspNetCore.Components.Parameter]
     public bool CanStart { get; set; } = true;
