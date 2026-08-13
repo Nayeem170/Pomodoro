@@ -443,7 +443,6 @@ input, textarea, [contenteditable="true"] {
 .stb-task.task-path {
     white-space: normal;
     overflow: visible;
-    text-overflow: clip;
     min-width: 0;
 }
 
