@@ -349,12 +349,6 @@ public partial class IndexBase : ComponentBase, IDisposable
         await UpdateStateAsync();
     }
 
-    protected string? GetCurrentTaskName()
-    {
-        if (!CurrentTaskId.HasValue) return null;
-        return AppState.Tasks.FirstOrDefault(t => t.Id == CurrentTaskId.Value)?.Name;
-    }
-
     protected string? GetCurrentTaskPath()
     {
         if (!CurrentTaskId.HasValue) return null;
