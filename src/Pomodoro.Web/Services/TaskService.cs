@@ -649,8 +649,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             t.IsCompleted = true;
             t.CompletedAt = DateTime.UtcNow;
         });
-        NotifyStateChanged();
-
         if (existingTask.IsGoogleTask && !string.IsNullOrEmpty(existingTask.GoogleTaskId))
         {
             var patch = new GoogleTaskPatch(null, null, "completed");
@@ -660,6 +658,9 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         {
             MarkDirty();
         }
+
+        await CascadeCompletionUpwardAsync(taskId, new HashSet<Guid> { taskId });
+        NotifyStateChanged();
     }
 
     public async Task UncompleteTaskAsync(Guid taskId)
@@ -679,8 +680,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             t.IsCompleted = false;
             t.CompletedAt = null;
         });
-        NotifyStateChanged();
-
         if (existingTask.IsGoogleTask && !string.IsNullOrEmpty(existingTask.GoogleTaskId))
         {
             var patch = new GoogleTaskPatch(null, null, "needsAction");
@@ -690,6 +689,93 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         {
             MarkDirty();
         }
+
+        await CascadeUncompletionUpwardAsync(taskId, new HashSet<Guid> { taskId });
+        NotifyStateChanged();
+    }
+
+    private async Task CascadeCompletionUpwardAsync(Guid childId, HashSet<Guid> visited)
+    {
+        var child = _appState.FindTaskById(childId);
+        if (child == null || !child.ParentTaskId.HasValue) return;
+
+        var parentId = child.ParentTaskId.Value;
+        if (!visited.Add(parentId)) return;
+
+        var parent = _appState.FindTaskById(parentId);
+        if (parent == null || parent.IsCompleted) return;
+
+        var hasIncompleteSubtask = _appState.Tasks.Any(t => !t.IsDeleted
+            && !t.IsCompleted
+            && (t.ParentTaskId == parentId
+                || (!string.IsNullOrEmpty(parent.GoogleTaskId)
+                    && t.GoogleParentTaskId == parent.GoogleTaskId)));
+        if (hasIncompleteSubtask) return;
+
+        if (parent.IsRecurring && parent.Repeat is { IsActive: true })
+        {
+            parent.Repeat!.LastCompletedDate = DateTime.Now.Date;
+        }
+
+        var parentToSave = parent.WithUpdates(c =>
+        {
+            c.IsCompleted = true;
+            c.CompletedAt = DateTime.UtcNow;
+        });
+        await SaveTaskAsync(parentToSave);
+
+        _appState.UpdateTask(parentId, t =>
+        {
+            t.IsCompleted = true;
+            t.CompletedAt = DateTime.UtcNow;
+        });
+
+        if (parent.IsGoogleTask && !string.IsNullOrEmpty(parent.GoogleTaskId))
+        {
+            await PushGooglePatchAsync(parent, new GoogleTaskPatch(null, null, "completed"));
+        }
+        else
+        {
+            MarkDirty();
+        }
+
+        await CascadeCompletionUpwardAsync(parentId, visited);
+    }
+
+    private async Task CascadeUncompletionUpwardAsync(Guid childId, HashSet<Guid> visited)
+    {
+        var child = _appState.FindTaskById(childId);
+        if (child == null || !child.ParentTaskId.HasValue) return;
+
+        var parentId = child.ParentTaskId.Value;
+        if (!visited.Add(parentId)) return;
+
+        var parent = _appState.FindTaskById(parentId);
+        if (parent == null || !parent.IsCompleted) return;
+
+        var parentToSave = parent.WithUpdates(c =>
+        {
+            c.IsCompleted = false;
+            c.CompletedAt = null;
+        });
+        await SaveTaskAsync(parentToSave);
+
+        _appState.UpdateTask(parentId, t =>
+        {
+            t.IsCompleted = false;
+            t.CompletedAt = null;
+        });
+
+        if (parent.IsGoogleTask && !string.IsNullOrEmpty(parent.GoogleTaskId))
+        {
+            await PushGooglePatchAsync(parent, new GoogleTaskPatch(null, null, "needsAction"));
+        }
+        else
+        {
+            MarkDirty();
+        }
+
+        await CascadeUncompletionUpwardAsync(parentId, visited);
     }
 
     public async Task SelectTaskAsync(Guid taskId)
