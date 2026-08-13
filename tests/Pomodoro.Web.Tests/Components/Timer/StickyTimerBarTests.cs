@@ -53,8 +53,7 @@ public class StickyTimerBarTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Components.Timer.StickyTimerBar>(parameters => parameters
             .Add(p => p.SessionType, SessionType.Pomodoro)
             .Add(p => p.IsStarted, false)
-            .Add(p => p.IsRunning, false)
-            .Add(p => p.CurrentTaskName, null));
+            .Add(p => p.IsRunning, false));
 
         cut.Find(".stb-task").TextContent.Should().Contain("Select a task");
     }
@@ -64,7 +63,7 @@ public class StickyTimerBarTests : TestHelper
     {
         var cut = RenderComponent<Pomodoro.Web.Components.Timer.StickyTimerBar>(parameters => parameters
             .Add(p => p.SessionType, SessionType.Pomodoro)
-            .Add(p => p.CurrentTaskName, "My Task"));
+            .Add(p => p.CurrentTaskSegments, new List<string> { "My Task" }));
 
         cut.Find(".stb-task").TextContent.Should().Contain("My Task");
     }
@@ -75,12 +74,12 @@ public class StickyTimerBarTests : TestHelper
         // Arrange + Act
         var cut = RenderComponent<Pomodoro.Web.Components.Timer.StickyTimerBar>(parameters => parameters
             .Add(p => p.SessionType, SessionType.Pomodoro)
-            .Add(p => p.CurrentTaskName, "a > b > c")
+            .Add(p => p.CurrentTaskSegments, new List<string> { "a", "b", "c" })
             .Add(p => p.CurrentTaskAriaLabel, "a under b under c"));
 
         // Assert
         var span = cut.Find(".stb-task");
-        span.TextContent.Should().Contain("Focus | a > b > c");
+        span.TextContent.Should().Contain("Focus | a / b / c");
         span.GetAttribute("aria-label").Should().Be("a under b under c");
     }
 

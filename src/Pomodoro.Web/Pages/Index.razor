@@ -72,7 +72,19 @@ else
                         {
                             <div class="timer-task-pill">
                                 <span class="timer-task-dot"></span>
-                                <span class="timer-task-text task-path" aria-label="@GetCurrentTaskAriaLabel()">@(string.IsNullOrEmpty(GetCurrentTaskPath()) ? Constants.TaskUI.SelectTaskPrompt : GetCurrentTaskPath())</span>
+                                <span class="timer-task-text task-path" aria-label="@GetCurrentTaskAriaLabel()">
+                                    @{
+                                        var currentSegments = GetCurrentTaskSegments();
+                                    }
+                                    @if (currentSegments is { Count: > 0 })
+                                    {
+                                        <TaskPath Segments="currentSegments" />
+                                    }
+                                    else
+                                    {
+                                        @Constants.TaskUI.SelectTaskPrompt
+                                    }
+                                </span>
                             </div>
                         }
 
@@ -113,7 +125,7 @@ else
                 <StickyTimerBar SessionType="CurrentSessionType"
                                 IsRunning="IsTimerRunning"
                                 IsStarted="IsTimerStarted"
-                                CurrentTaskName="@GetCurrentTaskPath()"
+                                CurrentTaskSegments="@GetCurrentTaskSegments()"
                                 CurrentTaskAriaLabel="@GetCurrentTaskAriaLabel()"
                                 CanStart="CurrentTaskId.HasValue || CurrentSessionType != SessionType.Pomodoro"
                                 OnStart="HandleTimerStart"

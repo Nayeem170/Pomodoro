@@ -435,9 +435,24 @@ input, textarea, [contenteditable="true"] {
 }
 
 .task-path {
-    direction: rtl;
-    unicode-bidi: plaintext;
-    text-align: left;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.timer-task-text.task-path,
+.stb-task.task-path {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    min-width: 0;
+}
+
+.task-path-anc {
+    opacity: 0.6;
+}
+
+.task-path-leaf {
+    font-weight: 600;
 }
 
 /* Circular Progress Ring */

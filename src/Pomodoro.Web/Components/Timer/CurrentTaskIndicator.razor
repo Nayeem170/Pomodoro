@@ -9,9 +9,9 @@
             var currentTask = Tasks.FirstOrDefault(t => t.Id == CurrentTaskId.Value);
             if (currentTask != null)
             {
-                var path = TaskPathFormatter.BuildPath(Tasks, currentTask.Id);
+                var segments = TaskPathFormatter.BuildSegments(Tasks, currentTask.Id);
                 var aria = TaskPathFormatter.BuildAriaLabel(Tasks, currentTask.Id);
-                <span class="task-path" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" aria-label="@aria">@path</span>
+                <span class="task-path" aria-label="@aria"><TaskPath Segments="segments" /></span>
             }
         }
         else

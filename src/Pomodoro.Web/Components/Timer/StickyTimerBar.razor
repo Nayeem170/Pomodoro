@@ -26,9 +26,9 @@
         </div>
         <div class="stb-text">
             <span class="stb-time">@FormatTime(RemainingTime)</span>
-            @if (SessionType == SessionType.Pomodoro && !string.IsNullOrEmpty(CurrentTaskName))
+            @if (SessionType == SessionType.Pomodoro && CurrentTaskSegments is { Count: > 0 })
             {
-                <span class="stb-task task-path" aria-label="@CurrentTaskAriaLabel">Focus | @CurrentTaskName</span>
+                <span class="stb-task task-path" aria-label="@CurrentTaskAriaLabel">Focus | <TaskPath Segments="CurrentTaskSegments" /></span>
             }
             else if (SessionType == SessionType.Pomodoro && !IsStarted && !IsRunning)
             {
@@ -62,7 +62,7 @@
     public bool IsStarted { get; set; }
 
     [Microsoft.AspNetCore.Components.Parameter]
-    public string? CurrentTaskName { get; set; }
+    public IReadOnlyList<string>? CurrentTaskSegments { get; set; }
 
     [Microsoft.AspNetCore.Components.Parameter]
     public string? CurrentTaskAriaLabel { get; set; }

@@ -355,6 +355,12 @@ public partial class IndexBase : ComponentBase, IDisposable
         return TaskPathFormatter.BuildPath(AppState.Tasks, CurrentTaskId.Value);
     }
 
+    protected IReadOnlyList<string>? GetCurrentTaskSegments()
+    {
+        if (!CurrentTaskId.HasValue) return null;
+        return TaskPathFormatter.BuildSegments(AppState.Tasks, CurrentTaskId.Value);
+    }
+
     protected string? GetCurrentTaskAriaLabel()
     {
         if (!CurrentTaskId.HasValue) return null;

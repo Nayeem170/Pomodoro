@@ -43,7 +43,7 @@ public class TaskPathFormatterTests
         var path = TaskPathFormatter.BuildPath(new[] { a, b, c }, c.Id);
 
         // Assert
-        path.Should().Be("a > b > c");
+        path.Should().Be("a / b / c");
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class TaskPathFormatterTests
         var path = TaskPathFormatter.BuildPath(new[] { parent, child }, child.Id);
 
         // Assert
-        path.Should().Be("parent > child");
+        path.Should().Be("parent / child");
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public class TaskPathFormatterTests
         var path = TaskPathFormatter.BuildPath(new[] { gp, mid, leaf }, leaf.Id);
 
         // Assert
-        path.Should().Be("gp > mid > leaf");
+        path.Should().Be("gp / mid / leaf");
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public class TaskPathFormatterTests
         var path = TaskPathFormatter.BuildPath(new[] { a, b }, aId);
 
         // Assert
-        path.Should().Be("B > A");
+        path.Should().Be("B / A");
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public class TaskPathFormatterTests
         var path = TaskPathFormatter.BuildPath(tasks, ids[5]);
 
         // Assert
-        var segments = path!.Split(" > ");
+        var segments = path!.Split(" / ");
         segments.Length.Should().Be(5);
         segments.Last().Should().Be("n5");
     }
@@ -151,5 +151,23 @@ public class TaskPathFormatterTests
 
         // Assert
         aria.Should().Be("a under b under c");
+    }
+
+    [Fact]
+    public void BuildSegments_ThreeDeep_ReturnsRootToLeafOrdered()
+    {
+        // Arrange
+        var a = Task(Guid.NewGuid(), "a");
+        var b = Task(Guid.NewGuid(), "b", parentId: a.Id);
+        var c = Task(Guid.NewGuid(), "c", parentId: b.Id);
+
+        // Act
+        var segments = TaskPathFormatter.BuildSegments(new[] { a, b, c }, c.Id);
+
+        // Assert
+        segments.Should().NotBeNull();
+        segments!.Count.Should().Be(3);
+        segments[0].Should().Be("a");
+        segments[^1].Should().Be("c");
     }
 }

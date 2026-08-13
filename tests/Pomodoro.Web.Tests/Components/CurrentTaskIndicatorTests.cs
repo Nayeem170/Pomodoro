@@ -56,7 +56,7 @@ public class CurrentTaskIndicatorTests : TestContext
             .Add(p => p.Tasks, new List<TaskItem> { a, b, c }));
 
         // Assert
-        cut.Find(".active-task span").TextContent.Should().Be("a > b > c");
+        cut.Find(".active-task span").TextContent.Should().Be("a / b / c");
     }
 
     [Fact]

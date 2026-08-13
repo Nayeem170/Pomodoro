@@ -578,7 +578,7 @@ public class IndexPageExpandedTests : TestHelper
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
         // Assert
-        cut.Find(".timer-task-text").TextContent.Should().Contain("a > b > c");
+        cut.Find(".timer-task-text").TextContent.Should().Contain("a / b / c");
     }
 
     [Fact]

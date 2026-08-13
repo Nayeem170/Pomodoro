@@ -12,10 +12,10 @@ public static class TaskPathFormatter
     public static string? BuildAriaLabel(IReadOnlyList<TaskItem> allTasks, Guid taskId)
         => Join(BuildSegments(allTasks, taskId), Constants.TaskUI.PathAriaJoiner);
 
-    private static string? Join(List<string>? segments, string separator)
+    private static string? Join(IReadOnlyList<string>? segments, string separator)
         => segments is null || segments.Count == 0 ? null : string.Join(separator, segments);
 
-    private static List<string>? BuildSegments(IReadOnlyList<TaskItem> allTasks, Guid taskId)
+    public static IReadOnlyList<string>? BuildSegments(IReadOnlyList<TaskItem> allTasks, Guid taskId)
     {
         if (allTasks is null || allTasks.Count == 0) return null;
 
