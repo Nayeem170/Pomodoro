@@ -11,7 +11,7 @@
     --color-border-secondary: rgba(40, 90, 75, 0.6);
     --color-border-primary: rgba(40, 90, 75, 0.8);
     --color-surface-light: #234d40;
-    --color-task-highlight: rgba(64, 145, 120, 0.35);
+    --color-task-highlight: rgba(64, 145, 120, 0.5);
     --border-radius-md: 8px;
     --border-radius-sm: 6px;
     --border-radius-lg: 12px;
@@ -1446,12 +1446,20 @@ input, textarea, [contenteditable="true"] {
 }
 
 @keyframes task-flash {
-    from { background-color: var(--color-task-highlight); }
-    to { background-color: transparent; }
+    from {
+        background-color: var(--color-task-highlight);
+        box-shadow: inset 3px 0 0 var(--color-task-highlight);
+    }
+    to {
+        background-color: transparent;
+        box-shadow: inset 3px 0 0 transparent;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .task-row--new {
+    .task-row--new,
+    .loading-spinner .ls-minute,
+    .loading-spinner .ls-hour {
         animation: none;
     }
 }

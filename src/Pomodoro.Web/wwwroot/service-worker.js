@@ -13,11 +13,11 @@
 // clear their browser cache or the service worker naturally expires (24h+).
 // =============================================================================
 //
-// Version: 8.0.0 (cache bump: tab highlight CSS + subtask UI)
-// Last updated: 2026-07-24
+// Version: 9.0.0 (cache bump: clock loader + multiline task names + task-add highlight)
+// Last updated: 2026-08-14
 
-const CACHE_NAME = 'pomodoro-cache-v8';
-const CACHE_VERSION = 8;
+const CACHE_NAME = 'pomodoro-cache-v9';
+const CACHE_VERSION = 9;
 
 // Assets to cache immediately on install (static assets)
 const PRECACHE_ASSETS = [
