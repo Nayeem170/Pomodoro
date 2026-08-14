@@ -559,6 +559,47 @@ public class IndexPageExpandedTests : TestHelper
         cut.Markup.Should().NotBeNullOrEmpty();
     }
 
+    [Fact]
+    public void IndexPage_DisplaysFullPath_WhenSubtaskSelected()
+    {
+        // Arrange
+        var a = new TaskItem { Id = Guid.NewGuid(), Name = "a" };
+        var b = new TaskItem { Id = Guid.NewGuid(), Name = "b", ParentTaskId = a.Id };
+        var c = new TaskItem { Id = Guid.NewGuid(), Name = "c", ParentTaskId = b.Id };
+        var chain = new List<TaskItem> { a, b, c };
+        AppState.Tasks = chain;
+        TaskServiceMock.SetupGet(x => x.Tasks).Returns(chain);
+        TaskServiceMock.SetupGet(x => x.AllTasks).Returns(chain);
+        TaskServiceMock.SetupGet(x => x.CurrentTaskId).Returns(c.Id);
+        TaskServiceMock.SetupGet(x => x.CurrentTask).Returns(c);
+        TimerServiceMock.SetupGet(x => x.CurrentSessionType).Returns(SessionType.Pomodoro);
+
+        // Act
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        // Assert
+        cut.Find(".timer-task-text").TextContent.Should().Contain("a / b / c");
+    }
+
+    [Fact]
+    public void IndexPage_DisplaysLeafOnly_WhenRootTaskSelected()
+    {
+        // Arrange
+        var root = new TaskItem { Id = Guid.NewGuid(), Name = "rootask" };
+        AppState.Tasks = new List<TaskItem> { root };
+        TaskServiceMock.SetupGet(x => x.Tasks).Returns(new List<TaskItem> { root });
+        TaskServiceMock.SetupGet(x => x.AllTasks).Returns(new List<TaskItem> { root });
+        TaskServiceMock.SetupGet(x => x.CurrentTaskId).Returns(root.Id);
+        TaskServiceMock.SetupGet(x => x.CurrentTask).Returns(root);
+        TimerServiceMock.SetupGet(x => x.CurrentSessionType).Returns(SessionType.Pomodoro);
+
+        // Act
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        // Assert
+        cut.Find(".timer-task-text").TextContent.Should().Contain("rootask");
+    }
+
     #endregion
 }
 

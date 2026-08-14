@@ -42,6 +42,42 @@ public class CurrentTaskIndicatorTests : TestContext
     }
 
     [Fact]
+    public void Render_WithPomodoroSessionAndSubtask_ShowsFullPath()
+    {
+        // Arrange
+        var a = new TaskItem { Id = Guid.NewGuid(), Name = "a" };
+        var b = new TaskItem { Id = Guid.NewGuid(), Name = "b", ParentTaskId = a.Id };
+        var c = new TaskItem { Id = Guid.NewGuid(), Name = "c", ParentTaskId = b.Id };
+
+        // Act
+        var cut = RenderComponent<CurrentTaskIndicator>(parameters => parameters
+            .Add(p => p.CurrentSessionType, SessionType.Pomodoro)
+            .Add(p => p.CurrentTaskId, c.Id)
+            .Add(p => p.Tasks, new List<TaskItem> { a, b, c }));
+
+        // Assert
+        cut.Find(".active-task span").TextContent.Should().Be("a / b / c");
+    }
+
+    [Fact]
+    public void Render_WithSubtask_HasUnderJoinedAriaLabel()
+    {
+        // Arrange
+        var a = new TaskItem { Id = Guid.NewGuid(), Name = "a" };
+        var b = new TaskItem { Id = Guid.NewGuid(), Name = "b", ParentTaskId = a.Id };
+        var c = new TaskItem { Id = Guid.NewGuid(), Name = "c", ParentTaskId = b.Id };
+
+        // Act
+        var cut = RenderComponent<CurrentTaskIndicator>(parameters => parameters
+            .Add(p => p.CurrentSessionType, SessionType.Pomodoro)
+            .Add(p => p.CurrentTaskId, c.Id)
+            .Add(p => p.Tasks, new List<TaskItem> { a, b, c }));
+
+        // Assert
+        cut.Find(".active-task span").GetAttribute("aria-label").Should().Be("a under b under c");
+    }
+
+    [Fact]
     public void Render_WithPomodoroSessionAndNonMatchingTask_ShowsNothing()
     {
         var cut = RenderComponent<CurrentTaskIndicator>(parameters => parameters

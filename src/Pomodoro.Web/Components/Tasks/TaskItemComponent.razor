@@ -1,7 +1,7 @@
 @inherits TaskItemBase
 @using Pomodoro.Web.Models
 
-<div class="task-row @GetTaskClass()" @onclick="HandleSelect" role="button" tabindex="0" aria-level="@(Depth + 1)" @onkeydown="HandleKeyDown">
+<div class="task-row @GetTaskClass()" @ref="_rowElement" @onclick="HandleSelect" role="button" tabindex="0" aria-level="@(Depth + 1)" @onkeydown="HandleKeyDown">
     @if (Depth > 0)
     {
         <span class="task-indent" aria-hidden="true" style="width:@(Depth * 20)px"></span>
@@ -28,7 +28,8 @@
     }
     @if (IsInlineEditing)
     {
-        <input class="task-text-input"
+        <textarea class="task-text-input"
+               rows="1"
                value="@InlineEditName"
                @oninput="@((ChangeEventArgs e) => InlineEditName = e.Value?.ToString() ?? string.Empty)"
                @onblur="SaveInlineEdit"
@@ -36,7 +37,7 @@
                @onclick:stopPropagation="true"
                @ondblclick:stopPropagation="true"
                aria-label="Edit task name"
-               @ref="_inlineEditInput" />
+               @ref="_inlineEditInput"></textarea>
     }
     else
     {
@@ -126,13 +127,13 @@
 @if (IsAddingSubtask)
 {
     <div class="add-subtask-form" style="margin-left:@((Depth + 1) * 20)px">
-        <input type="text"
+        <textarea rows="1"
                @bind="NewSubtaskName"
                @bind:event="oninput"
                @onkeydown="HandleSubtaskKeyPress"
                placeholder="Subtask name..."
                class="task-input"
-               aria-label="New subtask name" />
+               aria-label="New subtask name"></textarea>
         <button class="btn-icon-small btn-add" @onclick="HandleAddSubtask" disabled="@IsAddSubtaskDisabled" title="Add" aria-label="Add">
             +
         </button>

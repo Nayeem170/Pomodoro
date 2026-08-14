@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Components.Tasks;
@@ -62,6 +63,12 @@ public class TaskItemBase : ComponentBase
     [Parameter]
     public DateTime? ContextDate { get; set; }
 
+    [Parameter]
+    public bool IsNewlyAdded { get; set; }
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
+
     #endregion
 
     #region State
@@ -81,8 +88,10 @@ public class TaskItemBase : ComponentBase
     protected string InlineEditName { get; set; } = string.Empty;
 
     protected ElementReference _inlineEditInput;
+    protected ElementReference _rowElement;
 
     private bool _shouldFocusInlineEdit;
+    private bool _highlightScrolled;
 
     protected bool CanAddSubtask => Depth < Constants.Tasks.MaxSubtaskDepth;
 
@@ -125,6 +134,7 @@ public class TaskItemBase : ComponentBase
         var classes = new List<string>();
         if (IsSelected) classes.Add(Constants.Tasks.SelectedClass);
         if (Item.IsCompleted) classes.Add(Constants.Tasks.CompletedClass);
+        if (IsNewlyAdded) classes.Add(Constants.Tasks.NewlyAddedClass);
         if (IsInlineEditing || IsDemoteMenuOpen) classes.Add("active-form");
         return string.Join(" ", classes);
     }
@@ -326,6 +336,20 @@ public class TaskItemBase : ComponentBase
         {
             _shouldFocusInlineEdit = false;
             try { await _inlineEditInput.FocusAsync(); } catch { }
+        }
+
+        if (IsNewlyAdded && !_highlightScrolled)
+        {
+            _highlightScrolled = true;
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("taskScrollInterop.scrollIntoViewIfNeeded", _rowElement);
+            }
+            catch (JSDisconnectedException) { }
+        }
+        else if (!IsNewlyAdded)
+        {
+            _highlightScrolled = false;
         }
     }
 
