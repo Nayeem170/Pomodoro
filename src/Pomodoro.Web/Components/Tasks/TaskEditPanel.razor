@@ -5,14 +5,15 @@
     @if (IsSubtask)
     {
         <div class="tep-row">
-            <input class="tep-input"
+            <textarea class="tep-input"
+                   rows="1"
                    value="@EditName"
                    @oninput="@((ChangeEventArgs e) => EditName = e.Value?.ToString() ?? string.Empty)"
                    @onblur="HandleSave"
                    @onkeydown="HandleSubtaskKey"
                    aria-label="Subtask name"
                    @ref="_subtaskInput"
-                   autofocus />
+                   autofocus></textarea>
         </div>
     }
     else
@@ -25,7 +26,7 @@
         </div>
         <div class="tep-row">
             <label class="tep-label">Name</label>
-            <input class="tep-input tep-input-name" @bind="EditName" @bind:event="oninput" aria-label="Task name" />
+            <textarea class="tep-input tep-input-name" rows="1" @bind="EditName" @bind:event="oninput" aria-label="Task name"></textarea>
         </div>
 
         <div class="tep-row">

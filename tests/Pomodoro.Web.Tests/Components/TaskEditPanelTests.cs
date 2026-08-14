@@ -299,7 +299,7 @@ public class TaskEditPanelTests : TestContext
         var cut = RenderComponent<TaskEditPanel>(p => p.Add(x => x.Task, task));
 
         // Assert - subtask branch renders the single Subtask-name input, no full form.
-        cut.FindAll("input[aria-label=\"Subtask name\"]").Should().HaveCount(1);
+        cut.FindAll("textarea[aria-label=\"Subtask name\"]").Should().HaveCount(1);
         cut.FindAll(".tep-select").Should().HaveCount(0);
     }
 
@@ -319,7 +319,7 @@ public class TaskEditPanelTests : TestContext
             .Add(x => x.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => saved = t)));
 
         // Act
-        cut.Find("input[aria-label=\"Subtask name\"]").KeyDown(Key.Enter);
+        cut.Find("textarea[aria-label=\"Subtask name\"]").KeyDown(Key.Enter);
 
         // Assert - IsSubtask save path clears Repeat + ScheduledDate and invokes OnSave.
         saved.Should().NotBeNull();
@@ -338,7 +338,7 @@ public class TaskEditPanelTests : TestContext
             .Add(x => x.OnCancel, EventCallback.Factory.Create(this, () => cancelled = true)));
 
         // Act
-        cut.Find("input[aria-label=\"Subtask name\"]").KeyDown(Key.Escape);
+        cut.Find("textarea[aria-label=\"Subtask name\"]").KeyDown(Key.Escape);
 
         // Assert
         cancelled.Should().BeTrue();
@@ -355,8 +355,8 @@ public class TaskEditPanelTests : TestContext
             .Add(x => x.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => saved = t)));
 
         // Act - type into the subtask input (exercises @oninput), then save via Enter.
-        cut.Find("input[aria-label=\"Subtask name\"]").Input("Renamed sub");
-        cut.Find("input[aria-label=\"Subtask name\"]").KeyDown(Key.Enter);
+        cut.Find("textarea[aria-label=\"Subtask name\"]").Input("Renamed sub");
+        cut.Find("textarea[aria-label=\"Subtask name\"]").KeyDown(Key.Enter);
 
         // Assert - the typed name is captured on save.
         saved.Should().NotBeNull();

@@ -688,7 +688,7 @@ public class TaskItemComponentTests : TestContext
         // Act
         cut.Find("button[aria-label=\"Add subtask\"]").Click();
         cut.Render();
-        cut.Find("input[aria-label=\"New subtask name\"]").Input("Kid");
+        cut.Find("textarea[aria-label=\"New subtask name\"]").Input("Kid");
         cut.Find("button[aria-label=\"Add\"]").Click();
         cut.Render();
 
@@ -712,7 +712,7 @@ public class TaskItemComponentTests : TestContext
         cut.Render();
 
         // Act
-        var input = cut.Find("input[aria-label=\"New subtask name\"]");
+        var input = cut.Find("textarea[aria-label=\"New subtask name\"]");
         input.Input("Via enter");
         input.KeyDown(Key.Enter);
         cut.Render();
@@ -732,7 +732,7 @@ public class TaskItemComponentTests : TestContext
         cut.Render();
 
         // Act
-        cut.Find("input[aria-label=\"New subtask name\"]").KeyDown(Key.Escape);
+        cut.Find("textarea[aria-label=\"New subtask name\"]").KeyDown(Key.Escape);
         cut.Render();
 
         // Assert

@@ -175,7 +175,7 @@ public class ScheduleDayRowTests : TestContext
 
         cut.Find("button[aria-label=\"Add subtask\"]").Click();
         cut.Render();
-        cut.Find("input[aria-label=\"New subtask name\"]").Input("Kid");
+        cut.Find("textarea[aria-label=\"New subtask name\"]").Input("Kid");
         cut.Find("button[aria-label=\"Add\"]").Click();
         cut.Render();
 
@@ -195,7 +195,7 @@ public class ScheduleDayRowTests : TestContext
 
         cut.Find("button[aria-label=\"Add subtask\"]").Click();
         cut.Render();
-        cut.Find("input[aria-label=\"New subtask name\"]").KeyDown(Key.Escape);
+        cut.Find("textarea[aria-label=\"New subtask name\"]").KeyDown(Key.Escape);
         cut.Render();
 
         cut.FindAll(".add-subtask-form").Should().HaveCount(0);
@@ -213,7 +213,7 @@ public class ScheduleDayRowTests : TestContext
 
         cut.Find("button[aria-label=\"Add subtask\"]").Click();
         cut.Render();
-        var input = cut.Find("input[aria-label=\"New subtask name\"]");
+        var input = cut.Find("textarea[aria-label=\"New subtask name\"]");
         input.Input("Kid");
         input.KeyDown(Key.Enter);
         cut.Render();

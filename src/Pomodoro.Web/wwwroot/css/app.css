@@ -844,7 +844,7 @@ input, textarea, [contenteditable="true"] {
 
 .add-task-form {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 8px;
     padding: 12px;
     background: var(--color-background-primary);
@@ -864,7 +864,6 @@ input, textarea, [contenteditable="true"] {
     border: 1px solid #285a4b;
     border-radius: 6px;
     padding: 9px 11px;
-    padding-right: 130px;
     transition: background 0.15s, border-color 0.15s;
 }
 
@@ -880,6 +879,9 @@ input, textarea, [contenteditable="true"] {
 
 .task-input-wrap .task-input {
     width: 100%;
+}
+
+.task-input-wrap .task-input:placeholder-shown {
     padding-right: 130px;
 }
 
@@ -892,6 +894,12 @@ input, textarea, [contenteditable="true"] {
     color: var(--color-text-tertiary);
     pointer-events: none;
     white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.task-input-wrap .task-input:placeholder-shown ~ .task-input-hint {
+    opacity: 1;
 }
 
 .btn-more {
@@ -1112,9 +1120,8 @@ input, textarea, [contenteditable="true"] {
 .day-item .item-title {
     flex: 1;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
 }
 
 .day-item .item-actions {
@@ -1160,9 +1167,8 @@ input, textarea, [contenteditable="true"] {
 .day-subitem .subtask-title {
     flex: 1;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
 }
 
 .day-subitem.subtask-nested {
@@ -1244,7 +1250,7 @@ input, textarea, [contenteditable="true"] {
 
 .task-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 8px;
     padding: 7px 8px;
     border-radius: 6px;
@@ -1264,6 +1270,7 @@ input, textarea, [contenteditable="true"] {
     transition: transform 0.15s, color 0.15s;
     flex-shrink: 0;
     transform: rotate(90deg);
+    margin-top: 3px;
 }
 
 .row-toggle:hover {
@@ -1277,6 +1284,7 @@ input, textarea, [contenteditable="true"] {
 .collapse-spacer {
     width: 12px;
     flex-shrink: 0;
+    margin-top: 3px;
 }
 
 .task-checkbox {
@@ -1285,6 +1293,7 @@ input, textarea, [contenteditable="true"] {
     border-radius: 5px;
     border: 1.5px solid #5f7d73;
     flex-shrink: 0;
+    margin-top: 1px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1318,11 +1327,11 @@ input, textarea, [contenteditable="true"] {
 
 .task-text {
     font-size: 13px;
+    line-height: 1.4;
     color: var(--color-text-primary);
     flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .task-text.completed {
@@ -1411,8 +1420,10 @@ input, textarea, [contenteditable="true"] {
 
 .task-pomo-count {
     font-size: 11px;
+    line-height: 18px;
     color: var(--color-text-tertiary);
     flex-shrink: 0;
+    align-self: flex-start;
     font-family: var(--font-mono);
 }
 
@@ -1513,6 +1524,24 @@ input, textarea, [contenteditable="true"] {
 
 .task-input::placeholder {
     color: var(--color-text-tertiary);
+}
+
+textarea.task-input,
+textarea.task-text-input,
+textarea.tep-input {
+    resize: none;
+    overflow-y: auto;
+    display: block;
+    height: auto;
+    line-height: 1.4;
+    max-height: 132px;
+    field-sizing: content;
+}
+
+.add-task-form .btn-more,
+.add-task-form .btn-add-text {
+    flex-shrink: 0;
+    margin-top: 2px;
 }
 
 .btn-icon-small {
@@ -1999,6 +2028,8 @@ input, textarea, [contenteditable="true"] {
     align-items: center;
     gap: 8px;
     flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: -2px;
 }
 
 .repeat-badge,
@@ -2640,25 +2671,6 @@ input, textarea, [contenteditable="true"] {
         display: none;
     }
 
-    .task-row {
-        flex-wrap: wrap;
-    }
-
-    .task-pomo-count {
-        order: 1;
-    }
-
-    .task-secondary {
-        order: 2;
-        flex-basis: 100%;
-        justify-content: flex-start;
-        padding-left: 28px;
-    }
-
-    .task-actions {
-        margin-left: auto;
-    }
-
     .badge-label {
         display: inline;
     }
@@ -2668,6 +2680,7 @@ input, textarea, [contenteditable="true"] {
     }
 
     .task-input-wrap .task-input,
+    .task-input-wrap .task-input:placeholder-shown,
     .add-task-form .task-input {
         padding-right: 11px;
     }

@@ -128,7 +128,7 @@ public class TaskListTests : TestContext
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null));
 
-        var input = cut.Find("input.task-input");
+        var input = cut.Find("textarea.task-input");
         Assert.Equal("", input.GetAttribute("value") ?? "");
     }
 
@@ -151,12 +151,12 @@ public class TaskListTests : TestContext
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null));
 
-        var input = cut.Find("input.task-input");
+        var input = cut.Find("textarea.task-input");
         input.Input("Some text");
         input.KeyDown("Escape");
 
         Assert.Contains("add-task-form", cut.Markup);
-        input = cut.Find("input.task-input");
+        input = cut.Find("textarea.task-input");
         Assert.Equal("", input.GetAttribute("value") ?? "");
     }
 
@@ -187,7 +187,7 @@ public class TaskListTests : TestContext
             .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, req => addedTaskName = req.Name)));
 
         cut.Find("button.btn-more").Click();
-        cut.Find(".add-task-section input.tep-input-name").Input("New Task");
+        cut.Find(".add-task-section textarea.tep-input-name").Input("New Task");
         cut.Find(".add-task-section button.tep-save-btn").Click();
 
         Assert.Equal("New Task", addedTaskName);
@@ -202,12 +202,12 @@ public class TaskListTests : TestContext
             .Add(p => p.CurrentTaskId, null));
 
         cut.Find("button.btn-more").Click();
-        cut.Find(".add-task-section input.tep-input-name").Input("Some task");
+        cut.Find(".add-task-section textarea.tep-input-name").Input("Some task");
         cut.Find(".add-task-section button.tep-cancel-btn").Click();
 
         Assert.DoesNotContain("DETAILS", cut.Markup);
         Assert.Contains("add-task-form", cut.Markup);
-        var input = cut.Find("input.task-input");
+        var input = cut.Find("textarea.task-input");
         Assert.Equal("", input.GetAttribute("value") ?? "");
     }
 
@@ -218,7 +218,7 @@ public class TaskListTests : TestContext
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null));
 
-        var input = cut.Find("input.task-input");
+        var input = cut.Find("textarea.task-input");
         input.Input("Some task");
         input.TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Enter", ShiftKey = true });
 
@@ -239,7 +239,7 @@ public class TaskListTests : TestContext
             .Add(p => p.CurrentTaskId, null)
             .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, req => addedTaskName = req.Name)));
 
-        var input = cut.Find("input.task-input");
+        var input = cut.Find("textarea.task-input");
         input.Input("New Task");
         cut.Find("button.btn-add-text").Click();
 
@@ -255,7 +255,7 @@ public class TaskListTests : TestContext
             .Add(p => p.CurrentTaskId, null)
             .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, req => addedTaskName = req.Name)));
 
-        var input = cut.Find("input.task-input");
+        var input = cut.Find("textarea.task-input");
         input.Input("  New Task  ");
         cut.Find("button.btn-add-text").Click();
 
@@ -286,7 +286,7 @@ public class TaskListTests : TestContext
             .Add(p => p.CurrentTaskId, null)
             .Add(p => p.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, req => addedTaskName = req.Name)));
 
-        var input = cut.Find("input.task-input");
+        var input = cut.Find("textarea.task-input");
         input.Input("New Task");
         input.KeyDown("Enter");
 
@@ -300,12 +300,12 @@ public class TaskListTests : TestContext
             .Add(p => p.Tasks, new List<TaskItem>())
             .Add(p => p.CurrentTaskId, null));
 
-        var input = cut.Find("input.task-input");
+        var input = cut.Find("textarea.task-input");
         input.Input("Some text");
         input.KeyDown("Escape");
 
         Assert.Contains("add-task-form", cut.Markup);
-        input = cut.Find("input.task-input");
+        input = cut.Find("textarea.task-input");
         Assert.Equal("", input.GetAttribute("value") ?? "");
     }
 
@@ -625,7 +625,7 @@ public class TaskListTests : TestContext
         // Act - open subtask form, type, submit
         cut.Find("button[aria-label=\"Add subtask\"]").Click();
         cut.Render();
-        cut.Find("input[aria-label=\"New subtask name\"]").Input("New sub");
+        cut.Find("textarea[aria-label=\"New subtask name\"]").Input("New sub");
         cut.Find("button[aria-label=\"Add\"]").Click();
         cut.Render();
 

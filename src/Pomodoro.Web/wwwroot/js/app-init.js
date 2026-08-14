@@ -8,6 +8,27 @@
     // Service worker registration disabled - Cloudflare Pages _redirects catch-all
     // prevents serving service-worker.js with correct MIME type
     
+    // Task name textareas: auto-grow on input, block Enter newline (commit is handled in Blazor)
+    var taskTextareaSelector = 'textarea.task-input, textarea.task-text-input, textarea.tep-input';
+    document.addEventListener('input', function(e) {
+        var t = e.target;
+        if (t && t.matches && t.matches(taskTextareaSelector)) {
+            t.style.height = 'auto';
+            var cs = getComputedStyle(t);
+            var borders = parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
+            t.style.height = (t.scrollHeight + borders) + 'px';
+        }
+    });
+    document.addEventListener('keydown', function(e) {
+        var t = e.target;
+        if ((e.key === 'Enter' || e.key === 'Escape') && t && t.matches && t.matches(taskTextareaSelector)) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
+            t.style.height = '';
+        }
+    });
+    
     // Helper function to get URL parameters
     window.getUrlParameter = function(name) {
         const urlParams = new URLSearchParams(window.location.search);
