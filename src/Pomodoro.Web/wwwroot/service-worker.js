@@ -35,6 +35,7 @@ const PRECACHE_ASSETS = [
     '/js/pipTimer.js',
     '/js/keyboard-shortcuts.js',
     '/js/infiniteScroll.js',
+    '/js/taskScrollInterop.js',
     '/js/fileInterop.js',
     '/icon-192.svg',
     '/icon-512.svg',

@@ -31,6 +31,9 @@ public static partial class Constants
 
         public const int ErrorToastDurationMs = 4000;
 
+        /// <summary>Duration of the newly-added-task highlight flash in milliseconds (must equal the CSS task-flash duration).</summary>
+        public const int HighlightDurationMs = 1100;
+
         /// <summary>Percentage multiplier for progress calculations</summary>
         public const int PercentageMultiplier = 100;
 

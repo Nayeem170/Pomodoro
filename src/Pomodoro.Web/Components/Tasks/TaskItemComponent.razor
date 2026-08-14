@@ -1,7 +1,7 @@
 @inherits TaskItemBase
 @using Pomodoro.Web.Models
 
-<div class="task-row @GetTaskClass()" @onclick="HandleSelect" role="button" tabindex="0" aria-level="@(Depth + 1)" @onkeydown="HandleKeyDown">
+<div class="task-row @GetTaskClass()" @ref="_rowElement" @onclick="HandleSelect" role="button" tabindex="0" aria-level="@(Depth + 1)" @onkeydown="HandleKeyDown">
     @if (Depth > 0)
     {
         <span class="task-indent" aria-hidden="true" style="width:@(Depth * 20)px"></span>
