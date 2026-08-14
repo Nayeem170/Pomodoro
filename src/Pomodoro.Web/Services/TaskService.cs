@@ -427,6 +427,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         }
 
         NotifyStateChanged();
+        MarkDirty();
         return true;
     }
 

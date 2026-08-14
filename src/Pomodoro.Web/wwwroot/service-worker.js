@@ -13,8 +13,8 @@
 // clear their browser cache or the service worker naturally expires (24h+).
 // =============================================================================
 //
-// Version: 8.0.0 (cache bump: tab highlight CSS + subtask UI)
-// Last updated: 2026-07-24
+// Version: 10.0.0 (cache bump: task drag reorder + drop zone CSS)
+// Last updated: 2026-08-15
 
 const CACHE_NAME = 'pomodoro-cache-v10';
 const CACHE_VERSION = 10;

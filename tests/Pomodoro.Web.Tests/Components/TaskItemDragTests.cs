@@ -155,6 +155,24 @@ public class TaskItemDragTests : TestContext
     }
 
     [Fact]
+    public void InlineEditingRow_IsNotDraggable()
+    {
+        var task = NewTask("A");
+
+        var cut = RenderComponent<TaskItemComponent>(parameters => parameters
+            .Add(p => p.Item, task)
+            .Add(p => p.IsReorderable, true)
+            .Add(p => p.IsDragActive, false));
+
+        cut.Find(".task-row").GetAttribute("draggable").Should().Be("true");
+
+        cut.Find(".task-text").DoubleClick();
+
+        cut.Find(".task-row").GetAttribute("draggable").Should().Be("false",
+            "drag must be disabled while inline editing a task name");
+    }
+
+    [Fact]
     public void DropOnSelfRow_IsIgnored()
     {
         var target = NewTask("Target");
