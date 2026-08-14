@@ -1924,37 +1924,22 @@ input, textarea, [contenteditable="true"] {
     height: 160px;
 }
 
-.loading-spinner .ls-ring {
-    stroke-dasharray: 465;
-    stroke-dashoffset: 465;
-    animation: ls-draw-ring 3s infinite;
+.loading-spinner .ls-minute,
+.loading-spinner .ls-hour {
+    transform-box: view-box;
+    transform-origin: 50% 50%;
 }
 
-.loading-spinner .ls-short {
-    stroke-dasharray: 32;
-    stroke-dashoffset: 32;
-    animation: ls-draw-short 3s infinite;
+.loading-spinner .ls-minute {
+    animation: ls-sweep 2s linear infinite;
 }
 
-.loading-spinner .ls-long {
-    stroke-dasharray: 77;
-    stroke-dashoffset: 77;
-    animation: ls-draw-long 3s infinite;
+.loading-spinner .ls-hour {
+    animation: ls-sweep 12s linear infinite;
 }
 
-@keyframes ls-draw-ring {
-    0% { stroke-dashoffset: 465; }
-    25%, 100% { stroke-dashoffset: 0; }
-}
-
-@keyframes ls-draw-short {
-    0%, 25% { stroke-dashoffset: 32; }
-    50%, 100% { stroke-dashoffset: 0; }
-}
-
-@keyframes ls-draw-long {
-    0%, 50% { stroke-dashoffset: 77; }
-    75%, 100% { stroke-dashoffset: 0; }
+@keyframes ls-sweep {
+    to { transform: rotate(360deg); }
 }
 
 /* Section Error */

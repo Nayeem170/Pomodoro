@@ -405,7 +405,8 @@ public class IndexPageRenderingTests : TestHelper
         cut.Render();
 
         cut.Markup.Should().Contain("loading-container");
-        cut.Markup.Should().Contain("ls-ring");
+        cut.Markup.Should().Contain("ls-minute");
+        cut.Markup.Should().Contain("ls-hour");
     }
 
     [Fact]
