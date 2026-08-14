@@ -1457,10 +1457,16 @@ input, textarea, [contenteditable="true"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .task-row--new,
-    .loading-spinner .ls-minute,
-    .loading-spinner .ls-hour {
+    .task-row--new {
         animation: none;
+    }
+
+    .loading-spinner .ls-minute {
+        animation-duration: 8s;
+    }
+
+    .loading-spinner .ls-hour {
+        animation-duration: 30s;
     }
 }
 
