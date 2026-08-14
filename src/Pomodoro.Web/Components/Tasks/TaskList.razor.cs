@@ -241,7 +241,7 @@ public class TaskListBase : ComponentBase
         var roots = tasks
             .Where(t => !HasKnownParent(t))
             .OrderBy(t => t.SortOrder)
-            .ThenBy(t => t.CreatedAt);
+            .ThenByDescending(t => t.CreatedAt);
 
         void Walk(TaskItem task, int depth, bool rootIsCompleted)
         {

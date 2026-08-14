@@ -39,14 +39,15 @@ public partial class TaskServiceTests
         var result = await service.ReorderTaskAsync(c.Id, a.Id, insertBefore: true);
 
         result.Should().BeTrue();
-        service.AllTasks.First(t => t.Name == "A").SortOrder.Should().Be(1000);
+        service.AllTasks.First(t => t.Name == "A").SortOrder.Should().Be(3000,
+            "roots normalize newest-first: A is oldest so it lands last");
         service.AllTasks.First(t => t.Name == "B").SortOrder.Should().Be(2000);
-        service.AllTasks.First(t => t.Name == "C").SortOrder.Should().Be(0,
-            "C moves before A at the top edge: A - SortGap");
+        service.AllTasks.First(t => t.Name == "C").SortOrder.Should().Be(2500,
+            "midpoint between B(2000) and A(3000) after the move");
         service.Tasks
-            .OrderBy(t => t.SortOrder).ThenBy(t => t.CreatedAt)
+            .OrderBy(t => t.SortOrder)
             .Select(t => t.Name)
-            .Should().Equal("C", "A", "B");
+            .Should().Equal("B", "C", "A");
     }
 
     [Fact]
@@ -217,14 +218,19 @@ public partial class TaskServiceTests
 
         var service = await CreateInitializedServiceAsync(parent, a, b);
 
-        var result = await service.ReorderTaskAsync(b.Id, a.Id, insertBefore: true);
+        var result = await service.ReorderTaskAsync(a.Id, b.Id, insertBefore: true);
 
         result.Should().BeTrue();
+        service.AllTasks.First(t => t.Name == "Parent").SortOrder.Should().Be(1000,
+            "roots normalize newest-first: Parent (newest) leads");
+        service.AllTasks.First(t => t.Name == "B").SortOrder.Should().Be(2000);
+        service.AllTasks.First(t => t.Name == "A").SortOrder.Should().Be(1500,
+            "midpoint between Parent(1000) and B(2000)");
         service.Tasks
             .Where(t => t.ParentTaskId == null)
-            .OrderBy(t => t.SortOrder).ThenBy(t => t.CreatedAt)
+            .OrderBy(t => t.SortOrder)
             .Select(t => t.Name)
-            .Should().Equal("B", "A", "Parent");
+            .Should().Equal("Parent", "A", "B");
     }
 
     [Fact]
@@ -261,9 +267,9 @@ public partial class TaskServiceTests
 
         MockTaskRepository.Verify(r => r.SaveAsync(It.IsAny<TaskItem>()), Times.Exactly(4),
             "normalize writes all 3 group members, then the move writes the dragged task");
-        service.AllTasks.First(t => t.Name == "A").SortOrder.Should().Be(1000);
+        service.AllTasks.First(t => t.Name == "A").SortOrder.Should().Be(3000);
         service.AllTasks.First(t => t.Name == "B").SortOrder.Should().Be(2000);
-        service.AllTasks.First(t => t.Name == "C").SortOrder.Should().Be(0);
+        service.AllTasks.First(t => t.Name == "C").SortOrder.Should().Be(2500);
     }
 
     [Fact]

@@ -21,13 +21,15 @@ order exactly - no backfill.
 ## Requirements (EARS)
 
 WHEN tasks are ordered for display THE SYSTEM SHALL sort local
-children and roots by SortOrder then CreatedAt, and Google children
-by GooglePosition unchanged.
+children by SortOrder then CreatedAt (oldest first, legacy child
+order), roots by SortOrder then CreatedAt descending (newest first,
+legacy root order - E2E-enforced in task-ordering.spec.ts), and
+Google children by GooglePosition unchanged.
 
 WHEN all SortOrder values in a sibling group are 0 (never
-reordered) THE SYSTEM SHALL display them in CreatedAt order,
-byte-identical to pre-feature behavior, until the first reorder in
-that group.
+reordered) THE SYSTEM SHALL display them in legacy order (children
+oldest-first, roots newest-first), identical to pre-feature
+behavior, until the first reorder in that group.
 
 WHEN the user drags a task over the top or bottom 25% of a
 reorderable sibling row THE SYSTEM SHALL show an accent line at
@@ -72,10 +74,11 @@ disable dragging on that row.
 
 ## Visible behavior change (accepted)
 
-Roots become deterministically ordered (SortOrder then CreatedAt)
-where they were previously in repository return order. For most
-users this is identical; imported or edge-case data may reorder on
-first load after upgrade.
+Before a group's first reorder, display order is byte-identical to
+legacy behavior (verified: roots newest-first per E2E
+task-ordering.spec.ts, children oldest-first per BuildTree). After a
+group's first reorder the group switches to explicit SortOrder
+ordering; from then on the user controls the order.
 
 ## Out of scope
 

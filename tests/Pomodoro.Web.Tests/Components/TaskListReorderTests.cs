@@ -66,7 +66,7 @@ public class TaskListReorderTests : TestContext
     }
 
     [Fact]
-    public void RootOrder_FollowsSortOrderThenCreatedAt()
+    public void RootOrder_FollowsSortOrderThenNewestFirstTiebreak()
     {
         var late = NewTask("Late", sortOrder: 2000, createdAt: new DateTime(2026, 1, 1));
         var early = NewTask("Early", sortOrder: 1000, createdAt: new DateTime(2026, 1, 5));
@@ -78,8 +78,8 @@ public class TaskListReorderTests : TestContext
 
         cut.FindAll(".task-row")
             .Select(r => r.QuerySelector(".task-text")?.TextContent)
-            .Should().Equal(["Early", "Late", "Tie"],
-                "SortOrder ascending, then CreatedAt ascending as tiebreak");
+            .Should().Equal(["Early", "Tie", "Late"],
+                "roots sort by SortOrder ascending; ties break to newest-first (legacy root order)");
     }
 
     [Fact]
@@ -105,8 +105,8 @@ public class TaskListReorderTests : TestContext
     [Fact]
     public async Task OnReorder_BubblesFromChildRowToTaskListCallback()
     {
-        var a = NewTask("A");
-        var b = NewTask("B");
+        var a = NewTask("A", createdAt: new DateTime(2026, 1, 2));
+        var b = NewTask("B", createdAt: new DateTime(2026, 1, 1));
         ReorderRequest? received = null;
 
         var cut = RenderComponent<TaskList>(parameters => parameters
@@ -115,6 +115,8 @@ public class TaskListReorderTests : TestContext
             .Add(p => p.OnTaskReorder, new EventCallback<ReorderRequest>(null, (Action<ReorderRequest>)(r => received = r))));
 
         var rows = cut.FindAll(".task-row");
+        rows[0].QuerySelector(".task-text")!.TextContent.Should().Be("A",
+            "A is newest so it renders first among untouched roots");
         await rows[0].TriggerEventAsync("ondragstart", new Microsoft.AspNetCore.Components.Web.DragEventArgs());
 
         var targetRow = cut.FindAll(".task-row")[1];

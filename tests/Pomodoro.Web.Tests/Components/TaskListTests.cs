@@ -679,9 +679,10 @@ public class TaskListTests : TestContext
             .Add(x => x.OnDemote, EventCallback.Factory.Create<DemoteRequest>(this, r => captured = r)));
 
         // Act - third task has siblings; open dropdown, select first sibling.
+        // Roots render newest-first, so "Third" (latest CreatedAt) is the first row.
         var demoteButtons = cut.FindAll("button[aria-label=\"Demote\"]");
         demoteButtons.Should().HaveCountGreaterThan(0);
-        demoteButtons[2].Click();
+        demoteButtons[0].Click();
         cut.Find(".demote-pick").Click();
 
         // Assert

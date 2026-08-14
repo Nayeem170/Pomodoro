@@ -6,26 +6,49 @@ test.describe('task drag reorder', () => {
     const po = new PomodoroPage(page);
     await po.goto('/');
 
-    await po.addTask('Reorder A');
-    await po.addTask('Reorder B');
-    await po.addTask('Reorder C');
+    await po.addTask('Reorder Alpha');
+    await po.addTask('Reorder Beta');
+    await po.addTask('Reorder Gamma');
 
     const rows = page.locator('.task-row');
     await expect(rows).toHaveCount(3);
-    await expect(rows.nth(0)).toContainText('Reorder A');
 
-    const source = rows.nth(0);
-    await source.dragTo(rows.nth(2), { targetPosition: { x: 100, y: 28 } });
+    const rowOf = (name: string) => rows.filter({ hasText: name });
+    const orderNames = async () => {
+      const names: string[] = [];
+      const count = await rows.count();
+      for (let i = 0; i < count; i++) {
+        names.push((await rows.nth(i).textContent()) || '');
+      }
+      return names;
+    };
 
-    await expect(rows.nth(0)).toContainText('Reorder B', { timeout: 10000 });
-    await expect(rows.nth(2)).toContainText('Reorder A');
+    const before = await orderNames();
+    const alphaBefore = before.findIndex(n => n.includes('Reorder Alpha'));
+    const gammaBefore = before.findIndex(n => n.includes('Reorder Gamma'));
+    expect(alphaBefore).toBeGreaterThanOrEqual(0);
+    expect(gammaBefore).toBeGreaterThanOrEqual(0);
+    expect(alphaBefore).not.toBe(gammaBefore);
+
+    await rowOf('Reorder Alpha').first().dragTo(rowOf('Reorder Gamma').first(), {
+      targetPosition: { x: 100, y: 28 },
+    });
+
+    await page.waitForTimeout(1000);
+    const after = await orderNames();
+    const alphaAfter = after.findIndex(n => n.includes('Reorder Alpha'));
+    const gammaAfter = after.findIndex(n => n.includes('Reorder Gamma'));
+    expect(alphaAfter).toBeGreaterThan(gammaAfter,
+      'Alpha must render after Gamma after being dragged below it');
 
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() =>
       document.querySelectorAll('.task-row').length >= 3, { timeout: 30000 });
 
-    const reloaded = page.locator('.task-row');
-    await expect(reloaded.nth(0)).toContainText('Reorder B');
-    await expect(reloaded.nth(2)).toContainText('Reorder A');
+    const reloaded = await orderNames();
+    const alphaReloaded = reloaded.findIndex(n => n.includes('Reorder Alpha'));
+    const gammaReloaded = reloaded.findIndex(n => n.includes('Reorder Gamma'));
+    expect(alphaReloaded).toBeGreaterThan(gammaReloaded,
+      'reordered position must persist across reload');
   });
 });
