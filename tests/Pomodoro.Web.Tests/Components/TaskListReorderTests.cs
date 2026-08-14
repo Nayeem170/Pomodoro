@@ -161,6 +161,26 @@ public class TaskListReorderTests : TestContext
     }
 
     [Fact]
+    public async Task OnToggleFollowParent_BubblesFromChildRowToTaskListCallback()
+    {
+        var parent = NewTask("Parent");
+        var child = NewTask("Child");
+        child.ParentTaskId = parent.Id;
+        Guid? capturedId = null;
+
+        var cut = RenderComponent<TaskList>(parameters => parameters
+            .Add(p => p.Tasks, new List<TaskItem> { parent, child })
+            .Add(p => p.CurrentTaskId, null)
+            .Add(p => p.OnToggleFollowParent, new EventCallback<Guid>(null, (Action<Guid>)(id => capturedId = id))));
+
+        var childRow = cut.FindAll(".task-row")
+            .Single(r => r.QuerySelector(".task-text")!.TextContent == "Child");
+        await cut.InvokeAsync(() => childRow.QuerySelector(".follow-parent")!.Click());
+
+        capturedId.Should().Be(child.Id);
+    }
+
+    [Fact]
     public async Task DragStartShowsZonesOnOtherRows_AndDragEndClearsThem()
     {
         var a = NewTask("A");

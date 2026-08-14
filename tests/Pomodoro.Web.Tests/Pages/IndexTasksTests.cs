@@ -617,5 +617,60 @@ public class IndexTasksTests : TestHelper
     }
 
     #endregion
+
+    #region HandleTaskReorder
+
+    [Fact]
+    public async Task HandleTaskReorder_CallsService_WhenCalled()
+    {
+        var taskId = Guid.NewGuid();
+        var targetId = Guid.NewGuid();
+        TaskServiceMock
+            .Setup(x => x.ReorderTaskAsync(taskId, targetId, true))
+            .ReturnsAsync(true);
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        await cut.InvokeAsync(() => cut.Instance.HandleTaskReorder(new ReorderRequest(taskId, targetId, InsertBefore: true)));
+
+        TaskServiceMock.Verify(
+            x => x.ReorderTaskAsync(taskId, targetId, true),
+            Times.Once);
+        cut.Instance.ErrorMessage.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task HandleTaskReorder_SkipsStateUpdate_WhenReorderRejected()
+    {
+        var taskId = Guid.NewGuid();
+        var targetId = Guid.NewGuid();
+        TaskServiceMock
+            .Setup(x => x.ReorderTaskAsync(taskId, targetId, false))
+            .ReturnsAsync(false);
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        await cut.InvokeAsync(() => cut.Instance.HandleTaskReorder(new ReorderRequest(taskId, targetId, InsertBefore: false)));
+
+        TaskServiceMock.Verify(
+            x => x.ReorderTaskAsync(taskId, targetId, false),
+            Times.Once);
+        cut.Instance.ErrorMessage.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task HandleTaskReorder_SetsErrorMessage_WhenExceptionThrown()
+    {
+        var taskId = Guid.NewGuid();
+        var targetId = Guid.NewGuid();
+        TaskServiceMock
+            .Setup(x => x.ReorderTaskAsync(taskId, targetId, true))
+            .ThrowsAsync(new Exception("Test exception"));
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        await cut.Instance.HandleTaskReorder(new ReorderRequest(taskId, targetId, InsertBefore: true));
+
+        cut.Instance.ErrorMessage.Should().Be("Error updating task: Test exception");
+    }
+
+    #endregion
 }
 

@@ -208,6 +208,38 @@ public partial class TaskServiceTests
     }
 
     [Fact]
+    public async Task ReorderTaskAsync_ChildGroupNormalizesOldestFirstAndSupportsMidpoint()
+    {
+        var parent = CreateSampleTask(name: "Parent");
+        parent.CreatedAt = new DateTime(2025, 12, 31);
+        var c1 = CreateSampleTask(name: "C1");
+        c1.CreatedAt = new DateTime(2026, 1, 1);
+        c1.ParentTaskId = parent.Id;
+        var c2 = CreateSampleTask(name: "C2");
+        c2.CreatedAt = new DateTime(2026, 1, 2);
+        c2.ParentTaskId = parent.Id;
+        var c3 = CreateSampleTask(name: "C3");
+        c3.CreatedAt = new DateTime(2026, 1, 3);
+        c3.ParentTaskId = parent.Id;
+
+        var service = await CreateInitializedServiceAsync(parent, c1, c2, c3);
+
+        var result = await service.ReorderTaskAsync(c3.Id, c2.Id, insertBefore: true);
+
+        result.Should().BeTrue();
+        service.AllTasks.First(t => t.Name == "C1").SortOrder.Should().Be(1000,
+            "children normalize oldest-first ascending, unlike roots");
+        service.AllTasks.First(t => t.Name == "C2").SortOrder.Should().Be(2000);
+        service.AllTasks.First(t => t.Name == "C3").SortOrder.Should().Be(1500,
+            "midpoint between C1(1000) and C2(2000)");
+        service.Tasks
+            .Where(t => t.ParentTaskId == parent.Id)
+            .OrderBy(t => t.SortOrder)
+            .Select(t => t.Name)
+            .Should().Equal(["C1", "C3", "C2"]);
+    }
+
+    [Fact]
     public async Task ReorderTaskAsync_RootGroupBehavesLikeChildGroup()
     {
         var parent = CreateSampleTask(name: "Parent");
