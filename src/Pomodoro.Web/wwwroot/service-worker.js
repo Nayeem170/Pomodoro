@@ -16,8 +16,8 @@
 // Version: 8.0.0 (cache bump: tab highlight CSS + subtask UI)
 // Last updated: 2026-07-24
 
-const CACHE_NAME = 'pomodoro-cache-v8';
-const CACHE_VERSION = 8;
+const CACHE_NAME = 'pomodoro-cache-v10';
+const CACHE_VERSION = 10;
 
 // Assets to cache immediately on install (static assets)
 const PRECACHE_ASSETS = [

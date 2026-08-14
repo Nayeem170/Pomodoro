@@ -45,6 +45,9 @@ public class TaskListBase : ComponentBase
     public EventCallback<Guid> OnToggleFollowParent { get; set; }
 
     [Parameter]
+    public EventCallback<ReorderRequest> OnTaskReorder { get; set; }
+
+    [Parameter]
     public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
 
     [Parameter]
@@ -88,6 +91,8 @@ public class TaskListBase : ComponentBase
 
     protected HashSet<Guid> _collapsed = new();
     protected HashSet<Guid> _parentIds = new();
+    protected bool _isDragging;
+    protected Guid? _draggedTaskId;
 
     protected sealed record TaskNode(TaskItem Task, int Depth, bool HasChildren, int ChildCount, bool IsUnderCompletedRoot);
 
@@ -123,6 +128,33 @@ public class TaskListBase : ComponentBase
         return Tasks
             .Where(t => t.ParentTaskId == task.ParentTaskId && t.Id != task.Id)
             .ToList();
+    }
+
+    protected bool IsReorderableFor(TaskItem task)
+    {
+        var group = Tasks.Where(t => t.ParentTaskId == task.ParentTaskId).ToList();
+        return group.Count > 1 && group.All(t => !t.IsGoogleTask);
+    }
+
+    protected void HandleDragStarted(Guid taskId)
+    {
+        _isDragging = true;
+        _draggedTaskId = taskId;
+        StateHasChanged();
+    }
+
+    protected void HandleDragEnded()
+    {
+        _isDragging = false;
+        _draggedTaskId = null;
+        StateHasChanged();
+    }
+
+    protected async Task HandleTaskReorder(ReorderRequest request)
+    {
+        _isDragging = false;
+        await OnTaskReorder.InvokeAsync(request);
+        StateHasChanged();
     }
 
     protected void ToggleCollapse(Guid taskId)
@@ -182,7 +214,7 @@ public class TaskListBase : ComponentBase
         var childrenByLocalParent = tasks
             .Where(t => t.ParentTaskId.HasValue)
             .GroupBy(t => t.ParentTaskId!.Value)
-            .ToDictionary(g => g.Key, g => (IReadOnlyList<TaskItem>)g.OrderBy(t => t.CreatedAt).ToList());
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<TaskItem>)g.OrderBy(t => t.SortOrder).ThenBy(t => t.CreatedAt).ToList());
         var childrenByGoogleParent = tasks
             .Where(t => !string.IsNullOrEmpty(t.GoogleParentTaskId))
             .GroupBy(t => t.GoogleParentTaskId!)
@@ -206,7 +238,10 @@ public class TaskListBase : ComponentBase
             return count;
         }
 
-        var roots = tasks.Where(t => !HasKnownParent(t));
+        var roots = tasks
+            .Where(t => !HasKnownParent(t))
+            .OrderBy(t => t.SortOrder)
+            .ThenBy(t => t.CreatedAt);
 
         void Walk(TaskItem task, int depth, bool rootIsCompleted)
         {

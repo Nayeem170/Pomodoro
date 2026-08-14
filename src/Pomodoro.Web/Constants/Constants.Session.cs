@@ -73,6 +73,8 @@ public static partial class Constants
         public const int InsertAtBeginning = 0;
         public const int InsertAtEnd = -1;
         public const int MaxSubtaskDepth = 4;
+        public const int SortGap = 1000;
+        public const int InitialSortStep = 1000;
         public const int ScheduleWindowDays = 7;
         public const string ScheduleDayFormat = "ddd, MMM d";
     }

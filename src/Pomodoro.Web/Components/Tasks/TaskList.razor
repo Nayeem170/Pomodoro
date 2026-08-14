@@ -5,14 +5,17 @@
     <div class="task-items">
         @foreach (var node in ActiveTaskNodes)
         {
-            <TaskItemComponent @key="node.Task.Id" 
-                Item="node.Task" 
+            <TaskItemComponent @key="node.Task.Id"
+                Item="node.Task"
                 Depth="node.Depth"
                 HasChildren="node.HasChildren"
                 ChildCount="node.ChildCount"
                 Siblings="SiblingsFor(node.Task)"
                 IsCollapsed="_collapsed.Contains(node.Task.Id)"
                 IsSelected="node.Task.Id == CurrentTaskId"
+                IsReorderable="IsReorderableFor(node.Task)"
+                IsDragActive="_isDragging"
+                DraggedTaskId="_draggedTaskId"
                 GoogleListTitle="@GoogleListTitleFor(node.Task)"
                 OnSelect="HandleTaskSelect"
                 OnComplete="HandleTaskComplete"
@@ -23,9 +26,12 @@
                 OnReparentToRoot="HandleReparentToRoot"
                 OnDemote="HandleDemote"
                 OnToggleFollowParent="HandleToggleFollowParent"
-                OnToggleCollapse="ToggleCollapse" />
+                OnToggleCollapse="ToggleCollapse"
+                OnReorder="HandleTaskReorder"
+                OnDragStarted="HandleDragStarted"
+                OnDragEnded="HandleDragEnded" />
         }
-        
+
         @if (HasCompletedTasks)
         {
             <div class="completed-section">
@@ -38,14 +44,17 @@
                 {
                     @foreach (var node in CompletedTaskNodes)
                     {
-                        <TaskItemComponent @key="node.Task.Id" 
-                            Item="node.Task" 
+                        <TaskItemComponent @key="node.Task.Id"
+                            Item="node.Task"
                             Depth="node.Depth"
                             HasChildren="node.HasChildren"
                             ChildCount="node.ChildCount"
                             Siblings="SiblingsFor(node.Task)"
                             IsCollapsed="_collapsed.Contains(node.Task.Id)"
                             IsSelected="false"
+                            IsReorderable="IsReorderableFor(node.Task)"
+                            IsDragActive="_isDragging"
+                            DraggedTaskId="_draggedTaskId"
                             GoogleListTitle="@GoogleListTitleFor(node.Task)"
                             OnSelect="HandleTaskSelect"
                             OnComplete="HandleTaskComplete"
@@ -56,7 +65,10 @@
                             OnReparentToRoot="HandleReparentToRoot"
                             OnDemote="HandleDemote"
                             OnToggleFollowParent="HandleToggleFollowParent"
-                            OnToggleCollapse="ToggleCollapse" />
+                            OnToggleCollapse="ToggleCollapse"
+                            OnReorder="HandleTaskReorder"
+                            OnDragStarted="HandleDragStarted"
+                            OnDragEnded="HandleDragEnded" />
                     }
                 }
             </div>

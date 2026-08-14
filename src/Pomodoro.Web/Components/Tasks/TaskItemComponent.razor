@@ -1,7 +1,18 @@
 @inherits TaskItemBase
 @using Pomodoro.Web.Models
 
-<div class="task-row @GetTaskClass()" @onclick="HandleSelect" role="button" tabindex="0" aria-level="@(Depth + 1)" @onkeydown="HandleKeyDown">
+<div class="task-row @GetTaskClass()" draggable="@(CanDrag ? "true" : "false")" @onclick="HandleSelect" role="button" tabindex="0" aria-level="@(Depth + 1)" @onkeydown="HandleKeyDown" @ondragstart="HandleDragStart" @ondragend="HandleDragEnd">
+    @if (IsDragActive && IsReorderable && (DraggedTaskId.HasValue && DraggedTaskId.Value != Item.Id))
+    {
+        <div class="drop-zone top" aria-hidden="true"
+             @ondragover="() => HandleZoneDragOver(true)" @ondragover:preventDefault
+             @ondragleave="HandleZoneDragLeave"
+             @ondrop="() => HandleZoneDrop(true)" @ondrop:preventDefault></div>
+        <div class="drop-zone bot" aria-hidden="true"
+             @ondragover="() => HandleZoneDragOver(false)" @ondragover:preventDefault
+             @ondragleave="HandleZoneDragLeave"
+             @ondrop="() => HandleZoneDrop(false)" @ondrop:preventDefault></div>
+    }
     @if (Depth > 0)
     {
         <span class="task-indent" aria-hidden="true" style="width:@(Depth * 20)px"></span>

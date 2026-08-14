@@ -62,6 +62,24 @@ public class TaskItemBase : ComponentBase
     [Parameter]
     public DateTime? ContextDate { get; set; }
 
+    [Parameter]
+    public bool IsReorderable { get; set; }
+
+    [Parameter]
+    public bool IsDragActive { get; set; }
+
+    [Parameter]
+    public Guid? DraggedTaskId { get; set; }
+
+    [Parameter]
+    public EventCallback<ReorderRequest> OnReorder { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid> OnDragStarted { get; set; }
+
+    [Parameter]
+    public EventCallback OnDragEnded { get; set; }
+
     #endregion
 
     #region State
@@ -75,6 +93,10 @@ public class TaskItemBase : ComponentBase
     protected bool IsConfirmingDelete { get; set; }
 
     protected bool IsDemoteMenuOpen { get; set; }
+
+    protected bool _isDragSource;
+    protected bool _dropBefore;
+    protected bool _dropAfter;
 
     protected string NewSubtaskName { get; set; } = string.Empty;
 
@@ -126,7 +148,50 @@ public class TaskItemBase : ComponentBase
         if (IsSelected) classes.Add(Constants.Tasks.SelectedClass);
         if (Item.IsCompleted) classes.Add(Constants.Tasks.CompletedClass);
         if (IsInlineEditing || IsDemoteMenuOpen) classes.Add("active-form");
+        if (_isDragSource) classes.Add("dragging");
+        if (_dropBefore) classes.Add("drop-before");
+        if (_dropAfter) classes.Add("drop-after");
+        if (IsDragActive && !IsReorderable) classes.Add("no-drop");
         return string.Join(" ", classes);
+    }
+
+    protected bool CanDrag => IsReorderable && !IsInlineEditing;
+
+    protected async Task HandleDragStart()
+    {
+        _isDragSource = true;
+        await OnDragStarted.InvokeAsync(Item.Id);
+    }
+
+    protected async Task HandleDragEnd()
+    {
+        _isDragSource = false;
+        _dropBefore = false;
+        _dropAfter = false;
+        await OnDragEnded.InvokeAsync();
+    }
+
+    protected void HandleZoneDragOver(bool before)
+    {
+        _dropBefore = before;
+        _dropAfter = !before;
+    }
+
+    protected void HandleZoneDragLeave()
+    {
+        _dropBefore = false;
+        _dropAfter = false;
+    }
+
+    protected async Task HandleZoneDrop(bool before)
+    {
+        _dropBefore = false;
+        _dropAfter = false;
+        _isDragSource = false;
+        if (DraggedTaskId.HasValue && DraggedTaskId.Value != Item.Id)
+        {
+            await OnReorder.InvokeAsync(new ReorderRequest(DraggedTaskId.Value, Item.Id, before));
+        }
     }
 
     protected string GetStatusIcon()

@@ -1,0 +1,280 @@
+using FluentAssertions;
+using Moq;
+using Pomodoro.Web.Models;
+using Pomodoro.Web.Services;
+using AppStateRecord = Pomodoro.Web.Services.TaskService.AppStateRecord;
+using Xunit;
+
+namespace Pomodoro.Web.Tests.Services;
+
+[Trait("Category", "Service")]
+public partial class TaskServiceTests
+{
+    private async Task<TaskService> CreateInitializedServiceAsync(params TaskItem[] tasks)
+    {
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync())
+            .ReturnsAsync(tasks.ToList());
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+        MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
+            .ReturnsAsync(true);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+        return service;
+    }
+
+    [Fact]
+    public async Task ReorderTaskAsync_NormalizesAllZeroGroupOnFirstReorder()
+    {
+        var a = CreateSampleTask(name: "A");
+        a.CreatedAt = new DateTime(2026, 1, 1);
+        var b = CreateSampleTask(name: "B");
+        b.CreatedAt = new DateTime(2026, 1, 2);
+        var c = CreateSampleTask(name: "C");
+        c.CreatedAt = new DateTime(2026, 1, 3);
+
+        var service = await CreateInitializedServiceAsync(a, b, c);
+
+        var result = await service.ReorderTaskAsync(c.Id, a.Id, insertBefore: true);
+
+        result.Should().BeTrue();
+        service.AllTasks.First(t => t.Name == "A").SortOrder.Should().Be(1000);
+        service.AllTasks.First(t => t.Name == "B").SortOrder.Should().Be(2000);
+        service.AllTasks.First(t => t.Name == "C").SortOrder.Should().Be(0,
+            "C moves before A at the top edge: A - SortGap");
+        service.Tasks
+            .OrderBy(t => t.SortOrder).ThenBy(t => t.CreatedAt)
+            .Select(t => t.Name)
+            .Should().Equal("C", "A", "B");
+    }
+
+    [Fact]
+    public async Task ReorderTaskAsync_MidpointInsertPersistsOnlyMovedTask()
+    {
+        var a = CreateSampleTask(name: "A");
+        a.CreatedAt = new DateTime(2026, 1, 1);
+        a.SortOrder = 1000;
+        var b = CreateSampleTask(name: "B");
+        b.CreatedAt = new DateTime(2026, 1, 2);
+        b.SortOrder = 2000;
+        var c = CreateSampleTask(name: "C");
+        c.CreatedAt = new DateTime(2026, 1, 3);
+        c.SortOrder = 3000;
+
+        var service = await CreateInitializedServiceAsync(a, b, c);
+        MockTaskRepository.Invocations.Clear();
+
+        var result = await service.ReorderTaskAsync(a.Id, c.Id, insertBefore: false);
+
+        result.Should().BeTrue();
+        service.AllTasks.First(t => t.Name == "A").SortOrder.Should().Be(4000,
+            "after-last edge insert: last + SortGap");
+        MockTaskRepository.Verify(r => r.SaveAsync(It.Is<TaskItem>(t => t.Name == "A")), Times.Once);
+        MockTaskRepository.Verify(r => r.SaveAsync(It.IsAny<TaskItem>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ReorderTaskAsync_RenumbersGroupWhenGapExhausted()
+    {
+        var a = CreateSampleTask(name: "A");
+        a.CreatedAt = new DateTime(2026, 1, 1);
+        a.SortOrder = 1000;
+        var b = CreateSampleTask(name: "B");
+        b.CreatedAt = new DateTime(2026, 1, 2);
+        b.SortOrder = 1001;
+        var c = CreateSampleTask(name: "C");
+        c.CreatedAt = new DateTime(2026, 1, 3);
+        c.SortOrder = 2000;
+
+        var service = await CreateInitializedServiceAsync(a, b, c);
+
+        var result = await service.ReorderTaskAsync(c.Id, b.Id, insertBefore: true);
+
+        result.Should().BeTrue();
+        service.AllTasks.First(t => t.Name == "A").SortOrder.Should().Be(1000);
+        service.AllTasks.First(t => t.Name == "C").SortOrder.Should().Be(2000);
+        service.AllTasks.First(t => t.Name == "B").SortOrder.Should().Be(3000);
+        service.Tasks
+            .OrderBy(t => t.SortOrder).ThenBy(t => t.CreatedAt)
+            .Select(t => t.Name)
+            .Should().Equal("A", "C", "B");
+    }
+
+    [Fact]
+    public async Task ReorderTaskAsync_InsertBeforeFirstAndAfterLastAreStable()
+    {
+        var a = CreateSampleTask(name: "A");
+        a.CreatedAt = new DateTime(2026, 1, 1);
+        a.SortOrder = 1000;
+        var b = CreateSampleTask(name: "B");
+        b.CreatedAt = new DateTime(2026, 1, 2);
+        b.SortOrder = 2000;
+
+        var service = await CreateInitializedServiceAsync(a, b);
+
+        var moveBeforeFirst = await service.ReorderTaskAsync(b.Id, a.Id, insertBefore: true);
+        moveBeforeFirst.Should().BeTrue();
+        service.AllTasks.First(t => t.Name == "B").SortOrder.Should().Be(0);
+        service.Tasks.OrderBy(t => t.SortOrder).Select(t => t.Name).Should().Equal("B", "A");
+
+        var moveAfterLast = await service.ReorderTaskAsync(b.Id, a.Id, insertBefore: false);
+        moveAfterLast.Should().BeTrue();
+        service.AllTasks.First(t => t.Name == "B").SortOrder.Should().Be(2000);
+        service.Tasks.OrderBy(t => t.SortOrder).Select(t => t.Name).Should().Equal("A", "B");
+    }
+
+    [Fact]
+    public async Task ReorderTaskAsync_SamePositionIsNoOpWithoutWrites()
+    {
+        var a = CreateSampleTask(name: "A");
+        a.CreatedAt = new DateTime(2026, 1, 1);
+        a.SortOrder = 1000;
+        var b = CreateSampleTask(name: "B");
+        b.CreatedAt = new DateTime(2026, 1, 2);
+        b.SortOrder = 2000;
+
+        var service = await CreateInitializedServiceAsync(a, b);
+        MockTaskRepository.Invocations.Clear();
+
+        var result = await service.ReorderTaskAsync(a.Id, b.Id, insertBefore: true);
+
+        result.Should().BeTrue("position is unchanged; nothing to write");
+        MockTaskRepository.Verify(r => r.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
+        service.AllTasks.First(t => t.Name == "A").SortOrder.Should().Be(1000);
+    }
+
+    [Fact]
+    public async Task ReorderTaskAsync_SameIdReturnsFalse()
+    {
+        var a = CreateSampleTask(name: "A");
+        var service = await CreateInitializedServiceAsync(a);
+        MockTaskRepository.Invocations.Clear();
+
+        (await service.ReorderTaskAsync(a.Id, a.Id, true)).Should().BeFalse();
+        MockTaskRepository.Verify(r => r.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ReorderTaskAsync_DifferentParentsReturnsFalseWithoutWrites()
+    {
+        var parent = CreateSampleTask(name: "Parent");
+        var childA = CreateSampleTask(name: "ChildA");
+        childA.ParentTaskId = parent.Id;
+        var rootB = CreateSampleTask(name: "RootB");
+
+        var service = await CreateInitializedServiceAsync(parent, childA, rootB);
+        MockTaskRepository.Invocations.Clear();
+
+        (await service.ReorderTaskAsync(childA.Id, rootB.Id, true)).Should().BeFalse();
+        MockTaskRepository.Verify(r => r.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ReorderTaskAsync_MissingOrDeletedTaskReturnsFalse()
+    {
+        var a = CreateSampleTask(name: "A");
+        var deleted = CreateSampleTask(name: "Deleted");
+        deleted.IsDeleted = true;
+
+        var service = await CreateInitializedServiceAsync(a, deleted);
+        MockTaskRepository.Invocations.Clear();
+
+        (await service.ReorderTaskAsync(Guid.NewGuid(), a.Id, true)).Should().BeFalse();
+        (await service.ReorderTaskAsync(deleted.Id, a.Id, true)).Should().BeFalse();
+        MockTaskRepository.Verify(r => r.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ReorderTaskAsync_GoogleMemberInGroupReturnsFalseWithoutWrites()
+    {
+        var a = CreateSampleTask(name: "A");
+        a.CreatedAt = new DateTime(2026, 1, 1);
+        var b = CreateSampleTask(name: "B");
+        b.CreatedAt = new DateTime(2026, 1, 2);
+        var g = CreateSampleTask(name: "G");
+        g.CreatedAt = new DateTime(2026, 1, 3);
+        g.GoogleTaskId = "google-1";
+
+        var service = await CreateInitializedServiceAsync(a, b, g);
+        MockTaskRepository.Invocations.Clear();
+
+        (await service.ReorderTaskAsync(a.Id, b.Id, true)).Should().BeFalse(
+            "a group containing any Google task must not be reorderable");
+        (await service.ReorderTaskAsync(g.Id, a.Id, true)).Should().BeFalse(
+            "dragging a Google task must be rejected");
+        MockTaskRepository.Verify(r => r.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ReorderTaskAsync_RootGroupBehavesLikeChildGroup()
+    {
+        var parent = CreateSampleTask(name: "Parent");
+        var a = CreateSampleTask(name: "A");
+        a.CreatedAt = new DateTime(2026, 1, 1);
+        var b = CreateSampleTask(name: "B");
+        b.CreatedAt = new DateTime(2026, 1, 2);
+
+        var service = await CreateInitializedServiceAsync(parent, a, b);
+
+        var result = await service.ReorderTaskAsync(b.Id, a.Id, insertBefore: true);
+
+        result.Should().BeTrue();
+        service.Tasks
+            .Where(t => t.ParentTaskId == null)
+            .OrderBy(t => t.SortOrder).ThenBy(t => t.CreatedAt)
+            .Select(t => t.Name)
+            .Should().Equal("B", "A", "Parent");
+    }
+
+    [Fact]
+    public async Task ReorderTaskAsync_EqualSortOrderTiebreaksByCreatedAtDeterministically()
+    {
+        var a = CreateSampleTask(name: "A");
+        a.CreatedAt = new DateTime(2026, 1, 1);
+        var b = CreateSampleTask(name: "B");
+        b.CreatedAt = new DateTime(2026, 1, 2);
+
+        var service = await CreateInitializedServiceAsync(a, b);
+
+        var first = service.Tasks.OrderBy(t => t.SortOrder).ThenBy(t => t.CreatedAt).Select(t => t.Name).ToList();
+        var second = service.Tasks.OrderBy(t => t.SortOrder).ThenBy(t => t.CreatedAt).Select(t => t.Name).ToList();
+
+        first.Should().Equal("A", "B");
+        second.Should().Equal(first);
+    }
+
+    [Fact]
+    public async Task ReorderTaskAsync_NormalizePathPersistsAllGroupMembers()
+    {
+        var a = CreateSampleTask(name: "A");
+        a.CreatedAt = new DateTime(2026, 1, 1);
+        var b = CreateSampleTask(name: "B");
+        b.CreatedAt = new DateTime(2026, 1, 2);
+        var c = CreateSampleTask(name: "C");
+        c.CreatedAt = new DateTime(2026, 1, 3);
+
+        var service = await CreateInitializedServiceAsync(a, b, c);
+        MockTaskRepository.Invocations.Clear();
+
+        await service.ReorderTaskAsync(c.Id, a.Id, insertBefore: true);
+
+        MockTaskRepository.Verify(r => r.SaveAsync(It.IsAny<TaskItem>()), Times.Exactly(4),
+            "normalize writes all 3 group members, then the move writes the dragged task");
+        service.AllTasks.First(t => t.Name == "A").SortOrder.Should().Be(1000);
+        service.AllTasks.First(t => t.Name == "B").SortOrder.Should().Be(2000);
+        service.AllTasks.First(t => t.Name == "C").SortOrder.Should().Be(0);
+    }
+
+    [Fact]
+    public void WithUpdates_CopiesSortOrder()
+    {
+        var task = CreateSampleTask(name: "A");
+        task.SortOrder = 4200;
+
+        var copy = task.WithUpdates(c => c.Name = "Renamed");
+
+        copy.SortOrder.Should().Be(4200,
+            "WithUpdates must copy SortOrder or every update/import path silently zeroes it");
+    }
+}
