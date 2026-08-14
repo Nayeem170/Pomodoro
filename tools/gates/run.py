@@ -17,6 +17,7 @@ import re
 import shutil
 import subprocess
 import sys
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -162,7 +163,14 @@ def run_coverage_gate(name, description, workdir, output_dir):
         return finish("failed", 1, f"Multiple coverage reports found:\n{listing}",
                       "Multiple coverage reports found (expected exactly one)")
 
-    report_text = reports[0].read_text(encoding="utf-8", errors="replace")
+    report_path = reports[0]
+    try:
+        report_text = report_path.read_text(encoding="utf-8", errors="replace")
+        ET.fromstring(report_text)
+    except ET.ParseError as exc:
+        return finish("failed", 1, f"Malformed cobertura report: {report_path}",
+                      f"Coverage report is not well-formed XML: {exc}")
+
     covered_match = re.search(r'lines-covered="(\d+)"', report_text)
     valid_match = re.search(r'lines-valid="(\d+)"', report_text)
 
@@ -323,7 +331,11 @@ def main():
         if name == "gate4.test":
             stale = workdir / COVERAGE_DIR
             if stale.exists():
-                shutil.rmtree(stale, ignore_errors=True)
+                try:
+                    shutil.rmtree(stale)
+                except OSError as exc:
+                    print(f"HALT: could not clear stale coverage results at {stale}: {exc}")
+                    sys.exit(1)
                 print(f"Cleared stale coverage results at {stale}")
 
         if cmd is None:
