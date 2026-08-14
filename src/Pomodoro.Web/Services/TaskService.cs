@@ -364,6 +364,88 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         NotifyStateChanged();
     }
 
+    public async Task<bool> ReorderTaskAsync(Guid taskId, Guid targetId, bool insertBefore)
+    {
+        if (taskId == targetId) return false;
+
+        var task = _appState.FindTaskById(taskId);
+        var target = _appState.FindTaskById(targetId);
+        if (task == null || target == null) return false;
+        if (task.IsDeleted || target.IsDeleted) return false;
+
+        var group = TaskGrouping.GetSiblingGroup(_appState.Tasks, task);
+        if (group.Count < 2 || group.Any(t => t.IsGoogleTask)) return false;
+
+        var ordered = task.ParentTaskId.HasValue
+            ? group
+                .OrderBy(t => t.SortOrder)
+                .ThenBy(t => t.CreatedAt)
+                .ToList()
+            : group
+                .OrderBy(t => t.SortOrder)
+                .ThenByDescending(t => t.CreatedAt)
+                .ToList();
+
+        if (ordered.All(t => t.SortOrder == 0))
+        {
+            for (var i = 0; i < ordered.Count; i++)
+            {
+                ordered[i] = await PersistSortOrderAsync(ordered[i], (i + 1) * Constants.Tasks.InitialSortStep);
+            }
+        }
+
+        var draggedIndex = ordered.FindIndex(t => t.Id == taskId);
+        var without = ordered.Where(t => t.Id != taskId).ToList();
+        var targetIndex = without.FindIndex(t => t.Id == targetId);
+        if (targetIndex < 0) return false;
+
+        var insertIndex = insertBefore ? targetIndex : targetIndex + 1;
+        if (insertIndex == draggedIndex)
+        {
+            MarkDirty();
+            return true;
+        }
+
+        var dragged = ordered[draggedIndex];
+        var prev = insertIndex > 0 ? without[insertIndex - 1] : null;
+        var next = insertIndex < without.Count ? without[insertIndex] : null;
+
+        if (prev != null && next != null && next.SortOrder - prev.SortOrder < 2)
+        {
+            var finalOrder = new List<TaskItem>(without);
+            finalOrder.Insert(insertIndex, dragged);
+            for (var i = 0; i < finalOrder.Count; i++)
+            {
+                var desired = (i + 1) * Constants.Tasks.InitialSortStep;
+                if (finalOrder[i].SortOrder != desired)
+                {
+                    await PersistSortOrderAsync(finalOrder[i], desired);
+                }
+            }
+        }
+        else
+        {
+            var newOrder = prev == null
+                ? next!.SortOrder - Constants.Tasks.SortGap
+                : next == null
+                    ? prev.SortOrder + Constants.Tasks.SortGap
+                    : prev.SortOrder + (next.SortOrder - prev.SortOrder) / 2;
+            await PersistSortOrderAsync(dragged, newOrder);
+        }
+
+        NotifyStateChanged();
+        MarkDirty();
+        return true;
+    }
+
+    private async Task<TaskItem> PersistSortOrderAsync(TaskItem task, int sortOrder)
+    {
+        _appState.UpdateTask(task.Id, t => t.SortOrder = sortOrder);
+        var updated = task.WithUpdates(c => c.SortOrder = sortOrder);
+        await SaveTaskAsync(updated);
+        return updated;
+    }
+
     private int GetTaskDepth(Guid taskId)
     {
         var depth = 0;
@@ -591,7 +673,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         var childrenByParent = all
             .Where(t => t.ParentTaskId.HasValue)
             .GroupBy(t => t.ParentTaskId!.Value)
-            .ToDictionary(g => g.Key, g => (IReadOnlyList<TaskItem>)g.OrderBy(t => t.CreatedAt).ToList());
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<TaskItem>)g.OrderBy(t => t.SortOrder).ThenBy(t => t.CreatedAt).ToList());
 
         var result = new List<TaskItem>();
         var queue = new Queue<Guid>();

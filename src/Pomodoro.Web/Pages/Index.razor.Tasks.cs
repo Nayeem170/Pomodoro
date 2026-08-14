@@ -107,6 +107,18 @@ public partial class IndexBase
         }, Constants.Messages.ErrorCompletingTask);
     }
 
+    public async Task HandleTaskReorder(ReorderRequest request)
+    {
+        await TryExecuteAsync(async () =>
+        {
+            if (await TaskService.ReorderTaskAsync(request.TaskId, request.TargetId, request.InsertBefore))
+            {
+                await UpdateStateAsync();
+                StateHasChanged();
+            }
+        }, Constants.Messages.ErrorUpdatingTask);
+    }
+
     public async Task HandleTaskDelete(Guid taskId)
     {
         await TryExecuteAsync(async () =>
