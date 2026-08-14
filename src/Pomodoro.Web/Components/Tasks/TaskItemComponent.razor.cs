@@ -158,6 +158,12 @@ public class TaskItemBase : ComponentBase
 
     protected bool CanDrag => IsReorderable && !IsInlineEditing;
 
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (!IsDragActive) _noDropHover = false;
+    }
+
     protected async Task HandleDragStart()
     {
         _isDragSource = true;
@@ -169,6 +175,7 @@ public class TaskItemBase : ComponentBase
         _isDragSource = false;
         _dropBefore = false;
         _dropAfter = false;
+        _noDropHover = false;
         await OnDragEnded.InvokeAsync();
     }
 
