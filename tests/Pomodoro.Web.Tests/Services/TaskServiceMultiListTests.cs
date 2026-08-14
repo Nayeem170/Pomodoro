@@ -1688,9 +1688,10 @@ public class TaskServiceMultiListTests
 
         // Act
         var sut = CreateSut();
-        await sut.AddSubtaskAsync("   ", parentId);
+        var result = await sut.AddSubtaskAsync("   ", parentId);
 
         // Assert
+        result.Should().BeNull();
         _mockTaskRepo.Verify(x => x.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
         _appState.Tasks.Should().HaveCount(1);
     }
@@ -1705,9 +1706,10 @@ public class TaskServiceMultiListTests
 
         // Act
         var sut = CreateSut();
-        await sut.AddSubtaskAsync(oversize, parentId);
+        var result = await sut.AddSubtaskAsync(oversize, parentId);
 
         // Assert
+        result.Should().BeNull();
         _mockTaskRepo.Verify(x => x.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
     }
 
@@ -1719,9 +1721,10 @@ public class TaskServiceMultiListTests
 
         // Act
         var sut = CreateSut();
-        await sut.AddSubtaskAsync("Sub", Guid.NewGuid());
+        var result = await sut.AddSubtaskAsync("Sub", Guid.NewGuid());
 
         // Assert
+        result.Should().BeNull();
         _mockTaskRepo.Verify(x => x.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
     }
 
@@ -1735,9 +1738,11 @@ public class TaskServiceMultiListTests
 
         // Act
         var sut = CreateSut();
-        await sut.AddSubtaskAsync("Sub task", parentId);
+        var result = await sut.AddSubtaskAsync("Sub task", parentId);
 
         // Assert
+        result.Should().NotBeNull();
+        result.Should().Be(_appState.Tasks.Single(t => t.ParentTaskId == parentId).Id);
         _mockTaskRepo.Verify(x => x.SaveAsync(It.Is<TaskItem>(t =>
             t.ParentTaskId == parentId && t.Name == "Sub task")), Times.Once);
         _appState.Tasks.Should().Contain(t => t.ParentTaskId == parentId);
@@ -1770,15 +1775,33 @@ public class TaskServiceMultiListTests
 
         // Act
         var sut = CreateSut();
-        await sut.AddSubtaskAsync("G Sub", parentId);
+        var result = await sut.AddSubtaskAsync("G Sub", parentId);
 
         // Assert
+        result.Should().NotBeNull();
         _mockTaskRepo.Verify(x => x.SaveAsync(It.Is<TaskItem>(t =>
             t.GoogleTaskId == "gtask-sub" &&
             t.GoogleListId == "glist-1" &&
             t.GoogleParentTaskId == "gtask-1" &&
             t.GooglePosition == "pos-1" &&
             t.ETag == "etag-1")), Times.Once);
+    }
+
+    [Fact]
+    public async Task AddSubtaskAsync_DoesNotSetCurrentTaskId()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        _appState.Tasks = [new TaskItem { Id = parentId, Name = "Parent", CreatedAt = DateTime.UtcNow }];
+        _appState.CurrentTaskId = parentId;
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+
+        // Act
+        var sut = CreateSut();
+        await sut.AddSubtaskAsync("Sub task", parentId);
+
+        // Assert
+        _appState.CurrentTaskId.Should().Be(parentId);
     }
 
     #endregion

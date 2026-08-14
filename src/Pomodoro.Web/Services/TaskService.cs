@@ -210,14 +210,14 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         NotifyStateChanged();
     }
 
-    public async Task AddSubtaskAsync(string name, Guid parentTaskId)
+    public async Task<Guid?> AddSubtaskAsync(string name, Guid parentTaskId)
     {
         var sanitized = SanitizeTaskName(name);
         if (string.IsNullOrEmpty(sanitized) || sanitized.Length > Constants.UI.MaxTaskNameLength)
-            return;
+            return null;
 
         var parent = _appState.FindTaskById(parentTaskId);
-        if (parent == null) return;
+        if (parent == null) return null;
 
         var subtask = new TaskItem
         {
@@ -249,6 +249,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         _appState.InsertTask(subtask, Constants.Tasks.InsertAtEnd);
         NotifyStateChanged();
         MarkDirty();
+        return subtask.Id;
     }
 
     public async Task ReparentTaskAsync(Guid taskId, Guid? newParentId)

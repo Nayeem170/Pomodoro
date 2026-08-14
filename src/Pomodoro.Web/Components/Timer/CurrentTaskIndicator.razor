@@ -1,3 +1,5 @@
+@using Pomodoro.Web.Services.Formatters
+
 @if (CurrentSessionType == SessionType.Pomodoro)
 {
     <div class="active-task">
@@ -7,7 +9,9 @@
             var currentTask = Tasks.FirstOrDefault(t => t.Id == CurrentTaskId.Value);
             if (currentTask != null)
             {
-                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@currentTask.Name</span>
+                var segments = TaskPathFormatter.BuildSegments(Tasks, currentTask.Id);
+                var aria = TaskPathFormatter.BuildAriaLabel(Tasks, currentTask.Id);
+                <span class="task-path" aria-label="@aria"><TaskPath Segments="segments" /></span>
             }
         }
         else

@@ -54,6 +54,9 @@ public class TaskListBase : ComponentBase
     [Parameter]
     public string? ActiveListId { get; set; }
 
+    [Parameter]
+    public Guid? HighlightTaskId { get; set; }
+
     #endregion
 
     #region State

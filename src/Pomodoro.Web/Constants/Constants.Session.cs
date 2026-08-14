@@ -65,6 +65,7 @@ public static partial class Constants
         // CSS Classes
         public const string SelectedClass = "selected";
         public const string CompletedClass = "completed";
+        public const string NewlyAddedClass = "task-row--new";
 
         // Initial Values
         public const int InitialFocusMinutes = 0;

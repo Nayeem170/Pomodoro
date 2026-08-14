@@ -1,9 +1,23 @@
 using Pomodoro.Web.Models;
+using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Pages;
 
 public partial class IndexBase
 {
+    protected Guid? _highlightTaskId;
+
+    private void ScheduleHighlightClear(Guid id)
+    {
+        SafeTaskRunner.RunAndForget(async () =>
+        {
+            await Task.Delay(Constants.UI.HighlightDurationMs);
+            if (_highlightTaskId != id) return;
+            _highlightTaskId = null;
+            await InvokeAsync(StateHasChanged);
+        }, Logger);
+    }
+
     #region Task Actions
 
     private async Task TryExecuteAsync(Func<Task> action, string errorMessage)
@@ -32,6 +46,8 @@ public partial class IndexBase
         {
             var listId = string.IsNullOrEmpty(request.ListId) ? ActiveListId : request.ListId;
             await TaskService.AddTaskAsync(request.Name, listId);
+            _highlightTaskId = TaskService.CurrentTaskId;
+            if (_highlightTaskId.HasValue) ScheduleHighlightClear(_highlightTaskId.Value);
 
             if ((request.RepeatType != RepeatType.None || request.ScheduledDate.HasValue)
                 && TaskService.CurrentTaskId.HasValue)
@@ -186,7 +202,12 @@ public partial class IndexBase
     {
         await TryExecuteAsync(async () =>
         {
-            await TaskService.AddSubtaskAsync(request.Name, request.ParentTaskId);
+            var newSubtaskId = await TaskService.AddSubtaskAsync(request.Name, request.ParentTaskId);
+            if (newSubtaskId.HasValue)
+            {
+                _highlightTaskId = newSubtaskId;
+                ScheduleHighlightClear(newSubtaskId.Value);
+            }
             await UpdateStateAsync();
             StateHasChanged();
         }, Constants.Messages.ErrorAddingTask);

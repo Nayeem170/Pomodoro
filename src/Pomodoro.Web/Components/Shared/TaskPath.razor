@@ -1,0 +1,19 @@
+@if (Segments is { Count: > 0 })
+{
+    @for (var i = 0; i < Segments.Count; i++)
+    {
+        var isLeaf = i == Segments.Count - 1;
+        if (isLeaf)
+        {
+            <span class="task-path-leaf">@Segments[i]</span>
+        }
+        else
+        {
+            <span class="task-path-anc">@Segments[i]@(Constants.TaskUI.PathSeparator)</span>
+        }
+    }
+}
+
+@code {
+    [Parameter] public IReadOnlyList<string>? Segments { get; set; }
+}

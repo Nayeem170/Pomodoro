@@ -36,7 +36,7 @@ public interface ITaskService
     Task RefreshGoogleListsAsync();
     Task UpdateListVisibilityAsync(string listId, bool isVisible);
 
-    Task AddSubtaskAsync(string name, Guid parentTaskId);
+    Task<Guid?> AddSubtaskAsync(string name, Guid parentTaskId);
 
     Task ReparentTaskAsync(Guid taskId, Guid? newParentId);
 

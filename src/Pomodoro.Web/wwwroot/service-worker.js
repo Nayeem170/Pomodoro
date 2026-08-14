@@ -13,7 +13,7 @@
 // clear their browser cache or the service worker naturally expires (24h+).
 // =============================================================================
 //
-// Version: 10.0.0 (cache bump: task drag reorder + drop zone CSS)
+// Version: 10.0.0 (cache bump: task drag reorder + drop zone CSS; supersedes v9 ui-features)
 // Last updated: 2026-08-15
 
 const CACHE_NAME = 'pomodoro-cache-v10';
@@ -35,6 +35,7 @@ const PRECACHE_ASSETS = [
     '/js/pipTimer.js',
     '/js/keyboard-shortcuts.js',
     '/js/infiniteScroll.js',
+    '/js/taskScrollInterop.js',
     '/js/fileInterop.js',
     '/icon-192.svg',
     '/icon-512.svg',
