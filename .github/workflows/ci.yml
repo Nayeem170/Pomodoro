@@ -115,3 +115,43 @@ jobs:
       - run: exit 1
         if: needs.e2e.result != 'success'
       - run: echo "All E2E tests passed"
+
+  cache-version:
+    if: github.event_name == 'pull_request' && github.base_ref == 'develop'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check service worker cache version monotonicity
+        run: |
+          set -euo pipefail
+          SW="src/Pomodoro.Web/wwwroot/service-worker.js"
+          BASE="origin/${{ github.base_ref }}"
+
+          if ! git diff --name-only "$BASE"...HEAD | grep -q '^src/Pomodoro.Web/wwwroot/'; then
+            echo "No cached assets (wwwroot/) touched - version bump not required"
+            exit 0
+          fi
+
+          head_ver=$(grep -oP "const CACHE_VERSION = \K[0-9]+" "$SW" || true)
+          base_ver=$(git show "$BASE:$SW" | grep -oP "const CACHE_VERSION = \K[0-9]+" || true)
+
+          if [ -z "$head_ver" ] || [ -z "$base_ver" ]; then
+            echo "::error::Could not read CACHE_VERSION (head='$head_ver' base='$base_ver') from $SW"
+            exit 1
+          fi
+
+          if [ "$head_ver" -le "$base_ver" ]; then
+            echo "::error::CACHE_VERSION must increase when wwwroot assets change: base v$base_ver -> head v$head_ver. Update BOTH CACHE_NAME and CACHE_VERSION in $SW."
+            exit 1
+          fi
+
+          head_name=$(grep -oP "const CACHE_NAME = '\K[^']+" "$SW" || true)
+          if [ "$head_name" != "pomodoro-cache-v$head_ver" ]; then
+            echo "::error::CACHE_NAME '$head_name' does not match CACHE_VERSION $head_ver (expected 'pomodoro-cache-v$head_ver')"
+            exit 1
+          fi
+
+          echo "Cache version monotonic: v$base_ver -> v$head_ver, CACHE_NAME consistent"

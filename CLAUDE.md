@@ -56,8 +56,9 @@ tools/gates/                   # Deterministic gate orchestrator (Python)
 
 ## Gate Pipeline
 
-Run `python tools/gates/run.py` before pushing. It runs format + build + test gates
-matching the exact CI commands and writes state files to `.gates/`.
+Run `python tools/gates/run.py` before pushing. It runs format + build + test +
+line-coverage gates (99.5% threshold, same cobertura computation as the CI
+unit-test job) and writes state files to `.gates/`.
 
 For isolated worktree runs: `python tools/gates/run.py --ticket T-001 --base develop`
 Spawns a worktree at `../.worktrees-pomodoro/ticket-T-001/`, runs gates, tears down on failure.
