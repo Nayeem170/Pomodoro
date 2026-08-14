@@ -4,6 +4,7 @@ using Microsoft.JSInterop;
 using Microsoft.Extensions.Logging;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
+using Pomodoro.Web.Services.Formatters;
 
 namespace Pomodoro.Web.Pages;
 
@@ -348,10 +349,22 @@ public partial class IndexBase : ComponentBase, IDisposable
         await UpdateStateAsync();
     }
 
-    protected string? GetCurrentTaskName()
+    protected string? GetCurrentTaskPath()
     {
         if (!CurrentTaskId.HasValue) return null;
-        return AppState.Tasks.FirstOrDefault(t => t.Id == CurrentTaskId.Value)?.Name;
+        return TaskPathFormatter.BuildPath(AppState.Tasks, CurrentTaskId.Value);
+    }
+
+    protected IReadOnlyList<string>? GetCurrentTaskSegments()
+    {
+        if (!CurrentTaskId.HasValue) return null;
+        return TaskPathFormatter.BuildSegments(AppState.Tasks, CurrentTaskId.Value);
+    }
+
+    protected string? GetCurrentTaskAriaLabel()
+    {
+        if (!CurrentTaskId.HasValue) return null;
+        return TaskPathFormatter.BuildAriaLabel(AppState.Tasks, CurrentTaskId.Value);
     }
 
     protected static string FormatFocusMinutes(int minutes)
