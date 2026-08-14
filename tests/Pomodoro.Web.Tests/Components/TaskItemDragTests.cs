@@ -19,11 +19,9 @@ public class TaskItemDragTests : TestContext
     };
 
     [Fact]
-    public void NonReorderableRow_IsInertDuringDrag()
+    public void NonReorderableRow_ShowsNoDropOnlyOnHover()
     {
         var task = NewTask("Local");
-        var googleSibling = NewTask("Google");
-        googleSibling.GoogleTaskId = "g1";
 
         var cut = RenderComponent<TaskItemComponent>(parameters => parameters
             .Add(p => p.Item, task)
@@ -32,8 +30,15 @@ public class TaskItemDragTests : TestContext
 
         var row = cut.Find(".task-row");
         row.GetAttribute("draggable").Should().Be("false");
-        cut.Markup.Should().NotContain("drop-zone");
-        row.ClassName.Should().Contain("no-drop");
+        cut.FindAll(".drop-zone").Should().BeEmpty();
+        row.ClassName.Should().NotContain("no-drop",
+            "the outline is scoped to the hovered row, not every non-reorderable row");
+
+        cut.Find(".no-drop-zone").TriggerEvent("ondragover", new DragEventArgs());
+        cut.Find(".task-row").ClassName.Should().Contain("no-drop");
+
+        cut.Find(".no-drop-zone").TriggerEvent("ondragleave", new DragEventArgs());
+        cut.Find(".task-row").ClassName.Should().NotContain("no-drop");
     }
 
     [Fact]

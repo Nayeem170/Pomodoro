@@ -273,6 +273,64 @@ public partial class TaskServiceTests
     }
 
     [Fact]
+    public async Task ReorderTaskAsync_GoogleSubtreeDoesNotBlockLocalRootReorder()
+    {
+        var a = CreateSampleTask(name: "A");
+        a.CreatedAt = new DateTime(2026, 1, 1);
+        var b = CreateSampleTask(name: "B");
+        b.CreatedAt = new DateTime(2026, 1, 2);
+        var anchor = CreateSampleTask(name: "L");
+        anchor.CreatedAt = new DateTime(2025, 12, 31);
+        var googleParent = CreateSampleTask(name: "GP");
+        googleParent.ParentTaskId = anchor.Id;
+        googleParent.GoogleTaskId = "gp";
+        var googleChild = CreateSampleTask(name: "GS");
+        googleChild.GoogleTaskId = "gs";
+        googleChild.GoogleParentTaskId = "gp";
+
+        var service = await CreateInitializedServiceAsync(a, b, anchor, googleParent, googleChild);
+        MockTaskRepository.Invocations.Clear();
+
+        var result = await service.ReorderTaskAsync(a.Id, b.Id, insertBefore: true);
+
+        result.Should().BeTrue(
+            "a Google subtask nested under a Google parent is not a root sibling and must not block local root reorders");
+        service.AllTasks.First(t => t.Name == "A").SortOrder.Should().Be(0);
+        service.AllTasks.First(t => t.Name == "B").SortOrder.Should().Be(1000);
+        service.AllTasks.First(t => t.Name == "L").SortOrder.Should().Be(3000);
+        service.AllTasks.First(t => t.Name == "GS").SortOrder.Should().Be(0,
+            "tasks outside the reordered group are untouched");
+    }
+
+    [Fact]
+    public async Task ReorderTaskAsync_NoOpOnFirstInteractionNormalizesGroup()
+    {
+        var a = CreateSampleTask(name: "A");
+        a.CreatedAt = new DateTime(2026, 1, 1);
+        var b = CreateSampleTask(name: "B");
+        b.CreatedAt = new DateTime(2026, 1, 2);
+        var c = CreateSampleTask(name: "C");
+        c.CreatedAt = new DateTime(2026, 1, 3);
+
+        var service = await CreateInitializedServiceAsync(a, b, c);
+        MockTaskRepository.Invocations.Clear();
+
+        var result = await service.ReorderTaskAsync(b.Id, a.Id, insertBefore: true);
+
+        result.Should().BeTrue("dropping at the current position is a no-op, not a failure");
+        service.AllTasks.First(t => t.Name == "C").SortOrder.Should().Be(1000);
+        service.AllTasks.First(t => t.Name == "B").SortOrder.Should().Be(2000);
+        service.AllTasks.First(t => t.Name == "A").SortOrder.Should().Be(3000);
+        MockTaskRepository.Verify(r => r.SaveAsync(It.IsAny<TaskItem>()), Times.Exactly(3),
+            "first interaction normalizes the group even when the drop changes nothing");
+        service.Tasks
+            .OrderBy(t => t.SortOrder)
+            .Select(t => t.Name)
+            .Should().Equal(["C", "B", "A"],
+                "relative order must be unchanged by a no-op drop");
+    }
+
+    [Fact]
     public void WithUpdates_CopiesSortOrder()
     {
         var task = CreateSampleTask(name: "A");

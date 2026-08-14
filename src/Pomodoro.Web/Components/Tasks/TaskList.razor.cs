@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Pomodoro.Web.Models;
+using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Components.Tasks;
 
@@ -132,7 +133,7 @@ public class TaskListBase : ComponentBase
 
     protected bool IsReorderableFor(TaskItem task)
     {
-        var group = Tasks.Where(t => t.ParentTaskId == task.ParentTaskId).ToList();
+        var group = TaskGrouping.GetSiblingGroup(Tasks, task);
         return group.Count > 1 && group.All(t => !t.IsGoogleTask);
     }
 
@@ -206,26 +207,18 @@ public class TaskListBase : ComponentBase
         var result = new List<TaskNode>();
         if (tasks.Count == 0) return result;
 
-        var taskById = tasks.ToDictionary(t => t.Id);
-        var googleIdToTask = tasks
-            .Where(t => !string.IsNullOrEmpty(t.GoogleTaskId))
-            .GroupBy(t => t.GoogleTaskId!)
-            .ToDictionary(g => g.Key, g => g.First().Id);
-        var childrenByLocalParent = tasks
+        var lookups = TaskGrouping.BuildLookups(tasks);
+        var childrenByLocalParent = lookups.Live
             .Where(t => t.ParentTaskId.HasValue)
             .GroupBy(t => t.ParentTaskId!.Value)
             .ToDictionary(g => g.Key, g => (IReadOnlyList<TaskItem>)g.OrderBy(t => t.SortOrder).ThenBy(t => t.CreatedAt).ToList());
-        var childrenByGoogleParent = tasks
+        var childrenByGoogleParent = lookups.Live
             .Where(t => !string.IsNullOrEmpty(t.GoogleParentTaskId))
             .GroupBy(t => t.GoogleParentTaskId!)
             .ToDictionary(g => g.Key, g => (IReadOnlyList<TaskItem>)g
                 .OrderBy(t => t.GooglePosition ?? string.Empty, StringComparer.Ordinal)
                 .ToList());
         var visited = new HashSet<Guid>();
-
-        bool HasKnownParent(TaskItem t) =>
-            (t.ParentTaskId.HasValue && taskById.ContainsKey(t.ParentTaskId.Value)) ||
-            (!string.IsNullOrEmpty(t.GoogleParentTaskId) && googleIdToTask.ContainsKey(t.GoogleParentTaskId));
 
         int ChildCountFor(TaskItem t)
         {
@@ -238,8 +231,8 @@ public class TaskListBase : ComponentBase
             return count;
         }
 
-        var roots = tasks
-            .Where(t => !HasKnownParent(t))
+        var roots = lookups.Live
+            .Where(t => !TaskGrouping.HasKnownParent(t, lookups))
             .OrderBy(t => t.SortOrder)
             .ThenByDescending(t => t.CreatedAt);
 

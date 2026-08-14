@@ -56,7 +56,9 @@ is less than 2 THE SYSTEM SHALL renumber the whole group at gap
 neighbor +/- 1000 at group edges).
 
 WHEN a reorder leaves the dragged task in its current position
-THE SYSTEM SHALL persist nothing.
+THE SYSTEM SHALL NOT change relative order, but MAY persist a
+first-time group normalization, and SHALL mark state dirty if it
+wrote.
 
 WHEN the user is inline-editing a task name THE SYSTEM SHALL
 disable dragging on that row.
@@ -86,3 +88,8 @@ ordering; from then on the user controls the order.
 - Drag-to-reparent / make-child (mid-zone) / horizontal
   drag-to-depth - phase 3.
 - Touch input: HTML5 DnD does not fire on touch; manual only.
+- Keyboard reorder alternative. Drag is pointer-only; drop zones
+  are aria-hidden. Promote/demote buttons are reparenting, not a
+  reorder equivalent. Known gap against WCAG 2.1 SC 2.1.1 and
+  WCAG 2.2 SC 2.5.7 - phase 3 (Alt+Up / Alt+Down on the focused
+  row, reusing existing HandleKeyDown).

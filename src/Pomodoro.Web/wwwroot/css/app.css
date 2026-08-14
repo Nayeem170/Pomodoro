@@ -1267,6 +1267,12 @@ input, textarea, [contenteditable="true"] {
     bottom: 0;
 }
 
+.no-drop-zone {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
 .row-toggle {
     width: 12px;
     height: 12px;

@@ -97,6 +97,7 @@ public class TaskItemBase : ComponentBase
     protected bool _isDragSource;
     protected bool _dropBefore;
     protected bool _dropAfter;
+    protected bool _noDropHover;
 
     protected string NewSubtaskName { get; set; } = string.Empty;
 
@@ -151,7 +152,7 @@ public class TaskItemBase : ComponentBase
         if (_isDragSource) classes.Add("dragging");
         if (_dropBefore) classes.Add("drop-before");
         if (_dropAfter) classes.Add("drop-after");
-        if (IsDragActive && !IsReorderable) classes.Add("no-drop");
+        if (IsDragActive && _noDropHover && !IsReorderable) classes.Add("no-drop");
         return string.Join(" ", classes);
     }
 

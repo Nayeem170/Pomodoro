@@ -40,6 +40,36 @@ public class TaskListReorderTests : TestContext
     }
 
     [Fact]
+    public void IsReorderable_GoogleSubtreeDoesNotBlockLocalRoots()
+    {
+        var a = NewTask("A");
+        var b = NewTask("B");
+        var anchor = NewTask("L");
+        var googleParent = NewTask("GP");
+        googleParent.ParentTaskId = anchor.Id;
+        googleParent.GoogleTaskId = "gp";
+        var googleChild = NewTask("GS");
+        googleChild.GoogleTaskId = "gs";
+        googleChild.GoogleParentTaskId = "gp";
+
+        var cut = RenderComponent<TaskList>(parameters => parameters
+            .Add(p => p.Tasks, new List<TaskItem> { a, b, anchor, googleParent, googleChild })
+            .Add(p => p.CurrentTaskId, null));
+
+        var draggableStates = cut.FindAll(".task-row")
+            .GroupBy(r => r.QuerySelector(".task-text")!.TextContent)
+            .ToDictionary(g => g.Key, g => g.First().GetAttribute("draggable"));
+
+        draggableStates["A"].Should().Be("true");
+        draggableStates["B"].Should().Be("true");
+        draggableStates["L"].Should().Be("true");
+        draggableStates["GP"].Should().Be("false",
+            "single-member local-parent group under L is not reorderable");
+        draggableStates["GS"].Should().Be("false",
+            "Google group members are never reorderable in phase 1");
+    }
+
+    [Fact]
     public void IsReorderable_FalseForSingleMemberGroup()
     {
         var solo = NewTask("Solo");

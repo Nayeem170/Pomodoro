@@ -13,6 +13,12 @@
              @ondragleave="HandleZoneDragLeave"
              @ondrop="() => HandleZoneDrop(false)" @ondrop:preventDefault></div>
     }
+    @if (IsDragActive && !IsReorderable)
+    {
+        <div class="no-drop-zone" aria-hidden="true"
+             @ondragover="() => _noDropHover = true"
+             @ondragleave="() => _noDropHover = false"></div>
+    }
     @if (Depth > 0)
     {
         <span class="task-indent" aria-hidden="true" style="width:@(Depth * 20)px"></span>

@@ -371,11 +371,8 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         var target = _appState.FindTaskById(targetId);
         if (task == null || target == null) return false;
         if (task.IsDeleted || target.IsDeleted) return false;
-        if (task.ParentTaskId != target.ParentTaskId) return false;
 
-        var group = _appState.Tasks
-            .Where(t => t.ParentTaskId == task.ParentTaskId && !t.IsDeleted)
-            .ToList();
+        var group = TaskGrouping.GetSiblingGroup(_appState.Tasks, task);
         if (group.Count < 2 || group.Any(t => t.IsGoogleTask)) return false;
 
         var ordered = task.ParentTaskId.HasValue
@@ -402,7 +399,11 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         if (targetIndex < 0) return false;
 
         var insertIndex = insertBefore ? targetIndex : targetIndex + 1;
-        if (insertIndex == draggedIndex) return true;
+        if (insertIndex == draggedIndex)
+        {
+            MarkDirty();
+            return true;
+        }
 
         var dragged = ordered[draggedIndex];
         var prev = insertIndex > 0 ? without[insertIndex - 1] : null;
