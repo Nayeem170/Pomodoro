@@ -1,4 +1,5 @@
 using Bunit;
+using FluentAssertions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -140,9 +141,25 @@ public class KeyboardHelpModalTests : TestContext
         var cut = RenderComponent<KeyboardHelpModal>(parameters => parameters
             .Add(p => p.IsVisible, true));
 
-        // Assert - Should have Timer, Session, and Other sections
+        // Assert - Should have Timer, Session, Task List, and Other sections
         var sections = cut.FindAll(".shortcut-section h4");
         Assert.True(sections.Count >= 3, "Should have at least 3 sections (Timer, Session, Other)");
+    }
+
+    [Fact]
+    public void KeyboardHelpModal_ListsKeyboardReorderShortcuts()
+    {
+        // Arrange & Act
+        var cut = RenderComponent<KeyboardHelpModal>(parameters => parameters
+            .Add(p => p.IsVisible, true));
+
+        // Assert
+        cut.Markup.Should().Contain(Constants.KeyboardHelp.TaskListSection);
+        cut.FindAll("kbd")
+            .Select(k => k.TextContent)
+            .Should()
+            .Contain([Constants.KeyboardShortcuts.ReorderUpKey, Constants.KeyboardShortcuts.ReorderDownKey],
+                "both keyboard reorder shortcuts are documented");
     }
 }
 

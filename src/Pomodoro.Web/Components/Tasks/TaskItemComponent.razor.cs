@@ -5,7 +5,7 @@ using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Components.Tasks;
 
-public class TaskItemBase : ComponentBase
+public partial class TaskItemBase : ComponentBase
 {
     #region Parameters (Model)
 
@@ -64,24 +64,6 @@ public class TaskItemBase : ComponentBase
     public DateTime? ContextDate { get; set; }
 
     [Parameter]
-    public bool IsReorderable { get; set; }
-
-    [Parameter]
-    public bool IsDragActive { get; set; }
-
-    [Parameter]
-    public Guid? DraggedTaskId { get; set; }
-
-    [Parameter]
-    public EventCallback<ReorderRequest> OnReorder { get; set; }
-
-    [Parameter]
-    public EventCallback<Guid> OnDragStarted { get; set; }
-
-    [Parameter]
-    public EventCallback OnDragEnded { get; set; }
-
-    [Parameter]
     public bool IsNewlyAdded { get; set; }
 
     [Inject]
@@ -100,11 +82,6 @@ public class TaskItemBase : ComponentBase
     protected bool IsConfirmingDelete { get; set; }
 
     protected bool IsDemoteMenuOpen { get; set; }
-
-    protected bool _isDragSource;
-    protected bool _dropBefore;
-    protected bool _dropAfter;
-    protected bool _noDropHover;
 
     protected string NewSubtaskName { get; set; } = string.Empty;
 
@@ -164,52 +141,6 @@ public class TaskItemBase : ComponentBase
         if (_dropAfter) classes.Add("drop-after");
         if (IsDragActive && _noDropHover && !IsReorderable) classes.Add("no-drop");
         return string.Join(" ", classes);
-    }
-
-    protected bool CanDrag => IsReorderable && !IsInlineEditing;
-
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
-        if (!IsDragActive) _noDropHover = false;
-    }
-
-    protected async Task HandleDragStart()
-    {
-        _isDragSource = true;
-        await OnDragStarted.InvokeAsync(Item.Id);
-    }
-
-    protected async Task HandleDragEnd()
-    {
-        _isDragSource = false;
-        _dropBefore = false;
-        _dropAfter = false;
-        _noDropHover = false;
-        await OnDragEnded.InvokeAsync();
-    }
-
-    protected void HandleZoneDragOver(bool before)
-    {
-        _dropBefore = before;
-        _dropAfter = !before;
-    }
-
-    protected void HandleZoneDragLeave()
-    {
-        _dropBefore = false;
-        _dropAfter = false;
-    }
-
-    protected async Task HandleZoneDrop(bool before)
-    {
-        _dropBefore = false;
-        _dropAfter = false;
-        _isDragSource = false;
-        if (DraggedTaskId.HasValue && DraggedTaskId.Value != Item.Id)
-        {
-            await OnReorder.InvokeAsync(new ReorderRequest(DraggedTaskId.Value, Item.Id, before));
-        }
     }
 
     protected string GetStatusIcon()
@@ -275,6 +206,16 @@ public class TaskItemBase : ComponentBase
 
     protected async Task HandleKeyDown(KeyboardEventArgs e)
     {
+        if (e.AltKey && e.Key == Constants.Keys.ArrowUp)
+        {
+            await HandleKeyboardReorder(up: true);
+            return;
+        }
+        if (e.AltKey && e.Key == Constants.Keys.ArrowDown)
+        {
+            await HandleKeyboardReorder(up: false);
+            return;
+        }
         if (e.Key == "Enter" || e.Key == " ")
         {
             await HandleSelect();

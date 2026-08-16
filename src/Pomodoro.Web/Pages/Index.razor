@@ -208,6 +208,8 @@ else
             </div>
         }
 
+        <div class="sr-only" role="status" aria-live="polite">@_reorderAnnouncement</div>
+
         @if (_errorToastVisible && _errorToastMessage is not null)
         {
             <div class="error-toast" role="alert" aria-live="assertive">

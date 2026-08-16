@@ -91,6 +91,7 @@ public static partial class Constants
         public const string ErrorDeletingTask = "Error deleting task";
         public const string ErrorUncompletingTask = "Error uncompleting task";
         public const string ErrorUpdatingTask = "Error updating task";
+        public const string ReorderAnnouncementFormat = "Moved {0} to position {1} of {2}";
         public const string GoogleReconnectNeeded = "Reconnect your Google account in Settings to sync this change";
         public const string ErrorStartingTimer = "Error starting timer";
         public const string ErrorPausingTimer = "Error pausing timer";
