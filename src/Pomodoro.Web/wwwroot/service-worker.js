@@ -13,11 +13,11 @@
 // clear their browser cache or the service worker naturally expires (24h+).
 // =============================================================================
 //
-// Version: 11.0.0 (cache bump: keyboard reorder + sr-only utility CSS)
-// Last updated: 2026-08-16
+// Version: 12.0.0 (cache bump: edit panel repeat choice + list selector, googleTasks cross-list move)
+// Last updated: 2026-08-18
 
-const CACHE_NAME = 'pomodoro-cache-v11';
-const CACHE_VERSION = 11;
+const CACHE_NAME = 'pomodoro-cache-v12';
+const CACHE_VERSION = 12;
 
 // Assets to cache immediately on install (static assets)
 const PRECACHE_ASSETS = [

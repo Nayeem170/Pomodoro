@@ -14,56 +14,57 @@
                   @onkeydown="HandleNameKey" aria-label="Task name" autofocus="@IsSubtask" @ref="_subtaskInput"></textarea>
     </div>
 
-    @if (!IsSubtask)
+    <div class="tep-row">
+        <label class="tep-label">Repeat</label>
+        <select class="tep-select" @bind="EditRepeatChoice" @bind:event="onchange" aria-label="Repeat type">
+            @if (IsSubtask)
+            {
+                <option value="@Constants.Repeat.FollowParentChoice">Follow parent</option>
+            }
+            <option value="@RepeatType.None">None</option>
+            <option value="@RepeatType.Daily">Daily</option>
+            <option value="@RepeatType.Weekly">Weekly</option>
+            <option value="@RepeatType.Custom">Every N days</option>
+            <option value="@RepeatType.Monthly">Monthly</option>
+        </select>
+    </div>
+
+    @if (EditRepeatType == RepeatType.Weekly && !EditFollowParent)
+    {
+        <div class="tep-row tep-weekdays">
+            <label class="tep-label">Days</label>
+            <div class="tep-weekday-btns">
+                @foreach (var day in WeekdayOptions)
+                {
+                    var isSelected = EditWeekdays.Contains(day);
+                    <button type="button"
+                            class="tep-weekday-btn @(isSelected ? "active" : "")"
+                            @onclick="() => ToggleWeekday(day)">
+                        @day.ToString().Substring(0, 2)
+                    </button>
+                }
+            </div>
+        </div>
+    }
+
+    @if (EditRepeatType == RepeatType.Custom && !EditFollowParent)
     {
         <div class="tep-row">
-            <label class="tep-label">Repeat</label>
-            <select class="tep-select" @bind="EditRepeatType" @bind:event="onchange">
-                <option value="@RepeatType.None">None</option>
-                <option value="@RepeatType.Daily">Daily</option>
-                <option value="@RepeatType.Weekly">Weekly</option>
-                <option value="@RepeatType.Custom">Every N days</option>
-                <option value="@RepeatType.Monthly">Monthly</option>
-            </select>
+            <label class="tep-label">Every</label>
+            <input type="number" class="tep-input tep-input-sm" min="1" max="@Constants.Repeat.MaxCustomDays"
+                   @bind="EditCustomDays" @bind:event="oninput" />
+            <span class="tep-unit">days</span>
         </div>
+    }
 
-        @if (EditRepeatType == RepeatType.Weekly)
-        {
-            <div class="tep-row tep-weekdays">
-                <label class="tep-label">Days</label>
-                <div class="tep-weekday-btns">
-                    @foreach (var day in WeekdayOptions)
-                    {
-                        var isSelected = EditWeekdays.Contains(day);
-                        <button type="button"
-                                class="tep-weekday-btn @(isSelected ? "active" : "")"
-                                @onclick="() => ToggleWeekday(day)">
-                            @day.ToString().Substring(0, 2)
-                        </button>
-                    }
-                </div>
-            </div>
-        }
-
-        @if (EditRepeatType == RepeatType.Custom)
-        {
-            <div class="tep-row">
-                <label class="tep-label">Every</label>
-                <input type="number" class="tep-input tep-input-sm" min="1" max="@Constants.Repeat.MaxCustomDays"
-                       @bind="EditCustomDays" @bind:event="oninput" />
-                <span class="tep-unit">days</span>
-            </div>
-        }
-
-        @if (EditRepeatType == RepeatType.Monthly)
-        {
-            <div class="tep-row">
-                <label class="tep-label">Day</label>
-                <input type="number" class="tep-input tep-input-sm" min="1" max="31"
-                       @bind="EditMonthlyDay" @bind:event="oninput" />
-                <span class="tep-unit">of month</span>
-            </div>
-        }
+    @if (EditRepeatType == RepeatType.Monthly && !EditFollowParent)
+    {
+        <div class="tep-row">
+            <label class="tep-label">Day</label>
+            <input type="number" class="tep-input tep-input-sm" min="1" max="31"
+                   @bind="EditMonthlyDay" @bind:event="oninput" />
+            <span class="tep-unit">of month</span>
+        </div>
     }
 
     <div class="tep-row">
@@ -71,7 +72,7 @@
         <input type="date" class="tep-input" @bind="EditScheduledDate" @bind:event="onchange" />
     </div>
 
-    @if (!IsSubtask && EditRepeatType != RepeatType.None)
+    @if (ShowPause)
     {
         <div class="tep-row">
             <label class="tep-label">Pause</label>
@@ -79,6 +80,24 @@
                 @Constants.Repeat.PausedIcon
                 <span class="tep-toggle-label">@(EditIsPaused ? "Paused" : "Not paused")</span>
             </button>
+        </div>
+    }
+
+    @if (!IsSubtask)
+    {
+        <div class="tep-row">
+            <label class="tep-label">List</label>
+            <select class="tep-select" @bind="EditListId" @bind:event="onchange" aria-label="Task list">
+                <option value="@Constants.TaskLists.LocalPomodoroListId">Pomodoro</option>
+                @if (GoogleLists.Any())
+                {
+                    <option value="" disabled>- Google Tasks -</option>
+                    @foreach (var list in GoogleLists)
+                    {
+                        <option value="@list.Id">@list.Title</option>
+                    }
+                }
+            </select>
         </div>
     }
 

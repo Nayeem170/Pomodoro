@@ -114,11 +114,11 @@ public class GoogleTasksService : IGoogleTasksService
         });
     }
 
-    public async Task<GoogleTask?> MoveTaskAsync(string listId, string taskId, string? parentTaskId = null)
+    public async Task<GoogleTask?> MoveTaskAsync(string listId, string taskId, string? parentTaskId = null, string? targetListId = null)
     {
         return await ExecuteWithRetryAsync(async token =>
         {
-            var json = await _jsRuntime.InvokeAsync<string>(Constants.GoogleTasksJsFunctions.MoveTask, token, listId, taskId, parentTaskId);
+            var json = await _jsRuntime.InvokeAsync<string>(Constants.GoogleTasksJsFunctions.MoveTask, token, listId, taskId, parentTaskId, targetListId);
             var data = JsonSerializer.Deserialize<JsonElement>(json);
             var moved = MapGoogleTask(data);
             _logger.LogInformation("Moved Google task {TaskId} under parent {Parent}", taskId, parentTaskId ?? "(root)");

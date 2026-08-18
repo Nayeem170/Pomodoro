@@ -101,5 +101,6 @@ public static partial class Constants
         public const string LabelWeekly = "Weekly";
         public const string LabelMonthly = "Monthly";
         public const string LabelRepeat = "Repeat";
+        public const string FollowParentChoice = "follow-parent";
     }
 }

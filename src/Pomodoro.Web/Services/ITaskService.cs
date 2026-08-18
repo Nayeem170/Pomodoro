@@ -48,6 +48,8 @@ public interface ITaskService
 
     Task SetFollowsParentRepeatAsync(Guid taskId, bool value);
 
+    Task<bool> MoveTaskToListAsync(Guid taskId, string newListId);
+
     /// <summary>Persists a virtual repeat occurrence as a real task so it can be edited independently of its series.</summary>
     Task MaterializeSingleAsync(TaskItem occurrence);
 
