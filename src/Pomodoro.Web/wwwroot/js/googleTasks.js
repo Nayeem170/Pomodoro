@@ -75,9 +75,12 @@ window.googleTasks = {
             });
     },
 
-    moveTask: function(accessToken, listId, taskId, parentTaskId) {
+    moveTask: function(accessToken, listId, taskId, parentTaskId, targetListId) {
         var url = this._getBaseUrl() + '/lists/' + encodeURIComponent(listId) + '/tasks/' + encodeURIComponent(taskId) + '/move';
-        if (parentTaskId) url += '?parent=' + encodeURIComponent(parentTaskId);
+        var params = [];
+        if (targetListId && targetListId !== listId) params.push('destinationTasklist=' + encodeURIComponent(targetListId));
+        if (parentTaskId) params.push('parent=' + encodeURIComponent(parentTaskId));
+        if (params.length) url += '?' + params.join('&');
         return fetch(url, {
             method: 'POST',
             headers: this._getAuthHeaders(accessToken)

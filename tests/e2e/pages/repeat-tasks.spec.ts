@@ -64,6 +64,25 @@ test.describe('Repeat Tasks', () => {
     await expect(page.page.locator('.task-row').filter({ hasText: 'Paused Task' }).locator('.task-badge.paused-badge')).toBeVisible();
   });
 
+  test('subtask sets own repeat via edit panel and detaches from parent', async () => {
+    await page.addTask('Repeat Parent');
+    const parentRow = page.page.locator('.task-row').filter({ hasText: 'Repeat Parent' }).first();
+    await parentRow.locator('button[aria-label="Add subtask"]').click();
+    await page.page.locator('.add-subtask-form textarea').fill('Own Repeat Sub');
+    await page.page.locator('.add-subtask-form .btn-add').click();
+
+    const subtaskRow = page.page.locator('.task-row').filter({ hasText: 'Own Repeat Sub' }).first();
+    await expect(subtaskRow).toBeVisible();
+    await expect(subtaskRow.locator('.follow-parent')).toHaveClass(/(^|\s)active(\s|$)/);
+
+    await page.editTask('Own Repeat Sub');
+    await page.setTaskRepeat('Daily');
+    await page.saveTaskEdit();
+
+    await expect(subtaskRow.locator('.repeat-badge')).toBeVisible();
+    await expect(subtaskRow.locator('.follow-parent')).toHaveClass(/inactive/);
+  });
+
   test('cancel edit does not save repeat', async () => {
     await page.addTask('No Repeat Task');
     await page.editTask('No Repeat Task');

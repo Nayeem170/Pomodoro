@@ -102,6 +102,9 @@ public partial class TaskItemBase : ComponentBase
     [Parameter]
     public string? GoogleListTitle { get; set; }
 
+    [Parameter]
+    public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
+
     protected string GoogleBadgeTooltip =>
         string.IsNullOrEmpty(GoogleListTitle) ? "Google task" : $"Google task - {GoogleListTitle}";
 
@@ -224,14 +227,7 @@ public partial class TaskItemBase : ComponentBase
 
     protected void HandleEdit()
     {
-        if (Depth == 0)
-        {
-            IsEditing = !IsEditing;
-        }
-        else
-        {
-            StartInlineEdit();
-        }
+        IsEditing = !IsEditing;
     }
 
     protected void StartInlineEdit()

@@ -1915,7 +1915,7 @@ public class TaskServiceMultiListTests
         };
         _appState.Tasks = [task];
         var moved = new GoogleTask { Position = "new-pos", ETag = "new-etag" };
-        _mockGoogleTasksService.Setup(x => x.MoveTaskAsync("glist-1", "gtask-1", It.IsAny<string?>()))
+        _mockGoogleTasksService.Setup(x => x.MoveTaskAsync("glist-1", "gtask-1", It.IsAny<string?>(), It.IsAny<string?>()))
             .ReturnsAsync(moved);
         _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
 
@@ -1943,7 +1943,7 @@ public class TaskServiceMultiListTests
             GooglePosition = "old-pos"
         };
         _appState.Tasks = [task];
-        _mockGoogleTasksService.Setup(x => x.MoveTaskAsync("glist-1", "gtask-1", It.IsAny<string?>()))
+        _mockGoogleTasksService.Setup(x => x.MoveTaskAsync("glist-1", "gtask-1", It.IsAny<string?>(), It.IsAny<string?>()))
             .ReturnsAsync((GoogleTask?)null);
         _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
 

@@ -442,7 +442,7 @@ export class PomodoroPage {
   }
 
   async setTaskRepeat(type: string) {
-    await this.page.locator('.tep-select').selectOption(type);
+    await this.page.locator('select[aria-label="Repeat type"]').selectOption(type);
   }
 
   async setTaskScheduleDate(dateStr: string) {

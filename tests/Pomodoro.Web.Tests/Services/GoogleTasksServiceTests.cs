@@ -448,6 +448,20 @@ public class GoogleTasksServiceTests
         Assert.Null(moved!.Parent);
     }
 
+    [Fact]
+    public async Task MoveTaskAsync_PassesTargetListId()
+    {
+        // Arrange
+        var responseJson = JsonSerializer.Serialize(new { id = "task-1", title = "Moved", status = "needsAction", updated = "2026-01-01T00:00:00Z", etag = "e4" });
+        _jsRuntime.QueueResult(responseJson);
+
+        // Act
+        await _service.MoveTaskAsync("list-1", "task-1", null, "list-2");
+
+        // Assert - the cross-list target reaches the JS layer as the 4th data argument.
+        Assert.Equal("list-2", _jsRuntime.LastArgs![4]);
+    }
+
     private class TestJsRuntime : IJSRuntime
     {
         private int _callIndex;

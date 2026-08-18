@@ -2,108 +2,107 @@
 @using Pomodoro.Web.Models
 
 <div class="task-edit-panel">
-    @if (IsSubtask)
+    <div class="tep-header">
+        <span class="tep-title">EDITING TASK</span>
+        <button type="button" class="tep-collapse" @onclick="HandleCancel" aria-label="Close edit panel">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 7.5l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+    </div>
+    <div class="tep-row">
+        <label class="tep-label">Name</label>
+        <textarea class="tep-input tep-input-name" rows="1" @bind="EditName" @bind:event="oninput"
+                  @onkeydown="HandleNameKey" aria-label="Task name" autofocus="@IsSubtask" @ref="_subtaskInput"></textarea>
+    </div>
+
+    <div class="tep-row">
+        <label class="tep-label">Repeat</label>
+        <select class="tep-select" @bind="EditRepeatChoice" @bind:event="onchange" aria-label="Repeat type">
+            @if (IsSubtask)
+            {
+                <option value="@Constants.Repeat.FollowParentChoice">Follow parent</option>
+            }
+            <option value="@RepeatType.None">None</option>
+            <option value="@RepeatType.Daily">Daily</option>
+            <option value="@RepeatType.Weekly">Weekly</option>
+            <option value="@RepeatType.Custom">Every N days</option>
+            <option value="@RepeatType.Monthly">Monthly</option>
+        </select>
+    </div>
+
+    @if (EditRepeatType == RepeatType.Weekly && !EditFollowParent)
     {
-        <div class="tep-row">
-            <textarea class="tep-input"
-                   rows="1"
-                   value="@EditName"
-                   @oninput="@((ChangeEventArgs e) => EditName = e.Value?.ToString() ?? string.Empty)"
-                   @onblur="HandleSave"
-                   @onkeydown="HandleSubtaskKey"
-                   aria-label="Subtask name"
-                   @ref="_subtaskInput"
-                   autofocus></textarea>
+        <div class="tep-row tep-weekdays">
+            <label class="tep-label">Days</label>
+            <div class="tep-weekday-btns">
+                @foreach (var day in WeekdayOptions)
+                {
+                    var isSelected = EditWeekdays.Contains(day);
+                    <button type="button"
+                            class="tep-weekday-btn @(isSelected ? "active" : "")"
+                            @onclick="() => ToggleWeekday(day)">
+                        @day.ToString().Substring(0, 2)
+                    </button>
+                }
+            </div>
         </div>
     }
-    else
+
+    @if (EditRepeatType == RepeatType.Custom && !EditFollowParent)
     {
-        <div class="tep-header">
-            <span class="tep-title">EDITING TASK</span>
-            <button type="button" class="tep-collapse" @onclick="HandleCancel" aria-label="Close edit panel">
-                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 7.5l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="tep-row">
+            <label class="tep-label">Every</label>
+            <input type="number" class="tep-input tep-input-sm" min="1" max="@Constants.Repeat.MaxCustomDays"
+                   @bind="EditCustomDays" @bind:event="oninput" />
+            <span class="tep-unit">days</span>
+        </div>
+    }
+
+    @if (EditRepeatType == RepeatType.Monthly && !EditFollowParent)
+    {
+        <div class="tep-row">
+            <label class="tep-label">Day</label>
+            <input type="number" class="tep-input tep-input-sm" min="1" max="31"
+                   @bind="EditMonthlyDay" @bind:event="oninput" />
+            <span class="tep-unit">of month</span>
+        </div>
+    }
+
+    <div class="tep-row">
+        <label class="tep-label">Schedule</label>
+        <input type="date" class="tep-input" @bind="EditScheduledDate" @bind:event="onchange" aria-label="Schedule date" />
+    </div>
+
+    @if (ShowPause)
+    {
+        <div class="tep-row">
+            <label class="tep-label">Pause</label>
+            <button type="button" class="tep-toggle @(EditIsPaused ? "active" : "")" @onclick="TogglePause">
+                @Constants.Repeat.PausedIcon
+                <span class="tep-toggle-label">@(EditIsPaused ? "Paused" : "Not paused")</span>
             </button>
         </div>
-        <div class="tep-row">
-            <label class="tep-label">Name</label>
-            <textarea class="tep-input tep-input-name" rows="1" @bind="EditName" @bind:event="oninput" aria-label="Task name"></textarea>
-        </div>
+    }
 
+    @if (!IsSubtask)
+    {
         <div class="tep-row">
-            <label class="tep-label">Repeat</label>
-            <select class="tep-select" @bind="EditRepeatType" @bind:event="onchange">
-                <option value="@RepeatType.None">None</option>
-                <option value="@RepeatType.Daily">Daily</option>
-                <option value="@RepeatType.Weekly">Weekly</option>
-                <option value="@RepeatType.Custom">Every N days</option>
-                <option value="@RepeatType.Monthly">Monthly</option>
+            <label class="tep-label">List</label>
+            <select class="tep-select" @bind="EditListId" @bind:event="onchange" aria-label="Task list">
+                <option value="@Constants.TaskLists.LocalPomodoroListId">Pomodoro</option>
+                @if (GoogleLists.Any())
+                {
+                    <option value="" disabled>- Google Tasks -</option>
+                    @foreach (var list in GoogleLists)
+                    {
+                        <option value="@list.Id">@list.Title</option>
+                    }
+                }
             </select>
         </div>
-
-        @if (EditRepeatType == RepeatType.Weekly)
-        {
-            <div class="tep-row tep-weekdays">
-                <label class="tep-label">Days</label>
-                <div class="tep-weekday-btns">
-                    @foreach (var day in WeekdayOptions)
-                    {
-                        var isSelected = EditWeekdays.Contains(day);
-                        <button type="button"
-                                class="tep-weekday-btn @(isSelected ? "active" : "")"
-                                @onclick="() => ToggleWeekday(day)">
-                            @day.ToString().Substring(0, 2)
-                        </button>
-                    }
-                </div>
-            </div>
-        }
-
-        @if (EditRepeatType == RepeatType.Custom)
-        {
-            <div class="tep-row">
-                <label class="tep-label">Every</label>
-                <input type="number" class="tep-input tep-input-sm" min="1" max="@Constants.Repeat.MaxCustomDays"
-                       @bind="EditCustomDays" @bind:event="oninput" />
-                <span class="tep-unit">days</span>
-            </div>
-        }
-
-        @if (EditRepeatType == RepeatType.Monthly)
-        {
-            <div class="tep-row">
-                <label class="tep-label">Day</label>
-                <input type="number" class="tep-input tep-input-sm" min="1" max="31"
-                       @bind="EditMonthlyDay" @bind:event="oninput" />
-                <span class="tep-unit">of month</span>
-            </div>
-        }
-
-        @if (EditRepeatType != RepeatType.None)
-        {
-            <div class="tep-row">
-                <label class="tep-label">Schedule</label>
-                <input type="date" class="tep-input" @bind="EditScheduledDate" @bind:event="onchange" />
-            </div>
-
-            <div class="tep-row">
-                <label class="tep-label">Pause</label>
-                <button type="button" class="tep-toggle @(EditIsPaused ? "active" : "")" @onclick="TogglePause">
-                    @Constants.Repeat.PausedIcon
-                    <span class="tep-toggle-label">@(EditIsPaused ? "Paused" : "Not paused")</span>
-                </button>
-            </div>
-        }
-        else
-        {
-            <div class="tep-row">
-                <label class="tep-label">Schedule</label>
-                <input type="date" class="tep-input" @bind="EditScheduledDate" @bind:event="onchange" />
-            </div>
-        }
-
-        <div class="tep-actions">
-            <button class="tep-save-btn" @onclick="HandleSave">Save</button>
-            <button class="tep-cancel-btn" @onclick="HandleCancel">Cancel</button>
-        </div>
     }
+
+    <div class="tep-actions">
+        <button class="tep-save-btn" @onclick="HandleSave">Save</button>
+        <button class="tep-cancel-btn" @onclick="HandleCancel">Cancel</button>
+    </div>
 </div>

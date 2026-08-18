@@ -197,6 +197,8 @@ public class ScheduleAgendaTests : TestContext
         cut.Find("button[aria-label=\"Edit task\"]").Click();
         cut.Find(".tep-save-btn").Click();
 
-        edited.Should().Be(task);
+        edited.Should().NotBeNull();
+        edited!.Id.Should().Be(task.Id);
+        edited.Name.Should().Be(task.Name);
     }
 }

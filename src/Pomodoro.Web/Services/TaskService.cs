@@ -364,6 +364,130 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         NotifyStateChanged();
     }
 
+    public async Task<bool> MoveTaskToListAsync(Guid taskId, string newListId)
+    {
+        var task = _appState.FindTaskById(taskId);
+        if (task == null || task.IsSubtask) return false;
+        if (newListId == Constants.TaskLists.ScheduleListId) return false;
+
+        var oldListId = task.GoogleListId ?? Constants.TaskLists.LocalPomodoroListId;
+        if (newListId == oldListId) return false;
+
+        var sourceIsLocal = oldListId == Constants.TaskLists.LocalPomodoroListId;
+        var targetIsLocal = newListId == Constants.TaskLists.LocalPomodoroListId;
+
+        var descendants = GetDescendantsByParentId(taskId, _appState.Tasks);
+
+        if (!sourceIsLocal && !targetIsLocal
+            && (task.Repeat is { Type: not RepeatType.None }
+                || descendants.Any(t => t.Repeat is { Type: not RepeatType.None })))
+        {
+            throw new InvalidOperationException(Constants.Messages.RecurringTaskCannotChangeList);
+        }
+
+        if (sourceIsLocal && !targetIsLocal)
+        {
+            var rootInserted = await _googleTasksService.InsertTaskAsync(newListId, BuildGoogleTask(task));
+            await WriteBackGoogleIdentityAsync(task, rootInserted, newListId, null);
+            var googleIdByLocalId = new Dictionary<Guid, string> { [task.Id] = rootInserted.Id };
+            foreach (var sub in descendants)
+            {
+                var parentGoogleId = sub.ParentTaskId.HasValue && googleIdByLocalId.TryGetValue(sub.ParentTaskId.Value, out var mapped)
+                    ? mapped
+                    : null;
+                var inserted = await _googleTasksService.InsertTaskAsync(newListId, BuildGoogleTask(sub), parentGoogleId);
+                await WriteBackGoogleIdentityAsync(sub, inserted, newListId, parentGoogleId);
+                googleIdByLocalId[sub.Id] = inserted.Id;
+            }
+        }
+        else if (!sourceIsLocal && targetIsLocal)
+        {
+            if (!string.IsNullOrEmpty(task.GoogleTaskId))
+                await _googleTasksService.DeleteTaskAsync(oldListId, task.GoogleTaskId);
+            await ClearGoogleIdentityAsync(task);
+            foreach (var sub in descendants)
+            {
+                if (!string.IsNullOrEmpty(sub.GoogleTaskId))
+                    await _googleTasksService.DeleteTaskAsync(oldListId, sub.GoogleTaskId);
+                await ClearGoogleIdentityAsync(sub);
+            }
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(task.GoogleTaskId)) return false;
+            var movedRoot = await _googleTasksService.MoveTaskAsync(oldListId, task.GoogleTaskId, null, newListId);
+            if (movedRoot is null) return false;
+            await WriteBackGoogleIdentityAsync(task, movedRoot, newListId, null);
+            foreach (var sub in descendants)
+            {
+                if (string.IsNullOrEmpty(sub.GoogleTaskId)) continue;
+                var parentGoogleId = sub.GoogleParentTaskId ?? task.GoogleTaskId;
+                var moved = await _googleTasksService.MoveTaskAsync(oldListId, sub.GoogleTaskId, parentGoogleId, newListId);
+                if (moved is null)
+                {
+                    NotifyStateChanged();
+                    return false;
+                }
+                await WriteBackGoogleIdentityAsync(sub, moved, newListId, parentGoogleId);
+            }
+        }
+
+        NotifyStateChanged();
+        return true;
+    }
+
+    private static GoogleTask BuildGoogleTask(TaskItem task)
+    {
+        return new GoogleTask
+        {
+            Title = task.Name,
+            Notes = task.Notes,
+            Due = task.DueDate.HasValue
+                ? task.DueDate.Value.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'")
+                : null
+        };
+    }
+
+    private async Task WriteBackGoogleIdentityAsync(TaskItem task, GoogleTask googleTask, string listId, string? parentGoogleId)
+    {
+        _appState.UpdateTask(task.Id, t =>
+        {
+            t.GoogleTaskId = googleTask.Id;
+            t.GoogleListId = listId;
+            t.ETag = googleTask.ETag;
+            t.GoogleParentTaskId = parentGoogleId;
+            t.GooglePosition = googleTask.Position;
+        });
+        await SaveTaskAsync(task.WithUpdates(c =>
+        {
+            c.GoogleTaskId = googleTask.Id;
+            c.GoogleListId = listId;
+            c.ETag = googleTask.ETag;
+            c.GoogleParentTaskId = parentGoogleId;
+            c.GooglePosition = googleTask.Position;
+        }));
+    }
+
+    private async Task ClearGoogleIdentityAsync(TaskItem task)
+    {
+        _appState.UpdateTask(task.Id, t =>
+        {
+            t.GoogleTaskId = null;
+            t.GoogleListId = null;
+            t.ETag = null;
+            t.GoogleParentTaskId = null;
+            t.GooglePosition = null;
+        });
+        await SaveTaskAsync(task.WithUpdates(c =>
+        {
+            c.GoogleTaskId = null;
+            c.GoogleListId = null;
+            c.ETag = null;
+            c.GoogleParentTaskId = null;
+            c.GooglePosition = null;
+        }));
+    }
+
     public async Task<bool> ReorderTaskAsync(Guid taskId, Guid targetId, bool insertBefore)
     {
         if (taskId == targetId) return false;
@@ -528,6 +652,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             c.DueDate = task.DueDate;
             c.ScheduledDate = task.ScheduledDate;
             c.Repeat = task.Repeat;
+            c.FollowsParentRepeat = task.FollowsParentRepeat;
         });
 
         var googlePushPatch = BuildPatch(existingTask, taskToSave);
@@ -541,6 +666,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             t.DueDate = taskToSave.DueDate;
             t.ScheduledDate = taskToSave.ScheduledDate;
             t.Repeat = taskToSave.Repeat;
+            t.FollowsParentRepeat = taskToSave.FollowsParentRepeat;
         });
 
         if (taskToSave.IsGoogleTask && !string.IsNullOrEmpty(taskToSave.GoogleTaskId) && googlePushPatch != null)

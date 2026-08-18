@@ -154,7 +154,7 @@ public class TaskItemKeyboardTests : TestContext
         var cut = RenderRow(b, group, isReorderable: true,
             new EventCallback<ReorderRequest>(null, (Action<ReorderRequest>)(r => received = r)),
             depth: 1);
-        await cut.InvokeAsync(() => cut.Find("button[title='Edit']").Click());
+        await cut.InvokeAsync(() => cut.Find(".task-text").DoubleClick());
         cut.FindAll(".task-text-input").Count.Should().Be(1,
             "sanity: the row is in inline-edit mode");
 

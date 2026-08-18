@@ -200,7 +200,14 @@ public partial class IndexBase
     {
         await TryExecuteAsync(async () =>
         {
+            var existing = AppState.Tasks.FirstOrDefault(t => t.Id == task.Id);
+            var oldListId = existing?.GoogleListId ?? Constants.TaskLists.LocalPomodoroListId;
             await TaskService.UpdateTaskAsync(task);
+            var newListId = task.GoogleListId ?? Constants.TaskLists.LocalPomodoroListId;
+            if (newListId != oldListId)
+            {
+                await TaskService.MoveTaskToListAsync(task.Id, newListId);
+            }
             await UpdateStateAsync();
             StateHasChanged();
         }, Constants.Messages.ErrorUpdatingTask);
