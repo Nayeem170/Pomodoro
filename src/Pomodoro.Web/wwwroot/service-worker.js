@@ -13,11 +13,11 @@
 // clear their browser cache or the service worker naturally expires (24h+).
 // =============================================================================
 //
-// Version: 13.0.0 (cache bump: worker ships as static asset; registration re-enabled)
+// Version: 14.0.0 (cache bump: hide native spinners on tep number inputs)
 // Last updated: 2026-08-18
 
-const CACHE_NAME = 'pomodoro-cache-v13';
-const CACHE_VERSION = 13;
+const CACHE_NAME = 'pomodoro-cache-v14';
+const CACHE_VERSION = 14;
 
 // Assets to cache immediately on install (static assets)
 const PRECACHE_ASSETS = [
