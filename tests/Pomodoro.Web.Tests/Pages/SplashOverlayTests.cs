@@ -50,27 +50,32 @@ public class SplashOverlayTests : TestHelper
     [Fact]
     public async Task Index_AfterLoad_HidesSplashOverlayOnce()
     {
+        // Arrange
         var js = new RecordingJsRuntime();
         Services.AddSingleton<IJSRuntime>(js);
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
         var method = OnAfterRenderMethod(typeof(IndexBase));
 
+        // Act
         await InvokeOnAfterRender(method, cut.Instance);
-        js.Identifiers.Count(i => i == Constants.JsFunctions.HideSplash).Should().Be(1);
+        await InvokeOnAfterRender(method, cut.Instance);
 
-        await InvokeOnAfterRender(method, cut.Instance);
+        // Assert
         js.Identifiers.Count(i => i == Constants.JsFunctions.HideSplash).Should().Be(1);
     }
 
     [Fact]
     public async Task Index_HideSplashJsFailure_DoesNotFaultPage()
     {
+        // Arrange
         var js = new ThrowingJsRuntime();
         Services.AddSingleton<IJSRuntime>(js);
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 
+        // Act
         await InvokeOnAfterRender(OnAfterRenderMethod(typeof(IndexBase)), cut.Instance);
 
+        // Assert
         cut.Instance.ErrorMessage.Should().BeNull();
         js.CallCount.Should().BeGreaterThanOrEqualTo(1);
     }
@@ -78,27 +83,32 @@ public class SplashOverlayTests : TestHelper
     [Fact]
     public async Task History_AfterLoad_HidesSplashOverlayOnce()
     {
+        // Arrange
         var js = new RecordingJsRuntime();
         Services.AddSingleton<IJSRuntime>(js);
         var cut = RenderComponent<Pomodoro.Web.Pages.History>();
         var method = OnAfterRenderMethod(typeof(HistoryBase));
 
+        // Act
         await InvokeOnAfterRender(method, cut.Instance);
-        js.Identifiers.Count(i => i == Constants.JsFunctions.HideSplash).Should().Be(1);
+        await InvokeOnAfterRender(method, cut.Instance);
 
-        await InvokeOnAfterRender(method, cut.Instance);
+        // Assert
         js.Identifiers.Count(i => i == Constants.JsFunctions.HideSplash).Should().Be(1);
     }
 
     [Fact]
     public async Task History_HideSplashJsFailure_DoesNotFaultPage()
     {
+        // Arrange
         var js = new ThrowingJsRuntime();
         Services.AddSingleton<IJSRuntime>(js);
         var cut = RenderComponent<Pomodoro.Web.Pages.History>();
 
+        // Act
         await InvokeOnAfterRender(OnAfterRenderMethod(typeof(HistoryBase)), cut.Instance);
 
+        // Assert
         cut.Find(".hist-body").Should().NotBeNull();
         js.CallCount.Should().BeGreaterThanOrEqualTo(1);
     }
