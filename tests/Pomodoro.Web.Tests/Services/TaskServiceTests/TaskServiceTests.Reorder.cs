@@ -363,6 +363,31 @@ public partial class TaskServiceTests
     }
 
     [Fact]
+    public async Task ReorderTaskAsync_DanglingParentTaskIsOrderedAsRoot()
+    {
+        var a = CreateSampleTask(name: "A");
+        a.CreatedAt = new DateTime(2026, 1, 2);
+        a.SortOrder = 1000;
+        var dangling = CreateSampleTask(name: "Dangling");
+        dangling.CreatedAt = new DateTime(2026, 1, 1);
+        dangling.SortOrder = 1000;
+        dangling.ParentTaskId = Guid.NewGuid();
+
+        var service = await CreateInitializedServiceAsync(a, dangling);
+
+        var result = await service.ReorderTaskAsync(dangling.Id, a.Id, insertBefore: true);
+
+        result.Should().BeTrue();
+        service.AllTasks.First(t => t.Name == "Dangling").SortOrder.Should().Be(0,
+            "a task whose ParentTaskId points at a missing task is a root: the roots comparator " +
+            "(CreatedAt descending) applies and the move to first position writes edge SortOrder 0");
+        service.Tasks
+            .OrderBy(t => t.SortOrder)
+            .Select(t => t.Name)
+            .Should().Equal(["Dangling", "A"]);
+    }
+
+    [Fact]
     public void WithUpdates_CopiesSortOrder()
     {
         var task = CreateSampleTask(name: "A");

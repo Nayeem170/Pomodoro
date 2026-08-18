@@ -36,4 +36,26 @@ public static class TaskGrouping
 
         return lookups.Live.Where(t => t.GoogleParentTaskId == task.GoogleParentTaskId).ToList();
     }
+
+    public static IReadOnlyList<TaskItem> GetOrderedSiblingGroup(IReadOnlyList<TaskItem> all, TaskItem task)
+    {
+        var group = GetSiblingGroup(all, task);
+        var lookups = BuildLookups(all);
+
+        if (!HasKnownParent(task, lookups))
+            return group
+                .OrderBy(t => t.SortOrder)
+                .ThenByDescending(t => t.CreatedAt)
+                .ToList();
+
+        if (task.ParentTaskId.HasValue && lookups.ById.ContainsKey(task.ParentTaskId.Value))
+            return group
+                .OrderBy(t => t.SortOrder)
+                .ThenBy(t => t.CreatedAt)
+                .ToList();
+
+        return group
+            .OrderBy(t => t.GooglePosition ?? string.Empty, StringComparer.Ordinal)
+            .ToList();
+    }
 }

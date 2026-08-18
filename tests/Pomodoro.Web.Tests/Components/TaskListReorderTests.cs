@@ -181,6 +181,56 @@ public class TaskListReorderTests : TestContext
     }
 
     [Fact]
+    public async Task KeyboardReorder_BubblesThroughRenderedList()
+    {
+        var first = NewTask("First", sortOrder: 1000, createdAt: new DateTime(2026, 1, 1));
+        var second = NewTask("Second", sortOrder: 2000, createdAt: new DateTime(2026, 1, 2));
+        var third = NewTask("Third", sortOrder: 3000, createdAt: new DateTime(2026, 1, 3));
+        ReorderRequest? received = null;
+
+        var cut = RenderComponent<TaskList>(parameters => parameters
+            .Add(p => p.Tasks, new List<TaskItem> { first, second, third })
+            .Add(p => p.CurrentTaskId, null)
+            .Add(p => p.OnTaskReorder, new EventCallback<ReorderRequest>(null, (Action<ReorderRequest>)(r => received = r))));
+
+        await cut.FindAll(".task-row")[1].TriggerEventAsync("onkeydown",
+            new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+
+        received.Should().NotBeNull();
+        received!.TaskId.Should().Be(second.Id);
+        received.TargetId.Should().Be(first.Id,
+            "the neighbor comes from rendered order, which TaskList passes as ReorderGroup");
+        received.InsertBefore.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task KeyboardReorder_WorksInCompletedSection()
+    {
+        var first = NewTask("FirstDone", sortOrder: 1000, createdAt: new DateTime(2026, 1, 1));
+        first.IsCompleted = true;
+        var second = NewTask("SecondDone", sortOrder: 2000, createdAt: new DateTime(2026, 1, 2));
+        second.IsCompleted = true;
+        ReorderRequest? received = null;
+
+        var cut = RenderComponent<TaskList>(parameters => parameters
+            .Add(p => p.Tasks, new List<TaskItem> { first, second })
+            .Add(p => p.CurrentTaskId, null)
+            .Add(p => p.OnTaskReorder, new EventCallback<ReorderRequest>(null, (Action<ReorderRequest>)(r => received = r))));
+
+        await cut.InvokeAsync(() => cut.Find(".completed-toggle").Click());
+
+        var rows = cut.FindAll(".task-row");
+        rows.Count.Should().Be(2, "both completed rows render after expanding the section");
+        await rows[1].TriggerEventAsync("onkeydown",
+            new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+
+        received.Should().NotBeNull();
+        received!.TaskId.Should().Be(second.Id);
+        received.TargetId.Should().Be(first.Id);
+        received.InsertBefore.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task DragStartShowsZonesOnOtherRows_AndDragEndClearsThem()
     {
         var a = NewTask("A");

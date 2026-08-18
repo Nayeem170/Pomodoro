@@ -7,6 +7,8 @@ public partial class IndexBase
 {
     protected Guid? _highlightTaskId;
 
+    protected string? _reorderAnnouncement;
+
     private void ScheduleHighlightClear(Guid id)
     {
         SafeTaskRunner.RunAndForget(async () =>
@@ -111,12 +113,35 @@ public partial class IndexBase
     {
         await TryExecuteAsync(async () =>
         {
+            _reorderAnnouncement = null;
+            await InvokeAsync(StateHasChanged);
             if (await TaskService.ReorderTaskAsync(request.TaskId, request.TargetId, request.InsertBefore))
             {
                 await UpdateStateAsync();
+                _reorderAnnouncement = BuildReorderAnnouncement(request.TaskId);
                 StateHasChanged();
             }
         }, Constants.Messages.ErrorUpdatingTask);
+    }
+
+    private string? BuildReorderAnnouncement(Guid taskId)
+    {
+        var task = Tasks.FirstOrDefault(t => t.Id == taskId);
+        if (task is null) return null;
+
+        var group = TaskGrouping.GetOrderedSiblingGroup(Tasks, task);
+        var index = -1;
+        for (var i = 0; i < group.Count; i++)
+        {
+            if (group[i].Id == taskId)
+            {
+                index = i;
+                break;
+            }
+        }
+        return index < 0
+            ? null
+            : string.Format(Constants.Messages.ReorderAnnouncementFormat, task.Name, index + 1, group.Count);
     }
 
     public async Task HandleTaskDelete(Guid taskId)

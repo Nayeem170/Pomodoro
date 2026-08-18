@@ -140,6 +140,9 @@ public class TaskListBase : ComponentBase
         return group.Count > 1 && group.All(t => !t.IsGoogleTask);
     }
 
+    protected IReadOnlyList<TaskItem> OrderedGroupFor(TaskItem task) =>
+        TaskGrouping.GetOrderedSiblingGroup(Tasks, task);
+
     protected void HandleDragStarted(Guid taskId)
     {
         _isDragging = true;
