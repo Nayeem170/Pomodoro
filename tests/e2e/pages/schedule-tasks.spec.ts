@@ -24,13 +24,12 @@ test.describe('Schedule Tasks', () => {
     await expect(page.page.locator('.day-item-wrap').filter({ hasText: 'Future Task' })).toBeVisible();
   });
 
-  // FIXME(foundation-coverage): the tests below contradict the branch's exclusive
-  // task routing (codified by unit tests): a today-scheduled task is routed to the
-  // Schedule tab, not the Tasks view, and the agenda lacks the .item-title-btn /
-  // .day-check elements these specs click. Pending the Tasks/Schedule routing
-  // decision and agenda edit/complete UI (follow-up task).
-  test.fixme('scheduled task for today is visible in the tasks view', async () => {
-    const todayStr = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const localDate = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  test('scheduled task for today is visible in the tasks view', async () => {
+    const todayStr = localDate(now);
 
     await page.addTask('Today Task');
     await page.editTask('Today Task');
@@ -38,6 +37,9 @@ test.describe('Schedule Tasks', () => {
     await page.saveTaskEdit();
 
     await expect(page.page.locator('.task-row').filter({ hasText: 'Today Task' })).toBeVisible();
+
+    await page.switchToTaskList('Schedule');
+    await expect(page.page.locator('.day-item-wrap').filter({ hasText: 'Today Task' })).toBeVisible();
   });
 
   test('schedule date available without repeat', async () => {
