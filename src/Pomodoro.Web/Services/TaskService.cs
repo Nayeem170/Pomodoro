@@ -376,15 +376,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         var group = TaskGrouping.GetSiblingGroup(_appState.Tasks, task);
         if (group.Count < 2 || group.Any(t => t.IsGoogleTask)) return false;
 
-        var ordered = task.ParentTaskId.HasValue
-            ? group
-                .OrderBy(t => t.SortOrder)
-                .ThenBy(t => t.CreatedAt)
-                .ToList()
-            : group
-                .OrderBy(t => t.SortOrder)
-                .ThenByDescending(t => t.CreatedAt)
-                .ToList();
+        var ordered = TaskGrouping.GetOrderedSiblingGroup(_appState.Tasks, task).ToList();
 
         if (ordered.All(t => t.SortOrder == 0))
         {

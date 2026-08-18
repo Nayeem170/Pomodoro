@@ -665,7 +665,10 @@ public class IndexTasksTests : TestHelper
         var a = new TaskItem { Id = Guid.NewGuid(), Name = "A", SortOrder = 1000, CreatedAt = new DateTime(2026, 1, 1) };
         var b = new TaskItem { Id = Guid.NewGuid(), Name = "B", SortOrder = 0, CreatedAt = new DateTime(2026, 1, 2) };
         var c = new TaskItem { Id = Guid.NewGuid(), Name = "C", SortOrder = 3000, CreatedAt = new DateTime(2026, 1, 3) };
-        AppState.Tasks = new List<TaskItem> { a, b, c };
+        var group = new List<TaskItem> { a, b, c };
+        TaskServiceMock
+            .Setup(x => x.GetTasksForListAsync(It.IsAny<string?>()))
+            .ReturnsAsync(group);
         TaskServiceMock
             .Setup(x => x.ReorderTaskAsync(b.Id, a.Id, true))
             .ReturnsAsync(true);
@@ -678,6 +681,36 @@ public class IndexTasksTests : TestHelper
         cut.Markup.Should().Contain("Moved B to position 1 of 3");
         cut.Find(".sr-only[aria-live='polite']").Should().NotBeNull(
             "the announcement renders in the visually-hidden polite region");
+    }
+
+    [Fact]
+    public async Task HandleTaskReorder_ExceptionAfterSuccess_ClearsStaleAnnouncement()
+    {
+        // Arrange
+        var a = new TaskItem { Id = Guid.NewGuid(), Name = "A", SortOrder = 1000, CreatedAt = new DateTime(2026, 1, 1) };
+        var b = new TaskItem { Id = Guid.NewGuid(), Name = "B", SortOrder = 0, CreatedAt = new DateTime(2026, 1, 2) };
+        var group = new List<TaskItem> { a, b };
+        TaskServiceMock
+            .Setup(x => x.GetTasksForListAsync(It.IsAny<string?>()))
+            .ReturnsAsync(group);
+        TaskServiceMock
+            .Setup(x => x.ReorderTaskAsync(b.Id, a.Id, true))
+            .ReturnsAsync(true);
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        await cut.InvokeAsync(() => cut.Instance.HandleTaskReorder(new ReorderRequest(b.Id, a.Id, InsertBefore: true)));
+        cut.Markup.Should().Contain("Moved B to position",
+            "sanity: the first move announced");
+
+        TaskServiceMock
+            .Setup(x => x.ReorderTaskAsync(b.Id, a.Id, true))
+            .ThrowsAsync(new Exception("Test exception"));
+
+        // Act
+        await cut.Instance.HandleTaskReorder(new ReorderRequest(b.Id, a.Id, InsertBefore: true));
+
+        // Assert
+        cut.Markup.Should().NotContain("Moved B",
+            "a failed move must clear the stale announcement, not leave the previous one");
     }
 
     [Fact]

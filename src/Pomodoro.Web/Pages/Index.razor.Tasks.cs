@@ -113,25 +113,23 @@ public partial class IndexBase
     {
         await TryExecuteAsync(async () =>
         {
+            _reorderAnnouncement = null;
+            await InvokeAsync(StateHasChanged);
             if (await TaskService.ReorderTaskAsync(request.TaskId, request.TargetId, request.InsertBefore))
             {
                 await UpdateStateAsync();
                 _reorderAnnouncement = BuildReorderAnnouncement(request.TaskId);
                 StateHasChanged();
             }
-            else
-            {
-                _reorderAnnouncement = null;
-            }
         }, Constants.Messages.ErrorUpdatingTask);
     }
 
     private string? BuildReorderAnnouncement(Guid taskId)
     {
-        var task = AppState.FindTaskById(taskId);
+        var task = Tasks.FirstOrDefault(t => t.Id == taskId);
         if (task is null) return null;
 
-        var group = TaskGrouping.GetOrderedSiblingGroup(AppState.Tasks, task);
+        var group = TaskGrouping.GetOrderedSiblingGroup(Tasks, task);
         var index = -1;
         for (var i = 0; i < group.Count; i++)
         {
