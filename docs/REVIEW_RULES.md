@@ -94,6 +94,14 @@ Trigger is noted so the rule can be traced back.
 - When reviewing a bug diagnosis, fix plan, or implementation, grep/read the actual source files to confirm every method, property, and code path referenced in the claim actually exists and behaves as described. If any claim references a nonexistent method or property, flag as BLOCKING and demand re-investigation from source.
 - Trigger: fix-nested-tasks (prior session diagnosed GetTodayTasksAsync as root cause; method did not exist)
 
+### R23: Edited copy on callbacks that feed change detection
+- When a component edits a parameter-supplied model instance (e.g. a state-backed TaskItem) and then invokes an EventCallback, it must pass an edited copy (`WithUpdates`) rather than mutating the shared reference, whenever any downstream handler compares that instance's fields to detect a transition (list-change detection, dirty checks) or the instance backs rendered state. Mutating the shared instance aliases the "before" and "after" values: downstream comparisons see no change, and failed saves leak edits into live state.
+- Trigger: fix-task-edit-properties / #163 (panel mutated state-backed Task.GoogleListId before Index read oldListId; MoveTaskToListAsync could never fire)
+
+### R24: Subtree-wide API precondition guards
+- When a guard rejects an operation based on a node property (e.g. Google's recurring-task cross-list move restriction), it must evaluate the property across the node AND all descendants before the first mutation, not just the requested node. Mid-cascade rejection after partial mutation splits hierarchy invariants across boundary states.
+- Trigger: fix-task-edit-properties / #163 (guard checked only the root; a recurring descendant would have moved the root before the child move was rejected)
+
 ## Adding rules
 
 When a reviewer identifies a recurring issue:
