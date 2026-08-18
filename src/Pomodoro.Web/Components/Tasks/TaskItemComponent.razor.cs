@@ -224,14 +224,7 @@ public partial class TaskItemBase : ComponentBase
 
     protected void HandleEdit()
     {
-        if (Depth == 0)
-        {
-            IsEditing = !IsEditing;
-        }
-        else
-        {
-            StartInlineEdit();
-        }
+        IsEditing = !IsEditing;
     }
 
     protected void StartInlineEdit()

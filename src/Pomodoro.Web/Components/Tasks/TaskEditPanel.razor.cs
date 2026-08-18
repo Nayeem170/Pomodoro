@@ -66,6 +66,13 @@ public class TaskEditPanelBase : ComponentBase
         EditWeekdays = [.. list.OrderBy(d => d)];
     }
 
+    protected async Task HandleNameKey(KeyboardEventArgs e)
+    {
+        if (!IsSubtask)
+            return;
+        await HandleSubtaskKey(e);
+    }
+
     protected async Task HandleSubtaskKey(KeyboardEventArgs e)
     {
         if (e.Key == Constants.Keys.Enter)
@@ -80,8 +87,7 @@ public class TaskEditPanelBase : ComponentBase
 
         if (IsSubtask)
         {
-            Task.Repeat = null;
-            Task.ScheduledDate = null;
+            Task.ScheduledDate = EditScheduledDate;
             await OnSave.InvokeAsync(Task);
             return;
         }

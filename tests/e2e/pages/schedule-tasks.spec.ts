@@ -55,6 +55,34 @@ test.describe('Schedule Tasks', () => {
     await expect(page.page.locator('.day-item-wrap').filter({ hasText: 'Schedule Only' })).toBeVisible();
   });
 
+  test('subtask edit sets schedule date and persists across reload', async () => {
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 5);
+    const dateStr = futureDate.toISOString().split('T')[0];
+
+    await page.addTask('Subtask Parent');
+    const parentRow = page.page.locator('.task-row').filter({ hasText: 'Subtask Parent' }).first();
+    await parentRow.locator('button[aria-label="Add subtask"]').click();
+    await page.page.locator('.add-subtask-form textarea').fill('Scheduled Subtask');
+    await page.page.locator('.add-subtask-form .btn-add').click();
+
+    const subtaskRow = page.page.locator('.task-row').filter({ hasText: 'Scheduled Subtask' }).first();
+    await expect(subtaskRow).toBeVisible();
+    await expect(subtaskRow.locator('.schedule-badge')).toHaveCount(0);
+
+    await page.editTask('Scheduled Subtask');
+    await page.setTaskScheduleDate(dateStr);
+    await page.saveTaskEdit();
+
+    await expect(subtaskRow.locator('.schedule-badge')).toBeVisible();
+
+    await page.page.reload();
+    await page.page.waitForLoadState('domcontentloaded');
+    await page.goto('/');
+    const reloadedRow = page.page.locator('.task-row').filter({ hasText: 'Scheduled Subtask' }).first();
+    await expect(reloadedRow.locator('.schedule-badge')).toBeVisible();
+  });
+
   test.fixme('can edit a scheduled task from the agenda', async () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 3);
