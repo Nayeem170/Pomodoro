@@ -235,6 +235,96 @@ public class TaskServiceMoveListTests
     }
 
     [Fact]
+    public async Task MoveTaskToListAsync_GoogleToGoogle_RecurringDescendant_Throws()
+    {
+        // Arrange - non-recurring root with an independently repeating subtask.
+        var root = SeedTask(new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Root",
+            GoogleTaskId = "g-root",
+            GoogleListId = "glist-a"
+        });
+        SeedTask(new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Sub",
+            ParentTaskId = root.Id,
+            GoogleTaskId = "g-sub",
+            GoogleListId = "glist-a",
+            FollowsParentRepeat = false,
+            Repeat = new RepeatRule { Type = RepeatType.Weekly }
+        });
+        var sut = CreateSut();
+
+        // Act
+        var act = () => sut.MoveTaskToListAsync(root.Id, "glist-b");
+
+        // Assert - guard covers descendants; reject before the root moves and splits the hierarchy.
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage(Constants.Messages.RecurringTaskCannotChangeList);
+        _mockGoogle.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task MoveTaskToListAsync_NullRootMoveResult_ReturnsFalse()
+    {
+        // Arrange
+        var root = SeedTask(new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Root",
+            GoogleTaskId = "g-root",
+            GoogleListId = "glist-a"
+        });
+        _mockGoogle.Setup(x => x.MoveTaskAsync("glist-a", "g-root", null, "glist-b"))
+            .ReturnsAsync((GoogleTask?)null);
+        var sut = CreateSut();
+
+        // Act
+        var moved = await sut.MoveTaskToListAsync(root.Id, "glist-b");
+
+        // Assert - a null move result aborts without writing back identity fields.
+        moved.Should().BeFalse();
+        root.GoogleListId.Should().Be("glist-a");
+    }
+
+    [Fact]
+    public async Task MoveTaskToListAsync_NullDescendantMoveResult_ReturnsFalseAndKeepsRootMove()
+    {
+        // Arrange
+        var root = SeedTask(new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Root",
+            GoogleTaskId = "g-root",
+            GoogleListId = "glist-a"
+        });
+        var sub = SeedTask(new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Sub",
+            ParentTaskId = root.Id,
+            GoogleTaskId = "g-sub",
+            GoogleListId = "glist-a",
+            GoogleParentTaskId = "g-root"
+        });
+        _mockGoogle.Setup(x => x.MoveTaskAsync("glist-a", "g-root", null, "glist-b"))
+            .ReturnsAsync(GoogleResult("g-root", null, "etag-root-2"));
+        _mockGoogle.Setup(x => x.MoveTaskAsync("glist-a", "g-sub", "g-root", "glist-b"))
+            .ReturnsAsync((GoogleTask?)null);
+        var sut = CreateSut();
+
+        // Act
+        var moved = await sut.MoveTaskToListAsync(root.Id, "glist-b");
+
+        // Assert - partial cascade: root persisted on the new list, sub left for a retry.
+        moved.Should().BeFalse();
+        root.GoogleListId.Should().Be("glist-b");
+        sub.GoogleListId.Should().Be("glist-a");
+    }
+
+    [Fact]
     public async Task MoveTaskToListAsync_SubtaskId_ReturnsFalse()
     {
         // Arrange

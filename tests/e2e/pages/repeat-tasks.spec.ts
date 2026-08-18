@@ -73,7 +73,7 @@ test.describe('Repeat Tasks', () => {
 
     const subtaskRow = page.page.locator('.task-row').filter({ hasText: 'Own Repeat Sub' }).first();
     await expect(subtaskRow).toBeVisible();
-    await expect(subtaskRow.locator('.follow-parent')).toHaveClass(/active/);
+    await expect(subtaskRow.locator('.follow-parent')).toHaveClass(/(^|\s)active(\s|$)/);
 
     await page.editTask('Own Repeat Sub');
     await page.setTaskRepeat('Daily');

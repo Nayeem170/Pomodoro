@@ -376,12 +376,14 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         var sourceIsLocal = oldListId == Constants.TaskLists.LocalPomodoroListId;
         var targetIsLocal = newListId == Constants.TaskLists.LocalPomodoroListId;
 
-        if (!sourceIsLocal && !targetIsLocal && task.Repeat is { Type: not RepeatType.None })
+        var descendants = GetDescendantsByParentId(taskId, _appState.Tasks);
+
+        if (!sourceIsLocal && !targetIsLocal
+            && (task.Repeat is { Type: not RepeatType.None }
+                || descendants.Any(t => t.Repeat is { Type: not RepeatType.None })))
         {
             throw new InvalidOperationException(Constants.Messages.RecurringTaskCannotChangeList);
         }
-
-        var descendants = GetDescendantsByParentId(taskId, _appState.Tasks);
 
         if (sourceIsLocal && !targetIsLocal)
         {
@@ -414,12 +416,18 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         {
             if (string.IsNullOrEmpty(task.GoogleTaskId)) return false;
             var movedRoot = await _googleTasksService.MoveTaskAsync(oldListId, task.GoogleTaskId, null, newListId);
+            if (movedRoot is null) return false;
             await WriteBackGoogleIdentityAsync(task, movedRoot, newListId, null);
             foreach (var sub in descendants)
             {
                 if (string.IsNullOrEmpty(sub.GoogleTaskId)) continue;
                 var parentGoogleId = sub.GoogleParentTaskId ?? task.GoogleTaskId;
                 var moved = await _googleTasksService.MoveTaskAsync(oldListId, sub.GoogleTaskId, parentGoogleId, newListId);
+                if (moved is null)
+                {
+                    NotifyStateChanged();
+                    return false;
+                }
                 await WriteBackGoogleIdentityAsync(sub, moved, newListId, parentGoogleId);
             }
         }

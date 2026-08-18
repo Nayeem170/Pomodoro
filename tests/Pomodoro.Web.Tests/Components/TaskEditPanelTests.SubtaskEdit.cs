@@ -292,6 +292,57 @@ public partial class TaskEditPanelTests
     }
 
     [Fact]
+    public void SubtaskMode_SwitchToFollowParent_ClearsOwnRepeat()
+    {
+        // Arrange - subtask with its own independent repeat rule.
+        var task = CreateTask(t =>
+        {
+            t.ParentTaskId = Guid.NewGuid();
+            t.FollowsParentRepeat = false;
+            t.Repeat = new RepeatRule { Type = RepeatType.Daily };
+        });
+        TaskItem? saved = null;
+        var cut = RenderComponent<TaskEditPanel>(p => p
+            .Add(x => x.Task, task)
+            .Add(x => x.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => saved = t)));
+
+        // Act
+        cut.Find("select.tep-select").Change(Constants.Repeat.FollowParentChoice);
+        cut.Find(".tep-save-btn").Click();
+
+        // Assert - switching from an own rule to Follow parent drops the own rule.
+        saved.Should().NotBeNull();
+        saved!.FollowsParentRepeat.Should().BeTrue();
+        saved.Repeat.Should().BeNull();
+    }
+
+    [Fact]
+    public void RootMode_ListChangeSave_DoesNotMutateSourceInstance()
+    {
+        // Arrange - the rendered task is the state-backed instance; Index compares
+        // its GoogleListId against the saved copy to detect a list move.
+        var task = CreateTask(t => t.GoogleListId = "list-a");
+        var lists = new List<TaskListRef>
+        {
+            new("list-a", "Work", "#fff", 0, true, false),
+            new("list-b", "Personal", "#fff", 0, true, false)
+        };
+        TaskItem? saved = null;
+        var cut = RenderComponent<TaskEditPanel>(p => p
+            .Add(x => x.Task, task)
+            .Add(x => x.GoogleLists, lists)
+            .Add(x => x.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => saved = t)));
+
+        // Act
+        cut.Find("select[aria-label=\"Task list\"]").Change("list-b");
+        cut.Find(".tep-save-btn").Click();
+
+        // Assert - the state instance keeps the original list; the saved copy carries the new one.
+        task.GoogleListId.Should().Be("list-a");
+        saved!.GoogleListId.Should().Be("list-b");
+    }
+
+    [Fact]
     public void SubtaskMode_Pause_ShownWithOwnRepeat_HiddenWhileFollowing()
     {
         // Arrange - following parent: no pause control.

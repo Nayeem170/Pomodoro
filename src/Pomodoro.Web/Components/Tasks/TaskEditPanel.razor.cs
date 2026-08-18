@@ -28,6 +28,7 @@ public class TaskEditPanelBase : ComponentBase
     protected ElementReference _subtaskInput;
 
     protected bool EditFollowParent { get; set; }
+    private bool _originalFollowParent;
     protected RepeatType EditRepeatType { get; set; }
     protected DayOfWeek[] EditWeekdays { get; set; } = [];
     protected int EditCustomDays { get; set; } = Constants.Repeat.DefaultCustomDays;
@@ -65,6 +66,7 @@ public class TaskEditPanelBase : ComponentBase
     {
         EditName = Task.Name;
         EditFollowParent = IsSubtask && Task.FollowsParentRepeat;
+        _originalFollowParent = EditFollowParent;
         EditRepeatType = Task.Repeat?.Type ?? RepeatType.None;
         EditWeekdays = Task.Repeat?.Weekdays ?? [];
         EditCustomDays = Task.Repeat?.CustomDays > 0 ? Task.Repeat.CustomDays : Constants.Repeat.DefaultCustomDays;
@@ -108,39 +110,39 @@ public class TaskEditPanelBase : ComponentBase
 
     protected async Task HandleSave()
     {
-        Task.Name = (EditName ?? string.Empty).Trim();
-
-        if (IsSubtask)
-        {
-            Task.ScheduledDate = EditScheduledDate;
-            ApplyRepeatChoice();
-            await OnSave.InvokeAsync(Task);
-            return;
-        }
-
-        ApplyRepeatChoice();
-        Task.ScheduledDate = EditScheduledDate;
-        Task.GoogleListId = EditListId == Constants.TaskLists.LocalPomodoroListId ? null : EditListId;
-        await OnSave.InvokeAsync(Task);
+        var edited = Task.WithUpdates(ApplyEdits);
+        await OnSave.InvokeAsync(edited);
     }
 
-    private void ApplyRepeatChoice()
+    private void ApplyEdits(TaskItem t)
+    {
+        t.Name = (EditName ?? string.Empty).Trim();
+        t.ScheduledDate = EditScheduledDate;
+        ApplyRepeatChoice(t);
+
+        if (!IsSubtask)
+            t.GoogleListId = EditListId == Constants.TaskLists.LocalPomodoroListId ? null : EditListId;
+    }
+
+    private void ApplyRepeatChoice(TaskItem t)
     {
         if (IsSubtask && EditFollowParent)
         {
-            Task.FollowsParentRepeat = true;
+            t.FollowsParentRepeat = true;
+            if (!_originalFollowParent)
+                t.Repeat = null;
             return;
         }
 
-        Task.FollowsParentRepeat = false;
+        t.FollowsParentRepeat = false;
 
         if (EditRepeatType == RepeatType.None)
         {
-            Task.Repeat = null;
+            t.Repeat = null;
             return;
         }
 
-        Task.Repeat = Task.Repeat != null
+        t.Repeat = t.Repeat != null
             ? new RepeatRule
             {
                 Type = EditRepeatType,
@@ -149,9 +151,9 @@ public class TaskEditPanelBase : ComponentBase
                 MonthlyDay = EditMonthlyDay,
                 IsPaused = EditIsPaused,
                 PausedDate = EditIsPaused ? EditPausedDate : null,
-                StartDate = Task.Repeat.StartDate,
-                EndDate = Task.Repeat.EndDate,
-                LastCompletedDate = Task.Repeat.LastCompletedDate,
+                StartDate = t.Repeat.StartDate,
+                EndDate = t.Repeat.EndDate,
+                LastCompletedDate = t.Repeat.LastCompletedDate,
                 NextOccurrence = null
             }
             : new RepeatRule
