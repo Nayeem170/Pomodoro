@@ -36,16 +36,23 @@
                                            IsSelected="false"
                                            ContextDate="Day.Date"
                                            GoogleListTitle="@GoogleListTitleFor(item.Task)"
+                                           IsReorderable="@IsReorderableInDay(item.Task)"
+                                           IsDragActive="_isDragging"
+                                           DraggedTaskId="_draggedTaskId"
+                                           ReorderGroup="OrderedDayTasks"
                                            OnSelect="HandleSelect"
                                            OnComplete="OnComplete"
                                            OnDelete="OnDelete"
                                            OnUncomplete="OnUncomplete"
                                            OnEdit="OnEditTask"
                                            OnAddSubtask="OnAddSubtask"
-                                            OnReparentToRoot="OnReparentToRoot"
+                                           OnReparentToRoot="OnReparentToRoot"
                                            OnDemote="OnDemote"
                                            OnToggleFollowParent="OnToggleFollowParent"
-                                           OnToggleCollapse="ToggleCollapse" />
+                                           OnToggleCollapse="ToggleCollapse"
+                                           OnReorder="HandleReorder"
+                                           OnDragStarted="HandleDragStarted"
+                                           OnDragEnded="HandleDragEnded" />
                     }
                     else
                     {
@@ -63,6 +70,10 @@
                                            IsSelected="false"
                                            ContextDate="Day.Date"
                                            GoogleListTitle="@GoogleListTitleFor(descItem)"
+                                           IsReorderable="@IsReorderableInGroup(descItem)"
+                                           IsDragActive="_isDragging"
+                                           DraggedTaskId="_draggedTaskId"
+                                           ReorderGroup="OrderedGroupFor(descItem)"
                                            OnSelect="HandleSelect"
                                            OnComplete="OnComplete"
                                            OnDelete="OnDelete"
@@ -72,7 +83,10 @@
                                            OnReparentToRoot="OnReparentToRoot"
                                            OnDemote="OnDemote"
                                            OnToggleFollowParent="OnToggleFollowParent"
-                                           OnToggleCollapse="ToggleCollapse" />
+                                           OnToggleCollapse="ToggleCollapse"
+                                           OnReorder="HandleReorder"
+                                           OnDragStarted="HandleDragStarted"
+                                           OnDragEnded="HandleDragEnded" />
                     }
                 </li>
             }
@@ -117,10 +131,62 @@
     [Microsoft.AspNetCore.Components.Parameter]
     public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
 
+    [Microsoft.AspNetCore.Components.Parameter]
+    public Microsoft.AspNetCore.Components.EventCallback<ReorderRequest> OnReorder { get; set; }
+
+    private bool _isDragging;
+    private Guid? _draggedTaskId;
     private readonly HashSet<Guid> _collapsedIds = new();
     private IReadOnlyList<TaskItem> _allSubtasks = [];
     private Dictionary<Guid, List<TaskItem>> _childrenByParent = new();
     private Dictionary<string, Guid> _googleIdToLocalId = new();
+
+    private IReadOnlyList<TaskItem> OrderedDayTasks =>
+        TaskGrouping.OrderRootsForDisplay(Day.Items.Where(i => i.Task is not null).Select(i => i.Task!));
+
+    private bool IsReorderableInDay(TaskItem task) =>
+        OrderedDayTasks.Count > 1 && OrderedDayTasks.All(t => !t.IsGoogleTask);
+
+    private bool IsReorderableInGroup(TaskItem task)
+    {
+        var group = OrderedGroupFor(task);
+        return group.Count > 1 && group.All(t => !t.IsGoogleTask);
+    }
+
+    private IReadOnlyList<TaskItem> OrderedGroupFor(TaskItem task)
+    {
+        var parentKey = ResolveParentKey(task);
+        var siblings = parentKey.HasValue && _childrenByParent.TryGetValue(parentKey.Value, out var group)
+            ? group
+            : [];
+        return TaskGrouping.OrderChildrenForDisplay(siblings.Where(t => t.Id != task.Id).Append(task));
+    }
+
+    private Guid? ResolveParentKey(TaskItem task)
+    {
+        if (task.ParentTaskId.HasValue) return task.ParentTaskId.Value;
+        if (!string.IsNullOrEmpty(task.GoogleParentTaskId) &&
+            _googleIdToLocalId.TryGetValue(task.GoogleParentTaskId, out var resolved))
+            return resolved;
+        return null;
+    }
+
+    private async Task HandleReorder(ReorderRequest request)
+    {
+        await OnReorder.InvokeAsync(request);
+    }
+
+    private void HandleDragStarted(Guid taskId)
+    {
+        _isDragging = true;
+        _draggedTaskId = taskId;
+    }
+
+    private void HandleDragEnded()
+    {
+        _isDragging = false;
+        _draggedTaskId = null;
+    }
 
     protected override void OnParametersSet()
     {
@@ -148,7 +214,14 @@
             }
             list.Add(s);
         }
-        foreach (var kv in groups) kv.Value.Sort((a, b) => a.CreatedAt.CompareTo(b.CreatedAt));
+        foreach (var kv in groups)
+        {
+            kv.Value.Sort((a, b) =>
+            {
+                var bySort = a.SortOrder.CompareTo(b.SortOrder);
+                return bySort != 0 ? bySort : a.CreatedAt.CompareTo(b.CreatedAt);
+            });
+        }
         _childrenByParent = groups;
     }
 

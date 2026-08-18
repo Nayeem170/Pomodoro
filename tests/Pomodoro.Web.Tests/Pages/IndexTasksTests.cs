@@ -729,5 +729,56 @@ public class IndexTasksTests : TestHelper
     }
 
     #endregion
+
+    #region HandleScheduleReorder
+
+    [Fact]
+    public async Task HandleScheduleReorder_CallsService_WhenCalled()
+    {
+        // Arrange
+        var taskId = Guid.NewGuid();
+        var targetId = Guid.NewGuid();
+        TaskServiceMock
+            .Setup(x => x.ReorderTaskAsync(taskId, targetId, false))
+            .ReturnsAsync(true);
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        // Act
+        await cut.InvokeAsync(() => cut.Instance.HandleScheduleReorder(new ReorderRequest(taskId, targetId, InsertBefore: false)));
+
+        // Assert
+        TaskServiceMock.Verify(
+            x => x.ReorderTaskAsync(taskId, targetId, false),
+            Times.Once);
+        cut.Instance.ErrorMessage.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task HandleScheduleReorder_Success_RendersDayScopedAnnouncement()
+    {
+        // Arrange - post-move state: DayA(2000) moved below DayB(1000); both scheduled
+        // tomorrow (same day group). Elsewhere is scheduled outside the 7-day window
+        // and must NOT be counted: the announcement scope is the day group.
+        var tomorrow = DateTime.Today.AddDays(1);
+        var a = new TaskItem { Id = Guid.NewGuid(), Name = "DayA", SortOrder = 2000, CreatedAt = new DateTime(2026, 1, 1), ScheduledDate = tomorrow };
+        var b = new TaskItem { Id = Guid.NewGuid(), Name = "DayB", SortOrder = 1000, CreatedAt = new DateTime(2026, 1, 2), ScheduledDate = tomorrow };
+        var elsewhere = new TaskItem { Id = Guid.NewGuid(), Name = "Elsewhere", SortOrder = 500, CreatedAt = new DateTime(2026, 1, 3), ScheduledDate = DateTime.Today.AddDays(20) };
+        AppState.Tasks = new List<TaskItem> { a, b, elsewhere };
+        TaskServiceMock
+            .Setup(x => x.GetTasksForListAsync(It.IsAny<string?>()))
+            .ReturnsAsync(new List<TaskItem> { a, b, elsewhere });
+        TaskServiceMock
+            .Setup(x => x.ReorderTaskAsync(a.Id, b.Id, false))
+            .ReturnsAsync(true);
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        // Act - move DayA below DayB within the day group.
+        await cut.InvokeAsync(() => cut.Instance.HandleScheduleReorder(new ReorderRequest(a.Id, b.Id, InsertBefore: false)));
+
+        // Assert - position is day-group scoped: 2 of 2, not 3.
+        cut.Markup.Should().Contain("Moved DayA to position 2 of 2");
+    }
+
+    #endregion
 }
 

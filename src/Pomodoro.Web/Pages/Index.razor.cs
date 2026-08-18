@@ -384,8 +384,7 @@ public partial class IndexBase : ComponentBase, IDisposable
         for (var offset = 0; offset < Constants.Tasks.ScheduleWindowDays; offset++)
         {
             var date = start.AddDays(offset);
-            var items = candidates
-                .Where(t => OccursOn(t, date))
+            var items = TaskGrouping.OrderRootsForDisplay(candidates.Where(t => OccursOn(t, date)))
                 .Select(t => new ScheduleItem
                 {
                     TaskId = t.Id,

@@ -43,19 +43,25 @@ public static class TaskGrouping
         var lookups = BuildLookups(all);
 
         if (!HasKnownParent(task, lookups))
-            return group
-                .OrderBy(t => t.SortOrder)
-                .ThenByDescending(t => t.CreatedAt)
-                .ToList();
+            return OrderRootsForDisplay(group);
 
         if (task.ParentTaskId.HasValue && lookups.ById.ContainsKey(task.ParentTaskId.Value))
-            return group
-                .OrderBy(t => t.SortOrder)
-                .ThenBy(t => t.CreatedAt)
-                .ToList();
+            return OrderChildrenForDisplay(group);
 
         return group
             .OrderBy(t => t.GooglePosition ?? string.Empty, StringComparer.Ordinal)
             .ToList();
     }
+
+    public static IReadOnlyList<TaskItem> OrderRootsForDisplay(IEnumerable<TaskItem> roots) =>
+        roots
+            .OrderBy(t => t.SortOrder)
+            .ThenByDescending(t => t.CreatedAt)
+            .ToList();
+
+    public static IReadOnlyList<TaskItem> OrderChildrenForDisplay(IEnumerable<TaskItem> children) =>
+        children
+            .OrderBy(t => t.SortOrder)
+            .ThenBy(t => t.CreatedAt)
+            .ToList();
 }
