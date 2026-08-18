@@ -159,7 +159,7 @@
         var siblings = parentKey.HasValue && _childrenByParent.TryGetValue(parentKey.Value, out var group)
             ? group
             : [];
-        return TaskGrouping.OrderChildrenForDisplay(siblings.Where(t => t.Id != task.Id).Append(task));
+        return TaskGrouping.OrderChildrenForDisplay(siblings);
     }
 
     private Guid? ResolveParentKey(TaskItem task)
@@ -180,12 +180,14 @@
     {
         _isDragging = true;
         _draggedTaskId = taskId;
+        StateHasChanged();
     }
 
     private void HandleDragEnded()
     {
         _isDragging = false;
         _draggedTaskId = null;
+        StateHasChanged();
     }
 
     protected override void OnParametersSet()
