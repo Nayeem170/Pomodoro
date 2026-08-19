@@ -39,7 +39,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
 
             bool InTab(TaskItem t, bool scheduled) =>
                 !t.IsDeleted && IsFromVisibleSource(t) &&
-                (scheduled ? HasScheduleDate(roots(t)) : !HasSpecificScheduleDate(roots(t)) && OccursToday(roots(t)));
+                (scheduled ? HasScheduleDate(roots(t)) : IsActionableToday(roots(t)));
 
             return
             [
@@ -1046,7 +1046,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
 
         IEnumerable<TaskItem> filtered = allTasks.Where(t =>
             !t.IsDeleted && IsFromVisibleSource(t) &&
-            (wantScheduled ? HasScheduleDate(roots(t)) : !HasSpecificScheduleDate(roots(t)) && OccursToday(roots(t))));
+            (wantScheduled ? HasScheduleDate(roots(t)) : IsActionableToday(roots(t))));
 
         var tasks = filtered.ToList();
 
@@ -1297,11 +1297,13 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         task.DueDate.HasValue ||
         task.Repeat is { Type: not RepeatType.None };
 
-    private static bool HasSpecificScheduleDate(TaskItem task) =>
-        task.ScheduledDate.HasValue ||
-        task.DueDate.HasValue;
-
-    private static bool OccursToday(TaskItem task) => task.OccursToday;
+    private static bool IsActionableToday(TaskItem task)
+    {
+        if (task.Repeat is { Type: not RepeatType.None }) return task.OccursToday;
+        if (task.ScheduledDate is { } scheduled) return scheduled.Date <= DateTime.Now.Date;
+        if (task.DueDate is { } due) return due.Date <= DateTime.Now.Date;
+        return true;
+    }
 
     /// <summary>
     /// Builds a task-to-root-ancestor resolver. Subtasks carry no date of their own, so

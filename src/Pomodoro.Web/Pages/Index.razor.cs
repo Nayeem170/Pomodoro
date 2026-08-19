@@ -346,10 +346,8 @@ public partial class IndexBase : ComponentBase, IDisposable
 
     protected async Task HandleTabChange(string listId)
     {
-        Console.WriteLine($"[TABDBG] HandleTabChange: clicked={listId} activeBefore={ActiveListId} serviceBefore={TaskService.CurrentListId}");
         ActiveListId = listId;
         await TaskService.SelectListAsync(listId);
-        Console.WriteLine($"[TABDBG] HandleTabChange post-select: active={ActiveListId} service={TaskService.CurrentListId}");
         await UpdateStateAsync();
     }
 

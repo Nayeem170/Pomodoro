@@ -260,7 +260,7 @@ public class TaskServiceMultiListTests
             Id = Guid.NewGuid(),
             Name = "Scheduled",
             CreatedAt = DateTime.UtcNow,
-            ScheduledDate = DateTime.UtcNow.Date
+            ScheduledDate = DateTime.Now.Date.AddDays(1)
         };
         var googleTask = new TaskItem
         {
@@ -434,6 +434,122 @@ public class TaskServiceMultiListTests
     }
 
     [Fact]
+    public async Task GetTasksForListAsync_LocalList_IncludesTaskScheduledForToday()
+    {
+        var today = DateTime.Now.Date;
+        var scheduledToday = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Scheduled Today",
+            CreatedAt = DateTime.UtcNow,
+            ScheduledDate = today
+        };
+        _appState.Tasks = [scheduledToday];
+
+        var sut = CreateSut();
+        var result = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+
+        result.Should().ContainSingle(t => t.Id == scheduledToday.Id);
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_LocalList_IncludesOverdueTask()
+    {
+        var yesterday = DateTime.Now.Date.AddDays(-1);
+        var overdue = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Overdue",
+            CreatedAt = DateTime.UtcNow,
+            ScheduledDate = yesterday
+        };
+        _appState.Tasks = [overdue];
+
+        var sut = CreateSut();
+        var result = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+
+        result.Should().ContainSingle(t => t.Id == overdue.Id);
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_LocalList_ExcludesTaskScheduledForFuture()
+    {
+        var tomorrow = DateTime.Now.Date.AddDays(1);
+        var scheduledFuture = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Scheduled Future",
+            CreatedAt = DateTime.UtcNow,
+            ScheduledDate = tomorrow
+        };
+        _appState.Tasks = [scheduledFuture];
+
+        var sut = CreateSut();
+        var result = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_LocalList_IncludesGoogleTaskDueToday()
+    {
+        var dueToday = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Due Today Google",
+            GoogleTaskId = "gt-3",
+            GoogleListId = "glist-1",
+            CreatedAt = DateTime.UtcNow,
+            DueDate = DateTime.Now.Date
+        };
+        _appState.Tasks = [dueToday];
+        _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
+
+        var sut = CreateSut();
+        SetCachedGoogleLists(sut, [new GoogleListCacheEntry("glist-1", "List 1", "#4285F4", true)]);
+
+        var result = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+
+        result.Should().ContainSingle(t => t.Id == dueToday.Id);
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_LocalList_IncludesDailyRepeatTask()
+    {
+        var daily = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Daily Repeat",
+            CreatedAt = DateTime.UtcNow,
+            Repeat = new RepeatRule { Type = RepeatType.Daily }
+        };
+        _appState.Tasks = [daily];
+
+        var sut = CreateSut();
+        var result = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+
+        result.Should().ContainSingle(t => t.Id == daily.Id);
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_LocalList_ExcludesFutureAnchoredRepeatTask()
+    {
+        var futureDaily = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Future Daily",
+            CreatedAt = DateTime.UtcNow,
+            Repeat = new RepeatRule { Type = RepeatType.Daily, StartDate = DateTime.Now.Date.AddDays(3) }
+        };
+        _appState.Tasks = [futureDaily];
+
+        var sut = CreateSut();
+        var result = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task GetTasksForListAsync_LocalList_ReturnsNonGoogleTasks()
     {
         var localTask = new TaskItem { Id = Guid.NewGuid(), Name = "Local", CreatedAt = DateTime.UtcNow };
@@ -442,7 +558,7 @@ public class TaskServiceMultiListTests
             Id = Guid.NewGuid(),
             Name = "Scheduled",
             CreatedAt = DateTime.UtcNow,
-            ScheduledDate = DateTime.UtcNow.Date
+            ScheduledDate = DateTime.Now.Date.AddDays(1)
         };
         var googleTask = new TaskItem
         {
@@ -1402,7 +1518,7 @@ public class TaskServiceMultiListTests
         _appState.Tasks =
         [
             new() { Id = Guid.NewGuid(), Name = "Undated Google", GoogleTaskId = "gt-1", GoogleListId = "glist-1", CreatedAt = DateTime.UtcNow },
-            new() { Id = Guid.NewGuid(), Name = "Due Google", GoogleTaskId = "gt-2", GoogleListId = "glist-1", CreatedAt = DateTime.UtcNow, DueDate = DateTime.UtcNow.Date }
+            new() { Id = Guid.NewGuid(), Name = "Due Google", GoogleTaskId = "gt-2", GoogleListId = "glist-1", CreatedAt = DateTime.UtcNow, DueDate = DateTime.Now.Date.AddDays(1) }
         ];
         _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
 
@@ -1442,7 +1558,7 @@ public class TaskServiceMultiListTests
         var parentId = Guid.NewGuid();
         _appState.Tasks =
         [
-            new() { Id = parentId, Name = "Scheduled Parent", CreatedAt = DateTime.UtcNow, ScheduledDate = DateTime.UtcNow.Date },
+            new() { Id = parentId, Name = "Scheduled Parent", CreatedAt = DateTime.UtcNow, ScheduledDate = DateTime.Now.Date.AddDays(2) },
             new() { Id = Guid.NewGuid(), Name = "Undated Child", CreatedAt = DateTime.UtcNow, ParentTaskId = parentId }
         ];
         _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
