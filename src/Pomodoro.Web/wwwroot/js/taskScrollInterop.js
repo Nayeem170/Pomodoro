@@ -2,7 +2,7 @@ window.taskScrollInterop = {
     scrollIntoViewIfNeeded: function (element) {
         if (!element) return;
         var rect = element.getBoundingClientRect();
-        var container = element.closest('.task-items') || element.parentElement;
+        var container = element.closest('.task-items, .sched-days') || element.parentElement;
         if (!container) {
             element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             return;

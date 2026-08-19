@@ -1407,6 +1407,7 @@ input, textarea, [contenteditable="true"] {
 .demote-picker {
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
     gap: 4px;
     padding: 8px 10px;
     margin: 2px 0;

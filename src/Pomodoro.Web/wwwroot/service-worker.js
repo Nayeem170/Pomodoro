@@ -16,8 +16,8 @@
 // Version: 15.0.0 (cache bump: persistent splash overlay outside #app)
 // Last updated: 2026-08-18
 
-const CACHE_NAME = 'pomodoro-cache-v15';
-const CACHE_VERSION = 15;
+const CACHE_NAME = 'pomodoro-cache-v17';
+const CACHE_VERSION = 17;
 
 // Assets to cache immediately on install (static assets)
 const PRECACHE_ASSETS = [
