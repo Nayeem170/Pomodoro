@@ -89,9 +89,11 @@ public partial class TaskItemBase : ComponentBase
 
     protected ElementReference _inlineEditInput;
     protected ElementReference _rowElement;
+    protected ElementReference _demotePickerElement;
 
     private bool _shouldFocusInlineEdit;
     private bool _highlightScrolled;
+    private bool _shouldScrollDemotePicker;
 
     protected bool CanAddSubtask => Depth < Constants.Tasks.MaxSubtaskDepth;
 
@@ -322,6 +324,10 @@ public partial class TaskItemBase : ComponentBase
     protected void HandleDemote()
     {
         IsDemoteMenuOpen = !IsDemoteMenuOpen;
+        if (IsDemoteMenuOpen)
+        {
+            _shouldScrollDemotePicker = true;
+        }
     }
 
     protected async Task ConfirmDemote(Guid siblingId)
@@ -346,6 +352,16 @@ public partial class TaskItemBase : ComponentBase
         {
             _shouldFocusInlineEdit = false;
             try { await _inlineEditInput.FocusAsync(); } catch { }
+        }
+
+        if (_shouldScrollDemotePicker)
+        {
+            _shouldScrollDemotePicker = false;
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("taskScrollInterop.scrollIntoViewIfNeeded", _demotePickerElement);
+            }
+            catch (JSDisconnectedException) { }
         }
 
         if (IsNewlyAdded && !_highlightScrolled)

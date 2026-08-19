@@ -28,8 +28,26 @@ export class PomodoroPage {
 
   async addTask(taskName: string) {
     await this.page.locator('.task-input').waitFor({ state: 'visible', timeout: 30000 });
-    await this.page.locator('.task-input').pressSequentially(taskName);
-    await this.page.locator('.btn-add-text').click();
+    // Retry loop: a timer-tick re-render can recreate the textarea mid-typing,
+    // dropping the text and leaving the Add button disabled. Re-fill and retry
+    // instead of failing the whole test on that race.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const before = await this.getTaskCount();
+      try {
+        await this.page.locator('.task-input').fill('');
+        await this.page.locator('.task-input').pressSequentially(taskName);
+        await this.page.locator('.btn-add-text').click({ timeout: 4000 });
+      } catch {
+        continue;
+      }
+      let added = false;
+      for (let i = 0; i < 32 && !added; i++) {
+        added = (await this.getTaskCount()) === before + 1;
+        if (!added) await this.page.waitForTimeout(250);
+      }
+      if (added) return;
+    }
+    throw new Error('addTask failed after retries: ' + taskName);
   }
 
   async completeTask(taskName: string) {
