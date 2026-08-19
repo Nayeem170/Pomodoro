@@ -129,4 +129,62 @@ test.describe('Schedule Tasks', () => {
 
     await expect(page.page.locator('.day-item.done').filter({ hasText: 'Agenda Complete' })).toBeVisible();
   });
+
+  test('dragging a scheduled task below another reorders it within the day and persists', async () => {
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 1);
+    const dateStr = futureDate.toISOString().split('T')[0];
+
+    for (const name of ['Agenda Alpha', 'Agenda Beta']) {
+      await page.addTask(name);
+      await page.editTask(name);
+      await page.setTaskScheduleDate(dateStr);
+      await page.saveTaskEdit();
+    }
+
+    await page.switchToTaskList('Schedule');
+
+    const day = page.page.locator('.sched-day').filter({ hasText: 'Agenda Alpha' });
+    await expect(day).toBeVisible();
+    await expect(day.locator('.task-row').filter({ hasText: 'Agenda Beta' })).toBeVisible();
+
+    const orderInDay = async () => {
+      const rows = day.locator('.task-row');
+      const names: string[] = [];
+      for (let i = 0; i < await rows.count(); i++) {
+        names.push((await rows.nth(i).textContent()) || '');
+      }
+      return names;
+    };
+
+    const before = await orderInDay();
+    expect(before.findIndex(n => n.includes('Agenda Alpha'))).toBeGreaterThanOrEqual(0);
+    expect(before.findIndex(n => n.includes('Agenda Beta'))).toBeGreaterThanOrEqual(0);
+
+    await day.locator('.task-row').filter({ hasText: 'Agenda Alpha' }).first()
+      .dragTo(day.locator('.task-row').filter({ hasText: 'Agenda Beta' }).first(), {
+        targetPosition: { x: 100, y: 28 },
+      });
+
+    await page.page.waitForTimeout(1000);
+    const after = await orderInDay();
+    const alphaAfter = after.findIndex(n => n.includes('Agenda Alpha'));
+    const betaAfter = after.findIndex(n => n.includes('Agenda Beta'));
+    expect(alphaAfter).toBeGreaterThan(betaAfter,
+      'Alpha must render after Beta within the day after being dragged below it');
+
+    await page.page.reload({ waitUntil: 'domcontentloaded' });
+    await page.goto('/');
+    await page.switchToTaskList('Schedule');
+    const reloadedDay = page.page.locator('.sched-day').filter({ hasText: 'Agenda Alpha' });
+    await expect(reloadedDay).toBeVisible();
+    const rows = reloadedDay.locator('.task-row');
+    const reloaded: string[] = [];
+    for (let i = 0; i < await rows.count(); i++) {
+      reloaded.push((await rows.nth(i).textContent()) || '');
+    }
+    expect(reloaded.findIndex(n => n.includes('Agenda Alpha')))
+      .toBeGreaterThan(reloaded.findIndex(n => n.includes('Agenda Beta')),
+        'schedule-reordered position must persist across reload');
+  });
 });

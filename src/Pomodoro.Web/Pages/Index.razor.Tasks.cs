@@ -144,6 +144,43 @@ public partial class IndexBase
             : string.Format(Constants.Messages.ReorderAnnouncementFormat, task.Name, index + 1, group.Count);
     }
 
+    public async Task HandleScheduleReorder(ReorderRequest request)
+    {
+        await TryExecuteAsync(async () =>
+        {
+            _reorderAnnouncement = null;
+            await InvokeAsync(StateHasChanged);
+            if (await TaskService.ReorderTaskAsync(request.TaskId, request.TargetId, request.InsertBefore))
+            {
+                await UpdateStateAsync();
+                _reorderAnnouncement = BuildScheduleReorderAnnouncement(request.TaskId);
+                StateHasChanged();
+            }
+        }, Constants.Messages.ErrorUpdatingTask);
+    }
+
+    private string? BuildScheduleReorderAnnouncement(Guid taskId)
+    {
+        TaskItem? task = null;
+        IReadOnlyList<TaskItem>? dayGroup = null;
+        foreach (var day in ScheduleWindow)
+        {
+            var tasks = day.Items.Where(i => i.Task is not null).Select(i => i.Task!).ToList();
+            if (tasks.Any(t => t.Id == taskId))
+            {
+                task = tasks.First(t => t.Id == taskId);
+                dayGroup = tasks;
+                break;
+            }
+        }
+        if (task is null || dayGroup is null) return null;
+
+        var index = dayGroup.ToList().FindIndex(t => t.Id == taskId);
+        return index < 0
+            ? null
+            : string.Format(Constants.Messages.ReorderAnnouncementFormat, task.Name, index + 1, dayGroup.Count);
+    }
+
     public async Task HandleTaskDelete(Guid taskId)
     {
         await TryExecuteAsync(async () =>

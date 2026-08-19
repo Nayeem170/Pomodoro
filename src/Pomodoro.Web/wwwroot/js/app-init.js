@@ -4,9 +4,31 @@
 
 (function() {
     'use strict';
-    
-    // Service worker registration disabled - Cloudflare Pages _redirects catch-all
-    // prevents serving service-worker.js with correct MIME type
+
+    // Persistent splash overlay: hidden after the app renders its first real
+    // content. The splash must live outside #app so Blazor cannot destroy it
+    // (a recreated element restarts the clock animation).
+    window.hideSplash = function() {
+        var splash = document.getElementById('splash');
+        if (!splash || splash.classList.contains('splash-hidden')) {
+            return;
+        }
+        splash.classList.add('splash-hidden');
+        setTimeout(function() {
+            splash.remove();
+        }, 400);
+    };
+    setTimeout(window.hideSplash, 10000);
+
+    // Service worker registration (worker ships as a static wwwroot asset;
+    // _redirects serves /service-worker.js with the correct MIME type)
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+                console.warn('Service worker registration failed:', err);
+            });
+        });
+    }
     
     // Task name textareas: auto-grow on input, block Enter newline (commit is handled in Blazor)
     var taskTextareaSelector = 'textarea.task-input, textarea.task-text-input, textarea.tep-input';

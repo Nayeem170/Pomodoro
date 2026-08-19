@@ -49,12 +49,14 @@ test.describe('Service Worker Cache Behavior', () => {
       return {
         status: res.status,
         contentType: res.headers.get('content-type'),
-        bodyLength: (await res.text()).length
+        body: await res.text()
       };
     });
 
     expect(response.status).toBe(200);
-    expect(response.bodyLength).toBeGreaterThan(100);
+    expect(response.contentType).toContain('javascript');
+    expect(response.body).toMatch(/const CACHE_NAME = 'pomodoro-cache-v\d+'/);
+    expect(response.body.length).toBeGreaterThan(100);
   });
 
   test('should verify cache API is available', async ({ page }) => {

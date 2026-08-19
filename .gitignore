@@ -36,9 +36,6 @@ plans/
 # Client-side libraries (managed by LibMan - see libman.json)
 src/Pomodoro.Web/wwwroot/lib/
 
-# Auto-generated service worker (produced during publish)
-src/Pomodoro.Web/wwwroot/service-worker.published.js
-
 # NuGet packages
 *.nupkg
 *.snupkg

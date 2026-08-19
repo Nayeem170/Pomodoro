@@ -130,4 +130,34 @@ public class TaskGroupingTests
         rendered.Should().Equal(expected,
             "the helper's ordering must match BuildTree's rendered depth-first sequence");
     }
+
+    [Fact]
+    public void OrderRootsForDisplay_SortsBySortOrderThenNewestFirst()
+    {
+        // Arrange
+        var a = NewTask("A", sortOrder: 1000, createdAt: new DateTime(2026, 1, 1));
+        var b = NewTask("B", sortOrder: 0, createdAt: new DateTime(2026, 1, 2));
+        var c = NewTask("C", sortOrder: 0, createdAt: new DateTime(2026, 1, 3));
+
+        // Act
+        var ordered = TaskGrouping.OrderRootsForDisplay([a, b, c]).Select(t => t.Name).ToList();
+
+        // Assert - SortOrder ascending, CreatedAt descending within equal sort orders.
+        ordered.Should().Equal(["C", "B", "A"]);
+    }
+
+    [Fact]
+    public void OrderChildrenForDisplay_SortsBySortOrderThenOldestFirst()
+    {
+        // Arrange
+        var a = NewTask("A", sortOrder: 1000, createdAt: new DateTime(2026, 1, 1));
+        var b = NewTask("B", sortOrder: 0, createdAt: new DateTime(2026, 1, 2));
+        var c = NewTask("C", sortOrder: 0, createdAt: new DateTime(2026, 1, 3));
+
+        // Act
+        var ordered = TaskGrouping.OrderChildrenForDisplay([a, b, c]).Select(t => t.Name).ToList();
+
+        // Assert - SortOrder ascending, CreatedAt ascending within equal sort orders.
+        ordered.Should().Equal(["B", "C", "A"]);
+    }
 }
