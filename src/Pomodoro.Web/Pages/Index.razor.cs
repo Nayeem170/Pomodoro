@@ -59,6 +59,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     #region State
 
     protected bool IsLoading { get; set; } = true;
+    private bool _splashHidden;
     protected List<TaskItem> Tasks { get; set; } = new();
     protected Guid? CurrentTaskId { get; set; }
     protected TimeSpan RemainingTime { get; set; } = TimeSpan.FromMinutes(Constants.Timer.DefaultPomodoroMinutes);
@@ -246,6 +247,22 @@ public partial class IndexBase : ComponentBase, IDisposable
         finally
         {
             IsLoading = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!IsLoading && !_splashHidden)
+        {
+            _splashHidden = true;
+            try
+            {
+                await JSRuntime.InvokeVoidAsync(Constants.JsFunctions.HideSplash);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogDebug(ex, Constants.Messages.SplashHideFailed);
+            }
         }
     }
 

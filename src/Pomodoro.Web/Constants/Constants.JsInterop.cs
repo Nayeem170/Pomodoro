@@ -8,6 +8,7 @@ public static partial class Constants
         public const string TimerStop = "timerFunctions.stop";
         public const string GetUrlParameter = "getUrlParameter";
         public const string RemoveUrlParameter = "removeUrlParameter";
+        public const string HideSplash = "hideSplash";
     }
 
     public static class JsInvokableMethods

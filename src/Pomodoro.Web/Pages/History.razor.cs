@@ -40,6 +40,7 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
     #region State
 
     protected bool IsLoading { get; set; } = true;
+    private bool _splashHidden;
     protected DateTime SelectedDate { get; set; } = DateTime.Now.Date;
     protected DateTime SelectedWeekStart { get; set; }
     protected HistoryTab ActiveTab { get; set; } = HistoryTab.Daily;
@@ -153,6 +154,19 @@ public class HistoryBase : ComponentBase, IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (!IsLoading && !_splashHidden)
+        {
+            _splashHidden = true;
+            try
+            {
+                await JSRuntime.InvokeVoidAsync(Constants.JsFunctions.HideSplash);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogDebug(ex, Constants.Messages.SplashHideFailed);
+            }
+        }
+
         // Always recreate DotNetObjectReference if it's null, not just on first render
         // This prevents memory leaks if component is re-rendered after a failed initialization
         if (_dotNetRef == null)

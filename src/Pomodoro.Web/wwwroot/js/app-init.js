@@ -4,7 +4,22 @@
 
 (function() {
     'use strict';
-    
+
+    // Persistent splash overlay: hidden after the app renders its first real
+    // content. The splash must live outside #app so Blazor cannot destroy it
+    // (a recreated element restarts the clock animation).
+    window.hideSplash = function() {
+        var splash = document.getElementById('splash');
+        if (!splash || splash.classList.contains('splash-hidden')) {
+            return;
+        }
+        splash.classList.add('splash-hidden');
+        setTimeout(function() {
+            splash.remove();
+        }, 400);
+    };
+    setTimeout(window.hideSplash, 10000);
+
     // Service worker registration (worker ships as a static wwwroot asset;
     // _redirects serves /service-worker.js with the correct MIME type)
     if ('serviceWorker' in navigator) {
