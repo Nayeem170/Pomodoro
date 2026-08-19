@@ -14,6 +14,11 @@ namespace Pomodoro.Web.Tests;
 [Trait("Category", "Component")]
 public class TaskItemComponentTests : TestContext
 {
+    public TaskItemComponentTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+    }
+
     [Fact]
     public void TaskItemComponent_RendersCorrectly()
     {

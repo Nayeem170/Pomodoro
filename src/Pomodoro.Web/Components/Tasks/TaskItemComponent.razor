@@ -131,7 +131,7 @@
 }
 @if (IsDemoteMenuOpen)
 {
-    <div class="demote-picker" style="margin-left:@((Depth + 1) * 20)px">
+    <div class="demote-picker" @ref="_demotePickerElement" style="margin-left:@((Depth + 1) * 20)px">
         <span class="demote-picker-label">Demote under:</span>
         @foreach (var sibling in Siblings)
         {
