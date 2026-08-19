@@ -147,7 +147,7 @@ else
                                           OnTabChanged="HandleTabChange" />
                             @if (IsScheduleView)
                             {
-                                <ScheduleAgenda Days="ScheduleWindow"
+                                                <ScheduleAgenda Days="ScheduleWindow"
                                                 WindowLabel="@ScheduleWindowLabel"
                                                 CanGoPrev="@(_scheduleWeekOffset > 0)"
                                                 OnPrev="HandleSchedulePrev"
@@ -160,6 +160,7 @@ else
                                                 OnReparentToRoot="HandleReparentToRoot"
                                                 OnDemote="HandleDemote"
                                                 OnToggleFollowParent="HandleToggleFollowParent"
+                                                OnReorder="HandleScheduleReorder"
                                                 AllTasks="AppState.Tasks"
                                                 GoogleLists="GoogleLists" />
                             }
