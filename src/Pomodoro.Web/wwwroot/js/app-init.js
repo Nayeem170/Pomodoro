@@ -5,8 +5,15 @@
 (function() {
     'use strict';
     
-    // Service worker registration disabled - Cloudflare Pages _redirects catch-all
-    // prevents serving service-worker.js with correct MIME type
+    // Service worker registration (worker ships as a static wwwroot asset;
+    // _redirects serves /service-worker.js with the correct MIME type)
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+                console.warn('Service worker registration failed:', err);
+            });
+        });
+    }
     
     // Task name textareas: auto-grow on input, block Enter newline (commit is handled in Blazor)
     var taskTextareaSelector = 'textarea.task-input, textarea.task-text-input, textarea.tep-input';
