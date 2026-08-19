@@ -1775,6 +1775,14 @@ textarea.tep-input {
     width: 60px;
     flex: none;
     text-align: center;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.tep-input-sm::-webkit-inner-spin-button,
+.tep-input-sm::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .tep-unit {

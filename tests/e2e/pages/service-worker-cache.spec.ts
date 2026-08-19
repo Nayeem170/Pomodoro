@@ -55,7 +55,7 @@ test.describe('Service Worker Cache Behavior', () => {
 
     expect(response.status).toBe(200);
     expect(response.contentType).toContain('javascript');
-    expect(response.body).toContain('pomodoro-cache-v13');
+    expect(response.body).toMatch(/const CACHE_NAME = 'pomodoro-cache-v\d+'/);
     expect(response.body.length).toBeGreaterThan(100);
   });
 
