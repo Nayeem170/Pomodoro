@@ -322,5 +322,46 @@ public class ScheduleAgendaTests : TestContext
         names.Should().Equal(["Root", "SubB", "SubA"]);
     }
 
+    [Fact]
+    public async Task DragStartOnDayItem_ActivatesDropZones_OnSiblingRows()
+    {
+        // Arrange
+        var a = new TaskItem { Id = Guid.NewGuid(), Name = "First" };
+        var b = new TaskItem { Id = Guid.NewGuid(), Name = "Second" };
+        var cut = RenderComponent<ScheduleAgenda>(p => p
+            .Add(c => c.Days, [TaskBackedDay(a, b)])
+            .Add(c => c.AllTasks, new List<TaskItem> { a, b }));
+
+        cut.FindAll(".drop-zone").Should().BeEmpty();
+
+        // Act - start dragging the first row; the non-dragged sibling shows drop zones.
+        await cut.FindAll(".task-row")[0].TriggerEventAsync("ondragstart", new Microsoft.AspNetCore.Components.Web.DragEventArgs());
+        cut.FindAll(".drop-zone").Should().NotBeEmpty();
+
+        // Act - ending the drag clears the active state.
+        await cut.FindAll(".task-row")[0].TriggerEventAsync("ondragend", new Microsoft.AspNetCore.Components.Web.DragEventArgs());
+
+        // Assert
+        cut.FindAll(".drop-zone").Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ResolveParentKey_ReturnsNull_WhenTaskHasNoParentIndicators()
+    {
+        // Arrange - defensive fallback: a task with neither ParentTaskId nor a
+        // resolvable GoogleParentTaskId falls back to the root group.
+        var orphan = new TaskItem { Id = Guid.NewGuid(), Name = "Orphan" };
+        var cut = RenderComponent<ScheduleDayRow>(p => p
+            .Add(c => c.Day, TaskBackedDay(orphan))
+            .Add(c => c.AllTasks, new List<TaskItem> { orphan }));
+
+        var method = typeof(ScheduleDayRow).GetMethod(
+            "ResolveParentKey",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        var result = (Guid?)method!.Invoke(cut.Instance, new object[] { orphan });
+
+        result.Should().BeNull();
+    }
+
     #endregion
 }

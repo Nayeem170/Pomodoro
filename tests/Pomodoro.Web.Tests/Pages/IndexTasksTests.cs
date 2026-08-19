@@ -780,5 +780,64 @@ public class IndexTasksTests : TestHelper
     }
 
     #endregion
+
+    #region HandleTaskEdit + Undo Toast Lifecycle
+
+    [Fact]
+    public async Task HandleTaskDelete_HidesUndoToast_AfterDurationElapses()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem { Id = taskId, Name = "Toast Task" };
+        AppState.Tasks = new List<TaskItem> { task };
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        await cut.Instance.HandleTaskDelete(taskId);
+        cut.Render();
+        cut.Markup.Should().Contain("undo-toast");
+
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        while (cut.Markup.Contains("undo-toast"))
+        {
+            sw.Elapsed.Should().BeLessThan(
+                TimeSpan.FromMilliseconds(Constants.UI.UndoToastDurationMs + 4000),
+                "the undo toast must auto-hide after the configured duration");
+            await Task.Delay(250);
+        }
+    }
+
+    [Fact]
+    public async Task HandleTaskEdit_MovesTaskToNewList_WhenGoogleListChanges()
+    {
+        var listA = "list-a";
+        var listB = "list-b";
+        var taskId = Guid.NewGuid();
+        var existing = new TaskItem { Id = taskId, Name = "Moved Task", GoogleListId = listA };
+        AppState.Tasks = new List<TaskItem> { existing };
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var edited = new TaskItem { Id = taskId, Name = "Moved Task", GoogleListId = listB };
+        await cut.Instance.HandleTaskEdit(edited);
+
+        TaskServiceMock.Verify(x => x.UpdateTaskAsync(edited), Times.Once);
+        TaskServiceMock.Verify(x => x.MoveTaskToListAsync(taskId, listB), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleTaskEdit_DoesNotMoveTask_WhenGoogleListUnchanged()
+    {
+        var listA = "list-a";
+        var taskId = Guid.NewGuid();
+        var existing = new TaskItem { Id = taskId, Name = "Stable Task", GoogleListId = listA };
+        AppState.Tasks = new List<TaskItem> { existing };
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var edited = new TaskItem { Id = taskId, Name = "Stable Task Renamed", GoogleListId = listA };
+        await cut.Instance.HandleTaskEdit(edited);
+
+        TaskServiceMock.Verify(x => x.UpdateTaskAsync(edited), Times.Once);
+        TaskServiceMock.Verify(x => x.MoveTaskToListAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
+    }
+
+    #endregion
 }
 
