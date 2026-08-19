@@ -13,11 +13,11 @@
 // clear their browser cache or the service worker naturally expires (24h+).
 // =============================================================================
 //
-// Version: 12.0.0 (cache bump: edit panel repeat choice + list selector, googleTasks cross-list move)
+// Version: 15.0.0 (cache bump: persistent splash overlay outside #app)
 // Last updated: 2026-08-18
 
-const CACHE_NAME = 'pomodoro-cache-v12';
-const CACHE_VERSION = 12;
+const CACHE_NAME = 'pomodoro-cache-v15';
+const CACHE_VERSION = 15;
 
 // Assets to cache immediately on install (static assets)
 const PRECACHE_ASSETS = [

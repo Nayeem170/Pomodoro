@@ -126,6 +126,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
       - name: Check service worker cache version monotonicity
         run: |
           set -euo pipefail
@@ -159,3 +163,30 @@ jobs:
           fi
 
           echo "Cache version monotonic: v$base_ver -> v$head_ver, CACHE_NAME consistent"
+
+      - name: Assert publish output ships the service worker
+        run: |
+          set -euo pipefail
+          SW="src/Pomodoro.Web/wwwroot/service-worker.js"
+          OUT="sw-publish-check/wwwroot/service-worker.js"
+
+          dotnet publish src/Pomodoro.Web -c Release -o sw-publish-check --verbosity quiet
+
+          if [ ! -f "$OUT" ]; then
+            echo "::error::$OUT is missing from the publish output - the service worker would not deploy (regression of #160)"
+            exit 1
+          fi
+
+          src_ver=$(grep -oP "const CACHE_VERSION = \K[0-9]+" "$SW")
+          out_ver=$(grep -oP "const CACHE_VERSION = \K[0-9]+" "$OUT")
+          if [ -z "$out_ver" ] || [ "$out_ver" != "$src_ver" ]; then
+            echo "::error::Publish-output worker version '$out_ver' diverges from source worker version '$src_ver'"
+            exit 1
+          fi
+
+          if ! cmp -s "$SW" "$OUT"; then
+            echo "::error::Publish-output worker differs from source worker"
+            exit 1
+          fi
+
+          echo "Publish output ships service-worker.js v$out_ver, byte-identical to source"
