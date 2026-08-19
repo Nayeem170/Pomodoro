@@ -90,4 +90,27 @@ test.describe('Demote picker visibility', () => {
     await page.locator('.demote-pick-cancel').click();
     await expect(page.locator('.demote-picker')).toHaveCount(0);
   });
+
+  test('picker keeps full height in overflowing task list (no flex crush)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 600 });
+    const po = new PomodoroPage(page);
+    await po.goto('http://localhost:5000/');
+
+    const names = Array.from({ length: 22 }, (_, i) => `test ${i + 1}`);
+    await addTasks(po, names);
+
+    const midRow = page.locator('.task-row').filter({ hasText: 'test 21' }).first();
+    await midRow.scrollIntoViewIfNeeded();
+    await midRow.locator('button[aria-label="Demote"]').click();
+
+    const picker = page.locator('.demote-picker');
+    await expect(picker).toHaveCount(1);
+
+    const pickerHeight = await picker.evaluate(el => el.clientHeight);
+    expect(pickerHeight, 'picker box must not be crushed by flex-shrink below its max-height budget').toBeGreaterThanOrEqual(100);
+
+    await expect(picker.locator('.demote-pick-cancel')).toBeVisible();
+    await page.locator('.demote-pick-cancel').click();
+    await expect(picker).toHaveCount(0);
+  });
 });
