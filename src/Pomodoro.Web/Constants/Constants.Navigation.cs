@@ -8,6 +8,8 @@ public static partial class Constants
         public const string Escape = "Escape";
         public const string ArrowLeft = "ArrowLeft";
         public const string ArrowRight = "ArrowRight";
+        public const string ArrowUp = "ArrowUp";
+        public const string ArrowDown = "ArrowDown";
     }
 
     public static class Routing
@@ -54,6 +56,12 @@ public static partial class Constants
         /// <summary>Key for switching to Long Break session</summary>
         public const string LongBreakKey = "Ctrl+L";
 
+        /// <summary>Key for moving the focused task up within its sibling group</summary>
+        public const string ReorderUpKey = "Alt+ArrowUp";
+
+        /// <summary>Key for moving the focused task down within its sibling group</summary>
+        public const string ReorderDownKey = "Alt+ArrowDown";
+
         /// <summary>Key for showing keyboard shortcuts help</summary>
         public const string HelpKey = "?";
 
@@ -75,6 +83,12 @@ public static partial class Constants
         /// <summary>Description for Long Break shortcut</summary>
         public const string LongBreakDescription = "Switch to Long Break";
 
+        /// <summary>Description for moving task up shortcut</summary>
+        public const string ReorderUpDescription = "Move focused task up";
+
+        /// <summary>Description for moving task down shortcut</summary>
+        public const string ReorderDownDescription = "Move focused task down";
+
         /// <summary>Description for help shortcut</summary>
         public const string HelpDescription = "Show keyboard shortcuts";
 
@@ -95,6 +109,9 @@ public static partial class Constants
 
         /// <summary>Other shortcuts section title</summary>
         public const string OtherSection = "Other";
+
+        /// <summary>Task list section title</summary>
+        public const string TaskListSection = "Task List";
 
         /// <summary>Close button tooltip</summary>
         public const string CloseTooltip = "Close";

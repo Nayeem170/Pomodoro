@@ -36,7 +36,7 @@ public interface ITaskService
     Task RefreshGoogleListsAsync();
     Task UpdateListVisibilityAsync(string listId, bool isVisible);
 
-    Task AddSubtaskAsync(string name, Guid parentTaskId);
+    Task<Guid?> AddSubtaskAsync(string name, Guid parentTaskId);
 
     Task ReparentTaskAsync(Guid taskId, Guid? newParentId);
 
@@ -44,7 +44,11 @@ public interface ITaskService
 
     Task DemoteTaskAsync(Guid taskId, Guid targetSiblingId);
 
+    Task<bool> ReorderTaskAsync(Guid taskId, Guid targetId, bool insertBefore);
+
     Task SetFollowsParentRepeatAsync(Guid taskId, bool value);
+
+    Task<bool> MoveTaskToListAsync(Guid taskId, string newListId);
 
     /// <summary>Persists a virtual repeat occurrence as a real task so it can be edited independently of its series.</summary>
     Task MaterializeSingleAsync(TaskItem occurrence);

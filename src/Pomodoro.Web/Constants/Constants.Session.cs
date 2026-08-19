@@ -65,6 +65,7 @@ public static partial class Constants
         // CSS Classes
         public const string SelectedClass = "selected";
         public const string CompletedClass = "completed";
+        public const string NewlyAddedClass = "task-row--new";
 
         // Initial Values
         public const int InitialFocusMinutes = 0;
@@ -73,6 +74,8 @@ public static partial class Constants
         public const int InsertAtBeginning = 0;
         public const int InsertAtEnd = -1;
         public const int MaxSubtaskDepth = 4;
+        public const int SortGap = 1000;
+        public const int InitialSortStep = 1000;
         public const int ScheduleWindowDays = 7;
         public const string ScheduleDayFormat = "ddd, MMM d";
     }
@@ -98,5 +101,6 @@ public static partial class Constants
         public const string LabelWeekly = "Weekly";
         public const string LabelMonthly = "Monthly";
         public const string LabelRepeat = "Repeat";
+        public const string FollowParentChoice = "follow-parent";
     }
 }

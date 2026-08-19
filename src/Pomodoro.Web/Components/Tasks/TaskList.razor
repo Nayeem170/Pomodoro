@@ -5,16 +5,22 @@
     <div class="task-items">
         @foreach (var node in ActiveTaskNodes)
         {
-            <TaskItemComponent @key="node.Task.Id" 
-                Item="node.Task" 
+            <TaskItemComponent @key="node.Task.Id"
+                Item="node.Task"
                 Depth="node.Depth"
                 HasChildren="node.HasChildren"
                 ChildCount="node.ChildCount"
                 Siblings="SiblingsFor(node.Task)"
                 IsCollapsed="_collapsed.Contains(node.Task.Id)"
                 IsSelected="node.Task.Id == CurrentTaskId"
-                GoogleListTitle="@GoogleListTitleFor(node.Task)"
-                OnSelect="HandleTaskSelect"
+                IsReorderable="IsReorderableFor(node.Task)"
+                IsDragActive="_isDragging"
+                DraggedTaskId="_draggedTaskId"
+                ReorderGroup="OrderedGroupFor(node.Task)"
+                             IsNewlyAdded="HighlightTaskId == node.Task.Id"
+                             GoogleListTitle="@GoogleListTitleFor(node.Task)"
+                             GoogleLists="GoogleLists"
+                             OnSelect="HandleTaskSelect"
                 OnComplete="HandleTaskComplete"
                 OnDelete="HandleTaskDelete"
                 OnUncomplete="HandleTaskUncomplete"
@@ -23,9 +29,12 @@
                 OnReparentToRoot="HandleReparentToRoot"
                 OnDemote="HandleDemote"
                 OnToggleFollowParent="HandleToggleFollowParent"
-                OnToggleCollapse="ToggleCollapse" />
+                OnToggleCollapse="ToggleCollapse"
+                OnReorder="HandleTaskReorder"
+                OnDragStarted="HandleDragStarted"
+                OnDragEnded="HandleDragEnded" />
         }
-        
+
         @if (HasCompletedTasks)
         {
             <div class="completed-section">
@@ -38,15 +47,21 @@
                 {
                     @foreach (var node in CompletedTaskNodes)
                     {
-                        <TaskItemComponent @key="node.Task.Id" 
-                            Item="node.Task" 
+                        <TaskItemComponent @key="node.Task.Id"
+                            Item="node.Task"
                             Depth="node.Depth"
                             HasChildren="node.HasChildren"
                             ChildCount="node.ChildCount"
                             Siblings="SiblingsFor(node.Task)"
                             IsCollapsed="_collapsed.Contains(node.Task.Id)"
                             IsSelected="false"
-                            GoogleListTitle="@GoogleListTitleFor(node.Task)"
+                            IsReorderable="IsReorderableFor(node.Task)"
+                            IsDragActive="_isDragging"
+                            DraggedTaskId="_draggedTaskId"
+                            ReorderGroup="OrderedGroupFor(node.Task)"
+                            IsNewlyAdded="HighlightTaskId == node.Task.Id"
+                GoogleListTitle="@GoogleListTitleFor(node.Task)"
+                GoogleLists="GoogleLists"
                             OnSelect="HandleTaskSelect"
                             OnComplete="HandleTaskComplete"
                             OnDelete="HandleTaskDelete"
@@ -56,7 +71,10 @@
                             OnReparentToRoot="HandleReparentToRoot"
                             OnDemote="HandleDemote"
                             OnToggleFollowParent="HandleToggleFollowParent"
-                            OnToggleCollapse="ToggleCollapse" />
+                            OnToggleCollapse="ToggleCollapse"
+                            OnReorder="HandleTaskReorder"
+                            OnDragStarted="HandleDragStarted"
+                            OnDragEnded="HandleDragEnded" />
                     }
                 }
             </div>
@@ -75,7 +93,7 @@
                 </div>
                 <div class="tep-row">
                     <label class="tep-label">Name</label>
-                    <input class="tep-input tep-input-name" @bind="NewTaskName" @bind:event="oninput" @onkeydown="HandleKeyPress" placeholder="Add a task..." aria-label="New task name" />
+                    <textarea class="tep-input tep-input-name" rows="1" @bind="NewTaskName" @bind:event="oninput" @onkeydown="HandleKeyPress" placeholder="Add a task..." aria-label="New task name"></textarea>
                 </div>
                 <div class="tep-row">
                     <label class="tep-label">List</label>
@@ -161,13 +179,13 @@
         {
             <div class="add-task-form">
                 <div class="task-input-wrap">
-                    <input type="text"
+                    <textarea rows="1"
                            @bind="NewTaskName"
                            @bind:event="oninput"
                            @onkeydown="HandleKeyPress"
                            placeholder="Add a task..."
                            class="task-input"
-                           aria-label="New task name" />
+                           aria-label="New task name"></textarea>
                     <span class="task-input-hint">Shift+Enter for details</span>
                 </div>
                 <button class="btn-more" @onclick="ToggleMore" aria-label="Show more options" aria-expanded="false">

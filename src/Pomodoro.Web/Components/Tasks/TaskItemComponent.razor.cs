@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Pomodoro.Web.Models;
 
 namespace Pomodoro.Web.Components.Tasks;
 
-public class TaskItemBase : ComponentBase
+public partial class TaskItemBase : ComponentBase
 {
     #region Parameters (Model)
 
@@ -62,6 +63,12 @@ public class TaskItemBase : ComponentBase
     [Parameter]
     public DateTime? ContextDate { get; set; }
 
+    [Parameter]
+    public bool IsNewlyAdded { get; set; }
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
+
     #endregion
 
     #region State
@@ -81,8 +88,10 @@ public class TaskItemBase : ComponentBase
     protected string InlineEditName { get; set; } = string.Empty;
 
     protected ElementReference _inlineEditInput;
+    protected ElementReference _rowElement;
 
     private bool _shouldFocusInlineEdit;
+    private bool _highlightScrolled;
 
     protected bool CanAddSubtask => Depth < Constants.Tasks.MaxSubtaskDepth;
 
@@ -92,6 +101,9 @@ public class TaskItemBase : ComponentBase
 
     [Parameter]
     public string? GoogleListTitle { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<TaskListRef> GoogleLists { get; set; } = [];
 
     protected string GoogleBadgeTooltip =>
         string.IsNullOrEmpty(GoogleListTitle) ? "Google task" : $"Google task - {GoogleListTitle}";
@@ -125,7 +137,12 @@ public class TaskItemBase : ComponentBase
         var classes = new List<string>();
         if (IsSelected) classes.Add(Constants.Tasks.SelectedClass);
         if (Item.IsCompleted) classes.Add(Constants.Tasks.CompletedClass);
+        if (IsNewlyAdded) classes.Add(Constants.Tasks.NewlyAddedClass);
         if (IsInlineEditing || IsDemoteMenuOpen) classes.Add("active-form");
+        if (_isDragSource) classes.Add("dragging");
+        if (_dropBefore) classes.Add("drop-before");
+        if (_dropAfter) classes.Add("drop-after");
+        if (IsDragActive && _noDropHover && !IsReorderable) classes.Add("no-drop");
         return string.Join(" ", classes);
     }
 
@@ -192,6 +209,16 @@ public class TaskItemBase : ComponentBase
 
     protected async Task HandleKeyDown(KeyboardEventArgs e)
     {
+        if (e.AltKey && e.Key == Constants.Keys.ArrowUp)
+        {
+            await HandleKeyboardReorder(up: true);
+            return;
+        }
+        if (e.AltKey && e.Key == Constants.Keys.ArrowDown)
+        {
+            await HandleKeyboardReorder(up: false);
+            return;
+        }
         if (e.Key == "Enter" || e.Key == " ")
         {
             await HandleSelect();
@@ -200,14 +227,7 @@ public class TaskItemBase : ComponentBase
 
     protected void HandleEdit()
     {
-        if (Depth == 0)
-        {
-            IsEditing = !IsEditing;
-        }
-        else
-        {
-            StartInlineEdit();
-        }
+        IsEditing = !IsEditing;
     }
 
     protected void StartInlineEdit()
@@ -326,6 +346,20 @@ public class TaskItemBase : ComponentBase
         {
             _shouldFocusInlineEdit = false;
             try { await _inlineEditInput.FocusAsync(); } catch { }
+        }
+
+        if (IsNewlyAdded && !_highlightScrolled)
+        {
+            _highlightScrolled = true;
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("taskScrollInterop.scrollIntoViewIfNeeded", _rowElement);
+            }
+            catch (JSDisconnectedException) { }
+        }
+        else if (!IsNewlyAdded)
+        {
+            _highlightScrolled = false;
         }
     }
 

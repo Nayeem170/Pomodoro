@@ -31,6 +31,9 @@ public static partial class Constants
 
         public const int ErrorToastDurationMs = 4000;
 
+        /// <summary>Duration of the newly-added-task highlight flash in milliseconds (must equal the CSS task-flash duration).</summary>
+        public const int HighlightDurationMs = 1100;
+
         /// <summary>Percentage multiplier for progress calculations</summary>
         public const int PercentageMultiplier = 100;
 
@@ -197,6 +200,12 @@ public static partial class Constants
 
         /// <summary>Select task prompt with emoji</summary>
         public const string SelectTaskPrompt = "📌 Select a task to start";
+
+        /// <summary>Joiner between ancestry path segments for display (file-path style)</summary>
+        public const string PathSeparator = " / ";
+
+        /// <summary>Joiner between ancestry path segments for screen-reader aria-label</summary>
+        public const string PathAriaJoiner = " under ";
     }
 
     public static class PipTimerUI

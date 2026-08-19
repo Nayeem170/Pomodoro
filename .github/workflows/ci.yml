@@ -115,3 +115,78 @@ jobs:
       - run: exit 1
         if: needs.e2e.result != 'success'
       - run: echo "All E2E tests passed"
+
+  cache-version:
+    if: github.event_name == 'pull_request' && github.base_ref == 'develop'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Check service worker cache version monotonicity
+        run: |
+          set -euo pipefail
+          SW="src/Pomodoro.Web/wwwroot/service-worker.js"
+          BASE="origin/${{ github.base_ref }}"
+
+          changed_files=$(git diff --name-only "$BASE"...HEAD)
+
+          if ! grep -q '^src/Pomodoro.Web/wwwroot/' <<< "$changed_files"; then
+            echo "No cached assets (wwwroot/) touched - version bump not required"
+            exit 0
+          fi
+
+          head_ver=$(grep -oP "const CACHE_VERSION = \K[0-9]+" "$SW" || true)
+          base_ver=$(git show "$BASE:$SW" | grep -oP "const CACHE_VERSION = \K[0-9]+" || true)
+
+          if [ -z "$head_ver" ] || [ -z "$base_ver" ]; then
+            echo "::error::Could not read CACHE_VERSION (head='$head_ver' base='$base_ver') from $SW"
+            exit 1
+          fi
+
+          if [ "$head_ver" -le "$base_ver" ]; then
+            echo "::error::CACHE_VERSION must increase when wwwroot assets change: base v$base_ver -> head v$head_ver. Update BOTH CACHE_NAME and CACHE_VERSION in $SW."
+            exit 1
+          fi
+
+          head_name=$(grep -oP "const CACHE_NAME = '\K[^']+" "$SW" || true)
+          if [ "$head_name" != "pomodoro-cache-v$head_ver" ]; then
+            echo "::error::CACHE_NAME '$head_name' does not match CACHE_VERSION $head_ver (expected 'pomodoro-cache-v$head_ver')"
+            exit 1
+          fi
+
+          echo "Cache version monotonic: v$base_ver -> v$head_ver, CACHE_NAME consistent"
+
+      - name: Assert publish output ships the service worker
+        run: |
+          set -euo pipefail
+          SW="src/Pomodoro.Web/wwwroot/service-worker.js"
+          OUT="sw-publish-check/wwwroot/service-worker.js"
+
+          dotnet publish src/Pomodoro.Web -c Release -o sw-publish-check --verbosity quiet
+
+          if [ ! -f "$OUT" ]; then
+            echo "::error::$OUT is missing from the publish output - the service worker would not deploy (regression of #160)"
+            exit 1
+          fi
+
+          src_ver=$(grep -oP "const CACHE_VERSION = \K[0-9]+" "$SW")
+          out_ver=$(grep -oP "const CACHE_VERSION = \K[0-9]+" "$OUT")
+          if [ -z "$out_ver" ] || [ "$out_ver" != "$src_ver" ]; then
+            echo "::error::Publish-output worker version '$out_ver' diverges from source worker version '$src_ver'"
+            exit 1
+          fi
+
+          if ! cmp -s "$SW" "$OUT"; then
+            echo "::error::Publish-output worker differs from source worker"
+            exit 1
+          fi
+
+          echo "Publish output ships service-worker.js v$out_ver, byte-identical to source"

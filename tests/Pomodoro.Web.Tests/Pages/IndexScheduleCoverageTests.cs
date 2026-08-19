@@ -207,7 +207,7 @@ public class IndexScheduleCoverageTests : TestHelper
         // Arrange
         var parentId = Guid.NewGuid();
         var request = new AddSubtaskRequest(parentId, "Kid");
-        TaskServiceMock.Setup(x => x.AddSubtaskAsync(It.IsAny<string>(), It.IsAny<Guid>())).Returns(Task.CompletedTask);
+        TaskServiceMock.Setup(x => x.AddSubtaskAsync(It.IsAny<string>(), It.IsAny<Guid>())).ReturnsAsync((Guid?)Guid.NewGuid());
         TaskServiceMock.Setup(x => x.GetTasksForListAsync(It.IsAny<string>())).ReturnsAsync(new List<TaskItem>());
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
 

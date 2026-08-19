@@ -24,13 +24,12 @@ test.describe('Schedule Tasks', () => {
     await expect(page.page.locator('.day-item-wrap').filter({ hasText: 'Future Task' })).toBeVisible();
   });
 
-  // FIXME(foundation-coverage): the tests below contradict the branch's exclusive
-  // task routing (codified by unit tests): a today-scheduled task is routed to the
-  // Schedule tab, not the Tasks view, and the agenda lacks the .item-title-btn /
-  // .day-check elements these specs click. Pending the Tasks/Schedule routing
-  // decision and agenda edit/complete UI (follow-up task).
-  test.fixme('scheduled task for today is visible in the tasks view', async () => {
-    const todayStr = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const localDate = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  test('scheduled task for today is visible in the tasks view', async () => {
+    const todayStr = localDate(now);
 
     await page.addTask('Today Task');
     await page.editTask('Today Task');
@@ -38,6 +37,9 @@ test.describe('Schedule Tasks', () => {
     await page.saveTaskEdit();
 
     await expect(page.page.locator('.task-row').filter({ hasText: 'Today Task' })).toBeVisible();
+
+    await page.switchToTaskList('Schedule');
+    await expect(page.page.locator('.day-item-wrap').filter({ hasText: 'Today Task' })).toBeVisible();
   });
 
   test('schedule date available without repeat', async () => {
@@ -53,6 +55,34 @@ test.describe('Schedule Tasks', () => {
     await page.switchToTaskList('Schedule');
 
     await expect(page.page.locator('.day-item-wrap').filter({ hasText: 'Schedule Only' })).toBeVisible();
+  });
+
+  test('subtask edit sets schedule date and persists across reload', async () => {
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 5);
+    const dateStr = futureDate.toISOString().split('T')[0];
+
+    await page.addTask('Subtask Parent');
+    const parentRow = page.page.locator('.task-row').filter({ hasText: 'Subtask Parent' }).first();
+    await parentRow.locator('button[aria-label="Add subtask"]').click();
+    await page.page.locator('.add-subtask-form textarea').fill('Scheduled Subtask');
+    await page.page.locator('.add-subtask-form .btn-add').click();
+
+    const subtaskRow = page.page.locator('.task-row').filter({ hasText: 'Scheduled Subtask' }).first();
+    await expect(subtaskRow).toBeVisible();
+    await expect(subtaskRow.locator('.schedule-badge')).toHaveCount(0);
+
+    await page.editTask('Scheduled Subtask');
+    await page.setTaskScheduleDate(dateStr);
+    await page.saveTaskEdit();
+
+    await expect(subtaskRow.locator('.schedule-badge')).toBeVisible();
+
+    await page.page.reload();
+    await page.page.waitForLoadState('domcontentloaded');
+    await page.goto('/');
+    const reloadedRow = page.page.locator('.task-row').filter({ hasText: 'Scheduled Subtask' }).first();
+    await expect(reloadedRow.locator('.schedule-badge')).toBeVisible();
   });
 
   test.fixme('can edit a scheduled task from the agenda', async () => {
@@ -98,5 +128,63 @@ test.describe('Schedule Tasks', () => {
     await item.locator('.day-check').click();
 
     await expect(page.page.locator('.day-item.done').filter({ hasText: 'Agenda Complete' })).toBeVisible();
+  });
+
+  test('dragging a scheduled task below another reorders it within the day and persists', async () => {
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 1);
+    const dateStr = futureDate.toISOString().split('T')[0];
+
+    for (const name of ['Agenda Alpha', 'Agenda Beta']) {
+      await page.addTask(name);
+      await page.editTask(name);
+      await page.setTaskScheduleDate(dateStr);
+      await page.saveTaskEdit();
+    }
+
+    await page.switchToTaskList('Schedule');
+
+    const day = page.page.locator('.sched-day').filter({ hasText: 'Agenda Alpha' });
+    await expect(day).toBeVisible();
+    await expect(day.locator('.task-row').filter({ hasText: 'Agenda Beta' })).toBeVisible();
+
+    const orderInDay = async () => {
+      const rows = day.locator('.task-row');
+      const names: string[] = [];
+      for (let i = 0; i < await rows.count(); i++) {
+        names.push((await rows.nth(i).textContent()) || '');
+      }
+      return names;
+    };
+
+    const before = await orderInDay();
+    expect(before.findIndex(n => n.includes('Agenda Alpha'))).toBeGreaterThanOrEqual(0);
+    expect(before.findIndex(n => n.includes('Agenda Beta'))).toBeGreaterThanOrEqual(0);
+
+    await day.locator('.task-row').filter({ hasText: 'Agenda Alpha' }).first()
+      .dragTo(day.locator('.task-row').filter({ hasText: 'Agenda Beta' }).first(), {
+        targetPosition: { x: 100, y: 28 },
+      });
+
+    await page.page.waitForTimeout(1000);
+    const after = await orderInDay();
+    const alphaAfter = after.findIndex(n => n.includes('Agenda Alpha'));
+    const betaAfter = after.findIndex(n => n.includes('Agenda Beta'));
+    expect(alphaAfter).toBeGreaterThan(betaAfter,
+      'Alpha must render after Beta within the day after being dragged below it');
+
+    await page.page.reload({ waitUntil: 'domcontentloaded' });
+    await page.goto('/');
+    await page.switchToTaskList('Schedule');
+    const reloadedDay = page.page.locator('.sched-day').filter({ hasText: 'Agenda Alpha' });
+    await expect(reloadedDay).toBeVisible();
+    const rows = reloadedDay.locator('.task-row');
+    const reloaded: string[] = [];
+    for (let i = 0; i < await rows.count(); i++) {
+      reloaded.push((await rows.nth(i).textContent()) || '');
+    }
+    expect(reloaded.findIndex(n => n.includes('Agenda Alpha')))
+      .toBeGreaterThan(reloaded.findIndex(n => n.includes('Agenda Beta')),
+        'schedule-reordered position must persist across reload');
   });
 });

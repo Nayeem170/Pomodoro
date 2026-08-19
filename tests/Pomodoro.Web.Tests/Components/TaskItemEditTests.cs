@@ -70,18 +70,21 @@ public class TaskItemEditTests : TestContext
     }
 
     [Fact]
-    public void Subtask_EditButton_StartsInlineEditNotPanel()
+    public void Subtask_EditButton_ShowsEditPanelNotInlineEdit()
     {
+        // Arrange - subtask row (Depth 1, ParentTaskId set).
         var parent = Guid.NewGuid();
         var task = new TaskItem { Id = Guid.NewGuid(), Name = "Sub", ParentTaskId = parent };
         var cut = RenderComponent<TaskItemComponent>(p => p
             .Add(x => x.Item, task)
             .Add(x => x.Depth, 1));
 
+        // Act
         cut.Find("button[aria-label=\"Edit task\"]").Click();
 
-        cut.Markup.Should().Contain("task-text-input");
-        cut.Markup.Should().NotContain("task-edit-panel");
+        // Assert - pencil opens the full edit panel for subtasks; double-click remains the inline rename.
+        cut.Markup.Should().Contain("task-edit-panel");
+        cut.Markup.Should().NotContain("task-text-input");
     }
 
     [Fact]

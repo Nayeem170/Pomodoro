@@ -121,6 +121,7 @@ public class TaskItem
     public string? Notes { get; set; }
     public DateTime? DueDate { get; set; }
     public Priority Priority { get; set; }
+    public int SortOrder { get; set; }
     public bool IsLocalDirty { get; set; }
 
     public TaskItem WithUpdates(Action<TaskItem>? mutate = null)
@@ -152,6 +153,7 @@ public class TaskItem
             Notes = Notes,
             DueDate = DueDate,
             Priority = Priority,
+            SortOrder = SortOrder,
             IsLocalDirty = IsLocalDirty
         };
         mutate?.Invoke(copy);

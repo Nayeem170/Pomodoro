@@ -91,6 +91,8 @@ public static partial class Constants
         public const string ErrorDeletingTask = "Error deleting task";
         public const string ErrorUncompletingTask = "Error uncompleting task";
         public const string ErrorUpdatingTask = "Error updating task";
+        public const string RecurringTaskCannotChangeList = "Recurring tasks cannot be moved between lists. Remove the repeat first.";
+        public const string ReorderAnnouncementFormat = "Moved {0} to position {1} of {2}";
         public const string GoogleReconnectNeeded = "Reconnect your Google account in Settings to sync this change";
         public const string ErrorStartingTimer = "Error starting timer";
         public const string ErrorPausingTimer = "Error pausing timer";
@@ -100,6 +102,7 @@ public static partial class Constants
         public const string ErrorTogglingFloatingTimer = "Error toggling floating timer";
         public const string PipPopupBlocked = "Pop-up blocked. Please allow pop-ups and redirects for this site to use the floating timer.";
         public const string ErrorInitializing = "Error initializing";
+        public const string SplashHideFailed = "Failed to hide splash overlay";
         public const string ErrorSelectingConsentOption = "Error selecting consent option";
         public const string ErrorCheckingPendingNotificationAction = "Error checking pending notification action";
         public const string ErrorInUpdateState = "Error in UpdateState";

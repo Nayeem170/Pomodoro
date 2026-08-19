@@ -4,6 +4,7 @@ using Microsoft.JSInterop;
 using Microsoft.Extensions.Logging;
 using Pomodoro.Web.Models;
 using Pomodoro.Web.Services;
+using Pomodoro.Web.Services.Formatters;
 
 namespace Pomodoro.Web.Pages;
 
@@ -58,6 +59,7 @@ public partial class IndexBase : ComponentBase, IDisposable
     #region State
 
     protected bool IsLoading { get; set; } = true;
+    private bool _splashHidden;
     protected List<TaskItem> Tasks { get; set; } = new();
     protected Guid? CurrentTaskId { get; set; }
     protected TimeSpan RemainingTime { get; set; } = TimeSpan.FromMinutes(Constants.Timer.DefaultPomodoroMinutes);
@@ -248,6 +250,22 @@ public partial class IndexBase : ComponentBase, IDisposable
         }
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!IsLoading && !_splashHidden)
+        {
+            _splashHidden = true;
+            try
+            {
+                await JSRuntime.InvokeVoidAsync(Constants.JsFunctions.HideSplash);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogDebug(ex, Constants.Messages.SplashHideFailed);
+            }
+        }
+    }
+
     /// <summary>
     /// Checks for a pending notification action from the URL parameter; handles the case
     /// where the app is opened from a notification click.
@@ -328,10 +346,8 @@ public partial class IndexBase : ComponentBase, IDisposable
 
     protected async Task HandleTabChange(string listId)
     {
-        Console.WriteLine($"[TABDBG] HandleTabChange: clicked={listId} activeBefore={ActiveListId} serviceBefore={TaskService.CurrentListId}");
         ActiveListId = listId;
         await TaskService.SelectListAsync(listId);
-        Console.WriteLine($"[TABDBG] HandleTabChange post-select: active={ActiveListId} service={TaskService.CurrentListId}");
         await UpdateStateAsync();
     }
 
@@ -348,10 +364,22 @@ public partial class IndexBase : ComponentBase, IDisposable
         await UpdateStateAsync();
     }
 
-    protected string? GetCurrentTaskName()
+    protected string? GetCurrentTaskPath()
     {
         if (!CurrentTaskId.HasValue) return null;
-        return AppState.Tasks.FirstOrDefault(t => t.Id == CurrentTaskId.Value)?.Name;
+        return TaskPathFormatter.BuildPath(AppState.Tasks, CurrentTaskId.Value);
+    }
+
+    protected IReadOnlyList<string>? GetCurrentTaskSegments()
+    {
+        if (!CurrentTaskId.HasValue) return null;
+        return TaskPathFormatter.BuildSegments(AppState.Tasks, CurrentTaskId.Value);
+    }
+
+    protected string? GetCurrentTaskAriaLabel()
+    {
+        if (!CurrentTaskId.HasValue) return null;
+        return TaskPathFormatter.BuildAriaLabel(AppState.Tasks, CurrentTaskId.Value);
     }
 
     protected static string FormatFocusMinutes(int minutes)
@@ -371,8 +399,7 @@ public partial class IndexBase : ComponentBase, IDisposable
         for (var offset = 0; offset < Constants.Tasks.ScheduleWindowDays; offset++)
         {
             var date = start.AddDays(offset);
-            var items = candidates
-                .Where(t => OccursOn(t, date))
+            var items = TaskGrouping.OrderRootsForDisplay(candidates.Where(t => OccursOn(t, date)))
                 .Select(t => new ScheduleItem
                 {
                     TaskId = t.Id,

@@ -13,11 +13,11 @@
 // clear their browser cache or the service worker naturally expires (24h+).
 // =============================================================================
 //
-// Version: 8.0.0 (cache bump: tab highlight CSS + subtask UI)
-// Last updated: 2026-07-24
+// Version: 15.0.0 (cache bump: persistent splash overlay outside #app)
+// Last updated: 2026-08-18
 
-const CACHE_NAME = 'pomodoro-cache-v8';
-const CACHE_VERSION = 8;
+const CACHE_NAME = 'pomodoro-cache-v15';
+const CACHE_VERSION = 15;
 
 // Assets to cache immediately on install (static assets)
 const PRECACHE_ASSETS = [
@@ -35,6 +35,7 @@ const PRECACHE_ASSETS = [
     '/js/pipTimer.js',
     '/js/keyboard-shortcuts.js',
     '/js/infiniteScroll.js',
+    '/js/taskScrollInterop.js',
     '/js/fileInterop.js',
     '/icon-192.svg',
     '/icon-512.svg',

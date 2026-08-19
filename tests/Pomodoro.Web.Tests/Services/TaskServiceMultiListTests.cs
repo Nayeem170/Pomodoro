@@ -260,7 +260,7 @@ public class TaskServiceMultiListTests
             Id = Guid.NewGuid(),
             Name = "Scheduled",
             CreatedAt = DateTime.UtcNow,
-            ScheduledDate = DateTime.UtcNow.Date
+            ScheduledDate = DateTime.Now.Date.AddDays(1)
         };
         var googleTask = new TaskItem
         {
@@ -434,6 +434,122 @@ public class TaskServiceMultiListTests
     }
 
     [Fact]
+    public async Task GetTasksForListAsync_LocalList_IncludesTaskScheduledForToday()
+    {
+        var today = DateTime.Now.Date;
+        var scheduledToday = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Scheduled Today",
+            CreatedAt = DateTime.UtcNow,
+            ScheduledDate = today
+        };
+        _appState.Tasks = [scheduledToday];
+
+        var sut = CreateSut();
+        var result = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+
+        result.Should().ContainSingle(t => t.Id == scheduledToday.Id);
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_LocalList_IncludesOverdueTask()
+    {
+        var yesterday = DateTime.Now.Date.AddDays(-1);
+        var overdue = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Overdue",
+            CreatedAt = DateTime.UtcNow,
+            ScheduledDate = yesterday
+        };
+        _appState.Tasks = [overdue];
+
+        var sut = CreateSut();
+        var result = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+
+        result.Should().ContainSingle(t => t.Id == overdue.Id);
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_LocalList_ExcludesTaskScheduledForFuture()
+    {
+        var tomorrow = DateTime.Now.Date.AddDays(1);
+        var scheduledFuture = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Scheduled Future",
+            CreatedAt = DateTime.UtcNow,
+            ScheduledDate = tomorrow
+        };
+        _appState.Tasks = [scheduledFuture];
+
+        var sut = CreateSut();
+        var result = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_LocalList_IncludesGoogleTaskDueToday()
+    {
+        var dueToday = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Due Today Google",
+            GoogleTaskId = "gt-3",
+            GoogleListId = "glist-1",
+            CreatedAt = DateTime.UtcNow,
+            DueDate = DateTime.Now.Date
+        };
+        _appState.Tasks = [dueToday];
+        _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
+
+        var sut = CreateSut();
+        SetCachedGoogleLists(sut, [new GoogleListCacheEntry("glist-1", "List 1", "#4285F4", true)]);
+
+        var result = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+
+        result.Should().ContainSingle(t => t.Id == dueToday.Id);
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_LocalList_IncludesDailyRepeatTask()
+    {
+        var daily = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Daily Repeat",
+            CreatedAt = DateTime.UtcNow,
+            Repeat = new RepeatRule { Type = RepeatType.Daily }
+        };
+        _appState.Tasks = [daily];
+
+        var sut = CreateSut();
+        var result = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+
+        result.Should().ContainSingle(t => t.Id == daily.Id);
+    }
+
+    [Fact]
+    public async Task GetTasksForListAsync_LocalList_ExcludesFutureAnchoredRepeatTask()
+    {
+        var futureDaily = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Future Daily",
+            CreatedAt = DateTime.UtcNow,
+            Repeat = new RepeatRule { Type = RepeatType.Daily, StartDate = DateTime.Now.Date.AddDays(3) }
+        };
+        _appState.Tasks = [futureDaily];
+
+        var sut = CreateSut();
+        var result = await sut.GetTasksForListAsync(Constants.TaskLists.LocalPomodoroListId);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task GetTasksForListAsync_LocalList_ReturnsNonGoogleTasks()
     {
         var localTask = new TaskItem { Id = Guid.NewGuid(), Name = "Local", CreatedAt = DateTime.UtcNow };
@@ -442,7 +558,7 @@ public class TaskServiceMultiListTests
             Id = Guid.NewGuid(),
             Name = "Scheduled",
             CreatedAt = DateTime.UtcNow,
-            ScheduledDate = DateTime.UtcNow.Date
+            ScheduledDate = DateTime.Now.Date.AddDays(1)
         };
         var googleTask = new TaskItem
         {
@@ -827,6 +943,38 @@ public class TaskServiceMultiListTests
         _mockTaskRepo.Verify(x => x.SaveAsync(It.Is<TaskItem>(t => !t.IsCompleted)), Times.Once);
         _mockGoogleTasksService.Verify(x => x.PatchTaskAsync("glist-1", "gtask-1", It.IsAny<GoogleTaskPatch>(), It.IsAny<string?>()), Times.Once);
         _appState.FindTaskById(task.Id)!.IsCompleted.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CompleteTaskAsync_Cascade_PushesCompletedPatchForGoogleParent()
+    {
+        var parentId = Guid.NewGuid();
+        var parent = new TaskItem
+        {
+            Id = parentId,
+            Name = "Google Parent",
+            GoogleTaskId = "gparent-1",
+            GoogleListId = "glist-1",
+            CreatedAt = DateTime.UtcNow
+        };
+        var child = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Local Child",
+            ParentTaskId = parentId,
+            CreatedAt = DateTime.UtcNow
+        };
+        _appState.Tasks = [parent, child];
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        _mockGoogleTasksService.Setup(x => x.PatchTaskAsync("glist-1", "gparent-1", It.IsAny<GoogleTaskPatch>(), It.IsAny<string?>()))
+            .ReturnsAsync((GoogleTask?)null);
+
+        var sut = CreateSut();
+        await sut.CompleteTaskAsync(child.Id);
+
+        _appState.FindTaskById(parentId)!.IsCompleted.Should().BeTrue();
+        _mockGoogleTasksService.Verify(x => x.PatchTaskAsync("glist-1", "gparent-1",
+            It.Is<GoogleTaskPatch>(p => p.Status == "completed"), It.IsAny<string?>()), Times.Once);
     }
 
     [Fact]
@@ -1370,7 +1518,7 @@ public class TaskServiceMultiListTests
         _appState.Tasks =
         [
             new() { Id = Guid.NewGuid(), Name = "Undated Google", GoogleTaskId = "gt-1", GoogleListId = "glist-1", CreatedAt = DateTime.UtcNow },
-            new() { Id = Guid.NewGuid(), Name = "Due Google", GoogleTaskId = "gt-2", GoogleListId = "glist-1", CreatedAt = DateTime.UtcNow, DueDate = DateTime.UtcNow.Date }
+            new() { Id = Guid.NewGuid(), Name = "Due Google", GoogleTaskId = "gt-2", GoogleListId = "glist-1", CreatedAt = DateTime.UtcNow, DueDate = DateTime.Now.Date.AddDays(1) }
         ];
         _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
 
@@ -1410,7 +1558,7 @@ public class TaskServiceMultiListTests
         var parentId = Guid.NewGuid();
         _appState.Tasks =
         [
-            new() { Id = parentId, Name = "Scheduled Parent", CreatedAt = DateTime.UtcNow, ScheduledDate = DateTime.UtcNow.Date },
+            new() { Id = parentId, Name = "Scheduled Parent", CreatedAt = DateTime.UtcNow, ScheduledDate = DateTime.Now.Date.AddDays(2) },
             new() { Id = Guid.NewGuid(), Name = "Undated Child", CreatedAt = DateTime.UtcNow, ParentTaskId = parentId }
         ];
         _mockSidecarRepo.Setup(x => x.GetAllAsync()).ReturnsAsync([]);
@@ -1656,9 +1804,10 @@ public class TaskServiceMultiListTests
 
         // Act
         var sut = CreateSut();
-        await sut.AddSubtaskAsync("   ", parentId);
+        var result = await sut.AddSubtaskAsync("   ", parentId);
 
         // Assert
+        result.Should().BeNull();
         _mockTaskRepo.Verify(x => x.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
         _appState.Tasks.Should().HaveCount(1);
     }
@@ -1673,9 +1822,10 @@ public class TaskServiceMultiListTests
 
         // Act
         var sut = CreateSut();
-        await sut.AddSubtaskAsync(oversize, parentId);
+        var result = await sut.AddSubtaskAsync(oversize, parentId);
 
         // Assert
+        result.Should().BeNull();
         _mockTaskRepo.Verify(x => x.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
     }
 
@@ -1687,9 +1837,10 @@ public class TaskServiceMultiListTests
 
         // Act
         var sut = CreateSut();
-        await sut.AddSubtaskAsync("Sub", Guid.NewGuid());
+        var result = await sut.AddSubtaskAsync("Sub", Guid.NewGuid());
 
         // Assert
+        result.Should().BeNull();
         _mockTaskRepo.Verify(x => x.SaveAsync(It.IsAny<TaskItem>()), Times.Never);
     }
 
@@ -1703,9 +1854,11 @@ public class TaskServiceMultiListTests
 
         // Act
         var sut = CreateSut();
-        await sut.AddSubtaskAsync("Sub task", parentId);
+        var result = await sut.AddSubtaskAsync("Sub task", parentId);
 
         // Assert
+        result.Should().NotBeNull();
+        result.Should().Be(_appState.Tasks.Single(t => t.ParentTaskId == parentId).Id);
         _mockTaskRepo.Verify(x => x.SaveAsync(It.Is<TaskItem>(t =>
             t.ParentTaskId == parentId && t.Name == "Sub task")), Times.Once);
         _appState.Tasks.Should().Contain(t => t.ParentTaskId == parentId);
@@ -1738,15 +1891,33 @@ public class TaskServiceMultiListTests
 
         // Act
         var sut = CreateSut();
-        await sut.AddSubtaskAsync("G Sub", parentId);
+        var result = await sut.AddSubtaskAsync("G Sub", parentId);
 
         // Assert
+        result.Should().NotBeNull();
         _mockTaskRepo.Verify(x => x.SaveAsync(It.Is<TaskItem>(t =>
             t.GoogleTaskId == "gtask-sub" &&
             t.GoogleListId == "glist-1" &&
             t.GoogleParentTaskId == "gtask-1" &&
             t.GooglePosition == "pos-1" &&
             t.ETag == "etag-1")), Times.Once);
+    }
+
+    [Fact]
+    public async Task AddSubtaskAsync_DoesNotSetCurrentTaskId()
+    {
+        // Arrange
+        var parentId = Guid.NewGuid();
+        _appState.Tasks = [new TaskItem { Id = parentId, Name = "Parent", CreatedAt = DateTime.UtcNow }];
+        _appState.CurrentTaskId = parentId;
+        _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+
+        // Act
+        var sut = CreateSut();
+        await sut.AddSubtaskAsync("Sub task", parentId);
+
+        // Assert
+        _appState.CurrentTaskId.Should().Be(parentId);
     }
 
     #endregion
@@ -1860,7 +2031,7 @@ public class TaskServiceMultiListTests
         };
         _appState.Tasks = [task];
         var moved = new GoogleTask { Position = "new-pos", ETag = "new-etag" };
-        _mockGoogleTasksService.Setup(x => x.MoveTaskAsync("glist-1", "gtask-1", It.IsAny<string?>()))
+        _mockGoogleTasksService.Setup(x => x.MoveTaskAsync("glist-1", "gtask-1", It.IsAny<string?>(), It.IsAny<string?>()))
             .ReturnsAsync(moved);
         _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
 
@@ -1888,7 +2059,7 @@ public class TaskServiceMultiListTests
             GooglePosition = "old-pos"
         };
         _appState.Tasks = [task];
-        _mockGoogleTasksService.Setup(x => x.MoveTaskAsync("glist-1", "gtask-1", It.IsAny<string?>()))
+        _mockGoogleTasksService.Setup(x => x.MoveTaskAsync("glist-1", "gtask-1", It.IsAny<string?>(), It.IsAny<string?>()))
             .ReturnsAsync((GoogleTask?)null);
         _mockTaskRepo.Setup(x => x.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
 

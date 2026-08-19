@@ -39,7 +39,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
 
             bool InTab(TaskItem t, bool scheduled) =>
                 !t.IsDeleted && IsFromVisibleSource(t) &&
-                (scheduled ? HasScheduleDate(roots(t)) : !HasSpecificScheduleDate(roots(t)) && OccursToday(roots(t)));
+                (scheduled ? HasScheduleDate(roots(t)) : IsActionableToday(roots(t)));
 
             return
             [
@@ -210,14 +210,14 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         NotifyStateChanged();
     }
 
-    public async Task AddSubtaskAsync(string name, Guid parentTaskId)
+    public async Task<Guid?> AddSubtaskAsync(string name, Guid parentTaskId)
     {
         var sanitized = SanitizeTaskName(name);
         if (string.IsNullOrEmpty(sanitized) || sanitized.Length > Constants.UI.MaxTaskNameLength)
-            return;
+            return null;
 
         var parent = _appState.FindTaskById(parentTaskId);
-        if (parent == null) return;
+        if (parent == null) return null;
 
         var subtask = new TaskItem
         {
@@ -249,6 +249,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         _appState.InsertTask(subtask, Constants.Tasks.InsertAtEnd);
         NotifyStateChanged();
         MarkDirty();
+        return subtask.Id;
     }
 
     public async Task ReparentTaskAsync(Guid taskId, Guid? newParentId)
@@ -363,6 +364,204 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         NotifyStateChanged();
     }
 
+    public async Task<bool> MoveTaskToListAsync(Guid taskId, string newListId)
+    {
+        var task = _appState.FindTaskById(taskId);
+        if (task == null || task.IsSubtask) return false;
+        if (newListId == Constants.TaskLists.ScheduleListId) return false;
+
+        var oldListId = task.GoogleListId ?? Constants.TaskLists.LocalPomodoroListId;
+        if (newListId == oldListId) return false;
+
+        var sourceIsLocal = oldListId == Constants.TaskLists.LocalPomodoroListId;
+        var targetIsLocal = newListId == Constants.TaskLists.LocalPomodoroListId;
+
+        var descendants = GetDescendantsByParentId(taskId, _appState.Tasks);
+
+        if (!sourceIsLocal && !targetIsLocal
+            && (task.Repeat is { Type: not RepeatType.None }
+                || descendants.Any(t => t.Repeat is { Type: not RepeatType.None })))
+        {
+            throw new InvalidOperationException(Constants.Messages.RecurringTaskCannotChangeList);
+        }
+
+        if (sourceIsLocal && !targetIsLocal)
+        {
+            var rootInserted = await _googleTasksService.InsertTaskAsync(newListId, BuildGoogleTask(task));
+            await WriteBackGoogleIdentityAsync(task, rootInserted, newListId, null);
+            var googleIdByLocalId = new Dictionary<Guid, string> { [task.Id] = rootInserted.Id };
+            foreach (var sub in descendants)
+            {
+                var parentGoogleId = sub.ParentTaskId.HasValue && googleIdByLocalId.TryGetValue(sub.ParentTaskId.Value, out var mapped)
+                    ? mapped
+                    : null;
+                var inserted = await _googleTasksService.InsertTaskAsync(newListId, BuildGoogleTask(sub), parentGoogleId);
+                await WriteBackGoogleIdentityAsync(sub, inserted, newListId, parentGoogleId);
+                googleIdByLocalId[sub.Id] = inserted.Id;
+            }
+        }
+        else if (!sourceIsLocal && targetIsLocal)
+        {
+            if (!string.IsNullOrEmpty(task.GoogleTaskId))
+                await _googleTasksService.DeleteTaskAsync(oldListId, task.GoogleTaskId);
+            await ClearGoogleIdentityAsync(task);
+            foreach (var sub in descendants)
+            {
+                if (!string.IsNullOrEmpty(sub.GoogleTaskId))
+                    await _googleTasksService.DeleteTaskAsync(oldListId, sub.GoogleTaskId);
+                await ClearGoogleIdentityAsync(sub);
+            }
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(task.GoogleTaskId)) return false;
+            var movedRoot = await _googleTasksService.MoveTaskAsync(oldListId, task.GoogleTaskId, null, newListId);
+            if (movedRoot is null) return false;
+            await WriteBackGoogleIdentityAsync(task, movedRoot, newListId, null);
+            foreach (var sub in descendants)
+            {
+                if (string.IsNullOrEmpty(sub.GoogleTaskId)) continue;
+                var parentGoogleId = sub.GoogleParentTaskId ?? task.GoogleTaskId;
+                var moved = await _googleTasksService.MoveTaskAsync(oldListId, sub.GoogleTaskId, parentGoogleId, newListId);
+                if (moved is null)
+                {
+                    NotifyStateChanged();
+                    return false;
+                }
+                await WriteBackGoogleIdentityAsync(sub, moved, newListId, parentGoogleId);
+            }
+        }
+
+        NotifyStateChanged();
+        return true;
+    }
+
+    private static GoogleTask BuildGoogleTask(TaskItem task)
+    {
+        return new GoogleTask
+        {
+            Title = task.Name,
+            Notes = task.Notes,
+            Due = task.DueDate.HasValue
+                ? task.DueDate.Value.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'")
+                : null
+        };
+    }
+
+    private async Task WriteBackGoogleIdentityAsync(TaskItem task, GoogleTask googleTask, string listId, string? parentGoogleId)
+    {
+        _appState.UpdateTask(task.Id, t =>
+        {
+            t.GoogleTaskId = googleTask.Id;
+            t.GoogleListId = listId;
+            t.ETag = googleTask.ETag;
+            t.GoogleParentTaskId = parentGoogleId;
+            t.GooglePosition = googleTask.Position;
+        });
+        await SaveTaskAsync(task.WithUpdates(c =>
+        {
+            c.GoogleTaskId = googleTask.Id;
+            c.GoogleListId = listId;
+            c.ETag = googleTask.ETag;
+            c.GoogleParentTaskId = parentGoogleId;
+            c.GooglePosition = googleTask.Position;
+        }));
+    }
+
+    private async Task ClearGoogleIdentityAsync(TaskItem task)
+    {
+        _appState.UpdateTask(task.Id, t =>
+        {
+            t.GoogleTaskId = null;
+            t.GoogleListId = null;
+            t.ETag = null;
+            t.GoogleParentTaskId = null;
+            t.GooglePosition = null;
+        });
+        await SaveTaskAsync(task.WithUpdates(c =>
+        {
+            c.GoogleTaskId = null;
+            c.GoogleListId = null;
+            c.ETag = null;
+            c.GoogleParentTaskId = null;
+            c.GooglePosition = null;
+        }));
+    }
+
+    public async Task<bool> ReorderTaskAsync(Guid taskId, Guid targetId, bool insertBefore)
+    {
+        if (taskId == targetId) return false;
+
+        var task = _appState.FindTaskById(taskId);
+        var target = _appState.FindTaskById(targetId);
+        if (task == null || target == null) return false;
+        if (task.IsDeleted || target.IsDeleted) return false;
+
+        var group = TaskGrouping.GetSiblingGroup(_appState.Tasks, task);
+        if (group.Count < 2 || group.Any(t => t.IsGoogleTask)) return false;
+
+        var ordered = TaskGrouping.GetOrderedSiblingGroup(_appState.Tasks, task).ToList();
+
+        if (ordered.All(t => t.SortOrder == 0))
+        {
+            for (var i = 0; i < ordered.Count; i++)
+            {
+                ordered[i] = await PersistSortOrderAsync(ordered[i], (i + 1) * Constants.Tasks.InitialSortStep);
+            }
+        }
+
+        var draggedIndex = ordered.FindIndex(t => t.Id == taskId);
+        var without = ordered.Where(t => t.Id != taskId).ToList();
+        var targetIndex = without.FindIndex(t => t.Id == targetId);
+        if (targetIndex < 0) return false;
+
+        var insertIndex = insertBefore ? targetIndex : targetIndex + 1;
+        if (insertIndex == draggedIndex)
+        {
+            MarkDirty();
+            return true;
+        }
+
+        var dragged = ordered[draggedIndex];
+        var prev = insertIndex > 0 ? without[insertIndex - 1] : null;
+        var next = insertIndex < without.Count ? without[insertIndex] : null;
+
+        if (prev != null && next != null && next.SortOrder - prev.SortOrder < 2)
+        {
+            var finalOrder = new List<TaskItem>(without);
+            finalOrder.Insert(insertIndex, dragged);
+            for (var i = 0; i < finalOrder.Count; i++)
+            {
+                var desired = (i + 1) * Constants.Tasks.InitialSortStep;
+                if (finalOrder[i].SortOrder != desired)
+                {
+                    await PersistSortOrderAsync(finalOrder[i], desired);
+                }
+            }
+        }
+        else
+        {
+            var newOrder = prev == null
+                ? next!.SortOrder - Constants.Tasks.SortGap
+                : next == null
+                    ? prev.SortOrder + Constants.Tasks.SortGap
+                    : prev.SortOrder + (next.SortOrder - prev.SortOrder) / 2;
+            await PersistSortOrderAsync(dragged, newOrder);
+        }
+
+        NotifyStateChanged();
+        MarkDirty();
+        return true;
+    }
+
+    private async Task<TaskItem> PersistSortOrderAsync(TaskItem task, int sortOrder)
+    {
+        _appState.UpdateTask(task.Id, t => t.SortOrder = sortOrder);
+        var updated = task.WithUpdates(c => c.SortOrder = sortOrder);
+        await SaveTaskAsync(updated);
+        return updated;
+    }
+
     private int GetTaskDepth(Guid taskId)
     {
         var depth = 0;
@@ -453,6 +652,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             c.DueDate = task.DueDate;
             c.ScheduledDate = task.ScheduledDate;
             c.Repeat = task.Repeat;
+            c.FollowsParentRepeat = task.FollowsParentRepeat;
         });
 
         var googlePushPatch = BuildPatch(existingTask, taskToSave);
@@ -466,6 +666,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             t.DueDate = taskToSave.DueDate;
             t.ScheduledDate = taskToSave.ScheduledDate;
             t.Repeat = taskToSave.Repeat;
+            t.FollowsParentRepeat = taskToSave.FollowsParentRepeat;
         });
 
         if (taskToSave.IsGoogleTask && !string.IsNullOrEmpty(taskToSave.GoogleTaskId) && googlePushPatch != null)
@@ -590,7 +791,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         var childrenByParent = all
             .Where(t => t.ParentTaskId.HasValue)
             .GroupBy(t => t.ParentTaskId!.Value)
-            .ToDictionary(g => g.Key, g => (IReadOnlyList<TaskItem>)g.OrderBy(t => t.CreatedAt).ToList());
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<TaskItem>)g.OrderBy(t => t.SortOrder).ThenBy(t => t.CreatedAt).ToList());
 
         var result = new List<TaskItem>();
         var queue = new Queue<Guid>();
@@ -649,8 +850,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             t.IsCompleted = true;
             t.CompletedAt = DateTime.UtcNow;
         });
-        NotifyStateChanged();
-
         if (existingTask.IsGoogleTask && !string.IsNullOrEmpty(existingTask.GoogleTaskId))
         {
             var patch = new GoogleTaskPatch(null, null, "completed");
@@ -660,6 +859,9 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         {
             MarkDirty();
         }
+
+        await CascadeCompletionUpwardAsync(taskId, new HashSet<Guid> { taskId });
+        NotifyStateChanged();
     }
 
     public async Task UncompleteTaskAsync(Guid taskId)
@@ -679,8 +881,6 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             t.IsCompleted = false;
             t.CompletedAt = null;
         });
-        NotifyStateChanged();
-
         if (existingTask.IsGoogleTask && !string.IsNullOrEmpty(existingTask.GoogleTaskId))
         {
             var patch = new GoogleTaskPatch(null, null, "needsAction");
@@ -690,6 +890,93 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         {
             MarkDirty();
         }
+
+        await CascadeUncompletionUpwardAsync(taskId, new HashSet<Guid> { taskId });
+        NotifyStateChanged();
+    }
+
+    private async Task CascadeCompletionUpwardAsync(Guid childId, HashSet<Guid> visited)
+    {
+        var child = _appState.FindTaskById(childId);
+        if (child == null || !child.ParentTaskId.HasValue) return;
+
+        var parentId = child.ParentTaskId.Value;
+        if (!visited.Add(parentId)) return;
+
+        var parent = _appState.FindTaskById(parentId);
+        if (parent == null || parent.IsCompleted) return;
+
+        var hasIncompleteSubtask = _appState.Tasks.Any(t => !t.IsDeleted
+            && !t.IsCompleted
+            && (t.ParentTaskId == parentId
+                || (!string.IsNullOrEmpty(parent.GoogleTaskId)
+                    && t.GoogleParentTaskId == parent.GoogleTaskId)));
+        if (hasIncompleteSubtask) return;
+
+        if (parent.IsRecurring && parent.Repeat is { IsActive: true })
+        {
+            parent.Repeat!.LastCompletedDate = DateTime.Now.Date;
+        }
+
+        var parentToSave = parent.WithUpdates(c =>
+        {
+            c.IsCompleted = true;
+            c.CompletedAt = DateTime.UtcNow;
+        });
+        await SaveTaskAsync(parentToSave);
+
+        _appState.UpdateTask(parentId, t =>
+        {
+            t.IsCompleted = true;
+            t.CompletedAt = DateTime.UtcNow;
+        });
+
+        if (parent.IsGoogleTask && !string.IsNullOrEmpty(parent.GoogleTaskId))
+        {
+            await PushGooglePatchAsync(parent, new GoogleTaskPatch(null, null, "completed"));
+        }
+        else
+        {
+            MarkDirty();
+        }
+
+        await CascadeCompletionUpwardAsync(parentId, visited);
+    }
+
+    private async Task CascadeUncompletionUpwardAsync(Guid childId, HashSet<Guid> visited)
+    {
+        var child = _appState.FindTaskById(childId);
+        if (child == null || !child.ParentTaskId.HasValue) return;
+
+        var parentId = child.ParentTaskId.Value;
+        if (!visited.Add(parentId)) return;
+
+        var parent = _appState.FindTaskById(parentId);
+        if (parent == null || !parent.IsCompleted) return;
+
+        var parentToSave = parent.WithUpdates(c =>
+        {
+            c.IsCompleted = false;
+            c.CompletedAt = null;
+        });
+        await SaveTaskAsync(parentToSave);
+
+        _appState.UpdateTask(parentId, t =>
+        {
+            t.IsCompleted = false;
+            t.CompletedAt = null;
+        });
+
+        if (parent.IsGoogleTask && !string.IsNullOrEmpty(parent.GoogleTaskId))
+        {
+            await PushGooglePatchAsync(parent, new GoogleTaskPatch(null, null, "needsAction"));
+        }
+        else
+        {
+            MarkDirty();
+        }
+
+        await CascadeUncompletionUpwardAsync(parentId, visited);
     }
 
     public async Task SelectTaskAsync(Guid taskId)
@@ -759,7 +1046,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
 
         IEnumerable<TaskItem> filtered = allTasks.Where(t =>
             !t.IsDeleted && IsFromVisibleSource(t) &&
-            (wantScheduled ? HasScheduleDate(roots(t)) : !HasSpecificScheduleDate(roots(t)) && OccursToday(roots(t))));
+            (wantScheduled ? HasScheduleDate(roots(t)) : IsActionableToday(roots(t))));
 
         var tasks = filtered.ToList();
 
@@ -1010,11 +1297,13 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         task.DueDate.HasValue ||
         task.Repeat is { Type: not RepeatType.None };
 
-    private static bool HasSpecificScheduleDate(TaskItem task) =>
-        task.ScheduledDate.HasValue ||
-        task.DueDate.HasValue;
-
-    private static bool OccursToday(TaskItem task) => task.OccursToday;
+    private static bool IsActionableToday(TaskItem task)
+    {
+        if (task.Repeat is { Type: not RepeatType.None }) return task.OccursToday;
+        if (task.ScheduledDate is { } scheduled) return scheduled.Date <= DateTime.Now.Date;
+        if (task.DueDate is { } due) return due.Date <= DateTime.Now.Date;
+        return true;
+    }
 
     /// <summary>
     /// Builds a task-to-root-ancestor resolver. Subtasks carry no date of their own, so

@@ -1,9 +1,25 @@
 using Pomodoro.Web.Models;
+using Pomodoro.Web.Services;
 
 namespace Pomodoro.Web.Pages;
 
 public partial class IndexBase
 {
+    protected Guid? _highlightTaskId;
+
+    protected string? _reorderAnnouncement;
+
+    private void ScheduleHighlightClear(Guid id)
+    {
+        SafeTaskRunner.RunAndForget(async () =>
+        {
+            await Task.Delay(Constants.UI.HighlightDurationMs);
+            if (_highlightTaskId != id) return;
+            _highlightTaskId = null;
+            await InvokeAsync(StateHasChanged);
+        }, Logger);
+    }
+
     #region Task Actions
 
     private async Task TryExecuteAsync(Func<Task> action, string errorMessage)
@@ -32,6 +48,8 @@ public partial class IndexBase
         {
             var listId = string.IsNullOrEmpty(request.ListId) ? ActiveListId : request.ListId;
             await TaskService.AddTaskAsync(request.Name, listId);
+            _highlightTaskId = TaskService.CurrentTaskId;
+            if (_highlightTaskId.HasValue) ScheduleHighlightClear(_highlightTaskId.Value);
 
             if ((request.RepeatType != RepeatType.None || request.ScheduledDate.HasValue)
                 && TaskService.CurrentTaskId.HasValue)
@@ -91,6 +109,78 @@ public partial class IndexBase
         }, Constants.Messages.ErrorCompletingTask);
     }
 
+    public async Task HandleTaskReorder(ReorderRequest request)
+    {
+        await TryExecuteAsync(async () =>
+        {
+            _reorderAnnouncement = null;
+            await InvokeAsync(StateHasChanged);
+            if (await TaskService.ReorderTaskAsync(request.TaskId, request.TargetId, request.InsertBefore))
+            {
+                await UpdateStateAsync();
+                _reorderAnnouncement = BuildReorderAnnouncement(request.TaskId);
+                StateHasChanged();
+            }
+        }, Constants.Messages.ErrorUpdatingTask);
+    }
+
+    private string? BuildReorderAnnouncement(Guid taskId)
+    {
+        var task = Tasks.FirstOrDefault(t => t.Id == taskId);
+        if (task is null) return null;
+
+        var group = TaskGrouping.GetOrderedSiblingGroup(Tasks, task);
+        var index = -1;
+        for (var i = 0; i < group.Count; i++)
+        {
+            if (group[i].Id == taskId)
+            {
+                index = i;
+                break;
+            }
+        }
+        return index < 0
+            ? null
+            : string.Format(Constants.Messages.ReorderAnnouncementFormat, task.Name, index + 1, group.Count);
+    }
+
+    public async Task HandleScheduleReorder(ReorderRequest request)
+    {
+        await TryExecuteAsync(async () =>
+        {
+            _reorderAnnouncement = null;
+            await InvokeAsync(StateHasChanged);
+            if (await TaskService.ReorderTaskAsync(request.TaskId, request.TargetId, request.InsertBefore))
+            {
+                await UpdateStateAsync();
+                _reorderAnnouncement = BuildScheduleReorderAnnouncement(request.TaskId);
+                StateHasChanged();
+            }
+        }, Constants.Messages.ErrorUpdatingTask);
+    }
+
+    private string? BuildScheduleReorderAnnouncement(Guid taskId)
+    {
+        TaskItem? task = null;
+        IReadOnlyList<TaskItem>? dayGroup = null;
+        foreach (var day in ScheduleWindow)
+        {
+            var tasks = day.Items.Where(i => i.Task is not null).Select(i => i.Task!).ToList();
+            if (tasks.Any(t => t.Id == taskId))
+            {
+                task = tasks.First(t => t.Id == taskId);
+                dayGroup = tasks;
+                break;
+            }
+        }
+        if (task is null || dayGroup is null) return null;
+
+        var index = dayGroup.ToList().FindIndex(t => t.Id == taskId);
+        return index < 0
+            ? null
+            : string.Format(Constants.Messages.ReorderAnnouncementFormat, task.Name, index + 1, dayGroup.Count);
+    }
+
     public async Task HandleTaskDelete(Guid taskId)
     {
         await TryExecuteAsync(async () =>
@@ -147,7 +237,14 @@ public partial class IndexBase
     {
         await TryExecuteAsync(async () =>
         {
+            var existing = AppState.Tasks.FirstOrDefault(t => t.Id == task.Id);
+            var oldListId = existing?.GoogleListId ?? Constants.TaskLists.LocalPomodoroListId;
             await TaskService.UpdateTaskAsync(task);
+            var newListId = task.GoogleListId ?? Constants.TaskLists.LocalPomodoroListId;
+            if (newListId != oldListId)
+            {
+                await TaskService.MoveTaskToListAsync(task.Id, newListId);
+            }
             await UpdateStateAsync();
             StateHasChanged();
         }, Constants.Messages.ErrorUpdatingTask);
@@ -174,7 +271,12 @@ public partial class IndexBase
     {
         await TryExecuteAsync(async () =>
         {
-            await TaskService.AddSubtaskAsync(request.Name, request.ParentTaskId);
+            var newSubtaskId = await TaskService.AddSubtaskAsync(request.Name, request.ParentTaskId);
+            if (newSubtaskId.HasValue)
+            {
+                _highlightTaskId = newSubtaskId;
+                ScheduleHighlightClear(newSubtaskId.Value);
+            }
             await UpdateStateAsync();
             StateHasChanged();
         }, Constants.Messages.ErrorAddingTask);

@@ -1,7 +1,24 @@
 @inherits TaskItemBase
 @using Pomodoro.Web.Models
 
-<div class="task-row @GetTaskClass()" @onclick="HandleSelect" role="button" tabindex="0" aria-level="@(Depth + 1)" @onkeydown="HandleKeyDown">
+<div class="task-row @GetTaskClass()" @ref="_rowElement" draggable="@(CanDrag ? "true" : "false")" @onclick="HandleSelect" role="button" tabindex="0" aria-level="@(Depth + 1)" @onkeydown="HandleKeyDown" @ondragstart="HandleDragStart" @ondragend="HandleDragEnd">
+    @if (IsDragActive && IsReorderable && (DraggedTaskId.HasValue && DraggedTaskId.Value != Item.Id))
+    {
+        <div class="drop-zone top" aria-hidden="true"
+             @ondragover="() => HandleZoneDragOver(true)" @ondragover:preventDefault
+             @ondragleave="HandleZoneDragLeave"
+             @ondrop="() => HandleZoneDrop(true)" @ondrop:preventDefault></div>
+        <div class="drop-zone bot" aria-hidden="true"
+             @ondragover="() => HandleZoneDragOver(false)" @ondragover:preventDefault
+             @ondragleave="HandleZoneDragLeave"
+             @ondrop="() => HandleZoneDrop(false)" @ondrop:preventDefault></div>
+    }
+    @if (IsDragActive && !IsReorderable)
+    {
+        <div class="no-drop-zone" aria-hidden="true"
+             @ondragover="() => _noDropHover = true"
+             @ondragleave="() => _noDropHover = false"></div>
+    }
     @if (Depth > 0)
     {
         <span class="task-indent" aria-hidden="true" style="width:@(Depth * 20)px"></span>
@@ -28,7 +45,8 @@
     }
     @if (IsInlineEditing)
     {
-        <input class="task-text-input"
+        <textarea class="task-text-input"
+               rows="1"
                value="@InlineEditName"
                @oninput="@((ChangeEventArgs e) => InlineEditName = e.Value?.ToString() ?? string.Empty)"
                @onblur="SaveInlineEdit"
@@ -36,7 +54,7 @@
                @onclick:stopPropagation="true"
                @ondblclick:stopPropagation="true"
                aria-label="Edit task name"
-               @ref="_inlineEditInput" />
+               @ref="_inlineEditInput"></textarea>
     }
     else
     {
@@ -109,7 +127,7 @@
 </div>
 @if (IsEditing)
 {
-    <TaskEditPanel Task="Item" ContextDate="ContextDate" OnSave="HandleEditSave" OnCancel="HandleEditCancel" />
+    <TaskEditPanel Task="Item" ContextDate="ContextDate" GoogleLists="GoogleLists" OnSave="HandleEditSave" OnCancel="HandleEditCancel" />
 }
 @if (IsDemoteMenuOpen)
 {
@@ -126,13 +144,13 @@
 @if (IsAddingSubtask)
 {
     <div class="add-subtask-form" style="margin-left:@((Depth + 1) * 20)px">
-        <input type="text"
+        <textarea rows="1"
                @bind="NewSubtaskName"
                @bind:event="oninput"
                @onkeydown="HandleSubtaskKeyPress"
                placeholder="Subtask name..."
                class="task-input"
-               aria-label="New subtask name" />
+               aria-label="New subtask name"></textarea>
         <button class="btn-icon-small btn-add" @onclick="HandleAddSubtask" disabled="@IsAddSubtaskDisabled" title="Add" aria-label="Add">
             +
         </button>

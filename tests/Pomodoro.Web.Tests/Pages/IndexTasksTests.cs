@@ -617,5 +617,227 @@ public class IndexTasksTests : TestHelper
     }
 
     #endregion
+
+    #region HandleTaskReorder
+
+    [Fact]
+    public async Task HandleTaskReorder_CallsService_WhenCalled()
+    {
+        var taskId = Guid.NewGuid();
+        var targetId = Guid.NewGuid();
+        TaskServiceMock
+            .Setup(x => x.ReorderTaskAsync(taskId, targetId, true))
+            .ReturnsAsync(true);
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        await cut.InvokeAsync(() => cut.Instance.HandleTaskReorder(new ReorderRequest(taskId, targetId, InsertBefore: true)));
+
+        TaskServiceMock.Verify(
+            x => x.ReorderTaskAsync(taskId, targetId, true),
+            Times.Once);
+        cut.Instance.ErrorMessage.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task HandleTaskReorder_SkipsStateUpdate_WhenReorderRejected()
+    {
+        var taskId = Guid.NewGuid();
+        var targetId = Guid.NewGuid();
+        TaskServiceMock
+            .Setup(x => x.ReorderTaskAsync(taskId, targetId, false))
+            .ReturnsAsync(false);
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        await cut.InvokeAsync(() => cut.Instance.HandleTaskReorder(new ReorderRequest(taskId, targetId, InsertBefore: false)));
+
+        TaskServiceMock.Verify(
+            x => x.ReorderTaskAsync(taskId, targetId, false),
+            Times.Once);
+        cut.Instance.ErrorMessage.Should().BeNull();
+        cut.Markup.Should().NotContain("Moved ",
+            "a rejected move renders no announcement");
+    }
+
+    [Fact]
+    public async Task HandleTaskReorder_Success_RendersLiveAnnouncement()
+    {
+        // Arrange - post-move state: B(0) moved above A(1000), C(3000)
+        var a = new TaskItem { Id = Guid.NewGuid(), Name = "A", SortOrder = 1000, CreatedAt = new DateTime(2026, 1, 1) };
+        var b = new TaskItem { Id = Guid.NewGuid(), Name = "B", SortOrder = 0, CreatedAt = new DateTime(2026, 1, 2) };
+        var c = new TaskItem { Id = Guid.NewGuid(), Name = "C", SortOrder = 3000, CreatedAt = new DateTime(2026, 1, 3) };
+        var group = new List<TaskItem> { a, b, c };
+        TaskServiceMock
+            .Setup(x => x.GetTasksForListAsync(It.IsAny<string?>()))
+            .ReturnsAsync(group);
+        TaskServiceMock
+            .Setup(x => x.ReorderTaskAsync(b.Id, a.Id, true))
+            .ReturnsAsync(true);
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        // Act
+        await cut.InvokeAsync(() => cut.Instance.HandleTaskReorder(new ReorderRequest(b.Id, a.Id, InsertBefore: true)));
+
+        // Assert
+        cut.Markup.Should().Contain("Moved B to position 1 of 3");
+        cut.Find(".sr-only[aria-live='polite']").Should().NotBeNull(
+            "the announcement renders in the visually-hidden polite region");
+    }
+
+    [Fact]
+    public async Task HandleTaskReorder_ExceptionAfterSuccess_ClearsStaleAnnouncement()
+    {
+        // Arrange
+        var a = new TaskItem { Id = Guid.NewGuid(), Name = "A", SortOrder = 1000, CreatedAt = new DateTime(2026, 1, 1) };
+        var b = new TaskItem { Id = Guid.NewGuid(), Name = "B", SortOrder = 0, CreatedAt = new DateTime(2026, 1, 2) };
+        var group = new List<TaskItem> { a, b };
+        TaskServiceMock
+            .Setup(x => x.GetTasksForListAsync(It.IsAny<string?>()))
+            .ReturnsAsync(group);
+        TaskServiceMock
+            .Setup(x => x.ReorderTaskAsync(b.Id, a.Id, true))
+            .ReturnsAsync(true);
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        await cut.InvokeAsync(() => cut.Instance.HandleTaskReorder(new ReorderRequest(b.Id, a.Id, InsertBefore: true)));
+        cut.Markup.Should().Contain("Moved B to position",
+            "sanity: the first move announced");
+
+        TaskServiceMock
+            .Setup(x => x.ReorderTaskAsync(b.Id, a.Id, true))
+            .ThrowsAsync(new Exception("Test exception"));
+
+        // Act
+        await cut.Instance.HandleTaskReorder(new ReorderRequest(b.Id, a.Id, InsertBefore: true));
+
+        // Assert
+        cut.Markup.Should().NotContain("Moved B",
+            "a failed move must clear the stale announcement, not leave the previous one");
+    }
+
+    [Fact]
+    public async Task HandleTaskReorder_SetsErrorMessage_WhenExceptionThrown()
+    {
+        var taskId = Guid.NewGuid();
+        var targetId = Guid.NewGuid();
+        TaskServiceMock
+            .Setup(x => x.ReorderTaskAsync(taskId, targetId, true))
+            .ThrowsAsync(new Exception("Test exception"));
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        await cut.Instance.HandleTaskReorder(new ReorderRequest(taskId, targetId, InsertBefore: true));
+
+        cut.Instance.ErrorMessage.Should().Be("Error updating task: Test exception");
+    }
+
+    #endregion
+
+    #region HandleScheduleReorder
+
+    [Fact]
+    public async Task HandleScheduleReorder_CallsService_WhenCalled()
+    {
+        // Arrange
+        var taskId = Guid.NewGuid();
+        var targetId = Guid.NewGuid();
+        TaskServiceMock
+            .Setup(x => x.ReorderTaskAsync(taskId, targetId, false))
+            .ReturnsAsync(true);
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        // Act
+        await cut.InvokeAsync(() => cut.Instance.HandleScheduleReorder(new ReorderRequest(taskId, targetId, InsertBefore: false)));
+
+        // Assert
+        TaskServiceMock.Verify(
+            x => x.ReorderTaskAsync(taskId, targetId, false),
+            Times.Once);
+        cut.Instance.ErrorMessage.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task HandleScheduleReorder_Success_RendersDayScopedAnnouncement()
+    {
+        // Arrange - post-move state: DayA(2000) moved below DayB(1000); both scheduled
+        // tomorrow (same day group). Elsewhere is scheduled outside the 7-day window
+        // and must NOT be counted: the announcement scope is the day group.
+        var tomorrow = DateTime.Today.AddDays(1);
+        var a = new TaskItem { Id = Guid.NewGuid(), Name = "DayA", SortOrder = 2000, CreatedAt = new DateTime(2026, 1, 1), ScheduledDate = tomorrow };
+        var b = new TaskItem { Id = Guid.NewGuid(), Name = "DayB", SortOrder = 1000, CreatedAt = new DateTime(2026, 1, 2), ScheduledDate = tomorrow };
+        var elsewhere = new TaskItem { Id = Guid.NewGuid(), Name = "Elsewhere", SortOrder = 500, CreatedAt = new DateTime(2026, 1, 3), ScheduledDate = DateTime.Today.AddDays(20) };
+        AppState.Tasks = new List<TaskItem> { a, b, elsewhere };
+        TaskServiceMock
+            .Setup(x => x.GetTasksForListAsync(It.IsAny<string?>()))
+            .ReturnsAsync(new List<TaskItem> { a, b, elsewhere });
+        TaskServiceMock
+            .Setup(x => x.ReorderTaskAsync(a.Id, b.Id, false))
+            .ReturnsAsync(true);
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+
+        // Act - move DayA below DayB within the day group.
+        await cut.InvokeAsync(() => cut.Instance.HandleScheduleReorder(new ReorderRequest(a.Id, b.Id, InsertBefore: false)));
+
+        // Assert - position is day-group scoped: 2 of 2, not 3.
+        cut.Markup.Should().Contain("Moved DayA to position 2 of 2");
+    }
+
+    #endregion
+
+    #region HandleTaskEdit + Undo Toast Lifecycle
+
+    [Fact]
+    public async Task HandleTaskDelete_HidesUndoToast_AfterDurationElapses()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem { Id = taskId, Name = "Toast Task" };
+        AppState.Tasks = new List<TaskItem> { task };
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        await cut.Instance.HandleTaskDelete(taskId);
+        cut.Render();
+        cut.Markup.Should().Contain("undo-toast");
+
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        while (cut.Markup.Contains("undo-toast"))
+        {
+            sw.Elapsed.Should().BeLessThan(
+                TimeSpan.FromMilliseconds(Constants.UI.UndoToastDurationMs + 4000),
+                "the undo toast must auto-hide after the configured duration");
+            await Task.Delay(250);
+        }
+    }
+
+    [Fact]
+    public async Task HandleTaskEdit_MovesTaskToNewList_WhenGoogleListChanges()
+    {
+        var listA = "list-a";
+        var listB = "list-b";
+        var taskId = Guid.NewGuid();
+        var existing = new TaskItem { Id = taskId, Name = "Moved Task", GoogleListId = listA };
+        AppState.Tasks = new List<TaskItem> { existing };
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var edited = new TaskItem { Id = taskId, Name = "Moved Task", GoogleListId = listB };
+        await cut.Instance.HandleTaskEdit(edited);
+
+        TaskServiceMock.Verify(x => x.UpdateTaskAsync(edited), Times.Once);
+        TaskServiceMock.Verify(x => x.MoveTaskToListAsync(taskId, listB), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleTaskEdit_DoesNotMoveTask_WhenGoogleListUnchanged()
+    {
+        var listA = "list-a";
+        var taskId = Guid.NewGuid();
+        var existing = new TaskItem { Id = taskId, Name = "Stable Task", GoogleListId = listA };
+        AppState.Tasks = new List<TaskItem> { existing };
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var edited = new TaskItem { Id = taskId, Name = "Stable Task Renamed", GoogleListId = listA };
+        await cut.Instance.HandleTaskEdit(edited);
+
+        TaskServiceMock.Verify(x => x.UpdateTaskAsync(edited), Times.Once);
+        TaskServiceMock.Verify(x => x.MoveTaskToListAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
+    }
+
+    #endregion
 }
 
