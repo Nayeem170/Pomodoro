@@ -102,6 +102,18 @@ Trigger is noted so the rule can be traced back.
 - When a guard rejects an operation based on a node property (e.g. Google's recurring-task cross-list move restriction), it must evaluate the property across the node AND all descendants before the first mutation, not just the requested node. Mid-cascade rejection after partial mutation splits hierarchy invariants across boundary states.
 - Trigger: fix-task-edit-properties / #163 (guard checked only the root; a recurring descendant would have moved the root before the child move was rejected)
 
+### R25: Never build local date strings from ToISOString()
+- `DateTime.UtcNow.ToString("o")` / `toISOString()` and slicing produce UTC dates; in UTC+X timezones before 06:00 (for +06:00) they yield yesterday's date. Any date string used for "today" boundaries, seeding, or display must come from local-time components (`DateTime.Today`, `new Date()` + getFullYear/getMonth/getDate), never from a UTC-serialized string.
+- Trigger: recurring-task timezone wave / fix-recurring-task-uncheck-timezone + e2e seeding (burned twice in +06:00; e2e specs use a localDate() helper built from local components)
+
+### R26: Flex children with overflow scroll need flex-shrink guard
+- A flex item with `overflow-y: auto` (or `overflow: auto`) inside a `flex-direction: column` container has its automatic minimum size zeroed by spec; default `flex-shrink: 1` then crushes the box to a sliver whenever the container overflows. Any such element must set `flex-shrink: 0` (or an explicit min-height). Check every CSS diff that adds overflow to a flex child.
+- Trigger: fix-demote-picker-visibility / #175 (.demote-picker crushed to 16px with 401px content in overflowing task lists; initial diagnosis blamed fold clipping, S7 acceptance exposed the crush)
+
+### R27: Patch coverage gate is CI-only - cover changed lines, not just the total
+- The local gate (tools/gates/run.py gate5) enforces overall 99.5% line coverage; Codecov additionally enforces patch coverage (95% of changed lines, 0.5% drift) only at PR time. A branch can pass locally and fail codecov/patch. New/changed source lines must ship with tests in the same PR; do not rely on the local total as proof.
+- Trigger: fix-availability-auto-tab / #171 (codecov/patch failed after local gate green; +100 test lines needed at f5960ab)
+
 ## Adding rules
 
 When a reviewer identifies a recurring issue:
