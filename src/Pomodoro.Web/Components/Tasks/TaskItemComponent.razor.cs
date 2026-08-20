@@ -90,10 +90,16 @@ public partial class TaskItemBase : ComponentBase
     protected ElementReference _inlineEditInput;
     protected ElementReference _rowElement;
     protected ElementReference _demotePickerElement;
+    protected ElementReference _demoteTriggerElement;
 
     private bool _shouldFocusInlineEdit;
     private bool _highlightScrolled;
     private bool _shouldScrollDemotePicker;
+    private bool _shouldFocusFirstDemotePick;
+    private bool _shouldFocusDemoteTrigger;
+    protected int _focusedPickIndex;
+
+    protected string DemotePickId(int index) => $"demote-pick-{Item.Id}-{index}";
 
     protected bool CanAddSubtask => Depth < Constants.Tasks.MaxSubtaskDepth;
 
@@ -327,6 +333,8 @@ public partial class TaskItemBase : ComponentBase
         if (IsDemoteMenuOpen)
         {
             _shouldScrollDemotePicker = true;
+            _shouldFocusFirstDemotePick = true;
+            _focusedPickIndex = 0;
         }
     }
 
@@ -339,6 +347,32 @@ public partial class TaskItemBase : ComponentBase
     protected void CancelDemote()
     {
         IsDemoteMenuOpen = false;
+        _shouldFocusDemoteTrigger = true;
+    }
+
+    protected async Task HandlePickerKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == Constants.Keys.Escape)
+        {
+            CancelDemote();
+        }
+        else if (e.Key == Constants.Keys.ArrowDown && Siblings.Count > 0)
+        {
+            _focusedPickIndex = Math.Min(_focusedPickIndex + 1, Siblings.Count - 1);
+            await FocusDemotePick(_focusedPickIndex);
+        }
+        else if (e.Key == Constants.Keys.ArrowUp && Siblings.Count > 0)
+        {
+            _focusedPickIndex = Math.Max(_focusedPickIndex - 1, 0);
+            await FocusDemotePick(_focusedPickIndex);
+        }
+    }
+
+    private async Task FocusDemotePick(int index)
+    {
+        try { await JSRuntime.InvokeVoidAsync("taskScrollInterop.focusElement", DemotePickId(index)); }
+        catch (JSDisconnectedException) { }
+        catch (JSException) { }
     }
 
     protected async Task HandleToggleCollapse()
@@ -362,6 +396,21 @@ public partial class TaskItemBase : ComponentBase
                 await JSRuntime.InvokeVoidAsync("taskScrollInterop.scrollIntoViewIfNeeded", _demotePickerElement);
             }
             catch (JSDisconnectedException) { }
+        }
+
+        if (_shouldFocusFirstDemotePick && Siblings.Count > 0)
+        {
+            _shouldFocusFirstDemotePick = false;
+            await FocusDemotePick(0);
+        }
+
+        if (_shouldFocusDemoteTrigger)
+        {
+            _shouldFocusDemoteTrigger = false;
+            try { await _demoteTriggerElement.FocusAsync(); }
+            catch (JSDisconnectedException) { }
+            catch (JSException) { }
+            catch (InvalidOperationException) { }
         }
 
         if (IsNewlyAdded && !_highlightScrolled)

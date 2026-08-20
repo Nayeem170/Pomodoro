@@ -920,5 +920,65 @@ public class TaskItemComponentTests : TestContext
     }
 
     #endregion
+
+    #region Demote picker semantics
+
+    private static TaskItem DemoteSemanticsTask() =>
+        new() { Id = Guid.NewGuid(), Name = "Task A", IsCompleted = false };
+
+    [Fact]
+    public async Task DemoteTrigger_TogglesMenuAriaExpanded()
+    {
+        var sibling = new TaskItem { Id = Guid.NewGuid(), Name = "Sibling" };
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, DemoteSemanticsTask())
+            .Add(x => x.Siblings, new List<TaskItem> { sibling }));
+
+        var trigger = cut.Find("button[aria-label='Demote']");
+        trigger.GetAttribute("aria-haspopup").Should().Be("menu");
+        trigger.GetAttribute("aria-expanded").Should().Be("false");
+
+        await cut.InvokeAsync(() => trigger.Click());
+        cut.Find("button[aria-label='Demote']").GetAttribute("aria-expanded").Should().Be("true");
+
+        await cut.InvokeAsync(() => cut.Find(".demote-pick-cancel").Click());
+        cut.Find("button[aria-label='Demote']").GetAttribute("aria-expanded").Should().Be("false");
+    }
+
+    [Fact]
+    public void DemotePicker_HasMenuRoles_LabelCopy_AndNoTitleTooltips()
+    {
+        var sibling = new TaskItem { Id = Guid.NewGuid(), Name = "Sibling with a long name" };
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, DemoteSemanticsTask())
+            .Add(x => x.Siblings, new List<TaskItem> { sibling }));
+
+        cut.InvokeAsync(() => cut.Find("button[aria-label='Demote']").Click());
+
+        cut.Markup.Should().Contain("role=\"menu\"");
+        cut.Markup.Should().Contain("role=\"menuitem\"");
+        cut.Markup.Should().Contain("Make subtask of");
+        cut.FindAll(".demote-pick").Should().OnlyContain(b => string.IsNullOrEmpty(b.GetAttribute("title")));
+        cut.FindAll(".demote-pick-name").Should().HaveCount(1);
+        cut.FindAll(".demote-pick-branch").Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task HandlePickerKeyDown_Escape_ClosesMenu()
+    {
+        var sibling = new TaskItem { Id = Guid.NewGuid(), Name = "Sibling" };
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, DemoteSemanticsTask())
+            .Add(x => x.Siblings, new List<TaskItem> { sibling }));
+
+        await cut.InvokeAsync(() => cut.Find("button[aria-label='Demote']").Click());
+        cut.FindAll(".demote-picker").Should().HaveCount(1);
+
+        await cut.InvokeAsync(() => cut.Find(".demote-picker-list").KeyDown(Key.Escape));
+
+        cut.FindAll(".demote-picker").Should().BeEmpty();
+    }
+
+    #endregion
 }
 

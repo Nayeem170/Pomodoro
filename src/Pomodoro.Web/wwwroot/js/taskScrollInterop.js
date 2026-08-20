@@ -11,5 +11,9 @@ window.taskScrollInterop = {
         if (rect.top < cr.top || rect.bottom > cr.bottom) {
             element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
+    },
+    focusElement: function (id) {
+        var el = document.getElementById(id);
+        if (el) el.focus();
     }
 };
