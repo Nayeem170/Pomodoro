@@ -388,6 +388,12 @@ public partial class TaskItemBase : ComponentBase
             try { await _inlineEditInput.FocusAsync(); } catch { }
         }
 
+        if (_shouldFocusFirstDemotePick && Siblings.Count > 0)
+        {
+            _shouldFocusFirstDemotePick = false;
+            await FocusDemotePick(0);
+        }
+
         if (_shouldScrollDemotePicker)
         {
             _shouldScrollDemotePicker = false;
@@ -396,12 +402,6 @@ public partial class TaskItemBase : ComponentBase
                 await JSRuntime.InvokeVoidAsync("taskScrollInterop.scrollIntoViewIfNeeded", _demotePickerElement);
             }
             catch (JSDisconnectedException) { }
-        }
-
-        if (_shouldFocusFirstDemotePick && Siblings.Count > 0)
-        {
-            _shouldFocusFirstDemotePick = false;
-            await FocusDemotePick(0);
         }
 
         if (_shouldFocusDemoteTrigger)
