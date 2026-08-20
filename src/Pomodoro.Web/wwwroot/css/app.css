@@ -1250,6 +1250,7 @@ input, textarea, [contenteditable="true"] {
 
 .task-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-start;
     gap: 8px;
     padding: 7px 8px;
@@ -1374,7 +1375,7 @@ input, textarea, [contenteditable="true"] {
     line-height: 1.4;
     color: var(--color-text-primary);
     flex: 1;
-    min-width: 0;
+    min-width: 120px;
     overflow-wrap: anywhere;
 }
 
@@ -1392,7 +1393,7 @@ input, textarea, [contenteditable="true"] {
     padding: 2px 6px;
     outline: none;
     background: var(--color-surface-light);
-    min-width: 0;
+    min-width: 120px;
     font-family: var(--font-sans);
 }
 
