@@ -1411,7 +1411,7 @@ input, textarea, [contenteditable="true"] {
     flex-shrink: 0;
     gap: 4px;
     padding: 8px 10px;
-    margin: 2px 0;
+    margin: 8px 0;
     background: #ffffff0a;
     border: 1px solid #285a4b;
     border-radius: var(--border-radius-md);

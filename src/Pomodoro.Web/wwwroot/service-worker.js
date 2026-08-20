@@ -13,11 +13,11 @@
 // clear their browser cache or the service worker naturally expires (24h+).
 // =============================================================================
 //
-// Version: 18.0.0 (cache bump: task row flex-wrap + text min-width for demoted readability)
+// Version: 19.0.0 (cache bump: demote picker bottom gap)
 // Last updated: 2026-08-20
 
-const CACHE_NAME = 'pomodoro-cache-v18';
-const CACHE_VERSION = 18;
+const CACHE_NAME = 'pomodoro-cache-v19';
+const CACHE_VERSION = 19;
 
 // Assets to cache immediately on install (static assets)
 const PRECACHE_ASSETS = [
