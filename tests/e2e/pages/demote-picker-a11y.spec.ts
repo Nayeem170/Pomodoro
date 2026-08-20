@@ -108,6 +108,31 @@ test.describe('Demote picker keyboard and semantics', () => {
       .toBe(pickNames[0]);
   });
 
+  test('short sibling list has no scrollbar and hides the fade', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 560 });
+    const po = new PomodoroPage(page);
+    await po.goto('http://localhost:5000/');
+    await addTasks(po, ['Short first', 'Short second']);
+
+    await openPicker(page, 'Short second');
+
+    const list = page.locator('.demote-picker-list');
+    const m = await list.evaluate(el => ({ scrollHeight: el.scrollHeight, clientHeight: el.clientHeight }));
+    expect(
+      m.scrollHeight,
+      `short list must not overflow (scrollHeight ${m.scrollHeight} vs clientHeight ${m.clientHeight}); ` +
+      'a negative-margin fade poking past the content box would create permanent scrollable overflow'
+    ).toBeLessThanOrEqual(m.clientHeight);
+
+    const fade = page.locator('.demote-picker-fade');
+    await expect
+      .poll(() => fade.evaluate(el => getComputedStyle(el).opacity), { timeout: 3000 })
+      .toBe('0');
+
+    await page.locator('.demote-pick-cancel').click();
+    await expect(page.locator('.demote-picker')).toHaveCount(0);
+  });
+
   test('long sibling list shows scroll fade and clamps names to two lines', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 560 });
     const po = new PomodoroPage(page);

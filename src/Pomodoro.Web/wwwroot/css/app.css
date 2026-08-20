@@ -1441,23 +1441,13 @@ input, textarea, [contenteditable="true"] {
     background: transparent;
     border: none;
     border-radius: var(--border-radius-sm);
-    padding: 6px 8px;
+    padding: 6px 10px;
     color: var(--color-text-primary);
     text-align: left;
     font-size: 13px;
     cursor: pointer;
     font-family: var(--font-sans);
     transition: background 0.15s;
-}
-
-.demote-pick-branch {
-    flex: none;
-    width: 9px;
-    height: 9px;
-    margin-top: 5px;
-    border-left: 1px solid var(--color-border-primary);
-    border-bottom: 1px solid var(--color-border-primary);
-    border-bottom-left-radius: 2px;
 }
 
 .demote-pick-name {
@@ -1484,7 +1474,7 @@ input, textarea, [contenteditable="true"] {
     bottom: 0;
     flex: none;
     height: 14px;
-    margin-bottom: -18px;
+    margin-top: -18px;
     background: linear-gradient(to bottom, transparent, var(--color-background-primary));
     opacity: 0;
     pointer-events: none;

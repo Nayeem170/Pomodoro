@@ -139,7 +139,6 @@
                 var idx = i;
                 var sibId = Siblings[idx].Id;
                 <button class="demote-pick" role="menuitem" id="@(DemotePickId(idx))" @onclick="() => ConfirmDemote(sibId)" @onclick:stopPropagation="true" @onfocus="() => _focusedPickIndex = idx">
-                    <span class="demote-pick-branch" aria-hidden="true"></span>
                     <span class="demote-pick-name">@Siblings[idx].Name</span>
                 </button>
             }

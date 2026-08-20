@@ -967,7 +967,6 @@ public class TaskItemComponentTests : TestContext
         cut.Markup.Should().Contain("Make subtask of");
         cut.FindAll(".demote-pick").Should().OnlyContain(b => string.IsNullOrEmpty(b.GetAttribute("title")));
         cut.FindAll(".demote-pick-name").Should().HaveCount(1);
-        cut.FindAll(".demote-pick-branch").Should().HaveCount(1);
     }
 
     [Fact]

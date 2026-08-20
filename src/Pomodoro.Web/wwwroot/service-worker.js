@@ -13,11 +13,11 @@
 // clear their browser cache or the service worker naturally expires (24h+).
 // =============================================================================
 //
-// Version: 20.0.0 (cache bump: demote picker a11y and readability rework)
+// Version: 21.0.0 (cache bump: picker fade overflow fix, branch glyph removed)
 // Last updated: 2026-08-20
 
-const CACHE_NAME = 'pomodoro-cache-v20';
-const CACHE_VERSION = 20;
+const CACHE_NAME = 'pomodoro-cache-v21';
+const CACHE_VERSION = 21;
 
 // Assets to cache immediately on install (static assets)
 const PRECACHE_ASSETS = [
