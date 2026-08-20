@@ -222,7 +222,7 @@ public partial class TaskServiceTests
     }
 
     [Fact]
-    public async Task InitializeAsync_WeeklyWithoutWeekdays_StaleUncompletedProgress_IsNotReset()
+    public async Task InitializeAsync_WeeklyAnchorDay_StaleUncompletedProgress_ResetsAsNewOccurrence()
     {
         var staleOccurrence = PreviousOccurrenceAtLeastDaysBack(9);
         var taskId = Guid.NewGuid();
@@ -248,8 +248,134 @@ public partial class TaskServiceTests
 
         // Assert
         Assert.False(service.AllTasks[0].IsCompleted);
+        Assert.Equal(0, service.AllTasks[0].PomodoroCount);
+        Assert.Equal(0, service.AllTasks[0].TotalFocusMinutes);
+        Assert.Null(service.AllTasks[0].LastWorkedOn);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_Daily_StaleUncompletedProgress_ResetsAsNewOccurrence()
+    {
+        var staleOccurrence = DateTime.Now.Date.AddDays(-3);
+        var taskId = Guid.NewGuid();
+        var task = CreateSampleTask(id: taskId, isCompleted: false);
+        task.CreatedAt = staleOccurrence.AddDays(-7);
+        task.Repeat = new RepeatRule { Type = RepeatType.Daily };
+        task.PomodoroCount = 4;
+        task.TotalFocusMinutes = 100;
+        task.LastWorkedOn = staleOccurrence;
+
+        // Arrange
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
+        MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+        MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
+            .ReturnsAsync(true);
+
+        var service = CreateService();
+
+        // Act
+        await service.InitializeAsync();
+
+        // Assert
+        Assert.False(service.AllTasks[0].IsCompleted);
+        Assert.Equal(0, service.AllTasks[0].PomodoroCount);
+        Assert.Equal(0, service.AllTasks[0].TotalFocusMinutes);
+        Assert.Null(service.AllTasks[0].LastWorkedOn);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_Daily_ProgressOnCurrentOccurrence_IsNotReset()
+    {
+        var taskId = Guid.NewGuid();
+        var task = CreateSampleTask(id: taskId, isCompleted: false);
+        task.CreatedAt = DateTime.Now.Date.AddDays(-7);
+        task.Repeat = new RepeatRule { Type = RepeatType.Daily };
+        task.PomodoroCount = 2;
+        task.TotalFocusMinutes = 50;
+        task.LastWorkedOn = DateTime.Now.Date;
+
+        // Arrange
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
+        MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+        MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
+            .ReturnsAsync(true);
+
+        var service = CreateService();
+
+        // Act
+        await service.InitializeAsync();
+
+        // Assert
+        Assert.False(service.AllTasks[0].IsCompleted);
         Assert.Equal(2, service.AllTasks[0].PomodoroCount);
         Assert.Equal(50, service.AllTasks[0].TotalFocusMinutes);
-        Assert.Equal(staleOccurrence, service.AllTasks[0].LastWorkedOn);
+        Assert.Equal(DateTime.Now.Date, service.AllTasks[0].LastWorkedOn);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_CustomEveryThreeDays_StaleUncompletedProgress_ResetsAsNewOccurrence()
+    {
+        var taskId = Guid.NewGuid();
+        var task = CreateSampleTask(id: taskId, isCompleted: false);
+        task.CreatedAt = DateTime.Now.Date.AddDays(-17);
+        task.Repeat = new RepeatRule { Type = RepeatType.Custom, CustomDays = 3 };
+        task.PomodoroCount = 1;
+        task.TotalFocusMinutes = 25;
+        task.LastWorkedOn = DateTime.Now.Date.AddDays(-10);
+
+        // Arrange
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
+        MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+        MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
+            .ReturnsAsync(true);
+
+        var service = CreateService();
+
+        // Act
+        await service.InitializeAsync();
+
+        // Assert
+        Assert.False(service.AllTasks[0].IsCompleted);
+        Assert.Equal(0, service.AllTasks[0].PomodoroCount);
+        Assert.Equal(0, service.AllTasks[0].TotalFocusMinutes);
+        Assert.Null(service.AllTasks[0].LastWorkedOn);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_Monthly_StaleUncompletedProgress_ResetsAsNewOccurrence()
+    {
+        var today = DateTime.Now.Date;
+        var taskId = Guid.NewGuid();
+        var task = CreateSampleTask(id: taskId, isCompleted: false);
+        task.CreatedAt = today.AddDays(-35);
+        task.Repeat = new RepeatRule { Type = RepeatType.Monthly, MonthlyDay = today.Day };
+        task.PomodoroCount = 3;
+        task.TotalFocusMinutes = 75;
+        task.LastWorkedOn = today.AddDays(-10);
+
+        // Arrange
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync()).ReturnsAsync(new List<TaskItem> { task });
+        MockTaskRepository.Setup(r => r.SaveAsync(It.IsAny<TaskItem>())).ReturnsAsync(true);
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+        MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
+            .ReturnsAsync(true);
+
+        var service = CreateService();
+
+        // Act
+        await service.InitializeAsync();
+
+        // Assert
+        Assert.False(service.AllTasks[0].IsCompleted);
+        Assert.Equal(0, service.AllTasks[0].PomodoroCount);
+        Assert.Equal(0, service.AllTasks[0].TotalFocusMinutes);
+        Assert.Null(service.AllTasks[0].LastWorkedOn);
     }
 }

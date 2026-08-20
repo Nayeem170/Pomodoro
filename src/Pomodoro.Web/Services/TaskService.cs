@@ -1488,7 +1488,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         return new DateTime(nextMonth.Year, nextMonth.Month, actualDay);
     }
 
-    private static DateTime? CurrentWeeklyOccurrenceBoundary(TaskItem task)
+    private static DateTime? CurrentOccurrenceBoundary(TaskItem task)
     {
         var rule = task.Repeat!;
         var today = DateTime.Now.Date;
@@ -1575,11 +1575,10 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             }
 
             if (task.IsRecurring && !task.IsCompleted
-                && task.Repeat is { Type: RepeatType.Weekly, IsActive: true }
-                && task.Repeat.Weekdays.Length > 0
+                && task.Repeat is { IsActive: true }
                 && task.LastWorkedOn.HasValue)
             {
-                var occurrenceBoundary = CurrentWeeklyOccurrenceBoundary(task);
+                var occurrenceBoundary = CurrentOccurrenceBoundary(task);
                 if (occurrenceBoundary.HasValue
                     && task.LastWorkedOn.Value.ToLocalTime().Date < occurrenceBoundary.Value)
                 {
