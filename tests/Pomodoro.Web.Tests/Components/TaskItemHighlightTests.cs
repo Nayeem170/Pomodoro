@@ -119,4 +119,29 @@ public class TaskItemHighlightTests : TestContext
         // Assert
         ScrollCallCount().Should().Be(countAfterOpen);
     }
+
+    [Fact]
+    public void HandleDemote_FocusesFirstPick_BeforeScrollIntoView()
+    {
+        // Arrange - task with siblings renders the "Demote" button.
+        var task = NewTask("Task A");
+        var sibling = NewTask("Task B");
+        var cut = RenderComponent<TaskItemComponent>(p => p
+            .Add(x => x.Item, task)
+            .Add(x => x.Depth, 0)
+            .Add(x => x.Siblings, new List<TaskItem> { sibling }));
+
+        // Act - open the picker.
+        cut.Find("button[aria-label=\"Demote\"]").Click();
+
+        // Assert - the instant focus scroll must run before the smooth
+        // reveal scroll; the reverse order lets the focus scroll cancel the
+        // smooth animation partway (CI race, PR #188 e2e shard 2).
+        var invocations = JSInterop.Invocations.ToList();
+        var focusIndex = invocations.FindIndex(i => i.Identifier == "taskScrollInterop.focusElement");
+        var scrollIndex = invocations.FindIndex(i => i.Identifier == "taskScrollInterop.scrollIntoViewIfNeeded");
+        focusIndex.Should().BeGreaterThanOrEqualTo(0);
+        scrollIndex.Should().BeGreaterThanOrEqualTo(0);
+        focusIndex.Should().BeLessThan(scrollIndex);
+    }
 }

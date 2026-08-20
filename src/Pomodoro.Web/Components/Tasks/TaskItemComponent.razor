@@ -104,7 +104,7 @@
                 }
                 @if (CanDemote)
                 {
-                    <button class="task-action-btn" @onclick="HandleDemote" @onclick:stopPropagation="true" title="Demote" aria-label="Demote">
+                    <button class="task-action-btn" @onclick="HandleDemote" @onclick:stopPropagation="true" title="Demote" aria-label="Demote" aria-haspopup="menu" aria-expanded="@(IsDemoteMenuOpen ? "true" : "false")" @ref="_demoteTriggerElement">
                         <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
                 }
@@ -132,12 +132,18 @@
 @if (IsDemoteMenuOpen)
 {
     <div class="demote-picker" @ref="_demotePickerElement" style="margin-left:@((Depth + 1) * 20)px">
-        <span class="demote-picker-label">Demote under:</span>
-        @foreach (var sibling in Siblings)
-        {
-            var sibId = sibling.Id;
-            <button class="demote-pick" @onclick="() => ConfirmDemote(sibId)" @onclick:stopPropagation="true" title="Demote under @sibling.Name">@sibling.Name</button>
-        }
+        <span class="demote-picker-label">Make subtask of</span>
+        <div class="demote-picker-list" role="menu" aria-label="Pick a sibling" @onkeydown="HandlePickerKeyDown">
+            @for (var i = 0; i < Siblings.Count; i++)
+            {
+                var idx = i;
+                var sibId = Siblings[idx].Id;
+                <button class="demote-pick" role="menuitem" id="@(DemotePickId(idx))" @onclick="() => ConfirmDemote(sibId)" @onclick:stopPropagation="true" @onfocus="() => _focusedPickIndex = idx">
+                    <span class="demote-pick-name">@Siblings[idx].Name</span>
+                </button>
+            }
+            <div class="demote-picker-fade" aria-hidden="true"></div>
+        </div>
         <button class="demote-pick-cancel" @onclick="CancelDemote" @onclick:stopPropagation="true">Cancel</button>
     </div>
 }

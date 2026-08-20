@@ -1,5 +1,6 @@
 @using Pomodoro.Web.Models
 @using Pomodoro.Web.Components.Tasks
+@using Pomodoro.Web.Services
 
 <div class="sched-day">
     <div class="day-header @(Day.Items.Count == 0 ? "empty" : "")" aria-label="@Day.DayLabel">
@@ -235,7 +236,10 @@
     private IReadOnlyList<TaskItem> SiblingsFor(TaskItem task)
     {
         var all = AllTasks ?? [];
-        return all.Where(t => t.ParentTaskId == task.ParentTaskId && t.Id != task.Id).ToList();
+        return TaskGrouping
+            .GetOrderedSiblingGroup(all, task)
+            .Where(t => t.Id != task.Id)
+            .ToList();
     }
 
     private List<(TaskItem Item, int Depth)> GetDescendantTree(Guid rootId)

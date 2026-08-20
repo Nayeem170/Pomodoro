@@ -129,8 +129,9 @@ public class TaskListBase : ComponentBase
 
     protected IReadOnlyList<TaskItem> SiblingsFor(TaskItem task)
     {
-        return Tasks
-            .Where(t => t.ParentTaskId == task.ParentTaskId && t.Id != task.Id)
+        return TaskGrouping
+            .GetOrderedSiblingGroup(Tasks, task)
+            .Where(t => t.Id != task.Id)
             .ToList();
     }
 
