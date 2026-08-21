@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Pomodoro.Web.Tests.Models;
 
-[Trait("Category", "Service")]
+[Trait("Category", "Model")]
 public class RepeatRuleQuarterlyYearlyTests
 {
     private static TaskItem TaskAnchoredAt(DateTime anchor, RepeatRule rule)
