@@ -117,6 +117,8 @@
                         <option value="@RepeatType.Weekly">Weekly</option>
                         <option value="@RepeatType.Custom">Every N days</option>
                         <option value="@RepeatType.Monthly">Monthly</option>
+                        <option value="@RepeatType.Quarterly">Quarterly</option>
+                        <option value="@RepeatType.Yearly">Yearly</option>
                     </select>
                 </div>
                 @if (_newTaskRepeatType == RepeatType.Weekly)
@@ -153,6 +155,30 @@
                         <input type="number" class="tep-input tep-input-sm" min="1" max="31"
                                @bind="_newTaskMonthlyDay" @bind:event="oninput" />
                         <span class="tep-unit">of month</span>
+                    </div>
+                }
+                @if (_newTaskRepeatType == RepeatType.Quarterly)
+                {
+                    <div class="tep-row">
+                        <label class="tep-label">Day</label>
+                        <input type="number" class="tep-input tep-input-sm" min="1" max="31"
+                               @bind="_newTaskQuarterlyDay" @bind:event="oninput" />
+                        <span class="tep-unit">of quarter</span>
+                    </div>
+                }
+                @if (_newTaskRepeatType == RepeatType.Yearly)
+                {
+                    <div class="tep-row">
+                        <label class="tep-label">Day</label>
+                        <input type="number" class="tep-input tep-input-sm" min="1" max="31"
+                               @bind="_newTaskYearlyDay" @bind:event="oninput" />
+                        <span class="tep-unit">of month</span>
+                    </div>
+                    <div class="tep-row">
+                        <label class="tep-label">Month</label>
+                        <input type="number" class="tep-input tep-input-sm" min="1" max="12"
+                               @bind="_newTaskYearlyMonth" @bind:event="oninput" />
+                        <span class="tep-unit">of year</span>
                     </div>
                 }
                 <div class="tep-row">

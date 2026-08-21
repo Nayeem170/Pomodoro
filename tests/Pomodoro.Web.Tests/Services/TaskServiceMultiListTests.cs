@@ -2245,12 +2245,13 @@ public class TaskServiceMultiListTests
 
     #region ComputeNextOccurrence (private static, via reflection)
 
-    private static DateTime? InvokeComputeNextOccurrence(RepeatRule rule)
+    private static DateTime? InvokeComputeNextOccurrence(RepeatRule rule, TaskItem? task = null)
     {
+        task ??= new TaskItem { CreatedAt = new DateTime(2020, 1, 1) };
         var method = typeof(TaskService).GetMethod(
             "ComputeNextOccurrence",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        return (DateTime?)method!.Invoke(null, [rule])!;
+        return (DateTime?)method!.Invoke(null, [task, rule])!;
     }
 
     [Fact]
@@ -2372,6 +2373,94 @@ public class TaskServiceMultiListTests
             Type = RepeatType.Daily,
             LastCompletedDate = baseDate,
             EndDate = baseDate
+        });
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_Quarterly_Day31_ClampsToDaysInMonth()
+    {
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Quarterly,
+            LastCompletedDate = new DateTime(2024, 8, 31),
+            QuarterlyDay = 31
+        });
+        result.Should().Be(new DateTime(2024, 11, 30));
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_Quarterly_NullDay_UsesAnchorDay()
+    {
+        var task = new TaskItem { CreatedAt = new DateTime(2023, 5, 15) };
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Quarterly,
+            LastCompletedDate = new DateTime(2024, 5, 15)
+        }, task);
+        result.Should().Be(new DateTime(2024, 8, 15));
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_Quarterly_MidQuarterBase_AdvancesThreeMonths()
+    {
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Quarterly,
+            LastCompletedDate = new DateTime(2024, 9, 20),
+            QuarterlyDay = 20
+        });
+        result.Should().Be(new DateTime(2024, 12, 20));
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_Quarterly_NextExceedsEndDate_ReturnsNull()
+    {
+        var baseDate = DateTime.UtcNow.Date;
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Quarterly,
+            LastCompletedDate = baseDate,
+            QuarterlyDay = 15,
+            EndDate = baseDate.AddMonths(2)
+        });
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_Yearly_LeapAnchorDay_ClampsToFeb28()
+    {
+        var task = new TaskItem { CreatedAt = new DateTime(2024, 2, 29) };
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Yearly,
+            LastCompletedDate = new DateTime(2024, 2, 29)
+        }, task);
+        result.Should().Be(new DateTime(2025, 2, 28));
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_Yearly_ConfiguredMonthAndDay_ReturnsNextYear()
+    {
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Yearly,
+            LastCompletedDate = new DateTime(2024, 7, 4),
+            YearlyMonth = 7,
+            YearlyDay = 4
+        });
+        result.Should().Be(new DateTime(2025, 7, 4));
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_Yearly_NextExceedsEndDate_ReturnsNull()
+    {
+        var baseDate = DateTime.UtcNow.Date;
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Yearly,
+            LastCompletedDate = baseDate,
+            EndDate = baseDate.AddMonths(2)
         });
         result.Should().BeNull();
     }

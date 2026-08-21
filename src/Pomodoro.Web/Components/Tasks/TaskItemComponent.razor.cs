@@ -124,6 +124,8 @@ public partial class TaskItemBase : ComponentBase
         RepeatType.Weekly => "Weekly",
         RepeatType.Custom => Item.Repeat.CustomDays > 0 ? $"×{Item.Repeat.CustomDays}d" : "Repeat",
         RepeatType.Monthly => "Monthly",
+        RepeatType.Quarterly => "Quarterly",
+        RepeatType.Yearly => "Yearly",
         _ => null
     };
 
@@ -170,6 +172,8 @@ public partial class TaskItemBase : ComponentBase
             RepeatType.Weekly => "Weekly",
             RepeatType.Custom => $"Every {Item.Repeat.CustomDays} days",
             RepeatType.Monthly => $"Monthly (day {Item.Repeat.MonthlyDay})",
+            RepeatType.Quarterly => $"Quarterly (day {Item.Repeat.QuarterlyDay})",
+            RepeatType.Yearly => $"Yearly (day {Item.Repeat.YearlyDay}, month {Item.Repeat.YearlyMonth})",
             _ => "Repeats"
         };
         if (Item.Repeat.IsPaused) return $"{typeLabel} (paused)";

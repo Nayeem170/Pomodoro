@@ -1441,12 +1441,13 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         }
     }
 
-    private static DateTime? ComputeNextOccurrence(RepeatRule rule)
+    private static DateTime? ComputeNextOccurrence(TaskItem task, RepeatRule rule)
     {
         if (rule.Type == RepeatType.None) return null;
         if (rule.EndDate.HasValue && rule.EndDate.Value < DateTime.Now.Date) return null;
 
         var baseDate = (rule.LastCompletedDate ?? DateTime.Now.Date).Date;
+        var anchor = (task.ScheduledDate ?? rule.StartDate ?? task.CreatedAt).Date;
 
         var next = rule.Type switch
         {
@@ -1454,6 +1455,8 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             RepeatType.Weekly => ComputeNextWeekday(baseDate, rule.Weekdays),
             RepeatType.Custom => baseDate.AddDays(rule.CustomDays > 0 ? rule.CustomDays : Constants.Repeat.DefaultCustomDays),
             RepeatType.Monthly => ComputeNextMonthly(baseDate, rule.MonthlyDay),
+            RepeatType.Quarterly => ComputeNextQuarterly(baseDate, anchor, rule.QuarterlyDay),
+            RepeatType.Yearly => ComputeNextYearly(baseDate, anchor, rule.YearlyDay, rule.YearlyMonth),
             _ => (DateTime?)null
         };
 
@@ -1486,6 +1489,23 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         var daysInMonth = DateTime.DaysInMonth(nextMonth.Year, nextMonth.Month);
         var actualDay = Math.Min(day, daysInMonth);
         return new DateTime(nextMonth.Year, nextMonth.Month, actualDay);
+    }
+
+    private static DateTime ComputeNextQuarterly(DateTime baseDate, DateTime anchor, int? quarterlyDay)
+    {
+        var day = quarterlyDay ?? anchor.Day;
+        var target = baseDate.AddMonths(3);
+        var actualDay = Math.Min(day, DateTime.DaysInMonth(target.Year, target.Month));
+        return new DateTime(target.Year, target.Month, actualDay);
+    }
+
+    private static DateTime ComputeNextYearly(DateTime baseDate, DateTime anchor, int? yearlyDay, int? yearlyMonth)
+    {
+        var month = yearlyMonth ?? anchor.Month;
+        var day = yearlyDay ?? anchor.Day;
+        var targetYear = baseDate.Year + 1;
+        var actualDay = Math.Min(day, DateTime.DaysInMonth(targetYear, month));
+        return new DateTime(targetYear, month, actualDay);
     }
 
     private static DateTime? CurrentOccurrenceBoundary(TaskItem task)
@@ -1560,7 +1580,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
 
             if (task.IsRecurring && task.IsCompleted && task.Repeat is { IsActive: true })
             {
-                var nextOccurrence = ComputeNextOccurrence(task.Repeat);
+                var nextOccurrence = ComputeNextOccurrence(task, task.Repeat);
                 task.Repeat.NextOccurrence = nextOccurrence;
 
                 if (nextOccurrence.HasValue && nextOccurrence.Value <= today)
@@ -1619,7 +1639,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             if (!task.IsRecurring || task.Repeat is not { IsActive: true }) continue;
             if (!task.Repeat.LastCompletedDate.HasValue) continue;
 
-            var reactivationDate = ComputeNextOccurrence(task.Repeat);
+            var reactivationDate = ComputeNextOccurrence(task, task.Repeat);
             if (!reactivationDate.HasValue) continue;
 
             ReconcileSubtree(task.Id, reactivationDate.Value, ref changed);

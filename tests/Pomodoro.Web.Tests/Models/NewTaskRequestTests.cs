@@ -21,6 +21,9 @@ public class NewTaskRequestTests
         req.IsPaused.Should().BeFalse();
         req.PausedDate.Should().BeNull();
         req.ListId.Should().BeNull();
+        req.QuarterlyDay.Should().Be(0);
+        req.YearlyDay.Should().Be(0);
+        req.YearlyMonth.Should().Be(0);
     }
 
     [Fact]

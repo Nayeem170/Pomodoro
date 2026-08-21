@@ -9,6 +9,9 @@ public class RepeatRule
     public int CustomDays { get; set; }
     public DayOfWeek[] Weekdays { get; set; } = [];
     public int? MonthlyDay { get; set; }
+    public int? QuarterlyDay { get; set; }
+    public int? YearlyDay { get; set; }
+    public int? YearlyMonth { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public bool IsPaused { get; set; }
@@ -37,9 +40,21 @@ public class RepeatRule
                 : Weekdays.Contains(date.DayOfWeek),
             RepeatType.Custom => CustomDays > 0 && (date - anchor).Days % CustomDays == 0,
             RepeatType.Monthly => date.Day == (MonthlyDay ?? anchor.Day),
+            RepeatType.Quarterly => MonthDelta(date, anchor) % 3 == 0
+                && DayMatchesClamped(date, QuarterlyDay ?? anchor.Day),
+            RepeatType.Yearly => date.Month == (YearlyMonth ?? anchor.Month)
+                && DayMatchesClamped(date, YearlyDay ?? anchor.Day),
             _ => false
         };
     }
+
+    private static int MonthDelta(DateTime date, DateTime anchor) =>
+        (date.Year - anchor.Year) * 12 + date.Month - anchor.Month;
+
+    private static bool DayMatchesClamped(DateTime date, int day) =>
+        date.Day == day
+        || (day > DateTime.DaysInMonth(date.Year, date.Month)
+            && date.Day == DateTime.DaysInMonth(date.Year, date.Month));
 }
 
 public enum RepeatType
@@ -48,7 +63,9 @@ public enum RepeatType
     Daily,
     Weekly,
     Custom,
-    Monthly
+    Monthly,
+    Quarterly,
+    Yearly
 }
 
 public class TaskItem

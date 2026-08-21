@@ -33,6 +33,9 @@ public class TaskEditPanelBase : ComponentBase
     protected DayOfWeek[] EditWeekdays { get; set; } = [];
     protected int EditCustomDays { get; set; } = Constants.Repeat.DefaultCustomDays;
     protected int EditMonthlyDay { get; set; } = Constants.Repeat.DefaultMonthlyDay;
+    protected int EditQuarterlyDay { get; set; } = DateTime.Now.Day;
+    protected int EditYearlyDay { get; set; } = DateTime.Now.Day;
+    protected int EditYearlyMonth { get; set; } = DateTime.Now.Month;
     protected DateTime? EditScheduledDate { get; set; }
     protected bool EditIsPaused { get; set; }
     protected DateTime? EditPausedDate { get; set; }
@@ -71,6 +74,10 @@ public class TaskEditPanelBase : ComponentBase
         EditWeekdays = Task.Repeat?.Weekdays ?? [];
         EditCustomDays = Task.Repeat?.CustomDays > 0 ? Task.Repeat.CustomDays : Constants.Repeat.DefaultCustomDays;
         EditMonthlyDay = Task.Repeat?.MonthlyDay ?? Constants.Repeat.DefaultMonthlyDay;
+        var anchorDate = (Task.ScheduledDate ?? Task.Repeat?.StartDate ?? Task.CreatedAt).Date;
+        EditQuarterlyDay = Task.Repeat?.QuarterlyDay ?? anchorDate.Day;
+        EditYearlyDay = Task.Repeat?.YearlyDay ?? anchorDate.Day;
+        EditYearlyMonth = Task.Repeat?.YearlyMonth ?? anchorDate.Month;
         EditScheduledDate = Task.ScheduledDate;
         EditIsPaused = Task.Repeat?.IsPaused ?? false;
         EditPausedDate = Task.Repeat?.PausedDate ?? null;
@@ -149,6 +156,9 @@ public class TaskEditPanelBase : ComponentBase
                 Weekdays = EditWeekdays,
                 CustomDays = EditCustomDays,
                 MonthlyDay = EditMonthlyDay,
+                QuarterlyDay = EditQuarterlyDay,
+                YearlyDay = EditYearlyDay,
+                YearlyMonth = EditYearlyMonth,
                 IsPaused = EditIsPaused,
                 PausedDate = EditIsPaused ? EditPausedDate : null,
                 StartDate = t.Repeat.StartDate,
@@ -162,6 +172,9 @@ public class TaskEditPanelBase : ComponentBase
                 Weekdays = EditWeekdays,
                 CustomDays = EditCustomDays,
                 MonthlyDay = EditMonthlyDay,
+                QuarterlyDay = EditQuarterlyDay,
+                YearlyDay = EditYearlyDay,
+                YearlyMonth = EditYearlyMonth,
                 IsPaused = EditIsPaused,
                 PausedDate = EditIsPaused ? EditPausedDate : null,
                 StartDate = EditScheduledDate

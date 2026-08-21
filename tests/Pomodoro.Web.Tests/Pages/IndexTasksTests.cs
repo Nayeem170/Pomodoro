@@ -461,6 +461,51 @@ public class IndexTasksTests : TestHelper
     }
 
     [Fact]
+    public async Task HandleTaskAdd_Quarterly_MapsDayZeroToNull()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem { Id = taskId, Name = "Quarterly Task" };
+        AppState.Tasks = new List<TaskItem> { task };
+        TaskServiceMock.SetupGet(x => x.CurrentTaskId).Returns(taskId);
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var request = new NewTaskRequest("Quarterly Task", RepeatType.Quarterly, DateTime.Now, QuarterlyDay: 20);
+        await cut.Instance.HandleTaskAdd(request);
+
+        task.Repeat.Should().NotBeNull();
+        task.Repeat!.QuarterlyDay.Should().Be(20);
+
+        var unsetRequest = new NewTaskRequest("Quarterly Task", RepeatType.Quarterly, DateTime.Now);
+        await cut.Instance.HandleTaskAdd(unsetRequest);
+
+        task.Repeat.QuarterlyDay.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task HandleTaskAdd_Yearly_MapsZeroDayAndMonthToNull()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem { Id = taskId, Name = "Yearly Task" };
+        AppState.Tasks = new List<TaskItem> { task };
+        TaskServiceMock.SetupGet(x => x.CurrentTaskId).Returns(taskId);
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var request = new NewTaskRequest(
+            "Yearly Task", RepeatType.Yearly, DateTime.Now, YearlyDay: 9, YearlyMonth: 11);
+        await cut.Instance.HandleTaskAdd(request);
+
+        task.Repeat.Should().NotBeNull();
+        task.Repeat!.YearlyDay.Should().Be(9);
+        task.Repeat.YearlyMonth.Should().Be(11);
+
+        var unsetRequest = new NewTaskRequest("Yearly Task", RepeatType.Yearly, DateTime.Now);
+        await cut.Instance.HandleTaskAdd(unsetRequest);
+
+        task.Repeat.YearlyDay.Should().BeNull();
+        task.Repeat.YearlyMonth.Should().BeNull();
+    }
+
+    [Fact]
     public async Task HandleTaskAdd_SetsErrorMessage_WhenUnauthorizedAccessException()
     {
         TaskServiceMock

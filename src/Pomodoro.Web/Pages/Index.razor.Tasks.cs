@@ -65,6 +65,9 @@ public partial class IndexBase
                             Weekdays = request.Weekdays ?? [],
                             CustomDays = request.CustomDays > 0 ? request.CustomDays : Constants.Repeat.DefaultCustomDays,
                             MonthlyDay = request.MonthlyDay > 0 ? request.MonthlyDay : Constants.Repeat.DefaultMonthlyDay,
+                            QuarterlyDay = request.QuarterlyDay > 0 ? request.QuarterlyDay : null,
+                            YearlyDay = request.YearlyDay > 0 ? request.YearlyDay : null,
+                            YearlyMonth = request.YearlyMonth > 0 ? request.YearlyMonth : null,
                             IsPaused = request.IsPaused,
                             PausedDate = request.IsPaused ? request.PausedDate : null,
                             StartDate = request.ScheduledDate ?? DateTime.Now

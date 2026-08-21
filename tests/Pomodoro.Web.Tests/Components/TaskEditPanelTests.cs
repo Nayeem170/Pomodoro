@@ -89,6 +89,146 @@ public partial class TaskEditPanelTests : TestContext
     }
 
     [Fact]
+    public void OnInitialized_WithQuarterlyRepeat_ShowsQuarterlyDayInputWithValue()
+    {
+        var task = CreateTask(t => t.Repeat = new RepeatRule
+        {
+            Type = RepeatType.Quarterly,
+            QuarterlyDay = 15
+        });
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters.Add(p => p.Task, task));
+
+        cut.Markup.Should().Contain("of quarter");
+        var input = cut.Find("input[type=\"number\"]");
+        input.GetAttribute("value").Should().Be("15");
+    }
+
+    [Fact]
+    public void OnInitialized_WithYearlyRepeat_ShowsDayAndMonthInputs()
+    {
+        var task = CreateTask(t => t.Repeat = new RepeatRule
+        {
+            Type = RepeatType.Yearly,
+            YearlyDay = 10,
+            YearlyMonth = 3
+        });
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters.Add(p => p.Task, task));
+
+        cut.Markup.Should().Contain("of month");
+        cut.Markup.Should().Contain("of year");
+        var inputs = cut.FindAll("input[type=\"number\"]");
+        inputs.Count.Should().Be(2);
+        inputs[0].GetAttribute("value").Should().Be("10");
+        inputs[1].GetAttribute("value").Should().Be("3");
+    }
+
+    [Fact]
+    public void OnInitialized_WithNullQuarterlyYearlyFields_DefaultsToAnchor()
+    {
+        var anchor = new DateTime(2026, 5, 7, 12, 0, 0, DateTimeKind.Utc);
+        var task = CreateTask(t =>
+        {
+            t.CreatedAt = anchor;
+            t.Repeat = new RepeatRule { Type = RepeatType.Quarterly };
+        });
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters.Add(p => p.Task, task));
+
+        var input = cut.Find("input[type=\"number\"]");
+        input.GetAttribute("value").Should().Be("7");
+    }
+
+    [Fact]
+    public void HandleSave_SelectQuarterly_WritesQuarterlyDay()
+    {
+        var task = CreateTask();
+        TaskItem? savedTask = null;
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters
+                .Add(p => p.Task, task)
+                .Add(p => p.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => savedTask = t)));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Quarterly");
+        var input = cut.Find("input[type=\"number\"]");
+        input.Input("20");
+        cut.Find(".tep-save-btn").Click();
+
+        savedTask.Should().NotBeNull();
+        savedTask!.Repeat.Should().NotBeNull();
+        savedTask.Repeat!.Type.Should().Be(RepeatType.Quarterly);
+        savedTask.Repeat.QuarterlyDay.Should().Be(20);
+        savedTask.Repeat.YearlyDay.Should().Be(DateTime.Now.Day);
+        savedTask.Repeat.YearlyMonth.Should().Be(DateTime.Now.Month);
+    }
+
+    [Fact]
+    public void HandleSave_SelectYearly_WritesDayAndMonth()
+    {
+        var task = CreateTask();
+        TaskItem? savedTask = null;
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters
+                .Add(p => p.Task, task)
+                .Add(p => p.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => savedTask = t)));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Yearly");
+        cut.FindAll("input[type=\"number\"]")[0].Input("9");
+        cut.FindAll("input[type=\"number\"]")[1].Input("11");
+        cut.Find(".tep-save-btn").Click();
+
+        savedTask.Should().NotBeNull();
+        savedTask!.Repeat.Should().NotBeNull();
+        savedTask.Repeat!.Type.Should().Be(RepeatType.Yearly);
+        savedTask.Repeat.YearlyDay.Should().Be(9);
+        savedTask.Repeat.YearlyMonth.Should().Be(11);
+    }
+
+    [Fact]
+    public void HandleSave_FromNullRepeatWithQuarterly_CreatesRuleWithQuarterlyDay()
+    {
+        var task = CreateTask();
+        TaskItem? savedTask = null;
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters
+                .Add(p => p.Task, task)
+                .Add(p => p.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => savedTask = t)));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Quarterly");
+        cut.Find(".tep-save-btn").Click();
+
+        savedTask.Should().NotBeNull();
+        savedTask!.Repeat.Should().NotBeNull();
+        savedTask.Repeat!.Type.Should().Be(RepeatType.Quarterly);
+        savedTask.Repeat.QuarterlyDay.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public void HandleSave_FromNullRepeatWithYearly_CreatesRuleWithDayAndMonth()
+    {
+        var task = CreateTask();
+        TaskItem? savedTask = null;
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters
+                .Add(p => p.Task, task)
+                .Add(p => p.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => savedTask = t)));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Yearly");
+        cut.Find(".tep-save-btn").Click();
+
+        savedTask.Should().NotBeNull();
+        savedTask!.Repeat.Should().NotBeNull();
+        savedTask.Repeat!.Type.Should().Be(RepeatType.Yearly);
+        savedTask.Repeat.YearlyDay.Should().BeGreaterThan(0);
+        savedTask.Repeat.YearlyMonth.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
     public void OnInitialized_WithScheduledDate_ShowsDate()
     {
         var date = new DateTime(2026, 6, 15);

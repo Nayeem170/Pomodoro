@@ -232,6 +232,36 @@ public class TaskItemEditTests : TestContext
     }
 
     [Fact]
+    public void GetRepeatTooltip_Quarterly()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test",
+            Repeat = new RepeatRule { Type = RepeatType.Quarterly, QuarterlyDay = 15 }
+        };
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
+            parameters.Add(p => p.Item, task));
+
+        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Quarterly (day 15)");
+    }
+
+    [Fact]
+    public void GetRepeatTooltip_Yearly()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test",
+            Repeat = new RepeatRule { Type = RepeatType.Yearly, YearlyDay = 10, YearlyMonth = 3 }
+        };
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
+            parameters.Add(p => p.Item, task));
+
+        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Yearly (day 10, month 3)");
+    }
+
+    [Fact]
     public void GetRepeatTooltip_PausedSuffix()
     {
         var task = new TaskItem
