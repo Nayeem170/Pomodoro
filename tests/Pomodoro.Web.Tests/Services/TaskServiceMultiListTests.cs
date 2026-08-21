@@ -2384,7 +2384,8 @@ public class TaskServiceMultiListTests
         {
             Type = RepeatType.Quarterly,
             LastCompletedDate = new DateTime(2024, 8, 31),
-            QuarterlyDay = 31
+            QuarterlyDay = 31,
+            QuarterlyMonth = 2
         });
         result.Should().Be(new DateTime(2024, 11, 30));
     }
@@ -2408,21 +2409,35 @@ public class TaskServiceMultiListTests
         {
             Type = RepeatType.Quarterly,
             LastCompletedDate = new DateTime(2024, 9, 20),
-            QuarterlyDay = 20
+            QuarterlyDay = 20,
+            QuarterlyMonth = 3
         });
         result.Should().Be(new DateTime(2024, 12, 20));
     }
 
     [Fact]
-    public void ComputeNextOccurrence_Quarterly_NextExceedsEndDate_ReturnsNull()
+    public void ComputeNextOccurrence_Quarterly_NonGroupBaseDate_LandsOnNextInGroupMonth()
     {
-        var baseDate = DateTime.UtcNow.Date;
         var result = InvokeComputeNextOccurrence(new RepeatRule
         {
             Type = RepeatType.Quarterly,
-            LastCompletedDate = baseDate,
+            LastCompletedDate = new DateTime(2024, 9, 20),
+            QuarterlyDay = 20,
+            QuarterlyMonth = 2
+        });
+        result.Should().Be(new DateTime(2024, 11, 20));
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_Quarterly_NextExceedsEndDate_ReturnsNull()
+    {
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Quarterly,
+            LastCompletedDate = new DateTime(2026, 9, 15),
             QuarterlyDay = 15,
-            EndDate = baseDate.AddMonths(2)
+            QuarterlyMonth = 2,
+            EndDate = new DateTime(2026, 10, 31)
         });
         result.Should().BeNull();
     }
@@ -2453,14 +2468,28 @@ public class TaskServiceMultiListTests
     }
 
     [Fact]
-    public void ComputeNextOccurrence_Yearly_NextExceedsEndDate_ReturnsNull()
+    public void ComputeNextOccurrence_Yearly_RuleMonthAheadOfBaseDate_ReturnsSameYear()
     {
-        var baseDate = DateTime.UtcNow.Date;
         var result = InvokeComputeNextOccurrence(new RepeatRule
         {
             Type = RepeatType.Yearly,
-            LastCompletedDate = baseDate,
-            EndDate = baseDate.AddMonths(2)
+            LastCompletedDate = new DateTime(2024, 3, 10),
+            YearlyMonth = 8,
+            YearlyDay = 15
+        });
+        result.Should().Be(new DateTime(2024, 8, 15));
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_Yearly_NextExceedsEndDate_ReturnsNull()
+    {
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Yearly,
+            LastCompletedDate = new DateTime(2026, 9, 15),
+            YearlyMonth = 8,
+            YearlyDay = 15,
+            EndDate = new DateTime(2027, 6, 1)
         });
         result.Should().BeNull();
     }

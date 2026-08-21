@@ -72,11 +72,24 @@
     @if (EditRepeatType == RepeatType.Quarterly && !EditFollowParent)
     {
         <div class="tep-row">
+            <label class="tep-label">Months</label>
+            <select class="tep-input" @bind="EditQuarterlyMonth">
+                @for (var i = 1; i <= Constants.Repeat.QuarterlyGroupLabels.Length; i++)
+                {
+                    <option value="@i">@Constants.Repeat.QuarterlyGroupLabels[i - 1]</option>
+                }
+            </select>
+        </div>
+        <div class="tep-row">
             <label class="tep-label">Day</label>
             <input type="number" class="tep-input tep-input-sm" min="1" max="31"
                    @bind="EditQuarterlyDay" @bind:event="oninput" />
-            <span class="tep-unit">of quarter</span>
+            <span class="tep-unit">of month</span>
         </div>
+        @if (EditQuarterlyDay > 28)
+        {
+            <div class="tep-hint">@Constants.Repeat.MonthEndClampHint</div>
+        }
     }
 
     @if (EditRepeatType == RepeatType.Yearly && !EditFollowParent)
@@ -87,11 +100,18 @@
                    @bind="EditYearlyDay" @bind:event="oninput" />
             <span class="tep-unit">of month</span>
         </div>
+        @if (EditYearlyDay > 28)
+        {
+            <div class="tep-hint">@Constants.Repeat.MonthEndClampHint</div>
+        }
         <div class="tep-row">
             <label class="tep-label">Month</label>
-            <input type="number" class="tep-input tep-input-sm" min="1" max="12"
-                   @bind="EditYearlyMonth" @bind:event="oninput" />
-            <span class="tep-unit">of year</span>
+            <select class="tep-input" @bind="EditYearlyMonth">
+                @for (var i = 1; i <= Constants.Repeat.MonthNames.Length; i++)
+                {
+                    <option value="@i">@Constants.Repeat.MonthNames[i - 1]</option>
+                }
+            </select>
         </div>
     }
 

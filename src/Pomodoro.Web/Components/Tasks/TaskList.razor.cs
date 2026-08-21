@@ -75,6 +75,8 @@ public class TaskListBase : ComponentBase
 
     protected int _newTaskQuarterlyDay = DateTime.Now.Day;
 
+    protected int _newTaskQuarterlyMonth = RepeatRule.QuarterGroupOf(DateTime.Now);
+
     protected int _newTaskYearlyDay = DateTime.Now.Day;
 
     protected int _newTaskYearlyMonth = DateTime.Now.Month;
@@ -199,6 +201,7 @@ public class TaskListBase : ComponentBase
         _newTaskCustomDays = Constants.Repeat.DefaultCustomDays;
         _newTaskMonthlyDay = Constants.Repeat.DefaultMonthlyDay;
         _newTaskQuarterlyDay = DateTime.Now.Day;
+        _newTaskQuarterlyMonth = RepeatRule.QuarterGroupOf(DateTime.Now);
         _newTaskYearlyDay = DateTime.Now.Day;
         _newTaskYearlyMonth = DateTime.Now.Month;
         _newTaskIsPaused = false;
@@ -292,6 +295,7 @@ public class TaskListBase : ComponentBase
                 _newTaskPausedDate,
                 _newTaskListId,
                 _newTaskQuarterlyDay,
+                _newTaskQuarterlyMonth,
                 _newTaskYearlyDay,
                 _newTaskYearlyMonth));
             NewTaskName = string.Empty;
@@ -300,6 +304,7 @@ public class TaskListBase : ComponentBase
             _newTaskCustomDays = Constants.Repeat.DefaultCustomDays;
             _newTaskMonthlyDay = Constants.Repeat.DefaultMonthlyDay;
             _newTaskQuarterlyDay = DateTime.Now.Day;
+            _newTaskQuarterlyMonth = RepeatRule.QuarterGroupOf(DateTime.Now);
             _newTaskYearlyDay = DateTime.Now.Day;
             _newTaskYearlyMonth = DateTime.Now.Month;
             _newTaskIsPaused = false;

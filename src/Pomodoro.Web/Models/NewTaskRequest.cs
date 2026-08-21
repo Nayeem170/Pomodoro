@@ -11,5 +11,6 @@ public sealed record NewTaskRequest(
     DateTime? PausedDate = null,
     string? ListId = null,
     int QuarterlyDay = 0,
+    int QuarterlyMonth = 0,
     int YearlyDay = 0,
     int YearlyMonth = 0);

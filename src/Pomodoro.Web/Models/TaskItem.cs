@@ -10,6 +10,7 @@ public class RepeatRule
     public DayOfWeek[] Weekdays { get; set; } = [];
     public int? MonthlyDay { get; set; }
     public int? QuarterlyDay { get; set; }
+    public int? QuarterlyMonth { get; set; }
     public int? YearlyDay { get; set; }
     public int? YearlyMonth { get; set; }
     public DateTime? StartDate { get; set; }
@@ -40,7 +41,7 @@ public class RepeatRule
                 : Weekdays.Contains(date.DayOfWeek),
             RepeatType.Custom => CustomDays > 0 && (date - anchor).Days % CustomDays == 0,
             RepeatType.Monthly => date.Day == (MonthlyDay ?? anchor.Day),
-            RepeatType.Quarterly => MonthDelta(date, anchor) % 3 == 0
+            RepeatType.Quarterly => (date.Month - EffectiveQuarterGroup(anchor)) % 3 == 0
                 && DayMatchesClamped(date, QuarterlyDay ?? anchor.Day),
             RepeatType.Yearly => date.Month == (YearlyMonth ?? anchor.Month)
                 && DayMatchesClamped(date, YearlyDay ?? anchor.Day),
@@ -48,8 +49,9 @@ public class RepeatRule
         };
     }
 
-    private static int MonthDelta(DateTime date, DateTime anchor) =>
-        (date.Year - anchor.Year) * 12 + date.Month - anchor.Month;
+    public static int QuarterGroupOf(DateTime date) => ((date.Month - 1) % 3) + 1;
+
+    public int EffectiveQuarterGroup(DateTime anchor) => QuarterlyMonth ?? QuarterGroupOf(anchor);
 
     private static bool DayMatchesClamped(DateTime date, int day) =>
         date.Day == day

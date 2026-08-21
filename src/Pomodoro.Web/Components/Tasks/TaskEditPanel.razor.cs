@@ -34,6 +34,7 @@ public class TaskEditPanelBase : ComponentBase
     protected int EditCustomDays { get; set; } = Constants.Repeat.DefaultCustomDays;
     protected int EditMonthlyDay { get; set; } = Constants.Repeat.DefaultMonthlyDay;
     protected int EditQuarterlyDay { get; set; } = DateTime.Now.Day;
+    protected int EditQuarterlyMonth { get; set; } = RepeatRule.QuarterGroupOf(DateTime.Now);
     protected int EditYearlyDay { get; set; } = DateTime.Now.Day;
     protected int EditYearlyMonth { get; set; } = DateTime.Now.Month;
     protected DateTime? EditScheduledDate { get; set; }
@@ -76,6 +77,7 @@ public class TaskEditPanelBase : ComponentBase
         EditMonthlyDay = Task.Repeat?.MonthlyDay ?? Constants.Repeat.DefaultMonthlyDay;
         var anchorDate = (Task.ScheduledDate ?? Task.Repeat?.StartDate ?? Task.CreatedAt).Date;
         EditQuarterlyDay = Task.Repeat?.QuarterlyDay ?? anchorDate.Day;
+        EditQuarterlyMonth = Task.Repeat?.QuarterlyMonth ?? RepeatRule.QuarterGroupOf(anchorDate);
         EditYearlyDay = Task.Repeat?.YearlyDay ?? anchorDate.Day;
         EditYearlyMonth = Task.Repeat?.YearlyMonth ?? anchorDate.Month;
         EditScheduledDate = Task.ScheduledDate;
@@ -157,6 +159,7 @@ public class TaskEditPanelBase : ComponentBase
                 CustomDays = EditCustomDays,
                 MonthlyDay = EditMonthlyDay,
                 QuarterlyDay = EditQuarterlyDay,
+                QuarterlyMonth = EditQuarterlyMonth,
                 YearlyDay = EditYearlyDay,
                 YearlyMonth = EditYearlyMonth,
                 IsPaused = EditIsPaused,
@@ -173,6 +176,7 @@ public class TaskEditPanelBase : ComponentBase
                 CustomDays = EditCustomDays,
                 MonthlyDay = EditMonthlyDay,
                 QuarterlyDay = EditQuarterlyDay,
+                QuarterlyMonth = EditQuarterlyMonth,
                 YearlyDay = EditYearlyDay,
                 YearlyMonth = EditYearlyMonth,
                 IsPaused = EditIsPaused,

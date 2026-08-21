@@ -469,16 +469,19 @@ public class IndexTasksTests : TestHelper
         TaskServiceMock.SetupGet(x => x.CurrentTaskId).Returns(taskId);
 
         var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
-        var request = new NewTaskRequest("Quarterly Task", RepeatType.Quarterly, DateTime.Now, QuarterlyDay: 20);
+        var request = new NewTaskRequest(
+            "Quarterly Task", RepeatType.Quarterly, DateTime.Now, QuarterlyDay: 20, QuarterlyMonth: 3);
         await cut.Instance.HandleTaskAdd(request);
 
         task.Repeat.Should().NotBeNull();
         task.Repeat!.QuarterlyDay.Should().Be(20);
+        task.Repeat.QuarterlyMonth.Should().Be(3);
 
         var unsetRequest = new NewTaskRequest("Quarterly Task", RepeatType.Quarterly, DateTime.Now);
         await cut.Instance.HandleTaskAdd(unsetRequest);
 
         task.Repeat.QuarterlyDay.Should().BeNull();
+        task.Repeat.QuarterlyMonth.Should().BeNull();
     }
 
     [Fact]

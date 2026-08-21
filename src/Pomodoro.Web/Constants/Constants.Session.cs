@@ -104,5 +104,10 @@ public static partial class Constants
         public const string LabelYearly = "Yearly";
         public const string LabelRepeat = "Repeat";
         public const string FollowParentChoice = "follow-parent";
+        public const string MonthEndClampHint = "Runs on the last day of shorter months.";
+        public static readonly string[] QuarterlyGroupLabels =
+            ["Jan, Apr, Jul, Oct", "Feb, May, Aug, Nov", "Mar, Jun, Sep, Dec"];
+        public static readonly string[] MonthNames =
+            ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     }
 }

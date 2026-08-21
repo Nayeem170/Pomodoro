@@ -166,14 +166,15 @@ public partial class TaskItemBase : ComponentBase
     protected string GetRepeatTooltip()
     {
         if (Item.Repeat == null) return string.Empty;
+        var anchor = (Item.ScheduledDate ?? Item.Repeat.StartDate ?? Item.CreatedAt).Date;
         var typeLabel = Item.Repeat.Type switch
         {
             RepeatType.Daily => "Daily",
             RepeatType.Weekly => "Weekly",
             RepeatType.Custom => $"Every {Item.Repeat.CustomDays} days",
             RepeatType.Monthly => $"Monthly (day {Item.Repeat.MonthlyDay})",
-            RepeatType.Quarterly => $"Quarterly (day {Item.Repeat.QuarterlyDay})",
-            RepeatType.Yearly => $"Yearly (day {Item.Repeat.YearlyDay}, month {Item.Repeat.YearlyMonth})",
+            RepeatType.Quarterly => $"Quarterly ({Constants.Repeat.QuarterlyGroupLabels[Item.Repeat.EffectiveQuarterGroup(anchor) - 1]}, day {Item.Repeat.QuarterlyDay ?? anchor.Day})",
+            RepeatType.Yearly => $"Yearly (day {Item.Repeat.YearlyDay ?? anchor.Day} of {Constants.Repeat.MonthNames[(Item.Repeat.YearlyMonth ?? anchor.Month) - 1]})",
             _ => "Repeats"
         };
         if (Item.Repeat.IsPaused) return $"{typeLabel} (paused)";

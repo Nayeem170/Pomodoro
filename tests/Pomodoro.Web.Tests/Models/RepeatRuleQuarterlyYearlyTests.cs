@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Pomodoro.Web.Models;
 using Xunit;
 
@@ -242,5 +243,70 @@ public class RepeatRuleQuarterlyYearlyTests
         // Assert
         Assert.True(quarterlyResult);
         Assert.True(yearlyResult);
+    }
+
+    [Fact]
+    public void OccursOn_Quarterly_ExplicitGroup_OverridesAnchorPhase()
+    {
+        var anchor = new DateTime(2024, 5, 10);
+        var task = TaskAnchoredAt(anchor,
+            new RepeatRule { Type = RepeatType.Quarterly, QuarterlyDay = 10, QuarterlyMonth = 1 });
+
+        // Act
+        var jul = task.Repeat!.OccursOn(task, new DateTime(2024, 7, 10));
+        var oct = task.Repeat!.OccursOn(task, new DateTime(2024, 10, 10));
+        var jan = task.Repeat!.OccursOn(task, new DateTime(2025, 1, 10));
+
+        // Assert
+        Assert.True(jul);
+        Assert.True(oct);
+        Assert.True(jan);
+    }
+
+    [Fact]
+    public void OccursOn_Quarterly_ExplicitGroup_OtherGroupsReturnFalse()
+    {
+        var anchor = new DateTime(2024, 5, 10);
+        var task = TaskAnchoredAt(anchor,
+            new RepeatRule { Type = RepeatType.Quarterly, QuarterlyDay = 10, QuarterlyMonth = 1 });
+
+        // Act
+        var aug = task.Repeat!.OccursOn(task, new DateTime(2024, 8, 10));
+        var nov = task.Repeat!.OccursOn(task, new DateTime(2024, 11, 10));
+        var feb = task.Repeat!.OccursOn(task, new DateTime(2025, 2, 10));
+
+        // Assert
+        Assert.False(aug);
+        Assert.False(nov);
+        Assert.False(feb);
+    }
+
+    [Fact]
+    public void OccursOn_Quarterly_Group3_FromFebruaryAnchor_MatchesGroupMonths()
+    {
+        var anchor = new DateTime(2024, 2, 15);
+        var task = TaskAnchoredAt(anchor,
+            new RepeatRule { Type = RepeatType.Quarterly, QuarterlyDay = 15, QuarterlyMonth = 3 });
+
+        // Act
+        var result = task.Repeat!.OccursOn(task, new DateTime(2024, 9, 15));
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void Deserialize_OldJson_WithoutQuarterlyMonth_DefaultsToNull()
+    {
+        var json = """{"Type":5,"QuarterlyDay":15}""";
+
+        // Act
+        var rule = JsonSerializer.Deserialize<RepeatRule>(json);
+
+        // Assert
+        Assert.NotNull(rule);
+        Assert.Equal(RepeatType.Quarterly, rule.Type);
+        Assert.Equal(15, rule.QuarterlyDay);
+        Assert.Null(rule.QuarterlyMonth);
     }
 }

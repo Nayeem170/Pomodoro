@@ -1455,7 +1455,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             RepeatType.Weekly => ComputeNextWeekday(baseDate, rule.Weekdays),
             RepeatType.Custom => baseDate.AddDays(rule.CustomDays > 0 ? rule.CustomDays : Constants.Repeat.DefaultCustomDays),
             RepeatType.Monthly => ComputeNextMonthly(baseDate, rule.MonthlyDay),
-            RepeatType.Quarterly => ComputeNextQuarterly(baseDate, anchor, rule.QuarterlyDay),
+            RepeatType.Quarterly => ComputeNextQuarterly(baseDate, anchor, rule.QuarterlyDay, rule.QuarterlyMonth),
             RepeatType.Yearly => ComputeNextYearly(baseDate, anchor, rule.YearlyDay, rule.YearlyMonth),
             _ => (DateTime?)null
         };
@@ -1491,10 +1491,13 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         return new DateTime(nextMonth.Year, nextMonth.Month, actualDay);
     }
 
-    private static DateTime ComputeNextQuarterly(DateTime baseDate, DateTime anchor, int? quarterlyDay)
+    private static DateTime ComputeNextQuarterly(DateTime baseDate, DateTime anchor, int? quarterlyDay, int? quarterlyMonth)
     {
         var day = quarterlyDay ?? anchor.Day;
-        var target = baseDate.AddMonths(3);
+        var group = quarterlyMonth ?? RepeatRule.QuarterGroupOf(anchor);
+        var delta = ((group % 3) - (baseDate.Month % 3) + 3) % 3;
+        if (delta == 0) delta = 3;
+        var target = baseDate.AddMonths(delta);
         var actualDay = Math.Min(day, DateTime.DaysInMonth(target.Year, target.Month));
         return new DateTime(target.Year, target.Month, actualDay);
     }
@@ -1503,9 +1506,10 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
     {
         var month = yearlyMonth ?? anchor.Month;
         var day = yearlyDay ?? anchor.Day;
-        var targetYear = baseDate.Year + 1;
-        var actualDay = Math.Min(day, DateTime.DaysInMonth(targetYear, month));
-        return new DateTime(targetYear, month, actualDay);
+        var candidate = new DateTime(baseDate.Year, month, Math.Min(day, DateTime.DaysInMonth(baseDate.Year, month)));
+        if (candidate <= baseDate)
+            candidate = new DateTime(baseDate.Year + 1, month, Math.Min(day, DateTime.DaysInMonth(baseDate.Year + 1, month)));
+        return candidate;
     }
 
     private static DateTime? CurrentOccurrenceBoundary(TaskItem task)

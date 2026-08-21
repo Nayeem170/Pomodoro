@@ -16,8 +16,8 @@
 // Version: 21.0.0 (cache bump: picker fade overflow fix, branch glyph removed)
 // Last updated: 2026-08-20
 
-const CACHE_NAME = 'pomodoro-cache-v21';
-const CACHE_VERSION = 21;
+const CACHE_NAME = 'pomodoro-cache-v22';
+const CACHE_VERSION = 22;
 
 // Assets to cache immediately on install (static assets)
 const PRECACHE_ASSETS = [

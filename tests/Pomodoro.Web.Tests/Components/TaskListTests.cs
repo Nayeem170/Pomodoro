@@ -756,6 +756,56 @@ public class TaskListTests : TestContext
     #region More Options Panel
 
     [Fact]
+    public void MorePanel_ShowsGroupSelectAndClampHint_WhenQuarterlySelectedWithDayAbove28()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Quarterly);
+
+        cut.FindAll("select.tep-input option").Should().HaveCount(3);
+        cut.Markup.Should().Contain("Jan, Apr, Jul, Oct");
+        cut.Markup.Should().Contain("of month");
+
+        cut.Find("input[type=\"number\"]").Input("31");
+        cut.Markup.Should().Contain("Runs on the last day of shorter months.");
+    }
+
+    [Fact]
+    public void MorePanel_ShowsMonthNameSelectAndClampHint_WhenYearlySelectedWithDayAbove28()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Yearly);
+
+        cut.FindAll("select.tep-input option").Should().HaveCount(12);
+        cut.Markup.Should().Contain("January");
+        cut.Markup.Should().Contain("December");
+
+        cut.Find("input[type=\"number\"]").Input("29");
+        cut.Markup.Should().Contain("Runs on the last day of shorter months.");
+    }
+
+    [Fact]
+    public void MorePanel_HidesClampHint_WhenQuarterlyDayAtOrBelow28()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Quarterly);
+
+        cut.Find("input[type=\"number\"]").Input("15");
+        cut.Markup.Should().NotContain("Runs on the last day of shorter months.");
+    }
+
+    [Fact]
     public void MorePanel_ShowsWhenMoreButtonClicked()
     {
         var cut = RenderComponent<TaskList>(p => p

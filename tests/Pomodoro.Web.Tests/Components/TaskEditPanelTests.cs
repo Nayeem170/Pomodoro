@@ -89,23 +89,27 @@ public partial class TaskEditPanelTests : TestContext
     }
 
     [Fact]
-    public void OnInitialized_WithQuarterlyRepeat_ShowsQuarterlyDayInputWithValue()
+    public void OnInitialized_WithQuarterlyRepeat_ShowsGroupSelectAndDayInputWithValue()
     {
         var task = CreateTask(t => t.Repeat = new RepeatRule
         {
             Type = RepeatType.Quarterly,
-            QuarterlyDay = 15
+            QuarterlyDay = 15,
+            QuarterlyMonth = 2
         });
         var cut = RenderComponent<TaskEditPanel>(parameters =>
             parameters.Add(p => p.Task, task));
 
-        cut.Markup.Should().Contain("of quarter");
+        cut.Markup.Should().Contain("of month");
+        cut.Markup.Should().Contain("Feb, May, Aug, Nov");
+        var groupSelect = cut.Find("select.tep-input");
+        groupSelect.GetAttribute("value").Should().Be("2");
         var input = cut.Find("input[type=\"number\"]");
         input.GetAttribute("value").Should().Be("15");
     }
 
     [Fact]
-    public void OnInitialized_WithYearlyRepeat_ShowsDayAndMonthInputs()
+    public void OnInitialized_WithYearlyRepeat_ShowsDayInputAndMonthSelect()
     {
         var task = CreateTask(t => t.Repeat = new RepeatRule
         {
@@ -117,11 +121,12 @@ public partial class TaskEditPanelTests : TestContext
             parameters.Add(p => p.Task, task));
 
         cut.Markup.Should().Contain("of month");
-        cut.Markup.Should().Contain("of year");
+        cut.Markup.Should().Contain("March");
         var inputs = cut.FindAll("input[type=\"number\"]");
-        inputs.Count.Should().Be(2);
+        inputs.Count.Should().Be(1);
         inputs[0].GetAttribute("value").Should().Be("10");
-        inputs[1].GetAttribute("value").Should().Be("3");
+        var monthSelect = cut.Find("select.tep-input");
+        monthSelect.GetAttribute("value").Should().Be("3");
     }
 
     [Fact]
@@ -138,6 +143,8 @@ public partial class TaskEditPanelTests : TestContext
 
         var input = cut.Find("input[type=\"number\"]");
         input.GetAttribute("value").Should().Be("7");
+        var groupSelect = cut.Find("select.tep-input");
+        groupSelect.GetAttribute("value").Should().Be("2");
     }
 
     [Fact]
@@ -154,12 +161,14 @@ public partial class TaskEditPanelTests : TestContext
         select.Change("Quarterly");
         var input = cut.Find("input[type=\"number\"]");
         input.Input("20");
+        cut.Find("select.tep-input").Change("3");
         cut.Find(".tep-save-btn").Click();
 
         savedTask.Should().NotBeNull();
         savedTask!.Repeat.Should().NotBeNull();
         savedTask.Repeat!.Type.Should().Be(RepeatType.Quarterly);
         savedTask.Repeat.QuarterlyDay.Should().Be(20);
+        savedTask.Repeat.QuarterlyMonth.Should().Be(3);
         savedTask.Repeat.YearlyDay.Should().Be(DateTime.Now.Day);
         savedTask.Repeat.YearlyMonth.Should().Be(DateTime.Now.Month);
     }
@@ -176,8 +185,8 @@ public partial class TaskEditPanelTests : TestContext
 
         var select = cut.Find("select.tep-select");
         select.Change("Yearly");
-        cut.FindAll("input[type=\"number\"]")[0].Input("9");
-        cut.FindAll("input[type=\"number\"]")[1].Input("11");
+        cut.Find("input[type=\"number\"]").Input("9");
+        cut.Find("select.tep-input").Change("11");
         cut.Find(".tep-save-btn").Click();
 
         savedTask.Should().NotBeNull();
@@ -205,6 +214,7 @@ public partial class TaskEditPanelTests : TestContext
         savedTask!.Repeat.Should().NotBeNull();
         savedTask.Repeat!.Type.Should().Be(RepeatType.Quarterly);
         savedTask.Repeat.QuarterlyDay.Should().BeGreaterThan(0);
+        savedTask.Repeat.QuarterlyMonth.Should().BeInRange(1, 3);
     }
 
     [Fact]
@@ -226,6 +236,49 @@ public partial class TaskEditPanelTests : TestContext
         savedTask.Repeat!.Type.Should().Be(RepeatType.Yearly);
         savedTask.Repeat.YearlyDay.Should().BeGreaterThan(0);
         savedTask.Repeat.YearlyMonth.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public void Render_QuarterlyDayAbove28_ShowsClampHint()
+    {
+        var task = CreateTask();
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters.Add(p => p.Task, task));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Quarterly");
+        cut.Find("input[type=\"number\"]").Input("31");
+
+        cut.FindAll(".tep-hint").Count.Should().Be(1);
+        cut.Markup.Should().Contain("Runs on the last day of shorter months.");
+    }
+
+    [Fact]
+    public void Render_QuarterlyDayAtOrBelow28_HidesClampHint()
+    {
+        var task = CreateTask();
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters.Add(p => p.Task, task));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Quarterly");
+        cut.Find("input[type=\"number\"]").Input("15");
+
+        cut.FindAll(".tep-hint").Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Render_YearlyDayAbove28_ShowsClampHint()
+    {
+        var task = CreateTask();
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters.Add(p => p.Task, task));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Yearly");
+        cut.Find("input[type=\"number\"]").Input("29");
+
+        cut.FindAll(".tep-hint").Count.Should().Be(1);
     }
 
     [Fact]

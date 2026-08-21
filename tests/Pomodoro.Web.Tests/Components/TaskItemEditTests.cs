@@ -238,12 +238,12 @@ public class TaskItemEditTests : TestContext
         {
             Id = Guid.NewGuid(),
             Name = "Test",
-            Repeat = new RepeatRule { Type = RepeatType.Quarterly, QuarterlyDay = 15 }
+            Repeat = new RepeatRule { Type = RepeatType.Quarterly, QuarterlyDay = 15, QuarterlyMonth = 1 }
         };
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Quarterly (day 15)");
+        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Quarterly (Jan, Apr, Jul, Oct, day 15)");
     }
 
     [Fact]
@@ -258,7 +258,7 @@ public class TaskItemEditTests : TestContext
         var cut = RenderComponent<TaskItemComponent>(parameters =>
             parameters.Add(p => p.Item, task));
 
-        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Yearly (day 10, month 3)");
+        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Yearly (day 10 of March)");
     }
 
     [Fact]

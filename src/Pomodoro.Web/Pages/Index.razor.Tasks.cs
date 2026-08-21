@@ -66,6 +66,7 @@ public partial class IndexBase
                             CustomDays = request.CustomDays > 0 ? request.CustomDays : Constants.Repeat.DefaultCustomDays,
                             MonthlyDay = request.MonthlyDay > 0 ? request.MonthlyDay : Constants.Repeat.DefaultMonthlyDay,
                             QuarterlyDay = request.QuarterlyDay > 0 ? request.QuarterlyDay : null,
+                            QuarterlyMonth = request.QuarterlyMonth > 0 ? request.QuarterlyMonth : null,
                             YearlyDay = request.YearlyDay > 0 ? request.YearlyDay : null,
                             YearlyMonth = request.YearlyMonth > 0 ? request.YearlyMonth : null,
                             IsPaused = request.IsPaused,

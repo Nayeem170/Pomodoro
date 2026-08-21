@@ -160,11 +160,24 @@
                 @if (_newTaskRepeatType == RepeatType.Quarterly)
                 {
                     <div class="tep-row">
+                        <label class="tep-label">Months</label>
+                        <select class="tep-input" @bind="_newTaskQuarterlyMonth">
+                            @for (var i = 1; i <= Constants.Repeat.QuarterlyGroupLabels.Length; i++)
+                            {
+                                <option value="@i">@Constants.Repeat.QuarterlyGroupLabels[i - 1]</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="tep-row">
                         <label class="tep-label">Day</label>
                         <input type="number" class="tep-input tep-input-sm" min="1" max="31"
                                @bind="_newTaskQuarterlyDay" @bind:event="oninput" />
-                        <span class="tep-unit">of quarter</span>
+                        <span class="tep-unit">of month</span>
                     </div>
+                    @if (_newTaskQuarterlyDay > 28)
+                    {
+                        <div class="tep-hint">@Constants.Repeat.MonthEndClampHint</div>
+                    }
                 }
                 @if (_newTaskRepeatType == RepeatType.Yearly)
                 {
@@ -174,11 +187,18 @@
                                @bind="_newTaskYearlyDay" @bind:event="oninput" />
                         <span class="tep-unit">of month</span>
                     </div>
+                    @if (_newTaskYearlyDay > 28)
+                    {
+                        <div class="tep-hint">@Constants.Repeat.MonthEndClampHint</div>
+                    }
                     <div class="tep-row">
                         <label class="tep-label">Month</label>
-                        <input type="number" class="tep-input tep-input-sm" min="1" max="12"
-                               @bind="_newTaskYearlyMonth" @bind:event="oninput" />
-                        <span class="tep-unit">of year</span>
+                        <select class="tep-input" @bind="_newTaskYearlyMonth">
+                            @for (var i = 1; i <= Constants.Repeat.MonthNames.Length; i++)
+                            {
+                                <option value="@i">@Constants.Repeat.MonthNames[i - 1]</option>
+                            }
+                        </select>
                     </div>
                 }
                 <div class="tep-row">
