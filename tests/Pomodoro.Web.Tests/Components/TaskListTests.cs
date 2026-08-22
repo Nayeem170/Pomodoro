@@ -765,7 +765,7 @@ public class TaskListTests : TestContext
         cut.Find(".btn-more").Click();
         cut.FindAll("select.tep-select")[1].Change(RepeatType.Quarterly);
 
-        cut.FindAll("select.tep-input option").Should().HaveCount(3);
+        cut.FindAll("select[aria-label=\"Quarterly months\"] option").Should().HaveCount(3);
         cut.Markup.Should().Contain("Jan, Apr, Jul, Oct");
         cut.Markup.Should().Contain("of month");
 
@@ -783,17 +783,17 @@ public class TaskListTests : TestContext
         cut.Find(".btn-more").Click();
         cut.FindAll("select.tep-select")[1].Change(RepeatType.Yearly);
 
-        var selects = cut.FindAll("select.tep-input");
-        selects[0].QuerySelectorAll("option").Should().HaveCount(12,
+        var monthSelect = cut.Find("select[aria-label=\"Yearly month\"]");
+        monthSelect.QuerySelectorAll("option").Should().HaveCount(12,
             "month select renders all twelve month names");
         cut.Markup.Should().Contain("January");
         cut.Markup.Should().Contain("December");
 
-        selects[0].Change("2");
-        cut.FindAll("select.tep-input")[1].QuerySelectorAll("option").Should().HaveCount(29,
+        monthSelect.Change("2");
+        cut.Find("select[aria-label=\"Yearly day\"]").QuerySelectorAll("option").Should().HaveCount(29,
             "February day dropdown follows the month up to 29");
 
-        cut.FindAll("select.tep-input")[1].Change("29");
+        cut.Find("select[aria-label=\"Yearly day\"]").Change("29");
         cut.Markup.Should().Contain("Runs Feb 29 in leap years, Feb 28 otherwise.");
     }
 
@@ -852,9 +852,9 @@ public class TaskListTests : TestContext
 
         cut.Find(".btn-more").Click();
         cut.FindAll("select.tep-select")[1].Change(RepeatType.Monthly);
-        cut.FindAll("select.tep-select")[2].Change("true");
+        cut.Find("select[aria-label=\"Repeat by\"]").Change("true");
 
-        var weekSelect = cut.Find("select.tep-input");
+        var weekSelect = cut.Find("select[aria-label=\"Week of month\"]");
         weekSelect.QuerySelectorAll("option").Should().HaveCount(5);
         cut.FindAll(".tep-weekday-btn").Should().HaveCount(7);
         cut.FindAll("input[type=\"number\"]").Should().BeEmpty();
@@ -873,10 +873,9 @@ public class TaskListTests : TestContext
 
         cut.Find(".btn-more").Click();
         cut.FindAll("select.tep-select")[1].Change(RepeatType.Quarterly);
-        cut.FindAll("select.tep-select")[2].Change("true");
+        cut.Find("select[aria-label=\"Repeat by\"]").Change("true");
 
-        var groupAndWeek = cut.FindAll("select.tep-input");
-        groupAndWeek[1].QuerySelectorAll("option").Should().HaveCount(5);
+        cut.Find("select[aria-label=\"Week of month\"]").QuerySelectorAll("option").Should().HaveCount(5);
         cut.FindAll(".tep-weekday-btn").Should().HaveCount(7);
         cut.FindAll("input[type=\"number\"]").Should().BeEmpty();
 
@@ -897,9 +896,9 @@ public class TaskListTests : TestContext
         cut.Find("textarea.task-input").Input("Yearly weekday task");
         cut.Find(".btn-more").Click();
         cut.FindAll("select.tep-select")[1].Change(RepeatType.Yearly);
-        cut.FindAll("select.tep-select")[2].Change("true");
-        cut.FindAll("select.tep-input")[0].Change("3");
-        cut.FindAll("select.tep-input")[1].Change("3");
+        cut.Find("select[aria-label=\"Repeat by\"]").Change("true");
+        cut.Find("select[aria-label=\"Yearly month\"]").Change("3");
+        cut.Find("select[aria-label=\"Week of month\"]").Change("3");
         cut.FindAll(".tep-weekday-btn")[2].Click();
         cut.Find(".tep-save-btn").Click();
 
@@ -921,7 +920,7 @@ public class TaskListTests : TestContext
         cut.Find("textarea.task-input").Input("No days selected");
         cut.Find(".btn-more").Click();
         cut.FindAll("select.tep-select")[1].Change(RepeatType.Yearly);
-        cut.FindAll("select.tep-select")[2].Change("true");
+        cut.Find("select[aria-label=\"Repeat by\"]").Change("true");
         cut.Find(".tep-save-btn").Click();
 
         captured.Should().NotBeNull();

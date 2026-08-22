@@ -152,7 +152,7 @@
                 {
                     <div class="tep-row">
                         <label class="tep-label">By</label>
-                        <select class="tep-select" @bind="_newTaskRepeatBy" @bind:event="onchange">
+                        <select class="tep-select" @bind="_newTaskRepeatBy" @bind:event="onchange" aria-label="Repeat by">
                             <option value="false">@Constants.Repeat.ModeDayOfMonth</option>
                             <option value="true">@Constants.Repeat.ModeDayOfWeek</option>
                         </select>
@@ -170,7 +170,7 @@
                     {
                         <div class="tep-row">
                             <label class="tep-label">Week</label>
-                            <select class="tep-input" @bind="_newTaskWeekOfMonth">
+                            <select class="tep-select" aria-label="Week of month" @bind="_newTaskWeekOfMonth">
                                 @for (var i = 1; i <= Constants.Repeat.WeekOfMonthLabels.Length; i++)
                                 {
                                     <option value="@i">@Constants.Repeat.WeekOfMonthLabels[i - 1]</option>
@@ -198,7 +198,7 @@
                 {
                     <div class="tep-row">
                         <label class="tep-label">Months</label>
-                        <select class="tep-input" @bind="_newTaskQuarterlyMonth">
+                        <select class="tep-select" aria-label="Quarterly months" @bind="_newTaskQuarterlyMonth">
                             @for (var i = 1; i <= Constants.Repeat.QuarterlyGroupLabels.Length; i++)
                             {
                                 <option value="@i">@Constants.Repeat.QuarterlyGroupLabels[i - 1]</option>
@@ -207,7 +207,7 @@
                     </div>
                     <div class="tep-row">
                         <label class="tep-label">By</label>
-                        <select class="tep-select" @bind="_newTaskRepeatBy" @bind:event="onchange">
+                        <select class="tep-select" @bind="_newTaskRepeatBy" @bind:event="onchange" aria-label="Repeat by">
                             <option value="false">@Constants.Repeat.ModeDayOfMonth</option>
                             <option value="true">@Constants.Repeat.ModeDayOfWeek</option>
                         </select>
@@ -229,7 +229,7 @@
                     {
                         <div class="tep-row">
                             <label class="tep-label">Week</label>
-                            <select class="tep-input" @bind="_newTaskWeekOfMonth">
+                            <select class="tep-select" aria-label="Week of month" @bind="_newTaskWeekOfMonth">
                                 @for (var i = 1; i <= Constants.Repeat.WeekOfMonthLabels.Length; i++)
                                 {
                                     <option value="@i">@Constants.Repeat.WeekOfMonthLabels[i - 1]</option>
@@ -257,7 +257,7 @@
                 {
                     <div class="tep-row">
                         <label class="tep-label">Month</label>
-                        <select class="tep-input" @bind="_newTaskYearlyMonth" @bind:after="ClampNewYearlyDay">
+                        <select class="tep-select" aria-label="Yearly month" @bind="_newTaskYearlyMonth" @bind:after="ClampNewYearlyDay">
                             @for (var i = 1; i <= Constants.Repeat.MonthNames.Length; i++)
                             {
                                 <option value="@i">@Constants.Repeat.MonthNames[i - 1]</option>
@@ -266,7 +266,7 @@
                     </div>
                     <div class="tep-row">
                         <label class="tep-label">By</label>
-                        <select class="tep-select" @bind="_newTaskRepeatBy" @bind:event="onchange">
+                        <select class="tep-select" @bind="_newTaskRepeatBy" @bind:event="onchange" aria-label="Repeat by">
                             <option value="false">@Constants.Repeat.ModeDayOfMonth</option>
                             <option value="true">@Constants.Repeat.ModeDayOfWeek</option>
                         </select>
@@ -275,7 +275,7 @@
                     {
                         <div class="tep-row">
                             <label class="tep-label">Day</label>
-                            <select class="tep-input" @bind="_newTaskYearlyDay">
+                            <select class="tep-select" aria-label="Yearly day" @bind="_newTaskYearlyDay">
                                 @for (var i = 1; i <= RepeatRule.MaxSelectableDay(_newTaskYearlyMonth); i++)
                                 {
                                     <option value="@i">@i</option>
@@ -291,7 +291,7 @@
                     {
                         <div class="tep-row">
                             <label class="tep-label">Week</label>
-                            <select class="tep-input" @bind="_newTaskWeekOfMonth">
+                            <select class="tep-select" aria-label="Week of month" @bind="_newTaskWeekOfMonth">
                                 @for (var i = 1; i <= Constants.Repeat.WeekOfMonthLabels.Length; i++)
                                 {
                                     <option value="@i">@Constants.Repeat.WeekOfMonthLabels[i - 1]</option>

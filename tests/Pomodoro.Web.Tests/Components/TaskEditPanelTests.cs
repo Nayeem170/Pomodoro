@@ -102,7 +102,7 @@ public partial class TaskEditPanelTests : TestContext
 
         cut.Markup.Should().Contain("of month");
         cut.Markup.Should().Contain("Feb, May, Aug, Nov");
-        var groupSelect = cut.Find("select.tep-input");
+        var groupSelect = cut.Find("select[aria-label=\"Quarterly months\"]");
         groupSelect.GetAttribute("value").Should().Be("2");
         var input = cut.Find("input[type=\"number\"]");
         input.GetAttribute("value").Should().Be("15");
@@ -121,7 +121,7 @@ public partial class TaskEditPanelTests : TestContext
             parameters.Add(p => p.Task, task));
 
         cut.Markup.Should().Contain("March");
-        var selects = cut.FindAll("select.tep-input");
+        var selects = cut.FindAll("select[aria-label=\"Yearly month\"], select[aria-label=\"Yearly day\"]");
         selects.Count.Should().Be(2);
         selects[0].GetAttribute("value").Should().Be("3",
             "month select must be the first select (month-before-day order)");
@@ -144,7 +144,7 @@ public partial class TaskEditPanelTests : TestContext
 
         var input = cut.Find("input[type=\"number\"]");
         input.GetAttribute("value").Should().Be("7");
-        var groupSelect = cut.Find("select.tep-input");
+        var groupSelect = cut.Find("select[aria-label=\"Quarterly months\"]");
         groupSelect.GetAttribute("value").Should().Be("2");
     }
 
@@ -162,7 +162,7 @@ public partial class TaskEditPanelTests : TestContext
         select.Change("Quarterly");
         var input = cut.Find("input[type=\"number\"]");
         input.Input("20");
-        cut.Find("select.tep-input").Change("3");
+        cut.Find("select[aria-label=\"Quarterly months\"]").Change("3");
         cut.Find(".tep-save-btn").Click();
 
         savedTask.Should().NotBeNull();
@@ -186,8 +186,8 @@ public partial class TaskEditPanelTests : TestContext
 
         var select = cut.Find("select.tep-select");
         select.Change("Yearly");
-        cut.FindAll("select.tep-input")[0].Change("11");
-        cut.FindAll("select.tep-input")[1].Change("9");
+        cut.Find("select[aria-label=\"Yearly month\"]").Change("11");
+        cut.Find("select[aria-label=\"Yearly day\"]").Change("9");
         cut.Find(".tep-save-btn").Click();
 
         savedTask.Should().NotBeNull();
@@ -277,9 +277,9 @@ public partial class TaskEditPanelTests : TestContext
 
         var select = cut.Find("select.tep-select");
         select.Change("Yearly");
-        var monthAndDay = cut.FindAll("select.tep-input");
+        var monthAndDay = cut.FindAll("select[aria-label=\"Yearly month\"], select[aria-label=\"Yearly day\"]");
         monthAndDay[0].Change("2");
-        cut.FindAll("select.tep-input")[1].Change("29");
+        cut.Find("select[aria-label=\"Yearly day\"]").Change("29");
 
         cut.FindAll(".tep-hint").Count.Should().Be(1);
         cut.Markup.Should().Contain("Runs Feb 29 in leap years, Feb 28 otherwise.");
@@ -311,9 +311,9 @@ public partial class TaskEditPanelTests : TestContext
 
         var select = cut.Find("select.tep-select");
         select.Change("Monthly");
-        cut.FindAll("select.tep-select")[1].Change("true");
+        cut.Find("select[aria-label=\"Repeat by\"]").Change("true");
 
-        var weekSelect = cut.Find("select.tep-input");
+        var weekSelect = cut.Find("select[aria-label=\"Week of month\"]");
         weekSelect.QuerySelectorAll("option").Should().HaveCount(5);
         cut.Markup.Should().Contain("First");
         cut.Markup.Should().Contain("Last");
@@ -333,8 +333,8 @@ public partial class TaskEditPanelTests : TestContext
 
         var select = cut.Find("select.tep-select");
         select.Change("Monthly");
-        cut.FindAll("select.tep-select")[1].Change("true");
-        cut.Find("select.tep-input").Change("2");
+        cut.Find("select[aria-label=\"Repeat by\"]").Change("true");
+        cut.Find("select[aria-label=\"Week of month\"]").Change("2");
         cut.FindAll(".tep-weekday-btn")[1].Click();
         cut.FindAll(".tep-weekday-btn")[3].Click();
         cut.Find(".tep-save-btn").Click();
@@ -358,9 +358,9 @@ public partial class TaskEditPanelTests : TestContext
 
         var select = cut.Find("select.tep-select");
         select.Change("Quarterly");
-        cut.FindAll("select.tep-select")[1].Change("true");
-        cut.FindAll("select.tep-input")[0].Change("3");
-        cut.FindAll("select.tep-input")[1].Change("5");
+        cut.Find("select[aria-label=\"Repeat by\"]").Change("true");
+        cut.Find("select[aria-label=\"Quarterly months\"]").Change("3");
+        cut.Find("select[aria-label=\"Week of month\"]").Change("5");
         cut.FindAll(".tep-weekday-btn")[4].Click();
         cut.Find(".tep-save-btn").Click();
 
@@ -384,9 +384,9 @@ public partial class TaskEditPanelTests : TestContext
 
         var select = cut.Find("select.tep-select");
         select.Change("Yearly");
-        cut.FindAll("select.tep-select")[1].Change("true");
-        cut.FindAll("select.tep-input")[0].Change("3");
-        cut.FindAll("select.tep-input")[1].Change("1");
+        cut.Find("select[aria-label=\"Repeat by\"]").Change("true");
+        cut.Find("select[aria-label=\"Yearly month\"]").Change("3");
+        cut.Find("select[aria-label=\"Week of month\"]").Change("1");
         cut.FindAll(".tep-weekday-btn")[0].Click();
         cut.Find(".tep-save-btn").Click();
 
@@ -411,10 +411,9 @@ public partial class TaskEditPanelTests : TestContext
         var cut = RenderComponent<TaskEditPanel>(parameters =>
             parameters.Add(p => p.Task, task));
 
-        cut.FindAll("select.tep-select")[1].GetAttribute("value").Should().Be("true",
+        cut.Find("select[aria-label=\"Repeat by\"]").GetAttribute("value").Should().Be("true",
             "By select must show Day of week for a weekday-mode rule");
-        var groupAndWeek = cut.FindAll("select.tep-input");
-        groupAndWeek[1].GetAttribute("value").Should().Be("2");
+        cut.Find("select[aria-label=\"Week of month\"]").GetAttribute("value").Should().Be("2");
         var active = cut.FindAll(".tep-weekday-btn.active");
         active.Should().HaveCount(1);
         active[0].TextContent.Should().Contain("Fr");
@@ -432,7 +431,7 @@ public partial class TaskEditPanelTests : TestContext
 
         var select = cut.Find("select.tep-select");
         select.Change("Monthly");
-        cut.FindAll("select.tep-select")[1].Change("true");
+        cut.Find("select[aria-label=\"Repeat by\"]").Change("true");
         cut.Find(".tep-save-btn").Click();
 
         savedTask.Should().NotBeNull();
@@ -453,7 +452,7 @@ public partial class TaskEditPanelTests : TestContext
 
         var select = cut.Find("select.tep-select");
         select.Change("Monthly");
-        cut.FindAll("select.tep-select")[1].Change("true");
+        cut.Find("select[aria-label=\"Repeat by\"]").Change("true");
         cut.FindAll(".tep-weekday-btn")[0].Click();
         select.Change("Weekly");
         cut.Find(".tep-save-btn").Click();
@@ -475,9 +474,9 @@ public partial class TaskEditPanelTests : TestContext
 
         var select = cut.Find("select.tep-select");
         select.Change("Yearly");
-        cut.FindAll("select.tep-input")[0].Change("4");
+        cut.Find("select[aria-label=\"Yearly month\"]").Change("4");
 
-        cut.FindAll("select.tep-input")[1].QuerySelectorAll("option").Should().HaveCount(30);
+        cut.Find("select[aria-label=\"Yearly day\"]").QuerySelectorAll("option").Should().HaveCount(30);
         cut.FindAll(".tep-hint").Should().BeEmpty();
     }
 
@@ -490,12 +489,12 @@ public partial class TaskEditPanelTests : TestContext
 
         var select = cut.Find("select.tep-select");
         select.Change("Yearly");
-        var monthAndDay = cut.FindAll("select.tep-input");
+        var monthAndDay = cut.FindAll("select[aria-label=\"Yearly month\"], select[aria-label=\"Yearly day\"]");
         monthAndDay[0].Change("1");
-        cut.FindAll("select.tep-input")[1].Change("31");
-        cut.FindAll("select.tep-input")[0].Change("4");
+        cut.Find("select[aria-label=\"Yearly day\"]").Change("31");
+        cut.Find("select[aria-label=\"Yearly month\"]").Change("4");
 
-        cut.FindAll("select.tep-input")[1].GetAttribute("value").Should().Be("30",
+        cut.Find("select[aria-label=\"Yearly day\"]").GetAttribute("value").Should().Be("30",
             "day must clamp to the shorter month's max when the month changes");
     }
 
