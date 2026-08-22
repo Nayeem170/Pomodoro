@@ -1488,6 +1488,23 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         return new DateTime(nextMonth.Year, nextMonth.Month, actualDay);
     }
 
+    private static DateTime? CurrentOccurrenceBoundary(TaskItem task)
+    {
+        var rule = task.Repeat!;
+        var today = DateTime.Now.Date;
+        var anchor = (task.ScheduledDate ?? rule.StartDate ?? task.CreatedAt).Date;
+
+        for (var date = today; date >= anchor; date = date.AddDays(-1))
+        {
+            if (rule.OccursOn(task, date))
+            {
+                return date;
+            }
+        }
+
+        return null;
+    }
+
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private void ScheduleMidnightReactivation()
     {
@@ -1554,6 +1571,22 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
                     task.PomodoroCount = Constants.Tasks.InitialPomodoroCount;
                     task.LastWorkedOn = null;
                     changed = true;
+                }
+            }
+
+            if (task.IsRecurring && !task.IsCompleted
+                && task.Repeat is { IsActive: true }
+                && task.LastWorkedOn.HasValue)
+            {
+                var occurrenceBoundary = CurrentOccurrenceBoundary(task);
+                if (occurrenceBoundary.HasValue
+                    && task.LastWorkedOn.Value.ToLocalTime().Date < occurrenceBoundary.Value)
+                {
+                    task.TotalFocusMinutes = Constants.Tasks.InitialFocusMinutes;
+                    task.PomodoroCount = Constants.Tasks.InitialPomodoroCount;
+                    task.LastWorkedOn = null;
+                    changed = true;
+                    ReconcileSubtree(task.Id, occurrenceBoundary.Value, ref changed);
                 }
             }
 
