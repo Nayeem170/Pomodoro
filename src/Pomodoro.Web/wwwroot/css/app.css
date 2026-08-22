@@ -1552,7 +1552,7 @@ input, textarea, [contenteditable="true"] {
     }
 
     .loading-spinner .ls-hour {
-        animation-duration: 30s;
+        animation-duration: 96s;
     }
 }
 
@@ -2114,7 +2114,7 @@ textarea.tep-input {
 }
 
 .loading-spinner .ls-hour {
-    animation: ls-sweep 12s linear infinite;
+    animation: ls-sweep 24s linear infinite;
 }
 
 @keyframes ls-sweep {
