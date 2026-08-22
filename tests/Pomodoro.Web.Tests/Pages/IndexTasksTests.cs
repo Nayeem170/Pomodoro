@@ -461,6 +461,85 @@ public class IndexTasksTests : TestHelper
     }
 
     [Fact]
+    public async Task HandleTaskAdd_Quarterly_MapsDayZeroToNull()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem { Id = taskId, Name = "Quarterly Task" };
+        AppState.Tasks = new List<TaskItem> { task };
+        TaskServiceMock.SetupGet(x => x.CurrentTaskId).Returns(taskId);
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var request = new NewTaskRequest(
+            "Quarterly Task", RepeatType.Quarterly, DateTime.Now, QuarterlyDay: 20, QuarterlyMonth: 3);
+        await cut.Instance.HandleTaskAdd(request);
+
+        task.Repeat.Should().NotBeNull();
+        task.Repeat!.QuarterlyDay.Should().Be(20);
+        task.Repeat.QuarterlyMonth.Should().Be(3);
+
+        var unsetRequest = new NewTaskRequest("Quarterly Task", RepeatType.Quarterly, DateTime.Now);
+        await cut.Instance.HandleTaskAdd(unsetRequest);
+
+        task.Repeat.QuarterlyDay.Should().BeNull();
+        task.Repeat.QuarterlyMonth.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task HandleTaskAdd_Yearly_MapsZeroDayAndMonthToNull()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem { Id = taskId, Name = "Yearly Task" };
+        AppState.Tasks = new List<TaskItem> { task };
+        TaskServiceMock.SetupGet(x => x.CurrentTaskId).Returns(taskId);
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var request = new NewTaskRequest(
+            "Yearly Task", RepeatType.Yearly, DateTime.Now, YearlyDay: 9, YearlyMonth: 11);
+        await cut.Instance.HandleTaskAdd(request);
+
+        task.Repeat.Should().NotBeNull();
+        task.Repeat!.YearlyDay.Should().Be(9);
+        task.Repeat.YearlyMonth.Should().Be(11);
+
+        var unsetRequest = new NewTaskRequest("Yearly Task", RepeatType.Yearly, DateTime.Now);
+        await cut.Instance.HandleTaskAdd(unsetRequest);
+
+        task.Repeat.YearlyDay.Should().BeNull();
+        task.Repeat.YearlyMonth.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task HandleTaskAdd_MonthlyWeekdayMode_MapsWeekOfMonthAndDegradesWithoutDays()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem { Id = taskId, Name = "Weekday Task" };
+        AppState.Tasks = new List<TaskItem> { task };
+        TaskServiceMock.SetupGet(x => x.CurrentTaskId).Returns(taskId);
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var request = new NewTaskRequest(
+            "Weekday Task", RepeatType.Monthly, DateTime.Now,
+            Weekdays: [DayOfWeek.Tuesday, DayOfWeek.Thursday], WeekOfMonth: 2);
+        await cut.Instance.HandleTaskAdd(request);
+
+        task.Repeat.Should().NotBeNull();
+        task.Repeat!.WeekOfMonth.Should().Be(2);
+        task.Repeat.Weekdays.Should().BeEquivalentTo([DayOfWeek.Tuesday, DayOfWeek.Thursday]);
+
+        var noDaysRequest = new NewTaskRequest(
+            "Weekday Task", RepeatType.Monthly, DateTime.Now, WeekOfMonth: 2);
+        await cut.Instance.HandleTaskAdd(noDaysRequest);
+
+        task.Repeat.WeekOfMonth.Should().BeNull(
+            "weekday mode without selected weekdays must degrade to day-of-month mode");
+
+        var unsetRequest = new NewTaskRequest("Weekday Task", RepeatType.Monthly, DateTime.Now);
+        await cut.Instance.HandleTaskAdd(unsetRequest);
+
+        task.Repeat.WeekOfMonth.Should().BeNull();
+    }
+
+    [Fact]
     public async Task HandleTaskAdd_SetsErrorMessage_WhenUnauthorizedAccessException()
     {
         TaskServiceMock

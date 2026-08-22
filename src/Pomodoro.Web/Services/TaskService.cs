@@ -316,6 +316,11 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
                         CustomDays = parent.Repeat.CustomDays,
                         Weekdays = parent.Repeat.Weekdays,
                         MonthlyDay = parent.Repeat.MonthlyDay,
+                        QuarterlyDay = parent.Repeat.QuarterlyDay,
+                        QuarterlyMonth = parent.Repeat.QuarterlyMonth,
+                        YearlyDay = parent.Repeat.YearlyDay,
+                        YearlyMonth = parent.Repeat.YearlyMonth,
+                        WeekOfMonth = parent.Repeat.WeekOfMonth,
                         StartDate = parent.Repeat.StartDate,
                         EndDate = parent.Repeat.EndDate,
                         IsPaused = parent.Repeat.IsPaused,
@@ -1441,19 +1446,30 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         }
     }
 
-    private static DateTime? ComputeNextOccurrence(RepeatRule rule)
+    private static DateTime? ComputeNextOccurrence(TaskItem task, RepeatRule rule)
     {
         if (rule.Type == RepeatType.None) return null;
         if (rule.EndDate.HasValue && rule.EndDate.Value < DateTime.Now.Date) return null;
 
         var baseDate = (rule.LastCompletedDate ?? DateTime.Now.Date).Date;
+        var anchor = (task.ScheduledDate ?? rule.StartDate ?? task.CreatedAt).Date;
 
         var next = rule.Type switch
         {
             RepeatType.Daily => baseDate.AddDays(1),
             RepeatType.Weekly => ComputeNextWeekday(baseDate, rule.Weekdays),
             RepeatType.Custom => baseDate.AddDays(rule.CustomDays > 0 ? rule.CustomDays : Constants.Repeat.DefaultCustomDays),
-            RepeatType.Monthly => ComputeNextMonthly(baseDate, rule.MonthlyDay),
+            RepeatType.Monthly => rule.WeekOfMonth.HasValue
+                ? ComputeNextByWeekday(baseDate, d => RepeatRule.MatchesWeekdayOfMonth(d, rule.Weekdays, rule.WeekOfMonth.Value))
+                : ComputeNextMonthly(baseDate, rule.MonthlyDay),
+            RepeatType.Quarterly => rule.WeekOfMonth.HasValue
+                ? ComputeNextByWeekday(baseDate, d => rule.IsQuarterlyMonth(d, anchor)
+                    && RepeatRule.MatchesWeekdayOfMonth(d, rule.Weekdays, rule.WeekOfMonth.Value))
+                : ComputeNextQuarterly(baseDate, anchor, rule.QuarterlyDay, rule.QuarterlyMonth),
+            RepeatType.Yearly => rule.WeekOfMonth.HasValue
+                ? ComputeNextByWeekday(baseDate, d => d.Month == (rule.YearlyMonth ?? anchor.Month)
+                    && RepeatRule.MatchesWeekdayOfMonth(d, rule.Weekdays, rule.WeekOfMonth.Value))
+                : ComputeNextYearly(baseDate, anchor, rule.YearlyDay, rule.YearlyMonth),
             _ => (DateTime?)null
         };
 
@@ -1486,6 +1502,54 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         var daysInMonth = DateTime.DaysInMonth(nextMonth.Year, nextMonth.Month);
         var actualDay = Math.Min(day, daysInMonth);
         return new DateTime(nextMonth.Year, nextMonth.Month, actualDay);
+    }
+
+    private static DateTime ComputeNextQuarterly(DateTime baseDate, DateTime anchor, int? quarterlyDay, int? quarterlyMonth)
+    {
+        var day = quarterlyDay ?? anchor.Day;
+        var group = quarterlyMonth ?? RepeatRule.QuarterGroupOf(anchor);
+        var delta = ((group % 3) - (baseDate.Month % 3) + 3) % 3;
+        if (delta == 0) delta = 3;
+        var target = baseDate.AddMonths(delta);
+        var actualDay = Math.Min(day, DateTime.DaysInMonth(target.Year, target.Month));
+        return new DateTime(target.Year, target.Month, actualDay);
+    }
+
+    private static DateTime ComputeNextYearly(DateTime baseDate, DateTime anchor, int? yearlyDay, int? yearlyMonth)
+    {
+        var month = yearlyMonth ?? anchor.Month;
+        var day = yearlyDay ?? anchor.Day;
+        var candidate = new DateTime(baseDate.Year, month, Math.Min(day, DateTime.DaysInMonth(baseDate.Year, month)));
+        if (candidate <= baseDate)
+            candidate = new DateTime(baseDate.Year + 1, month, Math.Min(day, DateTime.DaysInMonth(baseDate.Year + 1, month)));
+        return candidate;
+    }
+
+    private static DateTime? ComputeNextByWeekday(DateTime baseDate, Func<DateTime, bool> matches)
+    {
+        for (var date = baseDate.AddDays(1); date <= baseDate.AddDays(400); date = date.AddDays(1))
+        {
+            if (matches(date)) return date;
+        }
+
+        return null;
+    }
+
+    private static DateTime? CurrentOccurrenceBoundary(TaskItem task)
+    {
+        var rule = task.Repeat!;
+        var today = DateTime.Now.Date;
+        var anchor = (task.ScheduledDate ?? rule.StartDate ?? task.CreatedAt).Date;
+
+        for (var date = today; date >= anchor; date = date.AddDays(-1))
+        {
+            if (rule.OccursOn(task, date))
+            {
+                return date;
+            }
+        }
+
+        return null;
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -1543,7 +1607,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
 
             if (task.IsRecurring && task.IsCompleted && task.Repeat is { IsActive: true })
             {
-                var nextOccurrence = ComputeNextOccurrence(task.Repeat);
+                var nextOccurrence = ComputeNextOccurrence(task, task.Repeat);
                 task.Repeat.NextOccurrence = nextOccurrence;
 
                 if (nextOccurrence.HasValue && nextOccurrence.Value <= today)
@@ -1554,6 +1618,22 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
                     task.PomodoroCount = Constants.Tasks.InitialPomodoroCount;
                     task.LastWorkedOn = null;
                     changed = true;
+                }
+            }
+
+            if (task.IsRecurring && !task.IsCompleted
+                && task.Repeat is { IsActive: true }
+                && task.LastWorkedOn.HasValue)
+            {
+                var occurrenceBoundary = CurrentOccurrenceBoundary(task);
+                if (occurrenceBoundary.HasValue
+                    && task.LastWorkedOn.Value.ToLocalTime().Date < occurrenceBoundary.Value)
+                {
+                    task.TotalFocusMinutes = Constants.Tasks.InitialFocusMinutes;
+                    task.PomodoroCount = Constants.Tasks.InitialPomodoroCount;
+                    task.LastWorkedOn = null;
+                    changed = true;
+                    ReconcileSubtree(task.Id, occurrenceBoundary.Value, ref changed);
                 }
             }
 
@@ -1586,7 +1666,7 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             if (!task.IsRecurring || task.Repeat is not { IsActive: true }) continue;
             if (!task.Repeat.LastCompletedDate.HasValue) continue;
 
-            var reactivationDate = ComputeNextOccurrence(task.Repeat);
+            var reactivationDate = ComputeNextOccurrence(task, task.Repeat);
             if (!reactivationDate.HasValue) continue;
 
             ReconcileSubtree(task.Id, reactivationDate.Value, ref changed);
