@@ -13,4 +13,5 @@ public sealed record NewTaskRequest(
     int QuarterlyDay = 0,
     int QuarterlyMonth = 0,
     int YearlyDay = 0,
-    int YearlyMonth = 0);
+    int YearlyMonth = 0,
+    int WeekOfMonth = 0);

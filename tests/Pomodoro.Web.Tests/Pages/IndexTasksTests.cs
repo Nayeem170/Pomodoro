@@ -509,6 +509,37 @@ public class IndexTasksTests : TestHelper
     }
 
     [Fact]
+    public async Task HandleTaskAdd_MonthlyWeekdayMode_MapsWeekOfMonthAndDegradesWithoutDays()
+    {
+        var taskId = Guid.NewGuid();
+        var task = new TaskItem { Id = taskId, Name = "Weekday Task" };
+        AppState.Tasks = new List<TaskItem> { task };
+        TaskServiceMock.SetupGet(x => x.CurrentTaskId).Returns(taskId);
+
+        var cut = RenderComponent<Pomodoro.Web.Pages.Index>();
+        var request = new NewTaskRequest(
+            "Weekday Task", RepeatType.Monthly, DateTime.Now,
+            Weekdays: [DayOfWeek.Tuesday, DayOfWeek.Thursday], WeekOfMonth: 2);
+        await cut.Instance.HandleTaskAdd(request);
+
+        task.Repeat.Should().NotBeNull();
+        task.Repeat!.WeekOfMonth.Should().Be(2);
+        task.Repeat.Weekdays.Should().BeEquivalentTo([DayOfWeek.Tuesday, DayOfWeek.Thursday]);
+
+        var noDaysRequest = new NewTaskRequest(
+            "Weekday Task", RepeatType.Monthly, DateTime.Now, WeekOfMonth: 2);
+        await cut.Instance.HandleTaskAdd(noDaysRequest);
+
+        task.Repeat.WeekOfMonth.Should().BeNull(
+            "weekday mode without selected weekdays must degrade to day-of-month mode");
+
+        var unsetRequest = new NewTaskRequest("Weekday Task", RepeatType.Monthly, DateTime.Now);
+        await cut.Instance.HandleTaskAdd(unsetRequest);
+
+        task.Repeat.WeekOfMonth.Should().BeNull();
+    }
+
+    [Fact]
     public async Task HandleTaskAdd_SetsErrorMessage_WhenUnauthorizedAccessException()
     {
         TaskServiceMock

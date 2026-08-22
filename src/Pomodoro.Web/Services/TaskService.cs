@@ -316,6 +316,11 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
                         CustomDays = parent.Repeat.CustomDays,
                         Weekdays = parent.Repeat.Weekdays,
                         MonthlyDay = parent.Repeat.MonthlyDay,
+                        QuarterlyDay = parent.Repeat.QuarterlyDay,
+                        QuarterlyMonth = parent.Repeat.QuarterlyMonth,
+                        YearlyDay = parent.Repeat.YearlyDay,
+                        YearlyMonth = parent.Repeat.YearlyMonth,
+                        WeekOfMonth = parent.Repeat.WeekOfMonth,
                         StartDate = parent.Repeat.StartDate,
                         EndDate = parent.Repeat.EndDate,
                         IsPaused = parent.Repeat.IsPaused,
@@ -1454,9 +1459,17 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
             RepeatType.Daily => baseDate.AddDays(1),
             RepeatType.Weekly => ComputeNextWeekday(baseDate, rule.Weekdays),
             RepeatType.Custom => baseDate.AddDays(rule.CustomDays > 0 ? rule.CustomDays : Constants.Repeat.DefaultCustomDays),
-            RepeatType.Monthly => ComputeNextMonthly(baseDate, rule.MonthlyDay),
-            RepeatType.Quarterly => ComputeNextQuarterly(baseDate, anchor, rule.QuarterlyDay, rule.QuarterlyMonth),
-            RepeatType.Yearly => ComputeNextYearly(baseDate, anchor, rule.YearlyDay, rule.YearlyMonth),
+            RepeatType.Monthly => rule.WeekOfMonth.HasValue
+                ? ComputeNextByWeekday(baseDate, d => RepeatRule.MatchesWeekdayOfMonth(d, rule.Weekdays, rule.WeekOfMonth.Value))
+                : ComputeNextMonthly(baseDate, rule.MonthlyDay),
+            RepeatType.Quarterly => rule.WeekOfMonth.HasValue
+                ? ComputeNextByWeekday(baseDate, d => rule.IsQuarterlyMonth(d, anchor)
+                    && RepeatRule.MatchesWeekdayOfMonth(d, rule.Weekdays, rule.WeekOfMonth.Value))
+                : ComputeNextQuarterly(baseDate, anchor, rule.QuarterlyDay, rule.QuarterlyMonth),
+            RepeatType.Yearly => rule.WeekOfMonth.HasValue
+                ? ComputeNextByWeekday(baseDate, d => d.Month == (rule.YearlyMonth ?? anchor.Month)
+                    && RepeatRule.MatchesWeekdayOfMonth(d, rule.Weekdays, rule.WeekOfMonth.Value))
+                : ComputeNextYearly(baseDate, anchor, rule.YearlyDay, rule.YearlyMonth),
             _ => (DateTime?)null
         };
 
@@ -1510,6 +1523,16 @@ public class TaskService : ITaskService, ITimerEventSubscriber, IAsyncDisposable
         if (candidate <= baseDate)
             candidate = new DateTime(baseDate.Year + 1, month, Math.Min(day, DateTime.DaysInMonth(baseDate.Year + 1, month)));
         return candidate;
+    }
+
+    private static DateTime? ComputeNextByWeekday(DateTime baseDate, Func<DateTime, bool> matches)
+    {
+        for (var date = baseDate.AddDays(1); date <= baseDate.AddDays(400); date = date.AddDays(1))
+        {
+            if (matches(date)) return date;
+        }
+
+        return null;
     }
 
     private static DateTime? CurrentOccurrenceBoundary(TaskItem task)

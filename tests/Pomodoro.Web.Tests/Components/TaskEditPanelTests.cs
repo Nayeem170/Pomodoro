@@ -109,7 +109,7 @@ public partial class TaskEditPanelTests : TestContext
     }
 
     [Fact]
-    public void OnInitialized_WithYearlyRepeat_ShowsDayInputAndMonthSelect()
+    public void OnInitialized_WithYearlyRepeat_ShowsMonthSelectBeforeDaySelect()
     {
         var task = CreateTask(t => t.Repeat = new RepeatRule
         {
@@ -120,13 +120,14 @@ public partial class TaskEditPanelTests : TestContext
         var cut = RenderComponent<TaskEditPanel>(parameters =>
             parameters.Add(p => p.Task, task));
 
-        cut.Markup.Should().Contain("of month");
         cut.Markup.Should().Contain("March");
-        var inputs = cut.FindAll("input[type=\"number\"]");
-        inputs.Count.Should().Be(1);
-        inputs[0].GetAttribute("value").Should().Be("10");
-        var monthSelect = cut.Find("select.tep-input");
-        monthSelect.GetAttribute("value").Should().Be("3");
+        var selects = cut.FindAll("select.tep-input");
+        selects.Count.Should().Be(2);
+        selects[0].GetAttribute("value").Should().Be("3",
+            "month select must be the first select (month-before-day order)");
+        selects[1].GetAttribute("value").Should().Be("10",
+            "day select must follow the month select");
+        cut.FindAll("input[type=\"number\"]").Should().BeEmpty();
     }
 
     [Fact]
@@ -185,8 +186,8 @@ public partial class TaskEditPanelTests : TestContext
 
         var select = cut.Find("select.tep-select");
         select.Change("Yearly");
-        cut.Find("input[type=\"number\"]").Input("9");
-        cut.Find("select.tep-input").Change("11");
+        cut.FindAll("select.tep-input")[0].Change("11");
+        cut.FindAll("select.tep-input")[1].Change("9");
         cut.Find(".tep-save-btn").Click();
 
         savedTask.Should().NotBeNull();
@@ -268,7 +269,7 @@ public partial class TaskEditPanelTests : TestContext
     }
 
     [Fact]
-    public void Render_YearlyDayAbove28_ShowsClampHint()
+    public void Render_YearlyFebruaryDay29_ShowsLeapHint()
     {
         var task = CreateTask();
         var cut = RenderComponent<TaskEditPanel>(parameters =>
@@ -276,9 +277,226 @@ public partial class TaskEditPanelTests : TestContext
 
         var select = cut.Find("select.tep-select");
         select.Change("Yearly");
-        cut.Find("input[type=\"number\"]").Input("29");
+        var monthAndDay = cut.FindAll("select.tep-input");
+        monthAndDay[0].Change("2");
+        cut.FindAll("select.tep-input")[1].Change("29");
 
         cut.FindAll(".tep-hint").Count.Should().Be(1);
+        cut.Markup.Should().Contain("Runs Feb 29 in leap years, Feb 28 otherwise.");
+    }
+
+    [Fact]
+    public void Render_MonthlySelected_ShowsBySelectDefaultingToDayOfMonth()
+    {
+        var task = CreateTask();
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters.Add(p => p.Task, task));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Monthly");
+
+        cut.Markup.Should().Contain("Day of month");
+        cut.Markup.Should().Contain("Day of week");
+        cut.FindAll("input[type=\"number\"]").Count.Should().Be(1);
+        cut.Markup.Should().NotContain("First",
+            "week ordinal select must be hidden in day-of-month mode");
+    }
+
+    [Fact]
+    public void Render_MonthlyDayOfWeekMode_ShowsWeekSelectAndWeekdayButtons()
+    {
+        var task = CreateTask();
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters.Add(p => p.Task, task));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Monthly");
+        cut.FindAll("select.tep-select")[1].Change("true");
+
+        var weekSelect = cut.Find("select.tep-input");
+        weekSelect.QuerySelectorAll("option").Should().HaveCount(5);
+        cut.Markup.Should().Contain("First");
+        cut.Markup.Should().Contain("Last");
+        cut.FindAll(".tep-weekday-btn").Should().HaveCount(7);
+        cut.FindAll("input[type=\"number\"]").Should().BeEmpty();
+    }
+
+    [Fact]
+    public void HandleSave_MonthlyWeekdayMode_WritesWeekOfMonthAndWeekdays()
+    {
+        var task = CreateTask();
+        TaskItem? savedTask = null;
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters
+                .Add(p => p.Task, task)
+                .Add(p => p.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => savedTask = t)));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Monthly");
+        cut.FindAll("select.tep-select")[1].Change("true");
+        cut.Find("select.tep-input").Change("2");
+        cut.FindAll(".tep-weekday-btn")[1].Click();
+        cut.FindAll(".tep-weekday-btn")[3].Click();
+        cut.Find(".tep-save-btn").Click();
+
+        savedTask.Should().NotBeNull();
+        savedTask!.Repeat.Should().NotBeNull();
+        savedTask.Repeat!.Type.Should().Be(RepeatType.Monthly);
+        savedTask.Repeat.WeekOfMonth.Should().Be(2);
+        savedTask.Repeat.Weekdays.Should().BeEquivalentTo([DayOfWeek.Tuesday, DayOfWeek.Thursday]);
+    }
+
+    [Fact]
+    public void HandleSave_QuarterlyWeekdayMode_WritesGroupWeekAndWeekdays()
+    {
+        var task = CreateTask();
+        TaskItem? savedTask = null;
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters
+                .Add(p => p.Task, task)
+                .Add(p => p.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => savedTask = t)));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Quarterly");
+        cut.FindAll("select.tep-select")[1].Change("true");
+        cut.FindAll("select.tep-input")[0].Change("3");
+        cut.FindAll("select.tep-input")[1].Change("5");
+        cut.FindAll(".tep-weekday-btn")[4].Click();
+        cut.Find(".tep-save-btn").Click();
+
+        savedTask.Should().NotBeNull();
+        savedTask!.Repeat.Should().NotBeNull();
+        savedTask.Repeat!.Type.Should().Be(RepeatType.Quarterly);
+        savedTask.Repeat.QuarterlyMonth.Should().Be(3);
+        savedTask.Repeat.WeekOfMonth.Should().Be(RepeatRule.LastWeekOfMonth);
+        savedTask.Repeat.Weekdays.Should().BeEquivalentTo([DayOfWeek.Friday]);
+    }
+
+    [Fact]
+    public void HandleSave_YearlyWeekdayMode_WritesMonthWeekAndWeekdays()
+    {
+        var task = CreateTask();
+        TaskItem? savedTask = null;
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters
+                .Add(p => p.Task, task)
+                .Add(p => p.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => savedTask = t)));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Yearly");
+        cut.FindAll("select.tep-select")[1].Change("true");
+        cut.FindAll("select.tep-input")[0].Change("3");
+        cut.FindAll("select.tep-input")[1].Change("1");
+        cut.FindAll(".tep-weekday-btn")[0].Click();
+        cut.Find(".tep-save-btn").Click();
+
+        savedTask.Should().NotBeNull();
+        savedTask!.Repeat.Should().NotBeNull();
+        savedTask.Repeat!.Type.Should().Be(RepeatType.Yearly);
+        savedTask.Repeat.YearlyMonth.Should().Be(3);
+        savedTask.Repeat.WeekOfMonth.Should().Be(1);
+        savedTask.Repeat.Weekdays.Should().BeEquivalentTo([DayOfWeek.Monday]);
+    }
+
+    [Fact]
+    public void OnInitialized_WithWeekdayModeRule_LoadsByWeekdayState()
+    {
+        var task = CreateTask(t => t.Repeat = new RepeatRule
+        {
+            Type = RepeatType.Quarterly,
+            QuarterlyMonth = 2,
+            WeekOfMonth = 2,
+            Weekdays = [DayOfWeek.Friday]
+        });
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters.Add(p => p.Task, task));
+
+        cut.FindAll("select.tep-select")[1].GetAttribute("value").Should().Be("true",
+            "By select must show Day of week for a weekday-mode rule");
+        var groupAndWeek = cut.FindAll("select.tep-input");
+        groupAndWeek[1].GetAttribute("value").Should().Be("2");
+        var active = cut.FindAll(".tep-weekday-btn.active");
+        active.Should().HaveCount(1);
+        active[0].TextContent.Should().Contain("Fr");
+    }
+
+    [Fact]
+    public void HandleSave_WeekdayModeWithNoWeekdays_SavesNullWeekOfMonth()
+    {
+        var task = CreateTask();
+        TaskItem? savedTask = null;
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters
+                .Add(p => p.Task, task)
+                .Add(p => p.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => savedTask = t)));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Monthly");
+        cut.FindAll("select.tep-select")[1].Change("true");
+        cut.Find(".tep-save-btn").Click();
+
+        savedTask.Should().NotBeNull();
+        savedTask!.Repeat.Should().NotBeNull();
+        savedTask.Repeat!.WeekOfMonth.Should().BeNull(
+            "day-of-week mode with no selected weekdays must degrade to day-of-month mode");
+    }
+
+    [Fact]
+    public void HandleSave_WeekdayModeSwitchedToWeekly_SavesNullWeekOfMonth()
+    {
+        var task = CreateTask();
+        TaskItem? savedTask = null;
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters
+                .Add(p => p.Task, task)
+                .Add(p => p.OnSave, EventCallback.Factory.Create<TaskItem>(this, t => savedTask = t)));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Monthly");
+        cut.FindAll("select.tep-select")[1].Change("true");
+        cut.FindAll(".tep-weekday-btn")[0].Click();
+        select.Change("Weekly");
+        cut.Find(".tep-save-btn").Click();
+
+        savedTask.Should().NotBeNull();
+        savedTask!.Repeat.Should().NotBeNull();
+        savedTask.Repeat!.Type.Should().Be(RepeatType.Weekly);
+        savedTask.Repeat.WeekOfMonth.Should().BeNull(
+            "switching to Weekly must clear the weekday-mode ordinal");
+        savedTask.Repeat.Weekdays.Should().BeEquivalentTo([DayOfWeek.Monday]);
+    }
+
+    [Fact]
+    public void Render_YearlyApril_ShowsThirtyDayOptionsAndNoHint()
+    {
+        var task = CreateTask();
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters.Add(p => p.Task, task));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Yearly");
+        cut.FindAll("select.tep-input")[0].Change("4");
+
+        cut.FindAll("select.tep-input")[1].QuerySelectorAll("option").Should().HaveCount(30);
+        cut.FindAll(".tep-hint").Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Render_YearlyDayClamps_WhenMonthSwitchesToShorterMonth()
+    {
+        var task = CreateTask();
+        var cut = RenderComponent<TaskEditPanel>(parameters =>
+            parameters.Add(p => p.Task, task));
+
+        var select = cut.Find("select.tep-select");
+        select.Change("Yearly");
+        var monthAndDay = cut.FindAll("select.tep-input");
+        monthAndDay[0].Change("1");
+        cut.FindAll("select.tep-input")[1].Change("31");
+        cut.FindAll("select.tep-input")[0].Change("4");
+
+        cut.FindAll("select.tep-input")[1].GetAttribute("value").Should().Be("30",
+            "day must clamp to the shorter month's max when the month changes");
     }
 
     [Fact]

@@ -13,6 +13,7 @@ public class RepeatRule
     public int? QuarterlyMonth { get; set; }
     public int? YearlyDay { get; set; }
     public int? YearlyMonth { get; set; }
+    public int? WeekOfMonth { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public bool IsPaused { get; set; }
@@ -40,11 +41,17 @@ public class RepeatRule
                 ? date.DayOfWeek == anchor.DayOfWeek
                 : Weekdays.Contains(date.DayOfWeek),
             RepeatType.Custom => CustomDays > 0 && (date - anchor).Days % CustomDays == 0,
-            RepeatType.Monthly => date.Day == (MonthlyDay ?? anchor.Day),
-            RepeatType.Quarterly => (date.Month - EffectiveQuarterGroup(anchor)) % 3 == 0
-                && DayMatchesClamped(date, QuarterlyDay ?? anchor.Day),
+            RepeatType.Monthly => WeekOfMonth.HasValue
+                ? MatchesWeekdayOfMonth(date, Weekdays, WeekOfMonth.Value)
+                : date.Day == (MonthlyDay ?? anchor.Day),
+            RepeatType.Quarterly => IsQuarterlyMonth(date, anchor)
+                && (WeekOfMonth.HasValue
+                    ? MatchesWeekdayOfMonth(date, Weekdays, WeekOfMonth.Value)
+                    : DayMatchesClamped(date, QuarterlyDay ?? anchor.Day)),
             RepeatType.Yearly => date.Month == (YearlyMonth ?? anchor.Month)
-                && DayMatchesClamped(date, YearlyDay ?? anchor.Day),
+                && (WeekOfMonth.HasValue
+                    ? MatchesWeekdayOfMonth(date, Weekdays, WeekOfMonth.Value)
+                    : DayMatchesClamped(date, YearlyDay ?? anchor.Day)),
             _ => false
         };
     }
@@ -52,6 +59,25 @@ public class RepeatRule
     public static int QuarterGroupOf(DateTime date) => ((date.Month - 1) % 3) + 1;
 
     public int EffectiveQuarterGroup(DateTime anchor) => QuarterlyMonth ?? QuarterGroupOf(anchor);
+
+    public bool IsQuarterlyMonth(DateTime date, DateTime anchor) =>
+        (date.Month - EffectiveQuarterGroup(anchor)) % 3 == 0;
+
+    public const int LastWeekOfMonth = 5;
+
+    public static int WeekOrdinalOf(DateTime date) => (date.Day - 1) / 7 + 1;
+
+    public static bool IsLastWeekdayOfMonth(DateTime date) =>
+        date.Day + 7 > DateTime.DaysInMonth(date.Year, date.Month);
+
+    public static bool MatchesWeekdayOfMonth(DateTime date, DayOfWeek[] weekdays, int weekOfMonth) =>
+        weekdays.Contains(date.DayOfWeek)
+        && (weekOfMonth == LastWeekOfMonth
+            ? IsLastWeekdayOfMonth(date)
+            : WeekOrdinalOf(date) == weekOfMonth);
+
+    public static int MaxSelectableDay(int month) =>
+        month == 2 ? 29 : month is 4 or 6 or 9 or 11 ? 30 : 31;
 
     private static bool DayMatchesClamped(DateTime date, int day) =>
         date.Day == day

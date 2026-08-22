@@ -37,6 +37,8 @@ public class TaskEditPanelBase : ComponentBase
     protected int EditQuarterlyMonth { get; set; } = RepeatRule.QuarterGroupOf(DateTime.Now);
     protected int EditYearlyDay { get; set; } = DateTime.Now.Day;
     protected int EditYearlyMonth { get; set; } = DateTime.Now.Month;
+    protected string EditRepeatBy { get; set; } = "false";
+    protected int EditWeekOfMonth { get; set; } = 1;
     protected DateTime? EditScheduledDate { get; set; }
     protected bool EditIsPaused { get; set; }
     protected DateTime? EditPausedDate { get; set; }
@@ -60,11 +62,7 @@ public class TaskEditPanelBase : ComponentBase
 
     protected bool ShowPause => !EditFollowParent && EditRepeatType != RepeatType.None;
 
-    protected static DayOfWeek[] WeekdayOptions =>
-    [
-        DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
-        DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
-    ];
+    protected static DayOfWeek[] WeekdayOptions => Constants.Repeat.WeekdayOptions;
 
     protected override void OnInitialized()
     {
@@ -80,10 +78,17 @@ public class TaskEditPanelBase : ComponentBase
         EditQuarterlyMonth = Task.Repeat?.QuarterlyMonth ?? RepeatRule.QuarterGroupOf(anchorDate);
         EditYearlyDay = Task.Repeat?.YearlyDay ?? anchorDate.Day;
         EditYearlyMonth = Task.Repeat?.YearlyMonth ?? anchorDate.Month;
+        EditRepeatBy = Task.Repeat?.WeekOfMonth.HasValue == true ? "true" : "false";
+        EditWeekOfMonth = Task.Repeat?.WeekOfMonth ?? 1;
         EditScheduledDate = Task.ScheduledDate;
         EditIsPaused = Task.Repeat?.IsPaused ?? false;
         EditPausedDate = Task.Repeat?.PausedDate ?? null;
         EditListId = Task.GoogleListId ?? Constants.TaskLists.LocalPomodoroListId;
+    }
+
+    protected void ClampEditYearlyDay()
+    {
+        EditYearlyDay = Math.Min(EditYearlyDay, RepeatRule.MaxSelectableDay(EditYearlyMonth));
     }
 
     protected void TogglePause()
@@ -151,6 +156,12 @@ public class TaskEditPanelBase : ComponentBase
             return;
         }
 
+        var weekOfMonth = EditRepeatType is RepeatType.Monthly or RepeatType.Quarterly or RepeatType.Yearly
+            && EditRepeatBy == "true"
+            && EditWeekdays.Length > 0
+            ? EditWeekOfMonth
+            : (int?)null;
+
         t.Repeat = t.Repeat != null
             ? new RepeatRule
             {
@@ -162,6 +173,7 @@ public class TaskEditPanelBase : ComponentBase
                 QuarterlyMonth = EditQuarterlyMonth,
                 YearlyDay = EditYearlyDay,
                 YearlyMonth = EditYearlyMonth,
+                WeekOfMonth = weekOfMonth,
                 IsPaused = EditIsPaused,
                 PausedDate = EditIsPaused ? EditPausedDate : null,
                 StartDate = t.Repeat.StartDate,
@@ -179,6 +191,7 @@ public class TaskEditPanelBase : ComponentBase
                 QuarterlyMonth = EditQuarterlyMonth,
                 YearlyDay = EditYearlyDay,
                 YearlyMonth = EditYearlyMonth,
+                WeekOfMonth = weekOfMonth,
                 IsPaused = EditIsPaused,
                 PausedDate = EditIsPaused ? EditPausedDate : null,
                 StartDate = EditScheduledDate

@@ -105,9 +105,17 @@ public static partial class Constants
         public const string LabelRepeat = "Repeat";
         public const string FollowParentChoice = "follow-parent";
         public const string MonthEndClampHint = "Runs on the last day of shorter months.";
+        public const string Feb29LeapHint = "Runs Feb 29 in leap years, Feb 28 otherwise.";
+        public const string ModeDayOfMonth = "Day of month";
+        public const string ModeDayOfWeek = "Day of week";
         public static readonly string[] QuarterlyGroupLabels =
             ["Jan, Apr, Jul, Oct", "Feb, May, Aug, Nov", "Mar, Jun, Sep, Dec"];
         public static readonly string[] MonthNames =
             ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        public static readonly string[] WeekOfMonthLabels =
+            ["First", "Second", "Third", "Fourth", "Last"];
+        public static readonly DayOfWeek[] WeekdayOptions =
+            [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+             DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday];
     }
 }

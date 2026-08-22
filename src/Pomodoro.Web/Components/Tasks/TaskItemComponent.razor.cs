@@ -172,13 +172,28 @@ public partial class TaskItemBase : ComponentBase
             RepeatType.Daily => "Daily",
             RepeatType.Weekly => "Weekly",
             RepeatType.Custom => $"Every {Item.Repeat.CustomDays} days",
-            RepeatType.Monthly => $"Monthly (day {Item.Repeat.MonthlyDay})",
-            RepeatType.Quarterly => $"Quarterly ({Constants.Repeat.QuarterlyGroupLabels[Item.Repeat.EffectiveQuarterGroup(anchor) - 1]}, day {Item.Repeat.QuarterlyDay ?? anchor.Day})",
-            RepeatType.Yearly => $"Yearly (day {Item.Repeat.YearlyDay ?? anchor.Day} of {Constants.Repeat.MonthNames[(Item.Repeat.YearlyMonth ?? anchor.Month) - 1]})",
+            RepeatType.Monthly => Item.Repeat.WeekOfMonth.HasValue
+                ? $"Monthly ({WeekdayOfMonthLabel()})"
+                : $"Monthly (day {Item.Repeat.MonthlyDay})",
+            RepeatType.Quarterly => Item.Repeat.WeekOfMonth.HasValue
+                ? $"Quarterly ({Constants.Repeat.QuarterlyGroupLabels[Item.Repeat.EffectiveQuarterGroup(anchor) - 1]}, {WeekdayOfMonthLabel()})"
+                : $"Quarterly ({Constants.Repeat.QuarterlyGroupLabels[Item.Repeat.EffectiveQuarterGroup(anchor) - 1]}, day {Item.Repeat.QuarterlyDay ?? anchor.Day})",
+            RepeatType.Yearly => Item.Repeat.WeekOfMonth.HasValue
+                ? $"Yearly ({WeekdayOfMonthLabel()} of {Constants.Repeat.MonthNames[(Item.Repeat.YearlyMonth ?? anchor.Month) - 1]})"
+                : $"Yearly (day {Item.Repeat.YearlyDay ?? anchor.Day} of {Constants.Repeat.MonthNames[(Item.Repeat.YearlyMonth ?? anchor.Month) - 1]})",
             _ => "Repeats"
         };
         if (Item.Repeat.IsPaused) return $"{typeLabel} (paused)";
         return typeLabel;
+    }
+
+    private string WeekdayOfMonthLabel()
+    {
+        var ordinal = Constants.Repeat.WeekOfMonthLabels[(Item.Repeat!.WeekOfMonth ?? 1) - 1].ToLowerInvariant();
+        var days = string.Join(", ", Item.Repeat.Weekdays
+            .OrderBy(d => d)
+            .Select(d => d.ToString().Substring(0, 2)));
+        return $"{ordinal} {days}";
     }
 
     protected async Task HandleSelect()

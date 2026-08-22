@@ -62,11 +62,47 @@
     @if (EditRepeatType == RepeatType.Monthly && !EditFollowParent)
     {
         <div class="tep-row">
-            <label class="tep-label">Day</label>
-            <input type="number" class="tep-input tep-input-sm" min="1" max="31"
-                   @bind="EditMonthlyDay" @bind:event="oninput" />
-            <span class="tep-unit">of month</span>
+            <label class="tep-label">By</label>
+            <select class="tep-select" @bind="EditRepeatBy" @bind:event="onchange">
+                <option value="false">@Constants.Repeat.ModeDayOfMonth</option>
+                <option value="true">@Constants.Repeat.ModeDayOfWeek</option>
+            </select>
         </div>
+        @if (EditRepeatBy == "false")
+        {
+            <div class="tep-row">
+                <label class="tep-label">Day</label>
+                <input type="number" class="tep-input tep-input-sm" min="1" max="31"
+                       @bind="EditMonthlyDay" @bind:event="oninput" />
+                <span class="tep-unit">of month</span>
+            </div>
+        }
+        else
+        {
+            <div class="tep-row">
+                <label class="tep-label">Week</label>
+                <select class="tep-input" @bind="EditWeekOfMonth">
+                    @for (var i = 1; i <= Constants.Repeat.WeekOfMonthLabels.Length; i++)
+                    {
+                        <option value="@i">@Constants.Repeat.WeekOfMonthLabels[i - 1]</option>
+                    }
+                </select>
+            </div>
+            <div class="tep-row tep-weekdays">
+                <label class="tep-label">Days</label>
+                <div class="tep-weekday-btns">
+                    @foreach (var day in WeekdayOptions)
+                    {
+                        var isSelected = EditWeekdays.Contains(day);
+                        <button type="button"
+                                class="tep-weekday-btn @(isSelected ? "active" : "")"
+                                @onclick="() => ToggleWeekday(day)">
+                            @day.ToString().Substring(0, 2)
+                        </button>
+                    }
+                </div>
+            </div>
+        }
     }
 
     @if (EditRepeatType == RepeatType.Quarterly && !EditFollowParent)
@@ -81,38 +117,113 @@
             </select>
         </div>
         <div class="tep-row">
-            <label class="tep-label">Day</label>
-            <input type="number" class="tep-input tep-input-sm" min="1" max="31"
-                   @bind="EditQuarterlyDay" @bind:event="oninput" />
-            <span class="tep-unit">of month</span>
+            <label class="tep-label">By</label>
+            <select class="tep-select" @bind="EditRepeatBy" @bind:event="onchange">
+                <option value="false">@Constants.Repeat.ModeDayOfMonth</option>
+                <option value="true">@Constants.Repeat.ModeDayOfWeek</option>
+            </select>
         </div>
-        @if (EditQuarterlyDay > 28)
+        @if (EditRepeatBy == "false")
         {
-            <div class="tep-hint">@Constants.Repeat.MonthEndClampHint</div>
+            <div class="tep-row">
+                <label class="tep-label">Day</label>
+                <input type="number" class="tep-input tep-input-sm" min="1" max="31"
+                       @bind="EditQuarterlyDay" @bind:event="oninput" />
+                <span class="tep-unit">of month</span>
+            </div>
+            @if (EditQuarterlyDay > 28)
+            {
+                <div class="tep-hint">@Constants.Repeat.MonthEndClampHint</div>
+            }
+        }
+        else
+        {
+            <div class="tep-row">
+                <label class="tep-label">Week</label>
+                <select class="tep-input" @bind="EditWeekOfMonth">
+                    @for (var i = 1; i <= Constants.Repeat.WeekOfMonthLabels.Length; i++)
+                    {
+                        <option value="@i">@Constants.Repeat.WeekOfMonthLabels[i - 1]</option>
+                    }
+                </select>
+            </div>
+            <div class="tep-row tep-weekdays">
+                <label class="tep-label">Days</label>
+                <div class="tep-weekday-btns">
+                    @foreach (var day in WeekdayOptions)
+                    {
+                        var isSelected = EditWeekdays.Contains(day);
+                        <button type="button"
+                                class="tep-weekday-btn @(isSelected ? "active" : "")"
+                                @onclick="() => ToggleWeekday(day)">
+                            @day.ToString().Substring(0, 2)
+                        </button>
+                    }
+                </div>
+            </div>
         }
     }
 
     @if (EditRepeatType == RepeatType.Yearly && !EditFollowParent)
     {
         <div class="tep-row">
-            <label class="tep-label">Day</label>
-            <input type="number" class="tep-input tep-input-sm" min="1" max="31"
-                   @bind="EditYearlyDay" @bind:event="oninput" />
-            <span class="tep-unit">of month</span>
-        </div>
-        @if (EditYearlyDay > 28)
-        {
-            <div class="tep-hint">@Constants.Repeat.MonthEndClampHint</div>
-        }
-        <div class="tep-row">
             <label class="tep-label">Month</label>
-            <select class="tep-input" @bind="EditYearlyMonth">
+            <select class="tep-input" @bind="EditYearlyMonth" @bind:after="ClampEditYearlyDay">
                 @for (var i = 1; i <= Constants.Repeat.MonthNames.Length; i++)
                 {
                     <option value="@i">@Constants.Repeat.MonthNames[i - 1]</option>
                 }
             </select>
         </div>
+        <div class="tep-row">
+            <label class="tep-label">By</label>
+            <select class="tep-select" @bind="EditRepeatBy" @bind:event="onchange">
+                <option value="false">@Constants.Repeat.ModeDayOfMonth</option>
+                <option value="true">@Constants.Repeat.ModeDayOfWeek</option>
+            </select>
+        </div>
+        @if (EditRepeatBy == "false")
+        {
+            <div class="tep-row">
+                <label class="tep-label">Day</label>
+                <select class="tep-input" @bind="EditYearlyDay">
+                    @for (var i = 1; i <= RepeatRule.MaxSelectableDay(EditYearlyMonth); i++)
+                    {
+                        <option value="@i">@i</option>
+                    }
+                </select>
+            </div>
+            @if (EditYearlyMonth == 2 && EditYearlyDay == 29)
+            {
+                <div class="tep-hint">@Constants.Repeat.Feb29LeapHint</div>
+            }
+        }
+        else
+        {
+            <div class="tep-row">
+                <label class="tep-label">Week</label>
+                <select class="tep-input" @bind="EditWeekOfMonth">
+                    @for (var i = 1; i <= Constants.Repeat.WeekOfMonthLabels.Length; i++)
+                    {
+                        <option value="@i">@Constants.Repeat.WeekOfMonthLabels[i - 1]</option>
+                    }
+                </select>
+            </div>
+            <div class="tep-row tep-weekdays">
+                <label class="tep-label">Days</label>
+                <div class="tep-weekday-btns">
+                    @foreach (var day in WeekdayOptions)
+                    {
+                        var isSelected = EditWeekdays.Contains(day);
+                        <button type="button"
+                                class="tep-weekday-btn @(isSelected ? "active" : "")"
+                                @onclick="() => ToggleWeekday(day)">
+                            @day.ToString().Substring(0, 2)
+                        </button>
+                    }
+                </div>
+            </div>
+        }
     }
 
     <div class="tep-row">

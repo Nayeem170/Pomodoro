@@ -69,6 +69,9 @@ public partial class IndexBase
                             QuarterlyMonth = request.QuarterlyMonth > 0 ? request.QuarterlyMonth : null,
                             YearlyDay = request.YearlyDay > 0 ? request.YearlyDay : null,
                             YearlyMonth = request.YearlyMonth > 0 ? request.YearlyMonth : null,
+                            WeekOfMonth = request.WeekOfMonth > 0 && (request.Weekdays?.Length ?? 0) > 0
+                                ? request.WeekOfMonth
+                                : null,
                             IsPaused = request.IsPaused,
                             PausedDate = request.IsPaused ? request.PausedDate : null,
                             StartDate = request.ScheduledDate ?? DateTime.Now

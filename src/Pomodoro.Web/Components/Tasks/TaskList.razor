@@ -151,11 +151,48 @@
                 @if (_newTaskRepeatType == RepeatType.Monthly)
                 {
                     <div class="tep-row">
-                        <label class="tep-label">Day</label>
-                        <input type="number" class="tep-input tep-input-sm" min="1" max="31"
-                               @bind="_newTaskMonthlyDay" @bind:event="oninput" />
-                        <span class="tep-unit">of month</span>
+                        <label class="tep-label">By</label>
+                        <select class="tep-select" @bind="_newTaskRepeatBy" @bind:event="onchange">
+                            <option value="false">@Constants.Repeat.ModeDayOfMonth</option>
+                            <option value="true">@Constants.Repeat.ModeDayOfWeek</option>
+                        </select>
                     </div>
+                    @if (_newTaskRepeatBy == "false")
+                    {
+                        <div class="tep-row">
+                            <label class="tep-label">Day</label>
+                            <input type="number" class="tep-input tep-input-sm" min="1" max="31"
+                                   @bind="_newTaskMonthlyDay" @bind:event="oninput" />
+                            <span class="tep-unit">of month</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="tep-row">
+                            <label class="tep-label">Week</label>
+                            <select class="tep-input" @bind="_newTaskWeekOfMonth">
+                                @for (var i = 1; i <= Constants.Repeat.WeekOfMonthLabels.Length; i++)
+                                {
+                                    <option value="@i">@Constants.Repeat.WeekOfMonthLabels[i - 1]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="tep-row tep-weekdays">
+                            <label class="tep-label">Days</label>
+                            <div class="tep-weekday-btns">
+                                @foreach (var day in WeekdayOptions)
+                                {
+                                    var isSelected = _newTaskWeekdays.Contains(day);
+                                    var dayVal = day;
+                                    <button type="button"
+                                            class="tep-weekday-btn @(isSelected ? "active" : "")"
+                                            @onclick="() => ToggleNewWeekday(dayVal)">
+                                        @day.ToString().Substring(0, 2)
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
                 }
                 @if (_newTaskRepeatType == RepeatType.Quarterly)
                 {
@@ -169,37 +206,114 @@
                         </select>
                     </div>
                     <div class="tep-row">
-                        <label class="tep-label">Day</label>
-                        <input type="number" class="tep-input tep-input-sm" min="1" max="31"
-                               @bind="_newTaskQuarterlyDay" @bind:event="oninput" />
-                        <span class="tep-unit">of month</span>
+                        <label class="tep-label">By</label>
+                        <select class="tep-select" @bind="_newTaskRepeatBy" @bind:event="onchange">
+                            <option value="false">@Constants.Repeat.ModeDayOfMonth</option>
+                            <option value="true">@Constants.Repeat.ModeDayOfWeek</option>
+                        </select>
                     </div>
-                    @if (_newTaskQuarterlyDay > 28)
+                    @if (_newTaskRepeatBy == "false")
                     {
-                        <div class="tep-hint">@Constants.Repeat.MonthEndClampHint</div>
+                        <div class="tep-row">
+                            <label class="tep-label">Day</label>
+                            <input type="number" class="tep-input tep-input-sm" min="1" max="31"
+                                   @bind="_newTaskQuarterlyDay" @bind:event="oninput" />
+                            <span class="tep-unit">of month</span>
+                        </div>
+                        @if (_newTaskQuarterlyDay > 28)
+                        {
+                            <div class="tep-hint">@Constants.Repeat.MonthEndClampHint</div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="tep-row">
+                            <label class="tep-label">Week</label>
+                            <select class="tep-input" @bind="_newTaskWeekOfMonth">
+                                @for (var i = 1; i <= Constants.Repeat.WeekOfMonthLabels.Length; i++)
+                                {
+                                    <option value="@i">@Constants.Repeat.WeekOfMonthLabels[i - 1]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="tep-row tep-weekdays">
+                            <label class="tep-label">Days</label>
+                            <div class="tep-weekday-btns">
+                                @foreach (var day in WeekdayOptions)
+                                {
+                                    var isSelected = _newTaskWeekdays.Contains(day);
+                                    var dayVal = day;
+                                    <button type="button"
+                                            class="tep-weekday-btn @(isSelected ? "active" : "")"
+                                            @onclick="() => ToggleNewWeekday(dayVal)">
+                                        @day.ToString().Substring(0, 2)
+                                    </button>
+                                }
+                            </div>
+                        </div>
                     }
                 }
                 @if (_newTaskRepeatType == RepeatType.Yearly)
                 {
                     <div class="tep-row">
-                        <label class="tep-label">Day</label>
-                        <input type="number" class="tep-input tep-input-sm" min="1" max="31"
-                               @bind="_newTaskYearlyDay" @bind:event="oninput" />
-                        <span class="tep-unit">of month</span>
-                    </div>
-                    @if (_newTaskYearlyDay > 28)
-                    {
-                        <div class="tep-hint">@Constants.Repeat.MonthEndClampHint</div>
-                    }
-                    <div class="tep-row">
                         <label class="tep-label">Month</label>
-                        <select class="tep-input" @bind="_newTaskYearlyMonth">
+                        <select class="tep-input" @bind="_newTaskYearlyMonth" @bind:after="ClampNewYearlyDay">
                             @for (var i = 1; i <= Constants.Repeat.MonthNames.Length; i++)
                             {
                                 <option value="@i">@Constants.Repeat.MonthNames[i - 1]</option>
                             }
                         </select>
                     </div>
+                    <div class="tep-row">
+                        <label class="tep-label">By</label>
+                        <select class="tep-select" @bind="_newTaskRepeatBy" @bind:event="onchange">
+                            <option value="false">@Constants.Repeat.ModeDayOfMonth</option>
+                            <option value="true">@Constants.Repeat.ModeDayOfWeek</option>
+                        </select>
+                    </div>
+                    @if (_newTaskRepeatBy == "false")
+                    {
+                        <div class="tep-row">
+                            <label class="tep-label">Day</label>
+                            <select class="tep-input" @bind="_newTaskYearlyDay">
+                                @for (var i = 1; i <= RepeatRule.MaxSelectableDay(_newTaskYearlyMonth); i++)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            </select>
+                        </div>
+                        @if (_newTaskYearlyMonth == 2 && _newTaskYearlyDay == 29)
+                        {
+                            <div class="tep-hint">@Constants.Repeat.Feb29LeapHint</div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="tep-row">
+                            <label class="tep-label">Week</label>
+                            <select class="tep-input" @bind="_newTaskWeekOfMonth">
+                                @for (var i = 1; i <= Constants.Repeat.WeekOfMonthLabels.Length; i++)
+                                {
+                                    <option value="@i">@Constants.Repeat.WeekOfMonthLabels[i - 1]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="tep-row tep-weekdays">
+                            <label class="tep-label">Days</label>
+                            <div class="tep-weekday-btns">
+                                @foreach (var day in WeekdayOptions)
+                                {
+                                    var isSelected = _newTaskWeekdays.Contains(day);
+                                    var dayVal = day;
+                                    <button type="button"
+                                            class="tep-weekday-btn @(isSelected ? "active" : "")"
+                                            @onclick="() => ToggleNewWeekday(dayVal)">
+                                        @day.ToString().Substring(0, 2)
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
                 }
                 <div class="tep-row">
                     <label class="tep-label">Schedule</label>

@@ -309,4 +309,239 @@ public class RepeatRuleQuarterlyYearlyTests
         Assert.Equal(15, rule.QuarterlyDay);
         Assert.Null(rule.QuarterlyMonth);
     }
+
+    [Fact]
+    public void WeekOrdinalOf_March2026Mondays_CountsOneThroughFive()
+    {
+        // Act
+        var ordinals = new[]
+        {
+            RepeatRule.WeekOrdinalOf(new DateTime(2026, 3, 2)),
+            RepeatRule.WeekOrdinalOf(new DateTime(2026, 3, 9)),
+            RepeatRule.WeekOrdinalOf(new DateTime(2026, 3, 16)),
+            RepeatRule.WeekOrdinalOf(new DateTime(2026, 3, 23)),
+            RepeatRule.WeekOrdinalOf(new DateTime(2026, 3, 30))
+        };
+
+        // Assert
+        Assert.Equal([1, 2, 3, 4, 5], ordinals);
+    }
+
+    [Fact]
+    public void WeekOrdinalOf_FourthAndLastFridayOfFourFridayMonth_IsFour()
+    {
+        // Act
+        var ordinal = RepeatRule.WeekOrdinalOf(new DateTime(2026, 2, 27));
+
+        // Assert
+        Assert.Equal(4, ordinal);
+    }
+
+    [Fact]
+    public void IsLastWeekdayOfMonth_February2026_DetectsLastWeekday()
+    {
+        // Act
+        var last = RepeatRule.IsLastWeekdayOfMonth(new DateTime(2026, 2, 27));
+        var before = RepeatRule.IsLastWeekdayOfMonth(new DateTime(2026, 2, 20));
+
+        // Assert
+        Assert.True(last);
+        Assert.False(before);
+    }
+
+    [Theory]
+    [InlineData(1, 31)]
+    [InlineData(2, 29)]
+    [InlineData(3, 31)]
+    [InlineData(4, 30)]
+    [InlineData(5, 31)]
+    [InlineData(6, 30)]
+    [InlineData(7, 31)]
+    [InlineData(8, 31)]
+    [InlineData(9, 30)]
+    [InlineData(10, 31)]
+    [InlineData(11, 30)]
+    [InlineData(12, 31)]
+    public void MaxSelectableDay_ForEachMonth_ReturnsFebruaryCapAndShortMonths(int month, int expected)
+    {
+        // Act
+        var max = RepeatRule.MaxSelectableDay(month);
+
+        // Assert
+        Assert.Equal(expected, max);
+    }
+
+    [Fact]
+    public void OccursOn_MonthlyWeekdayMode_FirstMonday_ReturnsTrue()
+    {
+        var anchor = new DateTime(2026, 3, 2);
+        var task = TaskAnchoredAt(anchor,
+            new RepeatRule { Type = RepeatType.Monthly, WeekOfMonth = 1, Weekdays = [DayOfWeek.Monday] });
+
+        // Act
+        var result = task.Repeat!.OccursOn(task, new DateTime(2026, 3, 2));
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void OccursOn_MonthlyWeekdayMode_SecondMondayWithFirstOrdinal_ReturnsFalse()
+    {
+        var anchor = new DateTime(2026, 3, 2);
+        var task = TaskAnchoredAt(anchor,
+            new RepeatRule { Type = RepeatType.Monthly, WeekOfMonth = 1, Weekdays = [DayOfWeek.Monday] });
+
+        // Act
+        var result = task.Repeat!.OccursOn(task, new DateTime(2026, 3, 9));
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void OccursOn_MonthlyWeekdayMode_LastOrdinal_MatchesLastMondayOnly()
+    {
+        var anchor = new DateTime(2026, 3, 2);
+        var task = TaskAnchoredAt(anchor,
+            new RepeatRule { Type = RepeatType.Monthly, WeekOfMonth = RepeatRule.LastWeekOfMonth, Weekdays = [DayOfWeek.Monday] });
+
+        // Act
+        var last = task.Repeat!.OccursOn(task, new DateTime(2026, 3, 30));
+        var fourth = task.Repeat!.OccursOn(task, new DateTime(2026, 3, 23));
+
+        // Assert
+        Assert.True(last);
+        Assert.False(fourth);
+    }
+
+    [Fact]
+    public void OccursOn_MonthlyWeekdayMode_FourthOrdinal_InFourMondayMonth_CoincidesWithLast()
+    {
+        var anchor = new DateTime(2026, 2, 2);
+        var task = TaskAnchoredAt(anchor,
+            new RepeatRule { Type = RepeatType.Monthly, WeekOfMonth = 4, Weekdays = [DayOfWeek.Monday] });
+
+        // Act
+        var result = task.Repeat!.OccursOn(task, new DateTime(2026, 2, 23));
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void OccursOn_MonthlyWeekdayMode_MultipleWeekdays_MatchesSecondOfEach()
+    {
+        var anchor = new DateTime(2026, 3, 2);
+        var task = TaskAnchoredAt(anchor,
+            new RepeatRule { Type = RepeatType.Monthly, WeekOfMonth = 2, Weekdays = [DayOfWeek.Monday, DayOfWeek.Wednesday] });
+
+        // Act
+        var secondMonday = task.Repeat!.OccursOn(task, new DateTime(2026, 3, 9));
+        var secondWednesday = task.Repeat!.OccursOn(task, new DateTime(2026, 3, 11));
+
+        // Assert
+        Assert.True(secondMonday);
+        Assert.True(secondWednesday);
+    }
+
+    [Fact]
+    public void OccursOn_QuarterlyWeekdayMode_FirstFridayInGroupMonth_ReturnsTrueAndNonGroupFalse()
+    {
+        var anchor = new DateTime(2026, 2, 15);
+        var task = TaskAnchoredAt(anchor,
+            new RepeatRule { Type = RepeatType.Quarterly, QuarterlyMonth = 2, WeekOfMonth = 1, Weekdays = [DayOfWeek.Friday] });
+
+        // Act
+        var november = task.Repeat!.OccursOn(task, new DateTime(2026, 11, 6));
+        var october = task.Repeat!.OccursOn(task, new DateTime(2026, 10, 2));
+
+        // Assert
+        Assert.True(november);
+        Assert.False(october);
+    }
+
+    [Fact]
+    public void OccursOn_YearlyWeekdayMode_LastFridayOfMarch_ReturnsTrueAndOtherMonthFalse()
+    {
+        var anchor = new DateTime(2026, 3, 1);
+        var task = TaskAnchoredAt(anchor,
+            new RepeatRule { Type = RepeatType.Yearly, YearlyMonth = 3, WeekOfMonth = RepeatRule.LastWeekOfMonth, Weekdays = [DayOfWeek.Friday] });
+
+        // Act
+        var march = task.Repeat!.OccursOn(task, new DateTime(2026, 3, 27));
+        var april = task.Repeat!.OccursOn(task, new DateTime(2026, 4, 24));
+
+        // Assert
+        Assert.True(march);
+        Assert.False(april);
+    }
+
+    [Fact]
+    public void OccursOn_WeekdayModeWithEmptyWeekdays_ReturnsFalse()
+    {
+        var anchor = new DateTime(2026, 3, 2);
+        var task = TaskAnchoredAt(anchor,
+            new RepeatRule { Type = RepeatType.Monthly, WeekOfMonth = 1, Weekdays = [] });
+
+        // Act
+        var result = task.Repeat!.OccursOn(task, new DateTime(2026, 3, 2));
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void Deserialize_OldJson_WithoutWeekOfMonth_DefaultsToNull()
+    {
+        var json = """{"Type":4,"MonthlyDay":15,"Weekdays":[1]}""";
+
+        // Act
+        var rule = JsonSerializer.Deserialize<RepeatRule>(json);
+
+        // Assert
+        Assert.NotNull(rule);
+        Assert.Equal(RepeatType.Monthly, rule.Type);
+        Assert.Null(rule.WeekOfMonth);
+    }
+
+    [Fact]
+    public void OccursOn_QuarterlyWeekdayMode_GatesApplyLikeDayOfMonthMode()
+    {
+        var anchor = new DateTime(2026, 2, 15);
+        var rule = new RepeatRule
+        {
+            Type = RepeatType.Quarterly,
+            QuarterlyMonth = 2,
+            WeekOfMonth = 1,
+            Weekdays = [DayOfWeek.Friday]
+        };
+        var expiredRule = new RepeatRule
+        {
+            Type = RepeatType.Quarterly,
+            QuarterlyMonth = 2,
+            WeekOfMonth = 1,
+            Weekdays = [DayOfWeek.Friday],
+            EndDate = new DateTime(2026, 11, 5)
+        };
+        var pausedRule = new RepeatRule
+        {
+            Type = RepeatType.Quarterly,
+            QuarterlyMonth = 2,
+            WeekOfMonth = 1,
+            Weekdays = [DayOfWeek.Friday],
+            IsPaused = true,
+            PausedDate = new DateTime(2026, 2, 15)
+        };
+
+        // Act
+        var beforeAnchor = rule.OccursOn(TaskAnchoredAt(anchor, rule), new DateTime(2026, 2, 13));
+        var expired = expiredRule.OccursOn(TaskAnchoredAt(anchor, expiredRule), new DateTime(2026, 11, 6));
+        var paused = pausedRule.OccursOn(TaskAnchoredAt(anchor, pausedRule), new DateTime(2026, 11, 6));
+
+        // Assert
+        Assert.False(beforeAnchor);
+        Assert.False(expired);
+        Assert.False(paused);
+    }
 }

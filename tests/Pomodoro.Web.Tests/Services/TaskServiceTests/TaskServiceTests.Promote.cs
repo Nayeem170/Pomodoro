@@ -194,4 +194,100 @@ public partial class TaskServiceTests
         promoted.Repeat!.Type.Should().Be(RepeatType.Daily,
             "promoted task must copy parent's Repeat type");
     }
+
+    [Fact]
+    public async Task PromoteTaskAsync_QuarterlyParentRule_CopiesAllQuarterlyFields()
+    {
+        var root = CreateSampleTask(name: "Root");
+        root.Repeat = new RepeatRule
+        {
+            Type = RepeatType.Quarterly,
+            QuarterlyDay = 15,
+            QuarterlyMonth = 3
+        };
+        var subtask = CreateSampleTask(name: "Sub");
+        subtask.ParentTaskId = root.Id;
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync())
+            .ReturnsAsync(new List<TaskItem> { root, subtask });
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+        MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
+            .ReturnsAsync(true);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        await service.PromoteTaskAsync(subtask.Id);
+
+        var promoted = service.AllTasks.First(t => t.Name == "Sub");
+        promoted.Repeat!.QuarterlyDay.Should().Be(15,
+            "promoted quarterly rule must keep the parent's QuarterlyDay");
+        promoted.Repeat.QuarterlyMonth.Should().Be(3,
+            "promoted quarterly rule must keep the parent's QuarterlyMonth");
+    }
+
+    [Fact]
+    public async Task PromoteTaskAsync_YearlyParentRule_CopiesAllYearlyFields()
+    {
+        var root = CreateSampleTask(name: "Root");
+        root.Repeat = new RepeatRule
+        {
+            Type = RepeatType.Yearly,
+            YearlyDay = 10,
+            YearlyMonth = 3
+        };
+        var subtask = CreateSampleTask(name: "Sub");
+        subtask.ParentTaskId = root.Id;
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync())
+            .ReturnsAsync(new List<TaskItem> { root, subtask });
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+        MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
+            .ReturnsAsync(true);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        await service.PromoteTaskAsync(subtask.Id);
+
+        var promoted = service.AllTasks.First(t => t.Name == "Sub");
+        promoted.Repeat!.YearlyDay.Should().Be(10,
+            "promoted yearly rule must keep the parent's YearlyDay");
+        promoted.Repeat.YearlyMonth.Should().Be(3,
+            "promoted yearly rule must keep the parent's YearlyMonth");
+    }
+
+    [Fact]
+    public async Task PromoteTaskAsync_WeekdayModeParentRule_CopiesWeekOfMonthAndWeekdays()
+    {
+        var root = CreateSampleTask(name: "Root");
+        root.Repeat = new RepeatRule
+        {
+            Type = RepeatType.Monthly,
+            WeekOfMonth = 2,
+            Weekdays = [DayOfWeek.Tuesday]
+        };
+        var subtask = CreateSampleTask(name: "Sub");
+        subtask.ParentTaskId = root.Id;
+
+        MockTaskRepository.Setup(r => r.GetAllIncludingDeletedAsync())
+            .ReturnsAsync(new List<TaskItem> { root, subtask });
+        MockIndexedDb.Setup(d => d.GetAsync<AppStateRecord>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((AppStateRecord?)null);
+        MockIndexedDb.Setup(d => d.PutAllAsync(It.IsAny<string>(), It.IsAny<List<TaskItem>>()))
+            .ReturnsAsync(true);
+
+        var service = CreateService();
+        await service.InitializeAsync();
+
+        await service.PromoteTaskAsync(subtask.Id);
+
+        var promoted = service.AllTasks.First(t => t.Name == "Sub");
+        promoted.Repeat!.WeekOfMonth.Should().Be(2,
+            "promoted weekday-mode rule must keep the parent's WeekOfMonth");
+        promoted.Repeat.Weekdays.Should().BeEquivalentTo([DayOfWeek.Tuesday],
+            "promoted weekday-mode rule must keep the parent's Weekdays");
+    }
 }

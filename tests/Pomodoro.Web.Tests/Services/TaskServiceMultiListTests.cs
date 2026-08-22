@@ -2494,6 +2494,126 @@ public class TaskServiceMultiListTests
         result.Should().BeNull();
     }
 
+    [Fact]
+    public void ComputeNextOccurrence_MonthlyWeekdayMode_FirstMondayFromMidMonth_ReturnsNextFirstMonday()
+    {
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Monthly,
+            LastCompletedDate = new DateTime(2026, 3, 6),
+            WeekOfMonth = 1,
+            Weekdays = [DayOfWeek.Monday]
+        });
+        result.Should().Be(new DateTime(2026, 4, 6));
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_MonthlyWeekdayMode_LastFridayFromLastFriday_ReturnsNextMonthLastFriday()
+    {
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Monthly,
+            LastCompletedDate = new DateTime(2026, 3, 27),
+            WeekOfMonth = RepeatRule.LastWeekOfMonth,
+            Weekdays = [DayOfWeek.Friday]
+        });
+        result.Should().Be(new DateTime(2026, 4, 24));
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_WeekdayModeWithNoWeekdays_ReturnsNull()
+    {
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Monthly,
+            LastCompletedDate = new DateTime(2026, 3, 1),
+            WeekOfMonth = 1,
+            Weekdays = []
+        });
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_UnknownRepeatType_ReturnsNull()
+    {
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = (RepeatType)42,
+            LastCompletedDate = new DateTime(2026, 3, 1)
+        });
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_QuarterlyWeekdayMode_FirstMondayFromGroupMonth_ReturnsNextGroupFirstMonday()
+    {
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Quarterly,
+            LastCompletedDate = new DateTime(2026, 10, 20),
+            QuarterlyMonth = 1,
+            WeekOfMonth = 1,
+            Weekdays = [DayOfWeek.Monday]
+        });
+        result.Should().Be(new DateTime(2027, 1, 4));
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_YearlyWeekdayMode_FirstMondayOfMarchFromEndOfMarch_ReturnsNextYear()
+    {
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Yearly,
+            LastCompletedDate = new DateTime(2026, 3, 31),
+            YearlyMonth = 3,
+            WeekOfMonth = 1,
+            Weekdays = [DayOfWeek.Monday]
+        });
+        result.Should().Be(new DateTime(2027, 3, 1));
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_YearlyWeekdayMode_FirstMondayOfFebruaryFromMarch_ScansAlmostFullYear()
+    {
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Yearly,
+            LastCompletedDate = new DateTime(2026, 3, 31),
+            YearlyMonth = 2,
+            WeekOfMonth = 1,
+            Weekdays = [DayOfWeek.Monday]
+        });
+        result.Should().Be(new DateTime(2027, 2, 1));
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_WeekdayMode_EndDateBeforeCandidate_ReturnsNull()
+    {
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Yearly,
+            LastCompletedDate = new DateTime(2026, 3, 31),
+            YearlyMonth = 2,
+            WeekOfMonth = 1,
+            Weekdays = [DayOfWeek.Monday],
+            EndDate = new DateTime(2027, 1, 15)
+        });
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void ComputeNextOccurrence_WeekdayMode_EmptyWeekdays_ReturnsNull()
+    {
+        var result = InvokeComputeNextOccurrence(new RepeatRule
+        {
+            Type = RepeatType.Monthly,
+            LastCompletedDate = new DateTime(2026, 3, 6),
+            WeekOfMonth = 1,
+            Weekdays = []
+        });
+        result.Should().BeNull();
+    }
+
     #endregion
 
     #region BuildRootLookup google-parent resolution (via GetTasksForListAsync)
