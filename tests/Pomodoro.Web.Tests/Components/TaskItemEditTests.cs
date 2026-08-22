@@ -232,6 +232,98 @@ public class TaskItemEditTests : TestContext
     }
 
     [Fact]
+    public void GetRepeatTooltip_Quarterly()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test",
+            Repeat = new RepeatRule { Type = RepeatType.Quarterly, QuarterlyDay = 15, QuarterlyMonth = 1 }
+        };
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
+            parameters.Add(p => p.Item, task));
+
+        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Quarterly (Jan, Apr, Jul, Oct, day 15)");
+    }
+
+    [Fact]
+    public void GetRepeatTooltip_Yearly()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test",
+            Repeat = new RepeatRule { Type = RepeatType.Yearly, YearlyDay = 10, YearlyMonth = 3 }
+        };
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
+            parameters.Add(p => p.Item, task));
+
+        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Yearly (day 10 of March)");
+    }
+
+    [Fact]
+    public void GetRepeatTooltip_MonthlyWeekdayMode()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test",
+            Repeat = new RepeatRule
+            {
+                Type = RepeatType.Monthly,
+                WeekOfMonth = 2,
+                Weekdays = [DayOfWeek.Monday, DayOfWeek.Wednesday]
+            }
+        };
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
+            parameters.Add(p => p.Item, task));
+
+        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Monthly (second Mo, We)");
+    }
+
+    [Fact]
+    public void GetRepeatTooltip_QuarterlyWeekdayMode()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test",
+            Repeat = new RepeatRule
+            {
+                Type = RepeatType.Quarterly,
+                QuarterlyMonth = 2,
+                WeekOfMonth = RepeatRule.LastWeekOfMonth,
+                Weekdays = [DayOfWeek.Friday]
+            }
+        };
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
+            parameters.Add(p => p.Item, task));
+
+        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Quarterly (Feb, May, Aug, Nov, last Fr)");
+    }
+
+    [Fact]
+    public void GetRepeatTooltip_YearlyWeekdayMode()
+    {
+        var task = new TaskItem
+        {
+            Id = Guid.NewGuid(),
+            Name = "Test",
+            Repeat = new RepeatRule
+            {
+                Type = RepeatType.Yearly,
+                YearlyMonth = 3,
+                WeekOfMonth = 1,
+                Weekdays = [DayOfWeek.Friday]
+            }
+        };
+        var cut = RenderComponent<TaskItemComponent>(parameters =>
+            parameters.Add(p => p.Item, task));
+
+        cut.Find(".repeat-badge").GetAttribute("title").Should().Be("Yearly (first Fr of March)");
+    }
+
+    [Fact]
     public void GetRepeatTooltip_PausedSuffix()
     {
         var task = new TaskItem

@@ -756,6 +756,178 @@ public class TaskListTests : TestContext
     #region More Options Panel
 
     [Fact]
+    public void MorePanel_ShowsGroupSelectAndClampHint_WhenQuarterlySelectedWithDayAbove28()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Quarterly);
+
+        cut.FindAll("select[aria-label=\"Quarterly months\"] option").Should().HaveCount(3);
+        cut.Markup.Should().Contain("Jan, Apr, Jul, Oct");
+        cut.Markup.Should().Contain("of month");
+
+        cut.Find("input[type=\"number\"]").Input("31");
+        cut.Markup.Should().Contain("Runs on the last day of shorter months.");
+    }
+
+    [Fact]
+    public void MorePanel_YearlyFebruaryDay29_ShowsLeapHintAndMonthFollowingDayOptions()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Yearly);
+
+        var monthSelect = cut.Find("select[aria-label=\"Yearly month\"]");
+        monthSelect.QuerySelectorAll("option").Should().HaveCount(12,
+            "month select renders all twelve month names");
+        cut.Markup.Should().Contain("January");
+        cut.Markup.Should().Contain("December");
+
+        monthSelect.Change("2");
+        cut.Find("select[aria-label=\"Yearly day\"]").QuerySelectorAll("option").Should().HaveCount(29,
+            "February day dropdown follows the month up to 29");
+
+        cut.Find("select[aria-label=\"Yearly day\"]").Change("29");
+        cut.Markup.Should().Contain("Runs Feb 29 in leap years, Feb 28 otherwise.");
+    }
+
+    [Fact]
+    public void MorePanel_HidesClampHint_WhenQuarterlyDayAtOrBelow28()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Quarterly);
+
+        cut.Find("input[type=\"number\"]").Input("15");
+        cut.Markup.Should().NotContain("Runs on the last day of shorter months.");
+    }
+
+    [Fact]
+    public void MorePanel_QuarterlySelected_ShowsBySelectAndDayRow()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Quarterly);
+
+        cut.Markup.Should().Contain("Day of month");
+        cut.Markup.Should().Contain("Day of week");
+        cut.FindAll("input[type=\"number\"]").Count.Should().Be(1);
+        cut.FindAll(".tep-weekday-btn").Should().BeEmpty();
+    }
+
+    [Fact]
+    public void MorePanel_MonthlySelected_ShowsBySelectAndDayRow()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Monthly);
+
+        cut.Markup.Should().Contain("Day of month");
+        cut.Markup.Should().Contain("Day of week");
+        cut.FindAll("input[type=\"number\"]").Count.Should().Be(1);
+        cut.FindAll(".tep-weekday-btn").Should().BeEmpty();
+    }
+
+    [Fact]
+    public void MorePanel_MonthlyDayOfWeekMode_ShowsWeekSelectAndWeekdayButtons()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Monthly);
+        cut.Find("select[aria-label=\"Repeat by\"]").Change("true");
+
+        var weekSelect = cut.Find("select[aria-label=\"Week of month\"]");
+        weekSelect.QuerySelectorAll("option").Should().HaveCount(5);
+        cut.FindAll(".tep-weekday-btn").Should().HaveCount(7);
+        cut.FindAll("input[type=\"number\"]").Should().BeEmpty();
+
+        cut.FindAll(".tep-weekday-btn")[6].Click();
+        cut.FindAll(".tep-weekday-btn.active").Should().ContainSingle()
+            .Which.TextContent.Should().Contain("Su");
+    }
+
+    [Fact]
+    public void MorePanel_QuarterlyDayOfWeekMode_ShowsWeekSelectAndWeekdayButtons()
+    {
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null));
+
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Quarterly);
+        cut.Find("select[aria-label=\"Repeat by\"]").Change("true");
+
+        cut.Find("select[aria-label=\"Week of month\"]").QuerySelectorAll("option").Should().HaveCount(5);
+        cut.FindAll(".tep-weekday-btn").Should().HaveCount(7);
+        cut.FindAll("input[type=\"number\"]").Should().BeEmpty();
+
+        cut.FindAll(".tep-weekday-btn")[4].Click();
+        cut.FindAll(".tep-weekday-btn.active").Should().ContainSingle()
+            .Which.TextContent.Should().Contain("Fr");
+    }
+
+    [Fact]
+    public void MorePanel_YearlyDayOfWeekModeAdd_SendsWeekOfMonthAndWeekdays()
+    {
+        NewTaskRequest? captured = null;
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null)
+            .Add(x => x.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, r => captured = r)));
+
+        cut.Find("textarea.task-input").Input("Yearly weekday task");
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Yearly);
+        cut.Find("select[aria-label=\"Repeat by\"]").Change("true");
+        cut.Find("select[aria-label=\"Yearly month\"]").Change("3");
+        cut.Find("select[aria-label=\"Week of month\"]").Change("3");
+        cut.FindAll(".tep-weekday-btn")[2].Click();
+        cut.Find(".tep-save-btn").Click();
+
+        captured.Should().NotBeNull();
+        captured!.RepeatType.Should().Be(RepeatType.Yearly);
+        captured.WeekOfMonth.Should().Be(3);
+        captured.Weekdays.Should().BeEquivalentTo([DayOfWeek.Wednesday]);
+    }
+
+    [Fact]
+    public void MorePanel_YearlyDayOfWeekModeAddWithoutDays_SendsZeroWeekOfMonth()
+    {
+        NewTaskRequest? captured = null;
+        var cut = RenderComponent<TaskList>(p => p
+            .Add(x => x.Tasks, new List<TaskItem>())
+            .Add(x => x.CurrentTaskId, null)
+            .Add(x => x.OnTaskAdd, EventCallback.Factory.Create<NewTaskRequest>(this, r => captured = r)));
+
+        cut.Find("textarea.task-input").Input("No days selected");
+        cut.Find(".btn-more").Click();
+        cut.FindAll("select.tep-select")[1].Change(RepeatType.Yearly);
+        cut.Find("select[aria-label=\"Repeat by\"]").Change("true");
+        cut.Find(".tep-save-btn").Click();
+
+        captured.Should().NotBeNull();
+        captured!.WeekOfMonth.Should().Be(0);
+    }
+
+    [Fact]
     public void MorePanel_ShowsWhenMoreButtonClicked()
     {
         var cut = RenderComponent<TaskList>(p => p

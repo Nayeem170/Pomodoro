@@ -73,6 +73,18 @@ public class TaskListBase : ComponentBase
 
     protected int _newTaskMonthlyDay = Constants.Repeat.DefaultMonthlyDay;
 
+    protected int _newTaskQuarterlyDay = DateTime.Now.Day;
+
+    protected int _newTaskQuarterlyMonth = RepeatRule.QuarterGroupOf(DateTime.Now);
+
+    protected int _newTaskYearlyDay = DateTime.Now.Day;
+
+    protected int _newTaskYearlyMonth = DateTime.Now.Month;
+
+    protected string _newTaskRepeatBy = "false";
+
+    protected int _newTaskWeekOfMonth = 1;
+
     protected bool _newTaskIsPaused;
 
     protected DateTime? _newTaskPausedDate;
@@ -81,11 +93,7 @@ public class TaskListBase : ComponentBase
 
     protected string? _newTaskListId;
 
-    protected static DayOfWeek[] WeekdayOptions =>
-    [
-        DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
-        DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
-    ];
+    protected static DayOfWeek[] WeekdayOptions => Constants.Repeat.WeekdayOptions;
 
     protected bool IsAddDisabled => string.IsNullOrWhiteSpace(NewTaskName);
 
@@ -192,11 +200,22 @@ public class TaskListBase : ComponentBase
         _newTaskWeekdays = [];
         _newTaskCustomDays = Constants.Repeat.DefaultCustomDays;
         _newTaskMonthlyDay = Constants.Repeat.DefaultMonthlyDay;
+        _newTaskQuarterlyDay = DateTime.Now.Day;
+        _newTaskQuarterlyMonth = RepeatRule.QuarterGroupOf(DateTime.Now);
+        _newTaskYearlyDay = DateTime.Now.Day;
+        _newTaskYearlyMonth = DateTime.Now.Month;
+        _newTaskRepeatBy = "false";
+        _newTaskWeekOfMonth = 1;
         _newTaskIsPaused = false;
         _newTaskPausedDate = null;
         _newTaskScheduledDate = null;
         _newTaskListId = null;
         _isMoreExpanded = false;
+    }
+
+    protected void ClampNewYearlyDay()
+    {
+        _newTaskYearlyDay = Math.Min(_newTaskYearlyDay, RepeatRule.MaxSelectableDay(_newTaskYearlyMonth));
     }
 
     protected void ToggleNewWeekday(DayOfWeek day)
@@ -281,12 +300,25 @@ public class TaskListBase : ComponentBase
                 _newTaskMonthlyDay,
                 _newTaskIsPaused,
                 _newTaskPausedDate,
-                _newTaskListId));
+                _newTaskListId,
+                _newTaskQuarterlyDay,
+                _newTaskQuarterlyMonth,
+                _newTaskYearlyDay,
+                _newTaskYearlyMonth,
+                _newTaskRepeatBy == "true" && _newTaskWeekdays.Length > 0 && _newTaskRepeatType is RepeatType.Monthly or RepeatType.Quarterly or RepeatType.Yearly
+                    ? _newTaskWeekOfMonth
+                    : 0));
             NewTaskName = string.Empty;
             _newTaskRepeatType = RepeatType.None;
             _newTaskWeekdays = [];
             _newTaskCustomDays = Constants.Repeat.DefaultCustomDays;
             _newTaskMonthlyDay = Constants.Repeat.DefaultMonthlyDay;
+            _newTaskQuarterlyDay = DateTime.Now.Day;
+            _newTaskQuarterlyMonth = RepeatRule.QuarterGroupOf(DateTime.Now);
+            _newTaskYearlyDay = DateTime.Now.Day;
+            _newTaskYearlyMonth = DateTime.Now.Month;
+            _newTaskRepeatBy = "false";
+            _newTaskWeekOfMonth = 1;
             _newTaskIsPaused = false;
             _newTaskPausedDate = null;
             _newTaskScheduledDate = null;

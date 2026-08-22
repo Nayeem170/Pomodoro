@@ -124,6 +124,8 @@ public partial class TaskItemBase : ComponentBase
         RepeatType.Weekly => "Weekly",
         RepeatType.Custom => Item.Repeat.CustomDays > 0 ? $"×{Item.Repeat.CustomDays}d" : "Repeat",
         RepeatType.Monthly => "Monthly",
+        RepeatType.Quarterly => "Quarterly",
+        RepeatType.Yearly => "Yearly",
         _ => null
     };
 
@@ -164,16 +166,34 @@ public partial class TaskItemBase : ComponentBase
     protected string GetRepeatTooltip()
     {
         if (Item.Repeat == null) return string.Empty;
+        var anchor = (Item.ScheduledDate ?? Item.Repeat.StartDate ?? Item.CreatedAt).Date;
         var typeLabel = Item.Repeat.Type switch
         {
             RepeatType.Daily => "Daily",
             RepeatType.Weekly => "Weekly",
             RepeatType.Custom => $"Every {Item.Repeat.CustomDays} days",
-            RepeatType.Monthly => $"Monthly (day {Item.Repeat.MonthlyDay})",
+            RepeatType.Monthly => Item.Repeat.WeekOfMonth.HasValue
+                ? $"Monthly ({WeekdayOfMonthLabel()})"
+                : $"Monthly (day {Item.Repeat.MonthlyDay})",
+            RepeatType.Quarterly => Item.Repeat.WeekOfMonth.HasValue
+                ? $"Quarterly ({Constants.Repeat.QuarterlyGroupLabels[Item.Repeat.EffectiveQuarterGroup(anchor) - 1]}, {WeekdayOfMonthLabel()})"
+                : $"Quarterly ({Constants.Repeat.QuarterlyGroupLabels[Item.Repeat.EffectiveQuarterGroup(anchor) - 1]}, day {Item.Repeat.QuarterlyDay ?? anchor.Day})",
+            RepeatType.Yearly => Item.Repeat.WeekOfMonth.HasValue
+                ? $"Yearly ({WeekdayOfMonthLabel()} of {Constants.Repeat.MonthNames[(Item.Repeat.YearlyMonth ?? anchor.Month) - 1]})"
+                : $"Yearly (day {Item.Repeat.YearlyDay ?? anchor.Day} of {Constants.Repeat.MonthNames[(Item.Repeat.YearlyMonth ?? anchor.Month) - 1]})",
             _ => "Repeats"
         };
         if (Item.Repeat.IsPaused) return $"{typeLabel} (paused)";
         return typeLabel;
+    }
+
+    private string WeekdayOfMonthLabel()
+    {
+        var ordinal = Constants.Repeat.WeekOfMonthLabels[(Item.Repeat!.WeekOfMonth ?? 1) - 1].ToLowerInvariant();
+        var days = string.Join(", ", Item.Repeat.Weekdays
+            .OrderBy(d => d)
+            .Select(d => d.ToString().Substring(0, 2)));
+        return $"{ordinal} {days}";
     }
 
     protected async Task HandleSelect()

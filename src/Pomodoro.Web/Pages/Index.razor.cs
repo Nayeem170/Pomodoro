@@ -430,6 +430,8 @@ public partial class IndexBase : ComponentBase, IDisposable
         RepeatType.Daily => Constants.Repeat.LabelDaily,
         RepeatType.Weekly => Constants.Repeat.LabelWeekly,
         RepeatType.Monthly => Constants.Repeat.LabelMonthly,
+        RepeatType.Quarterly => Constants.Repeat.LabelQuarterly,
+        RepeatType.Yearly => Constants.Repeat.LabelYearly,
         RepeatType.Custom => rule.CustomDays > 0 ? $"×{rule.CustomDays}d" : Constants.Repeat.LabelRepeat,
         _ => null
     };

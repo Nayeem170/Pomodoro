@@ -78,6 +78,8 @@ public class IndexScheduleCoverageTests : TestHelper
         InvokeStatic("BuildRepeatLabel", type, [new RepeatRule { Type = RepeatType.Daily }]).Should().Be(Constants.Repeat.LabelDaily);
         InvokeStatic("BuildRepeatLabel", type, [new RepeatRule { Type = RepeatType.Weekly }]).Should().Be(Constants.Repeat.LabelWeekly);
         InvokeStatic("BuildRepeatLabel", type, [new RepeatRule { Type = RepeatType.Monthly }]).Should().Be(Constants.Repeat.LabelMonthly);
+        InvokeStatic("BuildRepeatLabel", type, [new RepeatRule { Type = RepeatType.Quarterly }]).Should().Be(Constants.Repeat.LabelQuarterly);
+        InvokeStatic("BuildRepeatLabel", type, [new RepeatRule { Type = RepeatType.Yearly }]).Should().Be(Constants.Repeat.LabelYearly);
         InvokeStatic("BuildRepeatLabel", type, [new RepeatRule { Type = RepeatType.Custom, CustomDays = 4 }]).Should().Be("×4d");
         InvokeStatic("BuildRepeatLabel", type, [new RepeatRule { Type = RepeatType.Custom, CustomDays = 0 }]).Should().Be(Constants.Repeat.LabelRepeat);
         InvokeStatic("BuildRepeatLabel", type, [null]).Should().BeNull();
